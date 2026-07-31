@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AiService } from '../ai/ai.service.js';
 import { ScanResumeDto } from './dto/scan-resume.dto.js';
+import { AiFeature } from '../../generated/prisma/enums.js';
 
 export interface ResumeScanResult {
   overallScore: number;
@@ -40,6 +41,6 @@ Resume text:
 ${dto.resumeText}
 """`;
 
-    return this.ai.generateJson<ResumeScanResult>(SYSTEM_PROMPT, userPrompt);
+    return this.ai.generateJson<ResumeScanResult>(AiFeature.RESUME_SCANNER, SYSTEM_PROMPT, userPrompt);
   }
 }

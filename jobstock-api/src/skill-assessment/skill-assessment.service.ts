@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { AiService } from '../ai/ai.service.js';
 import { StartAssessmentDto } from './dto/start-assessment.dto.js';
 import { SubmitAssessmentDto } from './dto/submit-assessment.dto.js';
+import { AiFeature } from '../../generated/prisma/enums.js';
 
 interface GeneratedQuestion {
   question: string;
@@ -45,8 +46,10 @@ export class SkillAssessmentService {
     const candidateId = await this.getCandidateId(userId);
 
     const { questions } = await this.ai.generateJson<{ questions: GeneratedQuestion[] }>(
+      AiFeature.SKILL_ASSESSMENT,
       QUESTION_SYSTEM_PROMPT,
       `Skill: ${dto.skill}`,
+      userId,
     );
 
     if (!Array.isArray(questions) || questions.length === 0) {

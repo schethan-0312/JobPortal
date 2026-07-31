@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AiService } from '../ai/ai.service.js';
 import { GeneratePathDto } from './dto/generate-path.dto.js';
+import { AiFeature } from '../../generated/prisma/enums.js';
 
 export interface CareerStep {
   roleTitle: string;
@@ -58,6 +59,6 @@ export class CareerNavigatorService {
 - About: ${profile.about || 'Not specified'}
 - Target industry/direction (optional): ${dto.targetIndustry || 'Not specified — infer from current profile'}`;
 
-    return this.ai.generateJson<CareerPathResult>(SYSTEM_PROMPT, userPrompt);
+    return this.ai.generateJson<CareerPathResult>(AiFeature.CAREER_NAVIGATOR, SYSTEM_PROMPT, userPrompt, userId);
   }
 }

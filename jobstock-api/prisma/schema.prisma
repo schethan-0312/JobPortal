@@ -53,6 +53,44 @@ enum AdminRole {
   MODERATION_ADMIN
 }
 
+enum AiFeature {
+  RESUME_SCANNER
+  CHATBOT
+  SKILL_ASSESSMENT
+  MOCK_INTERVIEW
+  CAREER_NAVIGATOR
+  SMART_MATCH
+  AUTO_SHORTLIST
+  RESUME_BUILDER
+}
+
+/// One row per Gemini call, written by AiService itself so every feature is
+/// tracked the same way without each caller having to remember to log.
+model AiUsageLog {
+  id               String    @id @default(cuid())
+  feature          AiFeature
+  userId           String?
+  success          Boolean
+  errorMessage     String?
+  latencyMs        Int
+  promptTokens     Int?
+  responseTokens   Int?
+  totalTokens      Int?
+  createdAt        DateTime  @default(now())
+
+  @@index([feature, createdAt])
+  @@index([createdAt])
+}
+
+/// Per-feature kill switch, checked by AiService before every call so an
+/// admin can disable a misbehaving/expensive feature without a deploy.
+model AiFeatureConfig {
+  feature      AiFeature @id
+  enabled      Boolean   @default(true)
+  updatedAt    DateTime  @updatedAt
+  updatedById  String?
+}
+
 enum JobStatus {
   DRAFT
   OPEN
