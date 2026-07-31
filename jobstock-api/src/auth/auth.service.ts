@@ -66,16 +66,20 @@ export class AuthService {
     };
   }
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto, ip?: string, userAgent?: string) {
     const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (!user) {
+      await this.logFailedLogin(dto.email, ip, 'account not found');
       throw new UnauthorizedException('Invalid email or password');
     }
 
     const passwordMatches = await bcrypt.compare(dto.password, user.passwordHash);
     if (!passwordMatches) {
+      await this.logFailedLogin(dto.email, ip, 'wrong password');
       throw new UnauthorizedException('Invalid email or password');
     }
+
+    await this.prisma.loginEvent.create({ data: { userId: user.id, ipAddress: ip, userAgent } });
 
     const { passwordHash: _omit, ...safeUser } = user;
 
@@ -83,6 +87,10 @@ export class AuthService {
       user: safeUser,
       ...this.issueTokens(user.id, user.email, user.role),
     };
+  }
+
+  private async logFailedLogin(email: string, ip: string | undefined, reason: string) {
+    await this.prisma.failedLogin.create({ data: { email, ipAddress: ip, reason } }).catch(() => {});
   }
 
   async changePassword(userId: string, dto: ChangePasswordDto) {

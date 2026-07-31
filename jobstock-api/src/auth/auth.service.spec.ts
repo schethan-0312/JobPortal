@@ -12,6 +12,8 @@ describe('AuthService', () => {
     user: { findUnique: jest.Mock; create: jest.Mock; update: jest.Mock };
     referral: { create: jest.Mock };
     candidateProfile: { updateMany: jest.Mock };
+    loginEvent: { create: jest.Mock };
+    failedLogin: { create: jest.Mock };
   };
   let jwtService: { sign: jest.Mock };
 
@@ -20,6 +22,8 @@ describe('AuthService', () => {
       user: { findUnique: jest.fn(), create: jest.fn(), update: jest.fn() },
       referral: { create: jest.fn() },
       candidateProfile: { updateMany: jest.fn() },
+      loginEvent: { create: jest.fn().mockResolvedValue({}) },
+      failedLogin: { create: jest.fn().mockResolvedValue({}) },
     };
     jwtService = { sign: jest.fn().mockReturnValue('signed.jwt.token') };
     service = new AuthService(prisma as unknown as PrismaService, jwtService as unknown as JwtService);

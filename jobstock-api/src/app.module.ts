@@ -1,7 +1,7 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { PrismaModule } from './prisma/prisma.module.js';
@@ -36,6 +36,9 @@ import { SmsModule } from './sms/sms.module.js';
 import { AuditLogModule } from './audit-log/audit-log.module.js';
 import { AdminFinancialsModule } from './admin-financials/admin-financials.module.js';
 import { AdminIntegrationsModule } from './admin-integrations/admin-integrations.module.js';
+import { AdminSecurityModule } from './admin-security/admin-security.module.js';
+import { LoggingThrottlerGuard } from './admin-security/logging-throttler.guard.js';
+import { IpBlocklistMiddleware } from './admin-security/ip-blocklist.middleware.js';
 
 @Module({
   imports: [
@@ -80,8 +83,13 @@ import { AdminIntegrationsModule } from './admin-integrations/admin-integrations
     AuditLogModule,
     AdminFinancialsModule,
     AdminIntegrationsModule,
+    AdminSecurityModule,
   ],
   controllers: [AppController],
-  providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
+  providers: [AppService, { provide: APP_GUARD, useClass: LoggingThrottlerGuard }],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(IpBlocklistMiddleware).forRoutes('*');
+  }
+}

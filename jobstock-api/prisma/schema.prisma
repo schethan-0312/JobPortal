@@ -110,6 +110,11 @@ model User {
   smsOptIn     Boolean  @default(false)
   whatsappOptIn Boolean @default(false)
 
+  /// Any JWT with an `iat` before this timestamp is rejected — set by an admin
+  /// force-logout. Stateless JWTs can't be individually revoked, so this is a
+  /// coarse "everything issued before now is dead" cutover instead.
+  sessionRevokedAt DateTime?
+
   candidateProfile CandidateProfile?
   employer         Employer?
 
@@ -122,6 +127,7 @@ model User {
   orders         Order[]
   reportsFiled   Report[]  @relation("ReportFiledBy")
   auditLogs      AuditLog[] @relation("AuditLogAdmin")
+  loginEvents    LoginEvent[]
   referralsGiven Referral[] @relation("Referrer")
   referredBy     Referral?  @relation("Referred")
   blogPostsAuthored BlogPost[]
@@ -476,6 +482,54 @@ model AuditLog {
   @@index([adminId])
   @@index([targetType, targetId])
   @@index([action])
+  @@index([createdAt])
+}
+
+// ---------- Super Admin: Security & Access Monitoring ----------
+
+/// Every failed login attempt — used to detect brute-force patterns (repeated
+/// attempts from one IP/email in a short window).
+model FailedLogin {
+  id        String   @id @default(cuid())
+  email     String
+  ipAddress String?
+  reason    String
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([ipAddress])
+  @@index([createdAt])
+}
+
+/// One row per successful login. Since auth here is stateless JWT (no server-side
+/// session table), this doubles as the "active sessions" view — a session counts
+/// as active if its most recent LoginEvent is newer than the admin's forced
+/// revocation (User.sessionRevokedAt) and within the token's own expiry window.
+model LoginEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model BlockedIp {
+  id        String   @id @default(cuid())
+  ipAddress String   @unique
+  reason    String?
+  createdAt DateTime @default(now())
+}
+
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  ipAddress String?
+  path      String
+  createdAt DateTime @default(now())
+
+  @@index([ipAddress])
   @@index([createdAt])
 }
 
