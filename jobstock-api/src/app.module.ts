@@ -34,6 +34,7 @@ import { SocialAuthModule } from './social-auth/social-auth.module.js';
 import { PushModule } from './push/push.module.js';
 import { SmsModule } from './sms/sms.module.js';
 import { AuditLogModule } from './audit-log/audit-log.module.js';
+import { AdminFinancialsModule } from './admin-financials/admin-financials.module.js';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import { AuditLogModule } from './audit-log/audit-log.module.js';
     PushModule,
     SmsModule,
     AuditLogModule,
+    AdminFinancialsModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
