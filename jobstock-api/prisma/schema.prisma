@@ -91,6 +91,28 @@ model AiFeatureConfig {
   updatedById  String?
 }
 
+enum BackupStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+/// One row per pg_dump attempt, manual or scheduled. The actual dump file
+/// lives on disk outside the app's git-managed directory; this row is just
+/// the metadata/audit trail an admin sees in the dashboard.
+model BackupRecord {
+  id             String       @id @default(cuid())
+  filename       String
+  status         BackupStatus
+  sizeBytes      Int?
+  errorMessage   String?
+  triggeredById  String?
+  createdAt      DateTime     @default(now())
+  completedAt    DateTime?
+
+  @@index([createdAt])
+}
+
 enum JobStatus {
   DRAFT
   OPEN

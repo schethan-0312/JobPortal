@@ -42,6 +42,7 @@ import { IpBlocklistMiddleware } from './admin-security/ip-blocklist.middleware.
 import { AdminEmployerManagementModule } from './admin-employer-management/admin-employer-management.module.js';
 import { AdminTeamModule } from './admin-team/admin-team.module.js';
 import { AdminAiModule } from './admin-ai/admin-ai.module.js';
+import { AdminDatabaseModule } from './admin-database/admin-database.module.js';
 
 @Module({
   imports: [
@@ -90,6 +91,7 @@ import { AdminAiModule } from './admin-ai/admin-ai.module.js';
     AdminEmployerManagementModule,
     AdminTeamModule,
     AdminAiModule,
+    AdminDatabaseModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: LoggingThrottlerGuard }],
