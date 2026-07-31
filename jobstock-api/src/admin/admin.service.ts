@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
+import { AuditLogService } from '../audit-log/audit-log.service.js';
 import { VerifyEmployerDto, VerifyDecision } from './dto/verify-employer.dto.js';
 import { ResolveReportDto } from './dto/resolve-report.dto.js';
 
@@ -9,6 +10,7 @@ export class AdminService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   listPendingEmployers() {
@@ -19,7 +21,7 @@ export class AdminService {
     });
   }
 
-  async verifyEmployer(adminUserId: string, employerId: string, dto: VerifyEmployerDto) {
+  async verifyEmployer(adminUserId: string, employerId: string, dto: VerifyEmployerDto, ip?: string) {
     const employer = await this.prisma.employer.findUnique({ where: { id: employerId } });
     if (!employer) {
       throw new NotFoundException('Employer not found');
@@ -42,6 +44,15 @@ export class AdminService {
         : 'Your company verification was rejected. Please contact support for details.',
     );
 
+    await this.auditLog.log({
+      adminId: adminUserId,
+      action: dto.decision === VerifyDecision.VERIFIED ? 'VERIFY_EMPLOYER' : 'REJECT_EMPLOYER',
+      targetType: 'EMPLOYER',
+      targetId: employerId,
+      metadata: { companyName: employer.companyName, decision: dto.decision },
+      ipAddress: ip,
+    });
+
     return updated;
   }
 
@@ -56,23 +67,46 @@ export class AdminService {
     });
   }
 
-  async resolveReport(reportId: string, dto: ResolveReportDto) {
+  async resolveReport(adminUserId: string, reportId: string, dto: ResolveReportDto, ip?: string) {
     const report = await this.prisma.report.findUnique({ where: { id: reportId } });
     if (!report) {
       throw new NotFoundException('Report not found');
     }
-    return this.prisma.report.update({
+    const updated = await this.prisma.report.update({
       where: { id: reportId },
       data: { status: 'RESOLVED', resolutionNote: dto.resolutionNote, resolvedAt: new Date() },
     });
+
+    await this.auditLog.log({
+      adminId: adminUserId,
+      action: 'RESOLVE_REPORT',
+      targetType: 'REPORT',
+      targetId: reportId,
+      reason: dto.resolutionNote,
+      metadata: { targetType: report.targetType },
+      ipAddress: ip,
+    });
+
+    return updated;
   }
 
-  async flagJob(jobId: string) {
+  async flagJob(adminUserId: string, jobId: string, ip?: string) {
     const job = await this.prisma.job.findUnique({ where: { id: jobId } });
     if (!job) {
       throw new NotFoundException('Job not found');
     }
-    return this.prisma.job.update({ where: { id: jobId }, data: { status: 'FLAGGED' } });
+    const updated = await this.prisma.job.update({ where: { id: jobId }, data: { status: 'FLAGGED' } });
+
+    await this.auditLog.log({
+      adminId: adminUserId,
+      action: 'FLAG_JOB',
+      targetType: 'JOB',
+      targetId: jobId,
+      metadata: { title: job.title },
+      ipAddress: ip,
+    });
+
+    return updated;
   }
 
   async getDashboardStats() {

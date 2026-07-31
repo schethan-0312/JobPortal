@@ -33,6 +33,7 @@ import { GamificationModule } from './gamification/gamification.module.js';
 import { SocialAuthModule } from './social-auth/social-auth.module.js';
 import { PushModule } from './push/push.module.js';
 import { SmsModule } from './sms/sms.module.js';
+import { AuditLogModule } from './audit-log/audit-log.module.js';
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { SmsModule } from './sms/sms.module.js';
     SocialAuthModule,
     PushModule,
     SmsModule,
+    AuditLogModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],

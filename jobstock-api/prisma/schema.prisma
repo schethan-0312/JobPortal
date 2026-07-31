@@ -121,6 +121,7 @@ model User {
   notifications  Notification[]
   orders         Order[]
   reportsFiled   Report[]  @relation("ReportFiledBy")
+  auditLogs      AuditLog[] @relation("AuditLogAdmin")
   referralsGiven Referral[] @relation("Referrer")
   referredBy     Referral?  @relation("Referred")
   blogPostsAuthored BlogPost[]
@@ -441,6 +442,41 @@ model Report {
   resolvedAt   DateTime?
 
   @@index([status])
+}
+
+// ---------- Super Admin: Audit Log ----------
+
+enum AuditTargetType {
+  USER
+  EMPLOYER
+  JOB
+  TRANSACTION
+  CONFIG
+  ASSESSMENT
+  REPORT
+  ADMIN
+}
+
+/// Append-only record of every sensitive admin action. adminEmail is denormalized
+/// (copied at write time) so the log stays readable even if the admin account is
+/// later deleted — never rely on the adminId relation alone for display.
+model AuditLog {
+  id         String          @id @default(cuid())
+  adminId    String
+  admin      User            @relation("AuditLogAdmin", fields: [adminId], references: [id], onDelete: Cascade)
+  adminEmail String
+  action     String
+  targetType AuditTargetType
+  targetId   String
+  reason     String?
+  metadata   Json?
+  ipAddress  String?
+  createdAt  DateTime        @default(now())
+
+  @@index([adminId])
+  @@index([targetType, targetId])
+  @@index([action])
+  @@index([createdAt])
 }
 
 // ---------- Growth (referral / gamification) ----------
