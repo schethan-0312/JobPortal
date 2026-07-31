@@ -134,6 +134,9 @@ export class AdminService {
   async getDashboardStats() {
     const now = new Date();
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const fortnightAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
     const [
       totalCandidates,
@@ -142,6 +145,12 @@ export class AdminService {
       jobsThisWeek,
       applicationsThisWeek,
       openReports,
+      revenueLast30Days,
+      failedLoginsLast24h,
+      blockedIpsCount,
+      aiFailuresLast24h,
+      disabledAiFeatures,
+      signupRows,
     ] = await Promise.all([
       this.prisma.user.count({ where: { role: 'CANDIDATE' } }),
       this.prisma.user.count({ where: { role: 'EMPLOYER' } }),
@@ -149,7 +158,37 @@ export class AdminService {
       this.prisma.job.count({ where: { createdAt: { gte: weekAgo } } }),
       this.prisma.application.count({ where: { appliedAt: { gte: weekAgo } } }),
       this.prisma.report.count({ where: { status: 'OPEN' } }),
+      this.prisma.order.aggregate({
+        where: { status: 'PAID', createdAt: { gte: monthAgo } },
+        _sum: { amountInPaisa: true },
+      }),
+      this.prisma.failedLogin.count({ where: { createdAt: { gte: dayAgo } } }),
+      this.prisma.blockedIp.count(),
+      this.prisma.aiUsageLog.count({ where: { success: false, createdAt: { gte: dayAgo } } }),
+      this.prisma.aiFeatureConfig.count({ where: { enabled: false } }),
+      this.prisma.$queryRaw<{ day: Date; role: string; count: bigint }[]>`
+        SELECT DATE_TRUNC('day', "createdAt") AS day, role, COUNT(*)::bigint AS count
+        FROM "User"
+        WHERE "createdAt" >= ${fortnightAgo} AND role IN ('CANDIDATE', 'EMPLOYER')
+        GROUP BY day, role
+        ORDER BY day ASC
+      `,
     ]);
+
+    const signupTrend: { date: string; candidates: number; employers: number }[] = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+      const dateKey = d.toISOString().slice(0, 10);
+      const candidates = signupRows.find(
+        (r) => r.day.toISOString().slice(0, 10) === dateKey && r.role === 'CANDIDATE',
+      );
+      const employers = signupRows.find((r) => r.day.toISOString().slice(0, 10) === dateKey && r.role === 'EMPLOYER');
+      signupTrend.push({
+        date: dateKey,
+        candidates: Number(candidates?.count ?? 0),
+        employers: Number(employers?.count ?? 0),
+      });
+    }
 
     return {
       totalCandidates,
@@ -158,6 +197,16 @@ export class AdminService {
       jobsThisWeek,
       applicationsThisWeek,
       openReports,
+      revenueLast30DaysPaisa: revenueLast30Days._sum.amountInPaisa ?? 0,
+      alerts: {
+        pendingEmployers,
+        openReports,
+        failedLoginsLast24h,
+        blockedIpsCount,
+        aiFailuresLast24h,
+        disabledAiFeatures,
+      },
+      signupTrend,
     };
   }
 }
