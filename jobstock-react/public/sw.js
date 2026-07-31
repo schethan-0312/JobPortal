@@ -1,7 +1,7 @@
 // Minimal service worker: caches the app shell for installability/offline start,
 // and displays incoming Web Push notifications. Deliberately no aggressive runtime
 // caching of API responses — job/application data must always be fresh.
-const CACHE_NAME = "jobstock-shell-v2";
+const CACHE_NAME = "jobstock-shell-v3";
 const SHELL_ASSETS = ["/manifest.json"];
 
 self.addEventListener("install", (event) => {
@@ -18,15 +18,27 @@ self.addEventListener("activate", (event) => {
 
 // Deliberately does NOT intercept navigation requests (mode: "navigate") — every
 // page load must hit the network so auth-gated, per-user content is never served
-// stale from the install-time shell cache. Only opportunistically caches same-origin
-// static assets (JS/CSS/images), never API calls or page documents.
+// stale from the install-time shell cache.
+//
+// Network-first for everything else too: a cache-first strategy here previously
+// caused CSS/JS built with non-hashed filenames (e.g. /assets/css/styles.css) to be
+// served forever from the first-ever fetch, even after a redeploy changed their
+// content — a real incident where a stale cached stylesheet broke the layout for
+// anyone who'd loaded the site before an update. Cache is now only a fallback for
+// when the network is genuinely unavailable (offline), never preferred over it.
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   if (event.request.mode === "navigate") return;
   const url = new URL(event.request.url);
   if (url.pathname.startsWith("/api/")) return;
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request)),
+    fetch(event.request)
+      .then((response) => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        return response;
+      })
+      .catch(() => caches.match(event.request)),
   );
 });
 
