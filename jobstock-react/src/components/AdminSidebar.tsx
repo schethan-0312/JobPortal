@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 
-export type AdminSidebarActive = "dashboard" | "employers" | "reports" | "audit-log" | "financials" | "integrations" | "security";
+export type AdminSidebarActive = "dashboard" | "employers" | "employer-directory" | "reports" | "audit-log" | "financials" | "integrations" | "security";
 
 interface AdminSidebarProps {
   active?: AdminSidebarActive;
@@ -60,6 +60,11 @@ export default function AdminSidebar({ active }: AdminSidebarProps) {
               <li className={active === "employers" ? "active" : undefined}>
                 <Link href="/admin-employers">
                   <i className="fa-solid fa-user-check me-2"></i>Verify Employers
+                </Link>
+              </li>
+              <li className={active === "employer-directory" ? "active" : undefined}>
+                <Link href="/admin-employer-directory">
+                  <i className="fa-solid fa-building me-2"></i>Employer Directory
                 </Link>
               </li>
               <li className={active === "reports" ? "active" : undefined}>

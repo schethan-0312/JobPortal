@@ -30,6 +30,7 @@ export default function AdminEmployersPage() {
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [actingId, setActingId] = useState<string | null>(null);
+  const [reasons, setReasons] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "ADMIN")) {
@@ -52,14 +53,16 @@ export default function AdminEmployersPage() {
     })();
   }, [user]);
 
-  async function handleDecision(id: string, decision: "VERIFIED" | "REJECTED") {
+  async function handleDecision(id: string, decision: "VERIFIED" | "REJECTED" | "INFO_REQUESTED") {
     setActingId(id);
     setError(null);
     setSuccessMsg(null);
     try {
-      await api.patch(`/admin/employers/${id}/verify`, { decision });
-      setEmployers((prev) => prev.filter((e) => e.id !== id));
-      setSuccessMsg(`Employer ${decision === "VERIFIED" ? "verified" : "rejected"} successfully.`);
+      const reason = reasons[id]?.trim();
+      await api.patch(`/admin/employers/${id}/verify`, { decision, reason: reason || undefined });
+      setEmployers((prev) => (decision === "INFO_REQUESTED" ? prev : prev.filter((e) => e.id !== id)));
+      const label = decision === "VERIFIED" ? "verified" : decision === "REJECTED" ? "rejected" : "sent an info request";
+      setSuccessMsg(`Employer ${label} successfully.`);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to update employer");
     } finally {
@@ -144,6 +147,14 @@ export default function AdminEmployersPage() {
                                     </div>
                                   </div>
                                   {emp.description && <p className="text-muted mb-0 mt-2">{emp.description}</p>}
+                                  <input
+                                    type="text"
+                                    className="form-control form-control-sm mt-2"
+                                    style={{ maxWidth: 420 }}
+                                    placeholder="Reason / message to employer (optional for verify, recommended for reject or info request)"
+                                    value={reasons[emp.id] ?? ""}
+                                    onChange={(e) => setReasons((prev) => ({ ...prev, [emp.id]: e.target.value }))}
+                                  />
                                 </div>
                               </div>
                               <div className="jbs-list-head-last">
@@ -154,6 +165,14 @@ export default function AdminEmployersPage() {
                                   onClick={() => handleDecision(emp.id, "VERIFIED")}
                                 >
                                   {actingId === emp.id ? "Please wait..." : "Verify"}
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-md btn-outline-main px-3 me-2"
+                                  disabled={actingId === emp.id}
+                                  onClick={() => handleDecision(emp.id, "INFO_REQUESTED")}
+                                >
+                                  Request Info
                                 </button>
                                 <button
                                   type="button"

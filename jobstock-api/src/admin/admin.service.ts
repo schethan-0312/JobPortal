@@ -27,28 +27,50 @@ export class AdminService {
       throw new NotFoundException('Employer not found');
     }
 
+    const statusMap = {
+      [VerifyDecision.VERIFIED]: 'VERIFIED',
+      [VerifyDecision.REJECTED]: 'REJECTED',
+      [VerifyDecision.INFO_REQUESTED]: 'INFO_REQUESTED',
+    } as const;
+
     const updated = await this.prisma.employer.update({
       where: { id: employerId },
       data: {
-        status: dto.decision === VerifyDecision.VERIFIED ? 'VERIFIED' : 'REJECTED',
-        verifiedAt: new Date(),
-        verifiedById: adminUserId,
+        status: statusMap[dto.decision],
+        ...(dto.decision === VerifyDecision.VERIFIED ? { verifiedAt: new Date(), verifiedById: adminUserId } : {}),
       },
     });
 
-    await this.notifications.create(
-      employer.userId,
-      'Company verification update',
+    // Full history entry — the current `status` field only ever holds the latest
+    // state, this table is what lets an admin see the whole submitted → info
+    // requested → resubmitted → approved timeline for one employer.
+    await this.prisma.verificationHistoryEntry.create({
+      data: {
+        employerId,
+        decision: dto.decision,
+        reason: dto.reason,
+        requestedDocuments: dto.requestedDocuments ?? [],
+        adminId: adminUserId,
+      },
+    });
+
+    const notificationBody =
       dto.decision === VerifyDecision.VERIFIED
         ? 'Your company has been verified. You can now post jobs.'
-        : 'Your company verification was rejected. Please contact support for details.',
-    );
+        : dto.decision === VerifyDecision.REJECTED
+          ? `Your company verification was rejected.${dto.reason ? ` Reason: ${dto.reason}` : ' Please contact support for details.'}`
+          : `We need more information to verify your company.${dto.reason ? ` ${dto.reason}` : ''}${
+              dto.requestedDocuments?.length ? ` Please provide: ${dto.requestedDocuments.join(', ')}.` : ''
+            }`;
+
+    await this.notifications.create(employer.userId, 'Company verification update', notificationBody);
 
     await this.auditLog.log({
       adminId: adminUserId,
-      action: dto.decision === VerifyDecision.VERIFIED ? 'VERIFY_EMPLOYER' : 'REJECT_EMPLOYER',
+      action: `EMPLOYER_VERIFICATION_${dto.decision}`,
       targetType: 'EMPLOYER',
       targetId: employerId,
+      reason: dto.reason,
       metadata: { companyName: employer.companyName, decision: dto.decision },
       ipAddress: ip,
     });

@@ -39,6 +39,7 @@ import { AdminIntegrationsModule } from './admin-integrations/admin-integrations
 import { AdminSecurityModule } from './admin-security/admin-security.module.js';
 import { LoggingThrottlerGuard } from './admin-security/logging-throttler.guard.js';
 import { IpBlocklistMiddleware } from './admin-security/ip-blocklist.middleware.js';
+import { AdminEmployerManagementModule } from './admin-employer-management/admin-employer-management.module.js';
 
 @Module({
   imports: [
@@ -84,6 +85,7 @@ import { IpBlocklistMiddleware } from './admin-security/ip-blocklist.middleware.
     AdminFinancialsModule,
     AdminIntegrationsModule,
     AdminSecurityModule,
+    AdminEmployerManagementModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: LoggingThrottlerGuard }],
