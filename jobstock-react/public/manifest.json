@@ -1,0 +1,14 @@
+{
+  "name": "JobStock - Job Portal",
+  "short_name": "JobStock",
+  "description": "Find your career to make a better life",
+  "start_url": "/candidate-dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0a5f55",
+  "icons": [
+    { "src": "/assets/img/favicon.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/img/favicon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

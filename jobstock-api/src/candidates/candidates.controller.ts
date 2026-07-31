@@ -105,16 +105,32 @@ export class CandidatesController {
     @Query('location') location?: string,
     @Query('skill') skill?: string,
     @Query('minExperience') minExperience?: string,
+    @Query('q') q?: string,
     @Query('page') page = '1',
     @Query('pageSize') pageSize = '12',
   ) {
     return this.candidatesService.searchForEmployers({
       location,
       skill,
+      q,
       minExperience: minExperience ? Math.max(0, parseInt(minExperience, 10) || 0) : undefined,
       page: Math.max(1, parseInt(page, 10) || 1),
       pageSize: Math.min(50, Math.max(1, parseInt(pageSize, 10) || 12)),
     });
+  }
+
+  @Get('profile-views/mine')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.CANDIDATE)
+  listMyProfileViews(@CurrentUser() user: AuthenticatedUser) {
+    return this.candidatesService.listMyProfileViews(user.userId);
+  }
+
+  @Post(':id/view')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EMPLOYER)
+  recordProfileView(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+    return this.candidatesService.recordProfileView(id, user.userId);
   }
 
   @Get(':id')

@@ -103,6 +103,13 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // Notification channel opt-ins. `phoneNumber` is deliberately separate from
+  // CandidateProfile.phone — an Employer user has no candidate profile, but can
+  // still opt into SMS/WhatsApp alerts.
+  phoneNumber  String?
+  smsOptIn     Boolean  @default(false)
+  whatsappOptIn Boolean @default(false)
+
   candidateProfile CandidateProfile?
   employer         Employer?
 
@@ -117,6 +124,8 @@ model User {
   referralsGiven Referral[] @relation("Referrer")
   referredBy     Referral?  @relation("Referred")
   blogPostsAuthored BlogPost[]
+  pushSubscriptions PushSubscription[]
+  profileViewsMade  ProfileView[] @relation("ProfileViewer")
 
   @@index([role])
 }
@@ -135,8 +144,14 @@ model CandidateProfile {
   experienceYears Int?
   resumeUrl   String?
   profilePhotoUrl String?
+  videoProfileUrl String?
   isVerified  Boolean  @default(false)
   referralPoints Int   @default(0)
+
+  githubUsername   String?
+  githubProfileUrl String?
+  githubAvatarUrl  String?
+  linkedinProfileUrl String?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -144,8 +159,34 @@ model CandidateProfile {
   followedEmployers EmployerFollow[]
   skillAssessments  SkillAssessment[]
   mockInterviews    MockInterview[]
+  profileViews      ProfileView[]
 
   @@index([location])
+}
+
+/** Logged every time an employer opens a candidate's profile — powers "who viewed your profile". */
+model ProfileView {
+  id           String   @id @default(cuid())
+  candidateId  String
+  candidate    CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  viewerId     String
+  viewer       User     @relation("ProfileViewer", fields: [viewerId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+
+  @@index([candidateId, createdAt])
+}
+
+/** Browser push subscription (Web Push / VAPID) — one row per device/browser a user has opted in on. */
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model MockInterview {
@@ -159,6 +200,10 @@ model MockInterview {
   feedback        Json?
   overallRating   Int?
   status          String    @default("PENDING")
+
+  timeLimitSeconds Int      @default(1200)
+  violations       Int      @default(0)
+  timeExceeded     Boolean  @default(false)
 
   createdAt       DateTime  @default(now())
   completedAt     DateTime?
@@ -179,6 +224,11 @@ model SkillAssessment {
   passed          Boolean?
   status          String    @default("PENDING")
 
+  timeLimitSeconds Int      @default(600)
+  violations       Int      @default(0)
+  timeExceeded     Boolean  @default(false)
+  proctored        Boolean?
+
   createdAt       DateTime  @default(now())
   completedAt     DateTime?
 
@@ -196,6 +246,8 @@ model Employer {
   website      String?
   location     String?
   industry     String?
+  cultureBlurb String?
+  photos       String[] @default([])
 
   status       EmployerStatus @default(PENDING)
   verifiedAt   DateTime?

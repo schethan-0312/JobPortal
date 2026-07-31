@@ -16,7 +16,12 @@ const PUBLIC_CANDIDATE_SELECT = {
   experienceYears: true,
   resumeUrl: true,
   profilePhotoUrl: true,
+  videoProfileUrl: true,
   isVerified: true,
+  githubUsername: true,
+  githubProfileUrl: true,
+  githubAvatarUrl: true,
+  linkedinProfileUrl: true,
   createdAt: true,
 } as const;
 
@@ -75,9 +80,43 @@ export class CandidatesService {
     location?: string;
     skill?: string;
     minExperience?: number;
+    q?: string;
     page: number;
     pageSize: number;
   }) {
+    // `q` is a full-text/boolean query (supports "quoted phrases", AND is implicit between
+    // words, OR, and -exclude) run against headline/about/skills via Postgres websearch_to_tsquery.
+    // Kept as a raw query because Prisma has no first-class tsvector/tsquery support.
+    if (params.q && params.q.trim().length > 0) {
+      const offset = (params.page - 1) * params.pageSize;
+      const locationPattern = params.location ? `%${params.location}%` : null;
+      const minExperience = params.minExperience ?? null;
+      const rows = await this.prisma.$queryRaw<Array<{ id: string }>>`
+        SELECT id FROM "CandidateProfile"
+        WHERE to_tsvector('english', coalesce("headline",'') || ' ' || coalesce("about",'') || ' ' || array_to_string("skills", ' '))
+          @@ websearch_to_tsquery('english', ${params.q})
+          AND (${locationPattern}::text IS NULL OR "location" ILIKE ${locationPattern})
+          AND (${minExperience}::int IS NULL OR "experienceYears" >= ${minExperience})
+        ORDER BY "updatedAt" DESC
+        LIMIT ${params.pageSize} OFFSET ${offset}
+      `;
+      const countRows = await this.prisma.$queryRaw<Array<{ count: bigint }>>`
+        SELECT COUNT(*) as count FROM "CandidateProfile"
+        WHERE to_tsvector('english', coalesce("headline",'') || ' ' || coalesce("about",'') || ' ' || array_to_string("skills", ' '))
+          @@ websearch_to_tsquery('english', ${params.q})
+          AND (${locationPattern}::text IS NULL OR "location" ILIKE ${locationPattern})
+          AND (${minExperience}::int IS NULL OR "experienceYears" >= ${minExperience})
+      `;
+      const ids = rows.map((r) => r.id);
+      const items = ids.length
+        ? await this.prisma.candidateProfile.findMany({ where: { id: { in: ids } }, select: EMPLOYER_SEARCH_SELECT })
+        : [];
+      // Raw query already ordered/paginated by id — restore that order after the findMany.
+      const byId = new Map(items.map((i) => [i.id, i]));
+      const ordered = ids.map((id) => byId.get(id)).filter((x): x is (typeof items)[number] => !!x);
+      return { items: ordered, total: Number(countRows[0]?.count ?? 0), page: params.page, pageSize: params.pageSize };
+    }
+
     const where = {
       ...(params.location ? { location: { contains: params.location, mode: 'insensitive' as const } } : {}),
       ...(params.skill ? { skills: { has: params.skill } } : {}),
@@ -98,6 +137,37 @@ export class CandidatesService {
     ]);
 
     return { items, total, page: params.page, pageSize: params.pageSize };
+  }
+
+  /** Logs an employer opening a candidate's profile — powers "who viewed your profile". */
+  async recordProfileView(candidateProfileId: string, viewerUserId: string) {
+    const candidate = await this.prisma.candidateProfile.findUnique({ where: { id: candidateProfileId } });
+    if (!candidate) {
+      throw new NotFoundException('Candidate not found');
+    }
+    // A candidate viewing their own profile, or repeat views seconds apart, aren't a real signal.
+    if (candidate.userId === viewerUserId) {
+      return { logged: false };
+    }
+    await this.prisma.profileView.create({ data: { candidateId: candidateProfileId, viewerId: viewerUserId } });
+    return { logged: true };
+  }
+
+  async listMyProfileViews(userId: string) {
+    const profile = await this.prisma.candidateProfile.findUnique({ where: { userId } });
+    if (!profile) {
+      throw new NotFoundException('Candidate profile not found');
+    }
+    const [views, total] = await Promise.all([
+      this.prisma.profileView.findMany({
+        where: { candidateId: profile.id },
+        include: { viewer: { select: { employer: { select: { companyName: true, logoUrl: true } } } } },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      }),
+      this.prisma.profileView.count({ where: { candidateId: profile.id } }),
+    ]);
+    return { views, total };
   }
 
   async getPublicProfile(id: string) {

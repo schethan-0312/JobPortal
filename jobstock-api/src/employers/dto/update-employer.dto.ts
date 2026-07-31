@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsUrl, Matches, MaxLength } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsOptional, IsString, IsUrl, Matches, MaxLength } from 'class-validator';
 
 export class UpdateEmployerDto {
   @IsOptional()
@@ -29,4 +29,16 @@ export class UpdateEmployerDto {
   @IsString()
   @Matches(/^(https?:\/\/|\/uploads\/)/, { message: 'logoUrl must be a valid URL or an uploaded file path' })
   logoUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  cultureBlurb?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(12)
+  @IsString({ each: true })
+  @Matches(/^(https?:\/\/|\/uploads\/)/, { each: true, message: 'each photo must be a valid URL or an uploaded file path' })
+  photos?: string[];
 }

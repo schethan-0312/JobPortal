@@ -12,6 +12,8 @@ const PUBLIC_EMPLOYER_SELECT = {
   website: true,
   location: true,
   industry: true,
+  cultureBlurb: true,
+  photos: true,
   status: true,
   createdAt: true,
 } as const;

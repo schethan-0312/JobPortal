@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
 import { useAuth } from "@/lib/auth-context";
-import { api, ApiError } from "@/lib/api";
+import { api, ApiError, getToken } from "@/lib/api";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
 
 interface EmployerJob {
   id: string;
@@ -40,6 +42,8 @@ export default function EmployerApplicantsJobsPage() {
   const [applicantsLoading, setApplicantsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [selectedForZip, setSelectedForZip] = useState<Set<string>>(new Set());
+  const [downloadingZip, setDownloadingZip] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "EMPLOYER")) {
@@ -78,6 +82,40 @@ export default function EmployerApplicantsJobsPage() {
       }
     })();
   }, [selectedJobId]);
+
+  function toggleZipSelect(applicationId: string) {
+    setSelectedForZip((prev) => {
+      const next = new Set(prev);
+      if (next.has(applicationId)) next.delete(applicationId);
+      else next.add(applicationId);
+      return next;
+    });
+  }
+
+  async function downloadResumesZip() {
+    if (!selectedJobId) return;
+    setDownloadingZip(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams();
+      if (selectedForZip.size > 0) params.set("applicationIds", [...selectedForZip].join(","));
+      const res = await fetch(`${API_URL}/applications/for-job/${selectedJobId}/resumes.zip?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      if (!res.ok) throw new Error("Could not generate the resume zip.");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${selectedJob?.title ?? "job"}-resumes.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not download resumes.");
+    } finally {
+      setDownloadingZip(false);
+    }
+  }
 
   async function updateStatus(applicationId: string, status: string) {
     setUpdatingId(applicationId);
@@ -164,8 +202,22 @@ export default function EmployerApplicantsJobsPage() {
                           <div className="duster-flex-first">
                             <h6 className="mb-0">{selectedJob?.title || "Select a job"}</h6>
                           </div>
-                          <div className="duster-flex-end">
+                          <div className="duster-flex-end d-flex align-items-center gap-3">
                             <h6 className="mb-0">Total: {applicants.length}</h6>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-outline-main"
+                              disabled={applicants.length === 0 || downloadingZip}
+                              onClick={downloadResumesZip}
+                              title={selectedForZip.size > 0 ? `Download ${selectedForZip.size} selected resumes` : "Download all resumes for this job"}
+                            >
+                              <i className="fa-solid fa-file-zipper me-1"></i>
+                              {downloadingZip
+                                ? "Zipping..."
+                                : selectedForZip.size > 0
+                                  ? `Download ${selectedForZip.size} resumes`
+                                  : "Download all resumes"}
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -184,6 +236,15 @@ export default function EmployerApplicantsJobsPage() {
                           <div className="jbs-list-box border">
                             <div className="jbs-list-head m-0">
                               <div className="jbs-list-head-thunner center">
+                                {item.candidate.candidateProfile?.resumeUrl && (
+                                  <input
+                                    type="checkbox"
+                                    className="form-check-input me-2"
+                                    checked={selectedForZip.has(item.id)}
+                                    onChange={() => toggleZipSelect(item.id)}
+                                    aria-label={`Select ${item.candidate.candidateProfile?.fullName ?? "candidate"} for zip download`}
+                                  />
+                                )}
                                 <div className="jbs-list-usrs-thumb jbs-verified">
                                   <figure>
                                     <img src="/assets/img/team-5.jpg" className="img-fluid circle" alt="" />

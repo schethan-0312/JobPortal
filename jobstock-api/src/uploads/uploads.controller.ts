@@ -26,6 +26,7 @@ const DOCUMENT_TYPES = [
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 ];
+const VIDEO_TYPES = ['video/mp4', 'video/webm'];
 
 /**
  * Verifies a file's actual bytes match its claimed type, since the client-supplied
@@ -50,6 +51,11 @@ function matchesMagicBytes(buffer: Buffer, mimetype: string): boolean {
     case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
       // .docx is a zip archive under the hood
       return sig(0x50, 0x4b, 0x03, 0x04);
+    case 'video/mp4':
+      // MP4 containers put the "ftyp" box at byte offset 4, not the very start of the file.
+      return buffer.slice(4, 8).toString('ascii') === 'ftyp';
+    case 'video/webm':
+      return sig(0x1a, 0x45, 0xdf, 0xa3);
     default:
       return false;
   }
@@ -109,6 +115,31 @@ export class UploadsController {
     }),
   )
   uploadDocument(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+    verifyUploadedFileOrThrow(file);
+    return { url: `/uploads/${file.filename}` };
+  }
+
+  @Post('video')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: UPLOAD_DIR,
+        filename: (_req, file, cb) => cb(null, randomFilename(file.originalname)),
+      }),
+      limits: { fileSize: 50 * 1024 * 1024 },
+      fileFilter: (_req, file, cb) => {
+        if (!VIDEO_TYPES.includes(file.mimetype)) {
+          cb(new BadRequestException('Only MP4 or WEBM videos are allowed'), false);
+          return;
+        }
+        cb(null, true);
+      },
+    }),
+  )
+  uploadVideo(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }

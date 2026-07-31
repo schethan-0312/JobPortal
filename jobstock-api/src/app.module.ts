@@ -29,6 +29,10 @@ import { SmartMatchModule } from './smart-match/smart-match.module.js';
 import { AutoShortlistModule } from './auto-shortlist/auto-shortlist.module.js';
 import { UploadsModule } from './uploads/uploads.module.js';
 import { ResumeBuilderModule } from './resume-builder/resume-builder.module.js';
+import { GamificationModule } from './gamification/gamification.module.js';
+import { SocialAuthModule } from './social-auth/social-auth.module.js';
+import { PushModule } from './push/push.module.js';
+import { SmsModule } from './sms/sms.module.js';
 
 @Module({
   imports: [
@@ -66,6 +70,10 @@ import { ResumeBuilderModule } from './resume-builder/resume-builder.module.js';
     AutoShortlistModule,
     ResumeBuilderModule,
     UploadsModule,
+    GamificationModule,
+    SocialAuthModule,
+    PushModule,
+    SmsModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],

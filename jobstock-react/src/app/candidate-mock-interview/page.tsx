@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar7 from "@/components/Navbar7";
 import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar";
@@ -12,6 +12,7 @@ interface StartResponse {
   id: string;
   jobRole: string;
   questions: string[];
+  timeLimitSeconds: number;
 }
 
 interface QuestionFeedback {
@@ -27,6 +28,8 @@ interface SubmitResponse {
   perQuestion: QuestionFeedback[];
   overallRating: number;
   overallSummary: string;
+  timeExceeded: boolean;
+  violations: number;
 }
 
 interface HistoryItem {
@@ -53,12 +56,43 @@ export default function CandidateMockInterviewPage() {
   const [answers, setAnswers] = useState<string[]>([]);
   const [result, setResult] = useState<SubmitResponse | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  const [violations, setViolations] = useState(0);
+  const violationsRef = useRef(0);
+  const submitRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "CANDIDATE")) {
       router.push("/");
     }
   }, [loading, user, router]);
+
+  useEffect(() => {
+    if (stage !== "interview") return;
+    if (secondsLeft <= 0) {
+      submitRef.current();
+      return;
+    }
+    const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [stage, secondsLeft]);
+
+  useEffect(() => {
+    if (stage !== "interview") return;
+    const flag = () => {
+      violationsRef.current += 1;
+      setViolations(violationsRef.current);
+    };
+    const onVisibility = () => {
+      if (document.hidden) flag();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("blur", flag);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("blur", flag);
+    };
+  }, [stage]);
 
   useEffect(() => {
     if (user && user.role === "CANDIDATE") {
@@ -82,6 +116,9 @@ export default function CandidateMockInterviewPage() {
       setInterview(data);
       setAnswers(new Array(data.questions.length).fill(""));
       setResult(null);
+      setSecondsLeft(data.timeLimitSeconds);
+      violationsRef.current = 0;
+      setViolations(0);
       setStage("interview");
     } catch (err) {
       setStage("idle");
@@ -98,11 +135,14 @@ export default function CandidateMockInterviewPage() {
   }
 
   async function handleSubmit() {
-    if (!interview) return;
+    if (!interview || stage === "submitting") return;
     setErrorMsg(null);
     setStage("submitting");
     try {
-      const data = await api.post<SubmitResponse>(`/mock-interview/${interview.id}/submit`, { answers });
+      const data = await api.post<SubmitResponse>(`/mock-interview/${interview.id}/submit`, {
+        answers,
+        violations: violationsRef.current,
+      });
       setResult(data);
       setStage("result");
       const updatedHistory = await api.get<HistoryItem[]>("/mock-interview/mine");
@@ -112,6 +152,7 @@ export default function CandidateMockInterviewPage() {
       setErrorMsg(err instanceof ApiError ? err.message : "Could not submit your answers. Try again.");
     }
   }
+  submitRef.current = handleSubmit;
 
   function resetToStart() {
     setInterview(null);
@@ -184,11 +225,29 @@ export default function CandidateMockInterviewPage() {
 
             {(stage === "interview" || stage === "submitting") && interview && (
               <div className="card mb-4">
-                <div className="card-header">
-                  <h4>{interview.jobRole} Mock Interview</h4>
-                  <p className="text-muted mb-0 mt-1">Answer each question in your own words, then submit for feedback.</p>
+                <div className="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                  <div>
+                    <h4 className="mb-0">{interview.jobRole} Mock Interview</h4>
+                    <p className="text-muted mb-0 mt-1">Answer each question in your own words, then submit for feedback.</p>
+                  </div>
+                  <span className={`badge ${secondsLeft <= 30 ? "bg-danger" : "bg-dark"} fs-6 px-3 py-2`}>
+                    <i className="fa-regular fa-clock me-2"></i>
+                    {String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:
+                    {String(secondsLeft % 60).padStart(2, "0")}
+                  </span>
                 </div>
                 <div className="card-body">
+                  <p className="small text-muted mb-3">
+                    <i className="fa-solid fa-shield-halved me-1"></i>
+                    This practice session is proctored. Switching tabs or losing window focus is logged.
+                  </p>
+                  {violations > 0 && (
+                    <div className="alert alert-warning">
+                      <i className="fa-solid fa-triangle-exclamation me-2"></i>
+                      {violations} suspicious activity {violations === 1 ? "event" : "events"} detected (tab switch
+                      or window focus lost).
+                    </div>
+                  )}
                   {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
                   {interview.questions.map((q, qi) => (
                     <div key={qi} className="mb-4">
@@ -201,6 +260,7 @@ export default function CandidateMockInterviewPage() {
                         placeholder="Type your answer here..."
                         value={answers[qi]}
                         onChange={(e) => updateAnswer(qi, e.target.value)}
+                        onPaste={(e) => e.preventDefault()}
                       />
                     </div>
                   ))}
@@ -225,6 +285,13 @@ export default function CandidateMockInterviewPage() {
                   <div className="text-center mb-4">
                     <div className="fs-3 text-warning">{ratingStars(result.overallRating)}</div>
                     <p className="text-muted mb-0">{result.overallSummary}</p>
+                    {(result.timeExceeded || result.violations > 0) && (
+                      <p className="small text-muted mt-2 mb-0">
+                        <i className="fa-solid fa-shield-halved me-1"></i>
+                        {result.timeExceeded ? "Time limit exceeded. " : ""}
+                        {result.violations > 0 ? `${result.violations} proctoring violation(s) detected.` : ""}
+                      </p>
+                    )}
                   </div>
 
                   {result.questions.map((q, qi) => (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar7 from "@/components/Navbar7";
 import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar";
@@ -18,6 +18,7 @@ interface StartResponse {
   skill: string;
   totalQuestions: number;
   questions: QuizQuestion[];
+  timeLimitSeconds: number;
 }
 
 interface SubmitResponse {
@@ -27,6 +28,9 @@ interface SubmitResponse {
   totalQuestions: number;
   passed: boolean;
   correctAnswers: number[];
+  proctored: boolean;
+  timeExceeded: boolean;
+  violations: number;
 }
 
 interface HistoryItem {
@@ -36,6 +40,7 @@ interface HistoryItem {
   totalQuestions: number;
   passed: boolean;
   completedAt: string;
+  proctored?: boolean;
 }
 
 type Stage = "idle" | "starting" | "quiz" | "submitting" | "result";
@@ -51,12 +56,46 @@ export default function CandidateSkillAssessmentPage() {
   const [selectedAnswers, setSelectedAnswers] = useState<(number | null)[]>([]);
   const [result, setResult] = useState<SubmitResponse | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  const [violations, setViolations] = useState(0);
+  const violationsRef = useRef(0);
+  const submitRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "CANDIDATE")) {
       router.push("/");
     }
   }, [loading, user, router]);
+
+  // Countdown timer — auto-submits when time runs out. Server independently
+  // recomputes elapsed time from createdAt, so this is UX only, not the source of truth.
+  useEffect(() => {
+    if (stage !== "quiz") return;
+    if (secondsLeft <= 0) {
+      submitRef.current();
+      return;
+    }
+    const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [stage, secondsLeft]);
+
+  // Tab-switch / window-blur detection — counts as a proctoring violation.
+  useEffect(() => {
+    if (stage !== "quiz") return;
+    const flag = () => {
+      violationsRef.current += 1;
+      setViolations(violationsRef.current);
+    };
+    const onVisibility = () => {
+      if (document.hidden) flag();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("blur", flag);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("blur", flag);
+    };
+  }, [stage]);
 
   useEffect(() => {
     if (user && user.role === "CANDIDATE") {
@@ -80,6 +119,9 @@ export default function CandidateSkillAssessmentPage() {
       setQuiz(data);
       setSelectedAnswers(new Array(data.questions.length).fill(null));
       setResult(null);
+      setSecondsLeft(data.timeLimitSeconds);
+      violationsRef.current = 0;
+      setViolations(0);
       setStage("quiz");
     } catch (err) {
       setStage("idle");
@@ -96,12 +138,13 @@ export default function CandidateSkillAssessmentPage() {
   }
 
   async function handleSubmit() {
-    if (!quiz || selectedAnswers.some((a) => a === null)) return;
+    if (!quiz || stage === "submitting") return;
     setErrorMsg(null);
     setStage("submitting");
     try {
       const data = await api.post<SubmitResponse>(`/skill-assessment/${quiz.id}/submit`, {
-        answers: selectedAnswers,
+        answers: selectedAnswers.map((a) => a ?? 999),
+        violations: violationsRef.current,
       });
       setResult(data);
       setStage("result");
@@ -112,6 +155,7 @@ export default function CandidateSkillAssessmentPage() {
       setErrorMsg(err instanceof ApiError ? err.message : "Could not submit your answers. Try again.");
     }
   }
+  submitRef.current = handleSubmit;
 
   function resetToStart() {
     setQuiz(null);
@@ -183,12 +227,31 @@ export default function CandidateSkillAssessmentPage() {
             )}
 
             {(stage === "quiz" || stage === "submitting") && quiz && (
-              <div className="card mb-4">
-                <div className="card-header">
-                  <h4>{quiz.skill} Assessment</h4>
-                  <p className="text-muted mb-0 mt-1">{quiz.totalQuestions} questions &mdash; select one answer each</p>
+              <div className="card mb-4" onCopy={(e) => e.preventDefault()} onPaste={(e) => e.preventDefault()}>
+                <div className="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                  <div>
+                    <h4 className="mb-0">{quiz.skill} Assessment</h4>
+                    <p className="text-muted mb-0 mt-1">{quiz.totalQuestions} questions &mdash; select one answer each</p>
+                  </div>
+                  <span className={`badge ${secondsLeft <= 30 ? "bg-danger" : "bg-dark"} fs-6 px-3 py-2`}>
+                    <i className="fa-regular fa-clock me-2"></i>
+                    {String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:
+                    {String(secondsLeft % 60).padStart(2, "0")}
+                  </span>
                 </div>
                 <div className="card-body">
+                  <p className="small text-muted mb-3">
+                    <i className="fa-solid fa-shield-halved me-1"></i>
+                    This assessment is proctored. Switching tabs, minimizing the window, or copy/pasting is logged
+                    and may disqualify verification.
+                  </p>
+                  {violations > 0 && (
+                    <div className="alert alert-warning">
+                      <i className="fa-solid fa-triangle-exclamation me-2"></i>
+                      {violations} suspicious activity {violations === 1 ? "event" : "events"} detected (tab switch
+                      or window focus lost). This will affect your verified status.
+                    </div>
+                  )}
                   {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
                   {quiz.questions.map((q, qi) => (
                     <div key={qi} className="mb-4 pb-3 border-bottom">
@@ -247,9 +310,25 @@ export default function CandidateSkillAssessmentPage() {
                   <h2 className="mb-1">
                     {result.score} / {result.totalQuestions}
                   </h2>
-                  <p className="text-muted mb-4">
+                  <p className="text-muted mb-2">
                     {Math.round((result.score / result.totalQuestions) * 100)}% score &mdash; 70% required to pass
                   </p>
+                  {result.passed && (
+                    <p className="mb-4">
+                      {result.proctored ? (
+                        <span className="badge bg-success-subtle text-success border border-success">
+                          <i className="fa-solid fa-shield-check me-1"></i>Proctored &amp; Verified
+                        </span>
+                      ) : (
+                        <span className="badge bg-warning-subtle text-warning border border-warning">
+                          <i className="fa-solid fa-triangle-exclamation me-1"></i>
+                          Passed, but not verified
+                          {result.timeExceeded ? " (time limit exceeded)" : ""}
+                          {result.violations > 0 ? ` (${result.violations} proctoring violations)` : ""}
+                        </span>
+                      )}
+                    </p>
+                  )}
                   <button type="button" className="btn btn-outline-main" onClick={resetToStart}>
                     Take Another Assessment
                   </button>
@@ -281,6 +360,11 @@ export default function CandidateSkillAssessmentPage() {
                             <span className={`badge ${h.passed ? "bg-success" : "bg-secondary"}`}>
                               {h.passed ? "Passed" : "Not Passed"}
                             </span>
+                            {h.passed && h.proctored && (
+                              <span className="badge bg-success-subtle text-success border border-success ms-1">
+                                <i className="fa-solid fa-shield-check me-1"></i>Verified
+                              </span>
+                            )}
                             <div className="small text-muted mt-2">
                               {new Date(h.completedAt).toLocaleDateString()}
                             </div>

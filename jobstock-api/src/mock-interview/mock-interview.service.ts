@@ -6,6 +6,8 @@ import { StartInterviewDto } from './dto/start-interview.dto.js';
 import { SubmitInterviewDto } from './dto/submit-interview.dto.js';
 
 const QUESTION_COUNT = 6;
+const TIME_LIMIT_SECONDS = 1200; // 20 minutes
+const TIME_GRACE_FACTOR = 1.15;
 
 export interface QuestionFeedback {
   rating: number;
@@ -63,12 +65,14 @@ export class MockInterviewService {
         jobRole: dto.jobRole,
         questions: questions as unknown as Prisma.InputJsonValue,
         status: 'PENDING',
+        timeLimitSeconds: TIME_LIMIT_SECONDS,
       },
     });
 
     return {
       id: interview.id,
       jobRole: interview.jobRole,
+      timeLimitSeconds: interview.timeLimitSeconds,
       questions,
     };
   }
@@ -102,6 +106,10 @@ export class MockInterviewService {
 
     const feedback = { perQuestion, overallSummary };
 
+    const elapsedSeconds = (Date.now() - interview.createdAt.getTime()) / 1000;
+    const timeExceeded = elapsedSeconds > interview.timeLimitSeconds * TIME_GRACE_FACTOR;
+    const violations = Math.max(0, dto.violations ?? 0);
+
     const updated = await this.prisma.mockInterview.update({
       where: { id: interviewId },
       data: {
@@ -110,6 +118,8 @@ export class MockInterviewService {
         overallRating,
         status: 'COMPLETED',
         completedAt: new Date(),
+        violations,
+        timeExceeded,
       },
     });
 
@@ -121,6 +131,8 @@ export class MockInterviewService {
       perQuestion,
       overallRating,
       overallSummary,
+      violations,
+      timeExceeded,
     };
   }
 

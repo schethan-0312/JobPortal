@@ -1,4 +1,4 @@
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, Min } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsOptional, Max, Min } from 'class-validator';
 
 export class SubmitAssessmentDto {
   @IsArray()
@@ -7,4 +7,11 @@ export class SubmitAssessmentDto {
   @IsInt({ each: true })
   @Min(0, { each: true })
   answers!: number[];
+
+  /** Count of tab-switch/window-blur events detected client-side during the test. */
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(1000)
+  violations?: number;
 }

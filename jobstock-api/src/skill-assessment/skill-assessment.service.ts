@@ -13,6 +13,8 @@ interface GeneratedQuestion {
 
 const QUESTION_COUNT = 8;
 const PASS_THRESHOLD = 0.7;
+const TIME_LIMIT_SECONDS = 600; // 10 minutes
+const TIME_GRACE_FACTOR = 1.15; // 15% grace over the limit before flagging as exceeded
 
 const QUESTION_SYSTEM_PROMPT = `You are an expert technical assessor creating a skill certification quiz for a job portal.
 Generate exactly ${QUESTION_COUNT} multiple-choice questions to test genuine proficiency in the given skill.
@@ -58,6 +60,7 @@ export class SkillAssessmentService {
         questions: questions as unknown as Prisma.InputJsonValue,
         totalQuestions: questions.length,
         status: 'PENDING',
+        timeLimitSeconds: TIME_LIMIT_SECONDS,
       },
     });
 
@@ -65,6 +68,7 @@ export class SkillAssessmentService {
       id: assessment.id,
       skill: assessment.skill,
       totalQuestions: assessment.totalQuestions,
+      timeLimitSeconds: assessment.timeLimitSeconds,
       questions: questions.map((q) => ({ question: q.question, options: q.options })),
     };
   }
@@ -91,6 +95,12 @@ export class SkillAssessmentService {
     );
     const passed = score / questions.length >= PASS_THRESHOLD;
 
+    // Server-side timing check — never trust the client's own clock for integrity signals.
+    const elapsedSeconds = (Date.now() - assessment.createdAt.getTime()) / 1000;
+    const timeExceeded = elapsedSeconds > assessment.timeLimitSeconds * TIME_GRACE_FACTOR;
+    const violations = Math.max(0, dto.violations ?? 0);
+    const proctored = violations === 0 && !timeExceeded;
+
     const updated = await this.prisma.skillAssessment.update({
       where: { id: assessmentId },
       data: {
@@ -99,8 +109,22 @@ export class SkillAssessmentService {
         passed,
         status: 'COMPLETED',
         completedAt: new Date(),
+        violations,
+        timeExceeded,
+        proctored,
       },
     });
+
+    // Wire the dormant "trust badge" on the candidate's profile: it only flips on
+    // when a skill assessment was both passed AND completed under real proctoring
+    // conditions (no tab-switching, within the time limit) — a genuine signal, not
+    // a rubber stamp.
+    if (passed && proctored) {
+      await this.prisma.candidateProfile.update({
+        where: { id: candidateId },
+        data: { isVerified: true },
+      });
+    }
 
     return {
       id: updated.id,
@@ -108,6 +132,9 @@ export class SkillAssessmentService {
       score,
       totalQuestions: questions.length,
       passed,
+      proctored,
+      timeExceeded,
+      violations,
       correctAnswers: questions.map((q) => q.correctIndex),
     };
   }
@@ -123,6 +150,7 @@ export class SkillAssessmentService {
         score: true,
         totalQuestions: true,
         passed: true,
+        proctored: true,
         completedAt: true,
       },
     });

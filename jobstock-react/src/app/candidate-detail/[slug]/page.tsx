@@ -1,6 +1,7 @@
 import Navbar2 from "@/components/Navbar2";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
+import RecordProfileView from "@/components/RecordProfileView";
 import { api, ApiError, assetUrl } from "@/lib/api";
 
 interface CandidateProfile {
@@ -12,6 +13,10 @@ interface CandidateProfile {
   experienceYears?: number;
   resumeUrl?: string | null;
   profilePhotoUrl?: string | null;
+  isVerified?: boolean;
+  githubUsername?: string | null;
+  githubProfileUrl?: string | null;
+  linkedinProfileUrl?: string | null;
 }
 
 async function getCandidate(id: string): Promise<{ candidate: CandidateProfile | null; error: string | null }> {
@@ -37,6 +42,7 @@ export default async function CandidateDetailPage({
   return (
     <>
       <Navbar2 />
+      {candidate && <RecordProfileView candidateId={candidate.id} />}
 
       {/* Header Information Start */}
       <section className="gray-simple">
@@ -63,7 +69,14 @@ export default async function CandidateDetailPage({
                     <div className="cndt-head-caption">
                       <div className="cndt-head-caption-top">
                         <div className="cndt-yior-2">
-                          <h4 className="cndt-title">{candidate.fullName}</h4>
+                          <h4 className="cndt-title">
+                            {candidate.fullName}
+                            {candidate.isVerified && (
+                              <span className="badge bg-success-subtle text-success border border-success ms-2" title="Passed a proctored skill assessment">
+                                <i className="fa-solid fa-shield-check me-1"></i>Verified
+                              </span>
+                            )}
+                          </h4>
                         </div>
                         <div className="cndt-yior-3">
                           <span>
@@ -78,6 +91,22 @@ export default async function CandidateDetailPage({
                             <i className="fa-solid fa-briefcase me-1"></i>
                             {candidate.experienceYears != null ? `${candidate.experienceYears} Years exp.` : "—"}
                           </span>
+                          {candidate.githubUsername && (
+                            <span>
+                              <a href={candidate.githubProfileUrl ?? undefined} target="_blank" rel="noreferrer">
+                                <i className="fa-brands fa-github me-1"></i>
+                                {candidate.githubUsername}
+                              </a>
+                            </span>
+                          )}
+                          {candidate.linkedinProfileUrl && (
+                            <span>
+                              <a href={candidate.linkedinProfileUrl} target="_blank" rel="noreferrer">
+                                <i className="fa-brands fa-linkedin me-1"></i>
+                                LinkedIn
+                              </a>
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="cndt-head-caption-bottom">

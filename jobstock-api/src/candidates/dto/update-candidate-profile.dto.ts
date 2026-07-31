@@ -51,4 +51,9 @@ export class UpdateCandidateProfileDto {
   @IsString()
   @Matches(/^(https?:\/\/|\/uploads\/)/, FILE_PATH_OR_URL)
   profilePhotoUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^(https?:\/\/|\/uploads\/)/, FILE_PATH_OR_URL)
+  videoProfileUrl?: string;
 }

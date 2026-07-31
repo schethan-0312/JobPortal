@@ -1,6 +1,8 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, Res, UseGuards } from '@nestjs/common';
+import type { Response } from 'express';
 import { ApplicationsService } from './applications.service.js';
 import { CreateApplicationDto } from './dto/create-application.dto.js';
+import { BulkApplyDto } from './dto/bulk-apply.dto.js';
 import { UpdateApplicationStatusDto } from './dto/update-application-status.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
@@ -20,6 +22,12 @@ export class ApplicationsController {
     return this.applicationsService.apply(user.userId, dto);
   }
 
+  @Post('bulk')
+  @Roles(Role.CANDIDATE)
+  bulkApply(@CurrentUser() user: AuthenticatedUser, @Body() dto: BulkApplyDto) {
+    return this.applicationsService.bulkApply(user.userId, dto.jobIds);
+  }
+
   @Get('mine')
   @Roles(Role.CANDIDATE)
   listMine(@CurrentUser() user: AuthenticatedUser) {
@@ -30,6 +38,18 @@ export class ApplicationsController {
   @Roles(Role.EMPLOYER)
   listForJob(@CurrentUser() user: AuthenticatedUser, @Param('jobId') jobId: string) {
     return this.applicationsService.listForJob(user.userId, jobId);
+  }
+
+  @Get('for-job/:jobId/resumes.zip')
+  @Roles(Role.EMPLOYER)
+  async downloadResumes(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('jobId') jobId: string,
+    @Query('applicationIds') applicationIds: string,
+    @Res() res: Response,
+  ) {
+    const ids = (applicationIds ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+    await this.applicationsService.streamResumesZip(user.userId, jobId, ids, res);
   }
 
   @Patch(':id/status')

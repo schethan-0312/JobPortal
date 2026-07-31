@@ -12,6 +12,8 @@ interface Employer {
   location?: string;
   industry?: string;
   status?: string;
+  cultureBlurb?: string | null;
+  photos?: string[];
 }
 
 const views = (employer: Employer) => [
@@ -122,6 +124,39 @@ export default async function EmployerDetailPage({
                       <p>{employer.description ?? "No description provided."}</p>
                     </div>
                   </div>
+
+                  {employer.cultureBlurb && (
+                    <div className="single-cdtsr-block">
+                      <div className="single-cdtsr-header">
+                        <h5>Culture &amp; Values</h5>
+                      </div>
+                      <div className="single-cdtsr-body">
+                        <p style={{ whiteSpace: "pre-line" }}>{employer.cultureBlurb}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {employer.photos && employer.photos.length > 0 && (
+                    <div className="single-cdtsr-block">
+                      <div className="single-cdtsr-header">
+                        <h5>Life at {employer.companyName}</h5>
+                      </div>
+                      <div className="single-cdtsr-body">
+                        <div className="d-flex flex-wrap gap-3">
+                          {employer.photos.map((url) => (
+                            <img
+                              key={url}
+                              src={assetUrl(url) ?? url}
+                              alt=""
+                              width={160}
+                              height={160}
+                              style={{ objectFit: "cover", borderRadius: 8 }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
