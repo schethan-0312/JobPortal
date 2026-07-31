@@ -46,6 +46,13 @@ enum VerificationDecision {
   INFO_REQUESTED
 }
 
+enum AdminRole {
+  SUPER_ADMIN
+  SUPPORT_ADMIN
+  FINANCE_ADMIN
+  MODERATION_ADMIN
+}
+
 enum JobStatus {
   DRAFT
   OPEN
@@ -103,6 +110,12 @@ model User {
   email        String   @unique
   passwordHash String
   role         Role
+  /// Only meaningful when role = ADMIN. Governs which admin endpoints this
+  /// user can access via AdminRolesGuard; null for CANDIDATE/EMPLOYER users.
+  adminRole    AdminRole?
+  invitedById  String?
+  invitedBy    User?    @relation("AdminInvitedBy", fields: [invitedById], references: [id])
+  invitedAdmins User[]  @relation("AdminInvitedBy")
   isEmailVerified Boolean @default(false)
   emailVerifyToken String? @unique
   passwordResetToken String? @unique
