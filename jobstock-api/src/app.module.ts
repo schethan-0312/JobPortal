@@ -49,6 +49,9 @@ import { AdminContentModerationModule } from './admin-content-moderation/admin-c
 import { AdminProctoringModule } from './admin-proctoring/admin-proctoring.module.js';
 import { SupportModule } from './support/support.module.js';
 import { AdminSupportModule } from './admin-support/admin-support.module.js';
+import { SystemConfigModule } from './system-config/system-config.module.js';
+import { AdminSystemConfigModule } from './admin-system-config/admin-system-config.module.js';
+import { MaintenanceModeMiddleware } from './system-config/maintenance-mode.middleware.js';
 
 @Module({
   imports: [
@@ -104,12 +107,14 @@ import { AdminSupportModule } from './admin-support/admin-support.module.js';
     AdminProctoringModule,
     SupportModule,
     AdminSupportModule,
+    SystemConfigModule,
+    AdminSystemConfigModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: LoggingThrottlerGuard }],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(IpBlocklistMiddleware).forRoutes('*');
+    consumer.apply(IpBlocklistMiddleware, MaintenanceModeMiddleware).forRoutes('*');
   }
 }

@@ -7,6 +7,7 @@ import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { Role } from '../../generated/prisma/enums.js';
+import { SystemConfigService } from '../system-config/system-config.service.js';
 
 const BCRYPT_ROUNDS = 12;
 
@@ -15,11 +16,17 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly systemConfig: SystemConfigService,
   ) {}
 
   async register(dto: RegisterDto) {
     if (dto.role === Role.ADMIN) {
       throw new ForbiddenException('Admin accounts cannot be self-registered');
+    }
+
+    const registrationEnabled = await this.systemConfig.get('registrationEnabled');
+    if (!registrationEnabled) {
+      throw new ForbiddenException('New registrations are temporarily disabled. Please check back later.');
     }
 
     const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });

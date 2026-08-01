@@ -82,6 +82,16 @@ model AiUsageLog {
   @@index([createdAt])
 }
 
+/// Generic admin-editable key/value store for platform-wide settings
+/// (maintenance mode, registration toggle, support email, etc). Kept
+/// schemaless on purpose so new settings don't need a migration.
+model SystemConfig {
+  key         String   @id
+  value       Json
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+}
+
 enum TicketStatus {
   OPEN
   IN_PROGRESS

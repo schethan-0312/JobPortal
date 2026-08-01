@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { SystemConfigService } from '../system-config/system-config.service.js';
 import { Role } from '../../generated/prisma/enums.js';
 
 describe('AuthService', () => {
@@ -16,6 +17,7 @@ describe('AuthService', () => {
     failedLogin: { create: jest.Mock };
   };
   let jwtService: { sign: jest.Mock };
+  let systemConfig: { get: jest.Mock };
 
   beforeEach(() => {
     prisma = {
@@ -26,7 +28,12 @@ describe('AuthService', () => {
       failedLogin: { create: jest.fn().mockResolvedValue({}) },
     };
     jwtService = { sign: jest.fn().mockReturnValue('signed.jwt.token') };
-    service = new AuthService(prisma as unknown as PrismaService, jwtService as unknown as JwtService);
+    systemConfig = { get: jest.fn().mockResolvedValue(true) };
+    service = new AuthService(
+      prisma as unknown as PrismaService,
+      jwtService as unknown as JwtService,
+      systemConfig as unknown as SystemConfigService,
+    );
   });
 
   describe('register', () => {
