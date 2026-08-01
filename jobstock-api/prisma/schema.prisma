@@ -195,6 +195,11 @@ model User {
   /// coarse "everything issued before now is dead" cutover instead.
   sessionRevokedAt DateTime?
 
+  /// Admin-imposed account suspension. Checked in JwtStrategy so a suspended
+  /// user's existing tokens stop working immediately, not just future logins.
+  isSuspended    Boolean  @default(false)
+  suspendedReason String?
+
   candidateProfile CandidateProfile?
   employer         Employer?
 

@@ -79,6 +79,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
+    if (user.isSuspended) {
+      throw new UnauthorizedException('This account has been suspended. Contact support for details.');
+    }
+
     await this.prisma.loginEvent.create({ data: { userId: user.id, ipAddress: ip, userAgent } });
 
     const { passwordHash: _omit, ...safeUser } = user;

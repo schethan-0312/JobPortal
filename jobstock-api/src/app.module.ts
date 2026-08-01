@@ -43,6 +43,7 @@ import { AdminEmployerManagementModule } from './admin-employer-management/admin
 import { AdminTeamModule } from './admin-team/admin-team.module.js';
 import { AdminAiModule } from './admin-ai/admin-ai.module.js';
 import { AdminDatabaseModule } from './admin-database/admin-database.module.js';
+import { AdminCandidateManagementModule } from './admin-candidate-management/admin-candidate-management.module.js';
 
 @Module({
   imports: [
@@ -92,6 +93,7 @@ import { AdminDatabaseModule } from './admin-database/admin-database.module.js';
     AdminTeamModule,
     AdminAiModule,
     AdminDatabaseModule,
+    AdminCandidateManagementModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: LoggingThrottlerGuard }],

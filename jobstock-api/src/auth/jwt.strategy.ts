@@ -34,6 +34,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (user.sessionRevokedAt && payload.iat * 1000 < user.sessionRevokedAt.getTime()) {
       throw new UnauthorizedException('Session has been revoked, please log in again');
     }
+    if (user.isSuspended) {
+      throw new UnauthorizedException('This account has been suspended');
+    }
     return { userId: user.id, email: user.email, role: user.role, adminRole: user.adminRole };
   }
 }
