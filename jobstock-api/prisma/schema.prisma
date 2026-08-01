@@ -82,6 +82,56 @@ model AiUsageLog {
   @@index([createdAt])
 }
 
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model SupportTicket {
+  id              String         @id @default(cuid())
+  userId          String
+  user            User           @relation("TicketFiledBy", fields: [userId], references: [id], onDelete: Cascade)
+  subject         String
+  status          TicketStatus   @default(OPEN)
+  priority        TicketPriority @default(MEDIUM)
+  assignedAdminId String?
+  assignedAdmin   User?          @relation("TicketAssignedAdmin", fields: [assignedAdminId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  closedAt  DateTime?
+
+  messages TicketMessage[]
+
+  @@index([status])
+  @@index([userId])
+}
+
+model TicketMessage {
+  id       String        @id @default(cuid())
+  ticketId String
+  ticket   SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  senderId String
+  sender   User          @relation("TicketMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  body     String
+  /// True when written by an admin — lets the UI style admin replies distinctly
+  /// without a second join back to User.role on every render.
+  isAdminReply Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([ticketId, createdAt])
+}
+
 /// Per-feature kill switch, checked by AiService before every call so an
 /// admin can disable a misbehaving/expensive feature without a deploy.
 model AiFeatureConfig {
@@ -218,6 +268,9 @@ model User {
   blogPostsAuthored BlogPost[]
   pushSubscriptions PushSubscription[]
   profileViewsMade  ProfileView[] @relation("ProfileViewer")
+  ticketsFiled      SupportTicket[] @relation("TicketFiledBy")
+  ticketsAssigned   SupportTicket[] @relation("TicketAssignedAdmin")
+  ticketMessages    TicketMessage[] @relation("TicketMessageSender")
 
   @@index([role])
 }

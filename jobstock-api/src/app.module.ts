@@ -47,6 +47,8 @@ import { AdminCandidateManagementModule } from './admin-candidate-management/adm
 import { AdminJobModerationModule } from './admin-job-moderation/admin-job-moderation.module.js';
 import { AdminContentModerationModule } from './admin-content-moderation/admin-content-moderation.module.js';
 import { AdminProctoringModule } from './admin-proctoring/admin-proctoring.module.js';
+import { SupportModule } from './support/support.module.js';
+import { AdminSupportModule } from './admin-support/admin-support.module.js';
 
 @Module({
   imports: [
@@ -100,6 +102,8 @@ import { AdminProctoringModule } from './admin-proctoring/admin-proctoring.modul
     AdminJobModerationModule,
     AdminContentModerationModule,
     AdminProctoringModule,
+    SupportModule,
+    AdminSupportModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: LoggingThrottlerGuard }],
