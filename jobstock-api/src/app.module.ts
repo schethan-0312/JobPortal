@@ -44,6 +44,7 @@ import { AdminTeamModule } from './admin-team/admin-team.module.js';
 import { AdminAiModule } from './admin-ai/admin-ai.module.js';
 import { AdminDatabaseModule } from './admin-database/admin-database.module.js';
 import { AdminCandidateManagementModule } from './admin-candidate-management/admin-candidate-management.module.js';
+import { AdminJobModerationModule } from './admin-job-moderation/admin-job-moderation.module.js';
 
 @Module({
   imports: [
@@ -94,6 +95,7 @@ import { AdminCandidateManagementModule } from './admin-candidate-management/adm
     AdminAiModule,
     AdminDatabaseModule,
     AdminCandidateManagementModule,
+    AdminJobModerationModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: LoggingThrottlerGuard }],
