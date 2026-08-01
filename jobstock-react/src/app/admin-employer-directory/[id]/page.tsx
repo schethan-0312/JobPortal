@@ -59,6 +59,7 @@ export default function AdminEmployerDetailPage() {
 
   const [detail, setDetail] = useState<EmployerDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [clearingContent, setClearingContent] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "ADMIN")) {
@@ -66,17 +67,36 @@ export default function AdminEmployerDetailPage() {
     }
   }, [loading, user, router]);
 
+  async function loadDetail() {
+    try {
+      const res = await api.get<EmployerDetail>(`/admin/employer-management/${id}`);
+      setDetail(res);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to load employer detail");
+    }
+  }
+
   useEffect(() => {
     if (!user || user.role !== "ADMIN") return;
-    (async () => {
-      try {
-        const res = await api.get<EmployerDetail>(`/admin/employer-management/${id}`);
-        setDetail(res);
-      } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Failed to load employer detail");
-      }
-    })();
+    loadDetail();
   }, [user, id]);
+
+  async function handleClearDescription() {
+    if (!confirm("Clear this employer's description? This action is logged and cannot be undone.")) return;
+    setClearingContent(true);
+    setError(null);
+    try {
+      await api.patch(`/admin/content-moderation/employers/${id}/clear-content`, {
+        fields: ["description"],
+        reason: "Cleared via admin content moderation",
+      });
+      await loadDetail();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to clear content");
+    } finally {
+      setClearingContent(false);
+    }
+  }
 
   if (loading || !user || user.role !== "ADMIN") {
     return null;
@@ -141,7 +161,19 @@ export default function AdminEmployerDetailPage() {
                 </div>
 
                 <div className="card mb-4">
-                  <div className="card-header"><h6 className="mb-0">Company Info</h6></div>
+                  <div className="card-header d-flex justify-content-between align-items-center">
+                    <h6 className="mb-0">Company Info</h6>
+                    {detail.description && (
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-danger"
+                        disabled={clearingContent}
+                        onClick={handleClearDescription}
+                      >
+                        Clear Description
+                      </button>
+                    )}
+                  </div>
                   <div className="card-body small">
                     <p className="mb-1"><strong>Email:</strong> {detail.user.email}</p>
                     <p className="mb-1"><strong>Location:</strong> {detail.location ?? "—"}</p>
