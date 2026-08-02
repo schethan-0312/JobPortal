@@ -52,6 +52,7 @@ import { AdminSupportModule } from './admin-support/admin-support.module.js';
 import { SystemConfigModule } from './system-config/system-config.module.js';
 import { AdminSystemConfigModule } from './admin-system-config/admin-system-config.module.js';
 import { MaintenanceModeMiddleware } from './system-config/maintenance-mode.middleware.js';
+import { AdminAnalyticsModule } from './admin-analytics/admin-analytics.module.js';
 
 @Module({
   imports: [
@@ -109,6 +110,7 @@ import { MaintenanceModeMiddleware } from './system-config/maintenance-mode.midd
     AdminSupportModule,
     SystemConfigModule,
     AdminSystemConfigModule,
+    AdminAnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: LoggingThrottlerGuard }],
