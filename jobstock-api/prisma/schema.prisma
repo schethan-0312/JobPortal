@@ -82,6 +82,17 @@ model AiUsageLog {
   @@index([createdAt])
 }
 
+/// Per-page SEO metadata override. A page with no row here falls back to
+/// the site-wide defaults stored in SystemConfig (seoDefaultTitle etc).
+model SeoSetting {
+  path            String   @id
+  metaTitle       String?
+  metaDescription String?
+  ogImageUrl      String?
+  updatedAt       DateTime @updatedAt
+  updatedById     String?
+}
+
 /// Generic admin-editable key/value store for platform-wide settings
 /// (maintenance mode, registration toggle, support email, etc). Kept
 /// schemaless on purpose so new settings don't need a migration.

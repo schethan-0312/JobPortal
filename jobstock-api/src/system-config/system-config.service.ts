@@ -8,6 +8,10 @@ export const SYSTEM_CONFIG_DEFAULTS = {
   supportEmail: 'support@jobstock.com',
   maxJobPostsPerEmployer: 50,
   platformAnnouncement: '',
+  seoDefaultTitle: 'JobStock — Find Your Next Job',
+  seoDefaultDescription: 'JobStock connects verified employers with candidates through smart matching, AI-powered tools, and a streamlined hiring process.',
+  seoRobotsTxt: 'User-agent: *\nAllow: /\nSitemap: https://jobstock.chethancodehub.com/sitemap.xml',
+  seoGoogleSiteVerification: '',
 } as const;
 
 export type SystemConfigKey = keyof typeof SYSTEM_CONFIG_DEFAULTS;

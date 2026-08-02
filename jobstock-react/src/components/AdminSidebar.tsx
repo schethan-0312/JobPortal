@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 
-export type AdminSidebarActive = "dashboard" | "employers" | "employer-directory" | "reports" | "audit-log" | "financials" | "integrations" | "security" | "team" | "ai-monitoring" | "database" | "candidates" | "jobs" | "content" | "proctoring" | "support" | "system-config" | "analytics" | "search" | "background-jobs" | "legal";
+export type AdminSidebarActive = "dashboard" | "employers" | "employer-directory" | "reports" | "audit-log" | "financials" | "integrations" | "security" | "team" | "ai-monitoring" | "database" | "candidates" | "jobs" | "content" | "proctoring" | "support" | "system-config" | "analytics" | "search" | "background-jobs" | "legal" | "seo";
 
 interface AdminSidebarProps {
   active?: AdminSidebarActive;
@@ -95,6 +95,11 @@ export default function AdminSidebar({ active }: AdminSidebarProps) {
               <li className={active === "legal" ? "active" : undefined}>
                 <Link href="/admin-legal">
                   <i className="fa-solid fa-scale-balanced me-2"></i>Legal &amp; Compliance
+                </Link>
+              </li>
+              <li className={active === "seo" ? "active" : undefined}>
+                <Link href="/admin-seo">
+                  <i className="fa-solid fa-magnifying-glass-chart me-2"></i>SEO &amp; Content Control
                 </Link>
               </li>
               <li className={active === "proctoring" ? "active" : undefined}>

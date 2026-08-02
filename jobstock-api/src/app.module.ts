@@ -58,6 +58,8 @@ import { ScheduledJobsModule } from './scheduled-jobs/scheduled-jobs.module.js';
 import { AdminBackgroundJobsModule } from './admin-background-jobs/admin-background-jobs.module.js';
 import { LegalModule } from './legal/legal.module.js';
 import { AdminLegalModule } from './admin-legal/admin-legal.module.js';
+import { SeoModule } from './seo/seo.module.js';
+import { AdminSeoModule } from './admin-seo/admin-seo.module.js';
 
 @Module({
   imports: [
@@ -121,6 +123,8 @@ import { AdminLegalModule } from './admin-legal/admin-legal.module.js';
     AdminBackgroundJobsModule,
     LegalModule,
     AdminLegalModule,
+    SeoModule,
+    AdminSeoModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: LoggingThrottlerGuard }],

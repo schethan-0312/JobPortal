@@ -29,4 +29,24 @@ export class UpdateSystemConfigDto {
   @IsString()
   @MaxLength(500)
   platformAnnouncement?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  seoDefaultTitle?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  seoDefaultDescription?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  seoRobotsTxt?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  seoGoogleSiteVerification?: string;
 }
