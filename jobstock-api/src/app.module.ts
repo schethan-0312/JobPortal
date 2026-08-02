@@ -54,6 +54,8 @@ import { AdminSystemConfigModule } from './admin-system-config/admin-system-conf
 import { MaintenanceModeMiddleware } from './system-config/maintenance-mode.middleware.js';
 import { AdminAnalyticsModule } from './admin-analytics/admin-analytics.module.js';
 import { AdminSearchModule } from './admin-search/admin-search.module.js';
+import { ScheduledJobsModule } from './scheduled-jobs/scheduled-jobs.module.js';
+import { AdminBackgroundJobsModule } from './admin-background-jobs/admin-background-jobs.module.js';
 
 @Module({
   imports: [
@@ -113,6 +115,8 @@ import { AdminSearchModule } from './admin-search/admin-search.module.js';
     AdminSystemConfigModule,
     AdminAnalyticsModule,
     AdminSearchModule,
+    ScheduledJobsModule,
+    AdminBackgroundJobsModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: LoggingThrottlerGuard }],

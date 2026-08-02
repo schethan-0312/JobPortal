@@ -151,6 +151,27 @@ model AiFeatureConfig {
   updatedById  String?
 }
 
+enum JobRunStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+/// One row per execution of a scheduled background job (cron or manual
+/// trigger), so admins can see run history and diagnose failures without
+/// SSHing into the server to read pm2 logs.
+model JobRunRecord {
+  id           String       @id @default(cuid())
+  jobName      String
+  status       JobRunStatus
+  triggeredBy  String
+  detail       String?
+  startedAt    DateTime     @default(now())
+  completedAt  DateTime?
+
+  @@index([jobName, startedAt])
+}
+
 enum BackupStatus {
   RUNNING
   SUCCESS

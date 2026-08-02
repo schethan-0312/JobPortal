@@ -27,10 +27,17 @@ export class AuditLogService {
       where: { id: entry.adminId },
       select: { email: true },
     });
+    if (!admin) {
+      // adminId has a real FK to User — a system-triggered action (e.g. a
+      // scheduled job) has no corresponding row, so there's nothing valid to
+      // link. Its own run record already captures what happened; audit
+      // logging must never crash the action it's observing.
+      return null;
+    }
     return this.prisma.auditLog.create({
       data: {
         adminId: entry.adminId,
-        adminEmail: admin?.email ?? 'unknown',
+        adminEmail: admin.email,
         action: entry.action,
         targetType: entry.targetType,
         targetId: entry.targetId,

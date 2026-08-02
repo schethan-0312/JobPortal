@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 
-export type AdminSidebarActive = "dashboard" | "employers" | "employer-directory" | "reports" | "audit-log" | "financials" | "integrations" | "security" | "team" | "ai-monitoring" | "database" | "candidates" | "jobs" | "content" | "proctoring" | "support" | "system-config" | "analytics" | "search";
+export type AdminSidebarActive = "dashboard" | "employers" | "employer-directory" | "reports" | "audit-log" | "financials" | "integrations" | "security" | "team" | "ai-monitoring" | "database" | "candidates" | "jobs" | "content" | "proctoring" | "support" | "system-config" | "analytics" | "search" | "background-jobs";
 
 interface AdminSidebarProps {
   active?: AdminSidebarActive;
@@ -140,6 +140,11 @@ export default function AdminSidebar({ active }: AdminSidebarProps) {
               <li className={active === "ai-monitoring" ? "active" : undefined}>
                 <Link href="/admin-ai">
                   <i className="fa-solid fa-robot me-2"></i>AI Monitoring
+                </Link>
+              </li>
+              <li className={active === "background-jobs" ? "active" : undefined}>
+                <Link href="/admin-background-jobs">
+                  <i className="fa-solid fa-gears me-2"></i>Background Jobs
                 </Link>
               </li>
               <li className={active === "database" ? "active" : undefined}>
