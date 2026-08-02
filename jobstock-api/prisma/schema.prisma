@@ -151,6 +151,34 @@ model AiFeatureConfig {
   updatedById  String?
 }
 
+/// Admin-editable legal/compliance documents (Privacy Policy, Terms of
+/// Service, etc). Each edit bumps version and writes a
+/// LegalDocumentRevision so there's a defensible audit trail of what the
+/// document said at any point in time.
+model LegalDocument {
+  slug        String   @id
+  title       String
+  body        String
+  version     Int      @default(1)
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+
+  revisions LegalDocumentRevision[]
+}
+
+model LegalDocumentRevision {
+  id          String        @id @default(cuid())
+  slug        String
+  document    LegalDocument @relation(fields: [slug], references: [slug], onDelete: Cascade)
+  version     Int
+  title       String
+  body        String
+  updatedById String?
+  createdAt   DateTime      @default(now())
+
+  @@index([slug, version])
+}
+
 enum JobRunStatus {
   RUNNING
   SUCCESS

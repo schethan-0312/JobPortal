@@ -56,6 +56,8 @@ import { AdminAnalyticsModule } from './admin-analytics/admin-analytics.module.j
 import { AdminSearchModule } from './admin-search/admin-search.module.js';
 import { ScheduledJobsModule } from './scheduled-jobs/scheduled-jobs.module.js';
 import { AdminBackgroundJobsModule } from './admin-background-jobs/admin-background-jobs.module.js';
+import { LegalModule } from './legal/legal.module.js';
+import { AdminLegalModule } from './admin-legal/admin-legal.module.js';
 
 @Module({
   imports: [
@@ -117,6 +119,8 @@ import { AdminBackgroundJobsModule } from './admin-background-jobs/admin-backgro
     AdminSearchModule,
     ScheduledJobsModule,
     AdminBackgroundJobsModule,
+    LegalModule,
+    AdminLegalModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: LoggingThrottlerGuard }],
