@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
+import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError } from "@/lib/api";
 import { JOB_CATEGORIES } from "@/lib/job-categories";
@@ -101,12 +102,6 @@ export default function EmployerSubmitJobPage() {
   const [createdJob, setCreatedJob] = useState<CreatedJob | null>(null);
   const [boosting, setBoosting] = useState(false);
   const skillInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (!loading && (!user || user.role !== "EMPLOYER")) {
-      router.push("/");
-    }
-  }, [loading, user, router]);
 
   useEffect(() => {
     if (!user || user.role !== "EMPLOYER") return;
@@ -267,7 +262,7 @@ export default function EmployerSubmitJobPage() {
     }
   }
 
-  if (loading || !user || user.role !== "EMPLOYER") {
+  if (loading) {
     return null;
   }
 
@@ -305,6 +300,28 @@ export default function EmployerSubmitJobPage() {
           </div>
 
           <div className="dashboard-widg-bar d-block">
+            {!user ? (
+              <div className="alert alert-warning d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                <div>
+                  <i className="fa-solid fa-triangle-exclamation me-2"></i>
+                  <strong>Sign in required:</strong> You must be signed in as an employer to post a job.
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-main"
+                  data-bs-toggle="modal"
+                  data-bs-target="#login"
+                >
+                  Sign In / Register
+                </button>
+              </div>
+            ) : user.role !== "EMPLOYER" ? (
+              <div className="alert alert-warning mb-4">
+                <i className="fa-solid fa-triangle-exclamation me-2"></i>
+                <strong>Employer account required:</strong> You are signed in as a {user.role}. Please sign in with an employer account to post a job.
+              </div>
+            ) : null}
+
             {!employerLoading && notVerified && (
               <div className="alert alert-warning">
                 Your employer account status is <strong>{employer?.status}</strong>. Only VERIFIED employers can post jobs. You can still fill this form, but submitting will be rejected until verification completes.
@@ -594,6 +611,7 @@ export default function EmployerSubmitJobPage() {
           </div>
         </div>
       </div>
+      <LoginModal />
     </>
   );
 }
