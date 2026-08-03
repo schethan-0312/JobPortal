@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 
 interface PublicStats {
   totalJobs: number;
@@ -12,6 +12,9 @@ interface PublicStats {
 
 export default function Footer2() {
   const [stats, setStats] = useState<PublicStats | null>(null);
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -24,6 +27,22 @@ export default function Footer2() {
     })();
   }, []);
 
+  async function handleSubscribe(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email) return;
+
+    setStatus("submitting");
+    setErrorMsg(null);
+    try {
+      await api.post("/newsletter/subscribe", { email }, { auth: false });
+      setStatus("success");
+      setEmail("");
+    } catch (err) {
+      setStatus("error");
+      setErrorMsg(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
+    }
+  }
+
   return (
     <footer className="footer skin-light-footer">
       {/* Footer Top Start */}
@@ -32,13 +51,35 @@ export default function Footer2() {
           <div className="row align-items-center justify-content-between">
             <div className="col-xl-5 col-lg-5 col-md-5">
               <div className="call-action-form rounded m-0">
-                <form className="ms-0">
+                <form className="ms-0" onSubmit={handleSubscribe}>
                   <div className="newsltr-form gray-style">
-                    <input type="text" className="form-control" placeholder="Enter Your email" />
-                    <button type="button" className="btn btn-subscribe">
-                      Subscribe
+                    <input 
+                      type="email" 
+                      className="form-control" 
+                      placeholder="Enter Your email" 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      disabled={status === "submitting" || status === "success"}
+                    />
+                    <button 
+                      type="submit" 
+                      className="btn btn-subscribe"
+                      disabled={status === "submitting" || status === "success"}
+                    >
+                      {status === "submitting" ? "..." : status === "success" ? "Subscribed!" : "Subscribe"}
                     </button>
                   </div>
+                  {status === "success" && (
+                    <p className="text-success mt-2 mb-0" style={{ fontSize: "14px" }}>
+                      Thanks for subscribing!
+                    </p>
+                  )}
+                  {status === "error" && (
+                    <p className="text-danger mt-2 mb-0" style={{ fontSize: "14px" }}>
+                      {errorMsg}
+                    </p>
+                  )}
                 </form>
               </div>
             </div>
