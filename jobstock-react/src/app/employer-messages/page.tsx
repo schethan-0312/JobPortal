@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
 import { useAuth } from "@/lib/auth-context";
@@ -34,8 +34,17 @@ function avatarUrl(u: CounterpartUser) {
 }
 
 export default function EmployerMessagesPage() {
+  return (
+    <Suspense fallback={null}>
+      <EmployerMessagesPageInner />
+    </Suspense>
+  );
+}
+
+function EmployerMessagesPageInner() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [conversations, setConversations] = useState<ConversationMessage[]>([]);
   const [selectedCounterpart, setSelectedCounterpart] = useState<CounterpartUser | null>(null);
@@ -59,12 +68,30 @@ export default function EmployerMessagesPage() {
       try {
         const convs = await api.get<ConversationMessage[]>("/messages/conversations");
         setConversations(convs);
+
+        const candidateId = searchParams.get("candidateId");
+        if (candidateId) {
+          const existing = convs.find((c) => (c.senderId === user.userId ? c.receiver : c.sender).id === candidateId);
+          if (existing) {
+            openConversation(existing.senderId === user.userId ? existing.receiver : existing.sender);
+          } else {
+            openConversation({
+              id: candidateId,
+              email: searchParams.get("name") || "Candidate",
+              candidateProfile: {
+                fullName: searchParams.get("name") || "Candidate",
+                profilePhotoUrl: searchParams.get("photo") || null,
+              },
+            });
+          }
+        }
       } catch (err) {
         setError(err instanceof ApiError ? err.message : "Failed to load conversations");
       } finally {
         setDataLoading(false);
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   function counterpartOf(m: ConversationMessage) {

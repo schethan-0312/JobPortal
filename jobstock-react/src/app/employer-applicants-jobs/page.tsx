@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
 import { useAuth } from "@/lib/auth-context";
-import { api, ApiError, getToken } from "@/lib/api";
+import { api, ApiError, assetUrl, getToken } from "@/lib/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
+
+const STATUSES = ["APPLIED", "REVIEWED", "SHORTLISTED", "INTERVIEW", "OFFERED", "REJECTED"] as const;
 
 interface EmployerJob {
   id: string;
@@ -20,6 +22,7 @@ interface Applicant {
   coverNote: string | null;
   appliedAt: string;
   candidate: {
+    id: string;
     email: string;
     candidateProfile: {
       fullName: string;
@@ -27,9 +30,23 @@ interface Applicant {
       resumeUrl: string | null;
       skills: string[];
       location: string | null;
+      isVerified: boolean;
+      profilePhotoUrl: string | null;
+      githubUsername: string | null;
+      githubProfileUrl: string | null;
+      githubAvatarUrl: string | null;
     } | null;
   };
 }
+
+interface AiRanking {
+  applicationId: string;
+  matchScore: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+type FilterChip = "ALL" | "AI_SHORTLISTED" | "REVIEWED" | "INTERVIEW";
 
 export default function EmployerApplicantsJobsPage() {
   const { user, loading } = useAuth();
@@ -44,6 +61,10 @@ export default function EmployerApplicantsJobsPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [selectedForZip, setSelectedForZip] = useState<Set<string>>(new Set());
   const [downloadingZip, setDownloadingZip] = useState(false);
+  const [filter, setFilter] = useState<FilterChip>("ALL");
+  const [rankings, setRankings] = useState<Map<string, AiRanking>>(new Map());
+  const [rankingLoading, setRankingLoading] = useState(false);
+  const [rankingError, setRankingError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "EMPLOYER")) {
@@ -69,6 +90,8 @@ export default function EmployerApplicantsJobsPage() {
 
   useEffect(() => {
     if (!selectedJobId) return;
+    setRankings(new Map());
+    setFilter("ALL");
     (async () => {
       setApplicantsLoading(true);
       setError(null);
@@ -82,6 +105,39 @@ export default function EmployerApplicantsJobsPage() {
       }
     })();
   }, [selectedJobId]);
+
+  async function runAiRanking() {
+    if (!selectedJobId) return;
+    setRankingLoading(true);
+    setRankingError(null);
+    try {
+      const results = await api.get<AiRanking[]>(`/auto-shortlist/job/${selectedJobId}`);
+      setRankings(new Map(results.map((r) => [r.applicationId, r])));
+      setFilter("AI_SHORTLISTED");
+    } catch (err) {
+      setRankingError(err instanceof ApiError ? err.message : "AI ranking failed. Try again.");
+    } finally {
+      setRankingLoading(false);
+    }
+  }
+
+  const filteredApplicants = useMemo(() => {
+    let list = applicants;
+    if (filter === "REVIEWED") list = list.filter((a) => a.status === "REVIEWED");
+    else if (filter === "INTERVIEW") list = list.filter((a) => a.status === "INTERVIEW");
+    else if (filter === "AI_SHORTLISTED") list = list.filter((a) => (rankings.get(a.id)?.matchScore ?? 0) >= 70);
+
+    if (rankings.size > 0) {
+      list = [...list].sort((a, b) => (rankings.get(b.id)?.matchScore ?? -1) - (rankings.get(a.id)?.matchScore ?? -1));
+    }
+    return list;
+  }, [applicants, filter, rankings]);
+
+  function scoreClass(score: number) {
+    if (score >= 80) return "bg-success";
+    if (score >= 60) return "bg-warning text-dark";
+    return "bg-secondary";
+  }
 
   function toggleZipSelect(applicationId: string) {
     setSelectedForZip((prev) => {
@@ -207,6 +263,16 @@ export default function EmployerApplicantsJobsPage() {
                             <button
                               type="button"
                               className="btn btn-sm btn-outline-main"
+                              disabled={applicants.length === 0 || rankingLoading}
+                              onClick={runAiRanking}
+                              title="Rank applicants by AI-estimated fit for this job"
+                            >
+                              <i className="fa-solid fa-wand-magic-sparkles me-1"></i>
+                              {rankingLoading ? "Ranking..." : "AI Rank Applicants"}
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-outline-main"
                               disabled={applicants.length === 0 || downloadingZip}
                               onClick={downloadResumesZip}
                               title={selectedForZip.size > 0 ? `Download ${selectedForZip.size} selected resumes` : "Download all resumes for this job"}
@@ -224,14 +290,38 @@ export default function EmployerApplicantsJobsPage() {
                     </div>
                     {/* End Row */}
 
+                    {rankingError && <div className="alert alert-warning py-2">{rankingError}</div>}
+
+                    <div className="d-flex flex-wrap gap-2 mb-3">
+                      {([
+                        ["ALL", "All"],
+                        ["AI_SHORTLISTED", "AI Shortlisted"],
+                        ["REVIEWED", "Reviewed"],
+                        ["INTERVIEW", "Interview"],
+                      ] as [FilterChip, string][]).map(([key, label]) => (
+                        <button
+                          key={key}
+                          type="button"
+                          className={`btn btn-sm rounded-pill ${filter === key ? "btn-main" : "btn-outline-secondary"}`}
+                          onClick={() => setFilter(key)}
+                          disabled={key === "AI_SHORTLISTED" && rankings.size === 0}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+
                     {jobsLoading && <p className="text-muted">Loading jobs...</p>}
                     {!jobsLoading && jobs.length === 0 && <p className="text-muted">You haven&apos;t posted any jobs yet.</p>}
                     {applicantsLoading && <p className="text-muted">Loading applicants...</p>}
                     {!applicantsLoading && selectedJobId && applicants.length === 0 && <p className="text-muted">No applicants yet for this job.</p>}
+                    {!applicantsLoading && selectedJobId && applicants.length > 0 && filteredApplicants.length === 0 && (
+                      <p className="text-muted">No applicants match this filter.</p>
+                    )}
 
                     {/* Start All List */}
                     <div className="row justify-content-start gx-3 gy-4">
-                      {applicants.map((item) => (
+                      {filteredApplicants.map((item) => (
                         <div className="col-xl-12 col-lg-12 col-md-12 col-12" key={item.id}>
                           <div className="jbs-list-box border">
                             <div className="jbs-list-head m-0">
@@ -245,14 +335,44 @@ export default function EmployerApplicantsJobsPage() {
                                     aria-label={`Select ${item.candidate.candidateProfile?.fullName ?? "candidate"} for zip download`}
                                   />
                                 )}
-                                <div className="jbs-list-usrs-thumb jbs-verified">
+                                <div className="jbs-list-usrs-thumb jbs-verified position-relative">
                                   <figure>
-                                    <img src="/assets/img/team-5.jpg" className="img-fluid circle" alt="" />
+                                    <img
+                                      src={assetUrl(item.candidate.candidateProfile?.profilePhotoUrl) || "/assets/img/team-5.jpg"}
+                                      className="img-fluid circle"
+                                      alt=""
+                                    />
                                   </figure>
                                 </div>
                                 <div className="jbs-list-job-caption">
-                                  <div className="jbs-job-title-wrap">
-                                    <h4 className="jbs-job-title">{item.candidate.candidateProfile?.fullName || item.candidate.email}</h4>
+                                  <div className="jbs-job-title-wrap d-flex align-items-center gap-2">
+                                    <h4 className="jbs-job-title mb-0">{item.candidate.candidateProfile?.fullName || item.candidate.email}</h4>
+                                    {item.candidate.candidateProfile?.isVerified && (
+                                      <span className="badge bg-success bg-opacity-10 text-success" title="Skill-verified candidate">
+                                        <i className="fa-solid fa-circle-check me-1"></i>Verified
+                                      </span>
+                                    )}
+                                    {item.candidate.candidateProfile?.githubUsername && (
+                                      <a
+                                        href={item.candidate.candidateProfile.githubProfileUrl ?? "#"}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="badge bg-dark text-light text-decoration-none"
+                                        title={`GitHub: @${item.candidate.candidateProfile.githubUsername}`}
+                                      >
+                                        <i className="fa-brands fa-github me-1"></i>
+                                        {item.candidate.candidateProfile.githubUsername}
+                                      </a>
+                                    )}
+                                    {rankings.has(item.id) && (
+                                      <span
+                                        className={`badge ${scoreClass(rankings.get(item.id)!.matchScore)}`}
+                                        title={rankings.get(item.id)!.strengths.join(" · ") || "AI match score"}
+                                      >
+                                        <i className="fa-solid fa-wand-magic-sparkles me-1"></i>
+                                        {rankings.get(item.id)!.matchScore}% match
+                                      </span>
+                                    )}
                                   </div>
                                   <div className="jbs-job-mrch-lists">
                                     <div className="single-mrch-lists">
@@ -264,50 +384,39 @@ export default function EmployerApplicantsJobsPage() {
                                       <span>Applied: {new Date(item.appliedAt).toLocaleDateString()}</span>
                                     </div>
                                   </div>
-                                  <div className="mt-1">
-                                    <span className="label text-light bg-secondary">{item.status}</span>
-                                  </div>
                                 </div>
                               </div>
-                              <div className="jbs-list-head-last">
-                                <button
-                                  type="button"
-                                  className="rounded btn-md btn-main px-3 me-2"
+                              <div className="jbs-list-head-last d-flex align-items-center gap-2">
+                                <select
+                                  className="form-control form-select"
+                                  style={{ width: "auto" }}
+                                  value={item.status}
                                   disabled={updatingId === item.id}
-                                  onClick={() => updateStatus(item.id, "SHORTLISTED")}
-                                  title="Shortlist Candidate"
+                                  onChange={(e) => updateStatus(item.id, e.target.value)}
+                                  aria-label="Update applicant status"
                                 >
-                                  <i className="fa-solid fa-check-double"></i>
-                                </button>
-                                <button
-                                  type="button"
-                                  className="rounded btn-md btn-dark px-3 me-2"
-                                  disabled={updatingId === item.id}
-                                  onClick={() => updateStatus(item.id, "REVIEWED")}
-                                  title="Mark Reviewed"
+                                  {STATUSES.map((s) => (
+                                    <option key={s} value={s}>{s}</option>
+                                  ))}
+                                </select>
+                                <a
+                                  href={`/employer-messages?candidateId=${item.candidate.id}&name=${encodeURIComponent(item.candidate.candidateProfile?.fullName || item.candidate.email)}&photo=${encodeURIComponent(item.candidate.candidateProfile?.profilePhotoUrl || "")}`}
+                                  className="rounded btn-md btn-dark px-3"
+                                  title="Message Candidate"
                                 >
-                                  <i className="fa-solid fa-eye"></i>
-                                </button>
+                                  <i className="fa-solid fa-message"></i>
+                                </a>
                                 {item.candidate.candidateProfile?.resumeUrl && (
                                   <a
                                     href={item.candidate.candidateProfile.resumeUrl}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="rounded btn-md btn-dark px-3 me-2"
+                                    className="rounded btn-md btn-dark px-3"
                                     title="Download Resume"
                                   >
                                     <i className="fa-solid fa-download"></i>
                                   </a>
                                 )}
-                                <button
-                                  type="button"
-                                  className="rounded btn-md btn-red px-3"
-                                  disabled={updatingId === item.id}
-                                  onClick={() => updateStatus(item.id, "REJECTED")}
-                                  title="Reject Candidate"
-                                >
-                                  <i className="fa-solid fa-trash-can"></i>
-                                </button>
                               </div>
                             </div>
                           </div>
