@@ -110,11 +110,6 @@ export default function Navbar5() {
                       </ul>
                     </li>
                     <li>
-                      <Link href="/employer-detail/senior-developer" className="sub-menu-item">
-                        Employer Detail
-                      </Link>
-                    </li>
-                    <li>
                       <Link href="/employer-dashboard" className="sub-menu-item">
                         Employer Dashboard
                       </Link>
