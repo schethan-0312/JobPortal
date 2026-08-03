@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 interface SortingBarProps {
   total: number;
@@ -9,6 +9,7 @@ interface SortingBarProps {
 
 export default function SortingBar({ total, shown }: SortingBarProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const sortBy = searchParams.get("sortBy") ?? "newest";
   const pageSize = searchParams.get("pageSize") ?? "12";
@@ -17,7 +18,7 @@ export default function SortingBar({ total, shown }: SortingBarProps) {
     const params = new URLSearchParams(searchParams.toString());
     params.set(key, value);
     params.delete("page");
-    router.push(`/jobs?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   }
 
   return (

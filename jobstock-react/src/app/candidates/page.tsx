@@ -28,17 +28,31 @@ interface CandidatesResponse {
   pageSize: number;
 }
 
-async function getCandidates(): Promise<{ candidates: CandidateProfile[]; total: number; pageSize: number; error: string | null }> {
+async function getCandidates(params: {
+  location?: string;
+  skill?: string;
+  page?: string;
+}): Promise<{ candidates: CandidateProfile[]; total: number; pageSize: number; error: string | null }> {
   try {
-    const data = await api.get<CandidatesResponse>("/candidates", { auth: false });
+    const query = new URLSearchParams();
+    if (params.location) query.set("location", params.location);
+    if (params.skill) query.set("skill", params.skill);
+    if (params.page) query.set("page", params.page);
+    const qs = query.toString();
+    const data = await api.get<CandidatesResponse>(`/candidates${qs ? `?${qs}` : ""}`, { auth: false });
     return { candidates: data.items ?? [], total: data.total ?? 0, pageSize: data.pageSize ?? 12, error: null };
   } catch (err) {
     return { candidates: [], total: 0, pageSize: 12, error: err instanceof Error ? err.message : "Failed to load candidates" };
   }
 }
 
-export default async function CandidatesGridPage() {
-  const { candidates, total, pageSize, error } = await getCandidates();
+export default async function CandidatesGridPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  const params = await searchParams;
+  const { candidates, total, pageSize, error } = await getCandidates(params);
 
   return (
     <>
@@ -76,7 +90,7 @@ export default async function CandidatesGridPage() {
             <div className="col-xxl-3 col-xl-4 col-lg-4 col-md-12 col-sm-12">
               <div className="side-widget-blocks">
                 <Suspense fallback={null}>
-                  <JobFilters variant="simple" />
+                  <JobFilters variant="simple" mode="candidates" />
                 </Suspense>
               </div>
             </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { JOB_CATEGORIES } from "@/lib/job-categories";
 
 const workModeOptions = [
@@ -32,11 +32,21 @@ const postedOptions = [
   { value: "30", label: "Last 30 days" },
 ];
 
-export default function JobFilters({ variant = "simple" }: { variant?: "full" | "simple" }) {
+interface JobFiltersProps {
+  variant?: "full" | "simple";
+  /** Which entity this filter searches — controls which fields are shown and how the
+   *  keyword field maps to a query param, since /candidates and /employers support a
+   *  different (much smaller) filter surface than /jobs on the backend. */
+  mode?: "jobs" | "candidates" | "employers";
+}
+
+export default function JobFilters({ variant = "simple", mode = "jobs" }: JobFiltersProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [search, setSearch] = useState(searchParams.get("search") ?? "");
+  const keywordParam = mode === "candidates" ? "skill" : "search";
+  const [search, setSearch] = useState(searchParams.get(keywordParam) ?? "");
   const [location, setLocation] = useState(searchParams.get("location") ?? "");
   const category = searchParams.get("category") ?? "";
   const jobType = searchParams.get("jobType") ?? "";
@@ -52,7 +62,7 @@ export default function JobFilters({ variant = "simple" }: { variant?: "full" | 
       else params.delete(key);
     }
     params.delete("page");
-    router.push(`/jobs?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   }
 
   function toggleParam(key: string, value: string) {
@@ -61,13 +71,13 @@ export default function JobFilters({ variant = "simple" }: { variant?: "full" | 
 
   function handleKeywordSubmit(e: React.FormEvent) {
     e.preventDefault();
-    pushParams({ search, location });
+    pushParams({ [keywordParam]: search, location });
   }
 
   function clearAll() {
     setSearch("");
     setLocation("");
-    router.push("/jobs");
+    router.push(pathname);
   }
 
   const categoryList = (
@@ -294,29 +304,31 @@ export default function JobFilters({ variant = "simple" }: { variant?: "full" | 
         <form className="search-inner" onSubmit={handleKeywordSubmit}>
           <div className="side-widget-inner">
             <div className="form-group">
-              <label>Search By Keyword</label>
+              <label>{mode === "candidates" ? "Search By Skill" : "Search By Keyword"}</label>
               <div className="form-group-inner">
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="Search by keywords..."
+                  placeholder={mode === "candidates" ? "e.g. React, Python..." : "Search by keywords..."}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
             </div>
 
-            <div className="form-group">
-              <label>Job Category</label>
-              <div className="form-group-inner">
-                <select value={category} onChange={(e) => toggleParam("category", e.target.value)}>
-                  <option value="">Choose category</option>
-                  {JOB_CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
+            {mode === "jobs" && (
+              <div className="form-group">
+                <label>Job Category</label>
+                <div className="form-group-inner">
+                  <select value={category} onChange={(e) => toggleParam("category", e.target.value)}>
+                    <option value="">Choose category</option>
+                    {JOB_CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="form-group">
               <label>Location</label>
@@ -331,24 +343,28 @@ export default function JobFilters({ variant = "simple" }: { variant?: "full" | 
               </div>
             </div>
 
-            <div className="form-group">
-              <label>Experience Level</label>
-              <div className="form-group-inner">{experienceList}</div>
-            </div>
+            {mode === "jobs" && (
+              <>
+                <div className="form-group">
+                  <label>Experience Level</label>
+                  <div className="form-group-inner">{experienceList}</div>
+                </div>
 
-            <div className="form-group">
-              <label>Job Type</label>
-              <div className="form-group-inner">{jobTypeList}</div>
-            </div>
+                <div className="form-group">
+                  <label>Job Type</label>
+                  <div className="form-group-inner">{jobTypeList}</div>
+                </div>
 
-            <div className="form-group">
-              <label>Posted Date</label>
-              <div className="form-group-inner">{postedList}</div>
-            </div>
+                <div className="form-group">
+                  <label>Posted Date</label>
+                  <div className="form-group-inner">{postedList}</div>
+                </div>
+              </>
+            )}
 
             <div className="form-group mb-1">
               <button type="submit" className="btn btn-lg btn-main fs-6 fw-medium full-width">
-                Search job
+                {mode === "candidates" ? "Search Candidates" : mode === "employers" ? "Search Companies" : "Search job"}
               </button>
             </div>
           </div>
