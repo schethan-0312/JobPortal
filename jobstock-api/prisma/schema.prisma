@@ -380,6 +380,12 @@ model CandidateProfile {
   githubAvatarUrl  String?
   linkedinProfileUrl String?
 
+  /// Structured work-history/education entries for the profile timeline.
+  /// Kept as JSON rather than separate relational tables since these are
+  /// simple ordered lists with no cross-references elsewhere in the schema.
+  experienceEntries Json?
+  educationEntries  Json?
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

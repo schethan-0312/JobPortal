@@ -1,4 +1,5 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { UpdateCandidateProfileDto } from './dto/update-candidate-profile.dto.js';
 import { CreateJobAlertDto } from './dto/create-job-alert.dto.js';
@@ -22,6 +23,8 @@ const PUBLIC_CANDIDATE_SELECT = {
   githubProfileUrl: true,
   githubAvatarUrl: true,
   linkedinProfileUrl: true,
+  experienceEntries: true,
+  educationEntries: true,
   createdAt: true,
 } as const;
 
@@ -52,7 +55,10 @@ export class CandidatesService {
     if (!profile) {
       throw new NotFoundException('Candidate profile not found');
     }
-    return this.prisma.candidateProfile.update({ where: { userId }, data: dto });
+    return this.prisma.candidateProfile.update({
+      where: { userId },
+      data: dto as unknown as Prisma.CandidateProfileUpdateInput,
+    });
   }
 
   async listPublic(params: { location?: string; skill?: string; page: number; pageSize: number }) {
