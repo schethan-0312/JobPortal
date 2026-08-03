@@ -71,7 +71,9 @@ export class AutoShortlistService {
     const userPrompt = `Job title: ${job.title}
 Job category: ${job.category}
 Job location: ${job.location}
+Required skills: ${job.requiredSkills.length > 0 ? job.requiredSkills.join(', ') : 'Not specified — infer from description'}
 Job description: ${job.description}
+${job.requirements ? `Requirements: ${job.requirements}` : ''}
 
 Applicants (JSON):
 ${JSON.stringify(applicantsForPrompt)}`;

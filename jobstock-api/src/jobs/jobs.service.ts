@@ -31,6 +31,8 @@ export class JobsService {
       throw new ForbiddenException('salaryMin cannot be greater than salaryMax');
     }
 
+    const locations = dto.locations && dto.locations.length > 0 ? dto.locations : [dto.location];
+
     const job = await this.prisma.job.create({
       data: {
         employerId: employer.id,
@@ -38,10 +40,24 @@ export class JobsService {
         slug: this.slugify(dto.title),
         description: dto.description,
         category: dto.category,
-        location: dto.location,
+        location: locations[0],
         jobType: dto.jobType,
         salaryMin: dto.salaryMin,
         salaryMax: dto.salaryMax,
+        department: dto.department,
+        workMode: dto.workMode,
+        experienceMin: dto.experienceMin,
+        experienceMax: dto.experienceMax,
+        openings: dto.openings,
+        salaryVisible: dto.salaryVisible ?? true,
+        salaryType: dto.salaryType,
+        locations,
+        requiredSkills: dto.requiredSkills ?? [],
+        requirements: dto.requirements,
+        niceToHave: dto.niceToHave,
+        benefits: dto.benefits,
+        screeningQuestions: dto.screeningQuestions ?? [],
+        applicationDeadline: dto.applicationDeadline ? new Date(dto.applicationDeadline) : undefined,
       },
     });
 
@@ -81,7 +97,7 @@ export class JobsService {
         include: { employer: { select: { id: true, companyName: true, logoUrl: true, status: true } } },
         skip: (params.page - 1) * params.pageSize,
         take: params.pageSize,
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
       }),
       this.prisma.job.count({ where }),
     ]);

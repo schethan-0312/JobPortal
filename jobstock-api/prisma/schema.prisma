@@ -266,6 +266,7 @@ enum PackageAudience {
   CANDIDATE
   EMPLOYER
   RESUME
+  JOB_BOOST
 }
 
 enum OrderStatus {
@@ -281,6 +282,17 @@ enum JobType {
   CONTRACT
   FREELANCE
   INTERNSHIP
+}
+
+enum WorkMode {
+  REMOTE
+  HYBRID
+  ONSITE
+}
+
+enum SalaryType {
+  MONTHLY
+  ANNUAL
 }
 
 // ---------- Core identity ----------
@@ -531,12 +543,33 @@ model Job {
   jobType      JobType
   status       JobStatus @default(OPEN)
 
+  department        String?
+  workMode          WorkMode?
+  experienceMin     Int?
+  experienceMax     Int?
+  openings          Int       @default(1)
+  salaryVisible     Boolean   @default(true)
+  salaryType        SalaryType @default(ANNUAL)
+  /// Full set of locations this job is open in; `location` above stays in
+  /// sync with locations[0] so existing filter/search code keeps working
+  /// unchanged.
+  locations         String[]  @default([])
+  requiredSkills    String[]  @default([])
+  requirements      String?
+  niceToHave        String?
+  benefits          String?
+  screeningQuestions String[] @default([])
+  applicationDeadline DateTime?
+  isFeatured        Boolean   @default(false)
+  featuredUntil     DateTime?
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   applications Application[]
   savedBy      SavedJob[]
   reports      Report[] @relation("ReportedJob")
+  boostOrders  Order[]
 
   @@index([status])
   @@index([category])
@@ -644,6 +677,9 @@ model Order {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   packageId   String
   package     Package  @relation(fields: [packageId], references: [id])
+  /// Only set for JOB_BOOST orders — which job gets featured once paid.
+  jobId       String?
+  job         Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
   amountInPaisa Int
   status      OrderStatus @default(PENDING)
   gatewayRef  String?

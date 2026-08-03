@@ -16,12 +16,26 @@ interface Job {
   title: string;
   slug: string;
   description?: string;
+  requirements?: string | null;
+  niceToHave?: string | null;
+  benefits?: string | null;
   category?: string;
   location?: string;
+  locations?: string[];
   salaryMin?: number | null;
   salaryMax?: number | null;
+  salaryVisible?: boolean;
+  salaryType?: "MONTHLY" | "ANNUAL";
   jobType?: string;
   status?: string;
+  department?: string | null;
+  workMode?: "REMOTE" | "HYBRID" | "ONSITE" | null;
+  experienceMin?: number | null;
+  experienceMax?: number | null;
+  openings?: number;
+  requiredSkills?: string[];
+  applicationDeadline?: string | null;
+  isFeatured?: boolean;
   employer?: Employer;
 }
 
@@ -38,10 +52,15 @@ async function getJob(slug: string): Promise<{ job: Job | null; error: string | 
 }
 
 function formatSalary(job: Job) {
-  if (job.salaryMin && job.salaryMax) return `$${job.salaryMin}-${job.salaryMax}/month`;
-  if (job.salaryMin) return `$${job.salaryMin}/month`;
+  if (job.salaryVisible === false) return "Not disclosed";
+  const suffix = job.salaryType === "MONTHLY" ? "/month" : "/year";
+  const fmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+  if (job.salaryMin && job.salaryMax) return `${fmt(job.salaryMin)} - ${fmt(job.salaryMax)}${suffix}`;
+  if (job.salaryMin) return `${fmt(job.salaryMin)}${suffix}`;
   return "Not disclosed";
 }
+
+const workModeLabels: Record<string, string> = { REMOTE: "Remote", HYBRID: "Hybrid", ONSITE: "On-site" };
 
 export default async function JobDetailPage({
   params,
@@ -86,8 +105,10 @@ export default async function JobDetailPage({
                             </div>
                           </div>
                           <div className="jbs-roots-y1-last">
-                            <div className="jbs-urt">
+                            <div className="jbs-urt d-flex gap-2 flex-wrap">
                               <span className="label text-main bg-light-main">{job.jobType ?? "—"}</span>
+                              {job.isFeatured && <span className="label text-white bg-warning">★ Featured</span>}
+                              {job.department && <span className="label text-muted bg-light">{job.department}</span>}
                             </div>
                             <div className="jbs-title-iop">
                               <h2 className="m-0">{job.title}</h2>
@@ -95,8 +116,14 @@ export default async function JobDetailPage({
                             <div className="jbs-locat-oiu text-sm-muted">
                               <span>
                                 <i className="fa-solid fa-location-dot me-1"></i>
-                                {job.location ?? "—"}
+                                {job.locations && job.locations.length > 0 ? job.locations.join(", ") : job.location ?? "—"}
                               </span>
+                              {job.workMode && (
+                                <span className="ms-3">
+                                  <i className="fa-solid fa-building me-1"></i>
+                                  {workModeLabels[job.workMode]}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -141,6 +168,36 @@ export default async function JobDetailPage({
                           </div>
                           <div className="signle-jbs-info-yelos">
                             <div className="signle-yelos-subtitle">
+                              <span className="text-sm-muted mb-1">Experience</span>
+                            </div>
+                            <div className="signle-yelos-title">
+                              <h6 className="m-0 text-main">
+                                {job.experienceMin != null || job.experienceMax != null
+                                  ? `${job.experienceMin ?? 0}-${job.experienceMax ?? job.experienceMin} yrs`
+                                  : "—"}
+                              </h6>
+                            </div>
+                          </div>
+                          <div className="signle-jbs-info-yelos">
+                            <div className="signle-yelos-subtitle">
+                              <span className="text-sm-muted mb-1">Openings</span>
+                            </div>
+                            <div className="signle-yelos-title">
+                              <h6 className="m-0 text-main">{job.openings ?? 1}</h6>
+                            </div>
+                          </div>
+                          <div className="signle-jbs-info-yelos">
+                            <div className="signle-yelos-subtitle">
+                              <span className="text-sm-muted mb-1">Deadline</span>
+                            </div>
+                            <div className="signle-yelos-title">
+                              <h6 className="m-0 text-main">
+                                {job.applicationDeadline ? new Date(job.applicationDeadline).toLocaleDateString() : "Open"}
+                              </h6>
+                            </div>
+                          </div>
+                          <div className="signle-jbs-info-yelos">
+                            <div className="signle-yelos-subtitle">
                               <span className="text-sm-muted mb-1">Status</span>
                             </div>
                             <div className="signle-yelos-title">
@@ -161,6 +218,38 @@ export default async function JobDetailPage({
                               <h6>Job Description</h6>
                               <p style={{ whiteSpace: "pre-wrap" }}>{job.description ?? "No description provided."}</p>
                             </div>
+
+                            {job.requirements && (
+                              <div className="jbs-content mt-4">
+                                <h6>Requirements</h6>
+                                <p style={{ whiteSpace: "pre-wrap" }}>{job.requirements}</p>
+                              </div>
+                            )}
+
+                            {job.niceToHave && (
+                              <div className="jbs-content mt-4">
+                                <h6>Nice to Have</h6>
+                                <p style={{ whiteSpace: "pre-wrap" }}>{job.niceToHave}</p>
+                              </div>
+                            )}
+
+                            {job.benefits && (
+                              <div className="jbs-content mt-4">
+                                <h6>Benefits &amp; Perks</h6>
+                                <p style={{ whiteSpace: "pre-wrap" }}>{job.benefits}</p>
+                              </div>
+                            )}
+
+                            {job.requiredSkills && job.requiredSkills.length > 0 && (
+                              <div className="jbs-content mt-4">
+                                <h6>Required Skills</h6>
+                                <div className="d-flex flex-wrap gap-2">
+                                  {job.requiredSkills.map((skill) => (
+                                    <span key={skill} className="badge bg-main-subtle text-main border border-main">{skill}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
