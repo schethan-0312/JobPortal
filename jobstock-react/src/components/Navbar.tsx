@@ -35,7 +35,12 @@ export default function Navbar() {
                 </li>
                 <li>
                   <Link href="/employers" className="sub-menu-item">
-                    Employers
+                    Browse Companies
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/signup?role=EMPLOYER" className="sub-menu-item">
+                    Post a Job
                   </Link>
                 </li>
                 <li>
