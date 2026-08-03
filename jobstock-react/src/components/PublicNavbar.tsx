@@ -1,15 +1,25 @@
 import Link from "next/link";
 import AuthMenu from "./AuthMenu";
 
-export default function Navbar6() {
+/**
+ * The single navbar used across every public-facing page (logged-out or
+ * browsing-as-visitor). Previously this was three near-identical copies
+ * (Navbar2/Navbar5/Navbar6, differing only in header background/logo) plus a
+ * completely different flat navbar used only on the homepage — so the top
+ * nav visibly changed shape and links depending which page you were on.
+ * Consolidated into one component so every public page looks and behaves
+ * identically. Logged-in dashboard chrome (Navbar7 candidate, Navbar8
+ * employer) is intentionally separate — different context, sidebar layout.
+ */
+export default function PublicNavbar() {
   return (
     <>
-      <div className="header header-dark head-fixed">
-        <div className="container-fluid">
+      <div className="header header-light">
+        <div className="container">
           <nav id="navigation" className="navigation navigation-landscape">
             <div className="nav-header">
               <Link className="nav-brand" href="/">
-                <img src="/assets/img/logo-light.png" className="logo" alt="JobStock" />
+                <img src="/assets/img/logo.png" className="logo" alt="JobStock" />
               </Link>
               <div className="nav-toggle"></div>
               <div className="mobile_nav">
@@ -17,8 +27,8 @@ export default function Navbar6() {
                   <li className="list-buttons">
                     <a href="#" data-bs-toggle="modal" data-bs-target="#login">
                       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path opacity="0.3" d="M22 12C22 17.5 17.5 22 12 22C6.5 22 2 17.5 2 12C2 6.5 6.5 2 12 2C17.5 2 22 6.5 22 12ZM12 7C10.3 7 9 8.3 9 10C9 11.7 10.3 13 12 13C13.7 13 15 11.7 15 10C15 8.3 13.7 7 12 7Z" className="fill-white" />
-                        <path d="M12 22C14.6 22 17 21 18.7 19.4C17.9 16.9 15.2 15 12 15C8.8 15 6.09999 16.9 5.29999 19.4C6.99999 21 9.4 22 12 22Z" className="fill-white" />
+                        <path opacity="0.3" d="M22 12C22 17.5 17.5 22 12 22C6.5 22 2 17.5 2 12C2 6.5 6.5 2 12 2C17.5 2 22 6.5 22 12ZM12 7C10.3 7 9 8.3 9 10C9 11.7 10.3 13 12 13C13.7 13 15 11.7 15 10C15 8.3 13.7 7 12 7Z" className="fill-main" />
+                        <path d="M12 22C14.6 22 17 21 18.7 19.4C17.9 16.9 15.2 15 12 15C8.8 15 6.09999 16.9 5.29999 19.4C6.99999 21 9.4 22 12 22Z" className="fill-main" />
                       </svg>
                     </a>
                   </li>
@@ -62,17 +72,10 @@ export default function Navbar6() {
                         </li>
                       </ul>
                     </li>
-                    <li className="parent-menu-item">
-                      <a href="#">
-                        Browse Candidate<span className="submenu-indicator"></span>
-                      </a>
-                      <ul className="nav-dropdown nav-submenu">
-                        <li>
-                          <Link href="/candidates" className="sub-menu-item">
-                            Candidates
-                          </Link>
-                        </li>
-                      </ul>
+                    <li>
+                      <Link href="/employers" className="sub-menu-item">
+                        Browse Companies
+                      </Link>
                     </li>
                     <li>
                       <Link href="/candidate-dashboard" className="sub-menu-item">
@@ -87,17 +90,15 @@ export default function Navbar6() {
                     For Employer<span className="submenu-indicator"></span>
                   </a>
                   <ul className="nav-dropdown nav-submenu">
-                    <li className="parent-menu-item">
-                      <a href="#">
-                        Explore Employers<span className="submenu-indicator"></span>
-                      </a>
-                      <ul className="nav-dropdown nav-submenu">
-                        <li>
-                          <Link href="/employers" className="sub-menu-item">
-                            Employers
-                          </Link>
-                        </li>
-                      </ul>
+                    <li>
+                      <Link href="/candidates" className="sub-menu-item">
+                        Browse Candidates
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/signup?role=EMPLOYER" className="sub-menu-item">
+                        Post a Job
+                      </Link>
                     </li>
                     <li>
                       <Link href="/employer-dashboard" className="sub-menu-item">

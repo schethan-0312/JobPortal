@@ -1,4 +1,4 @@
-import Navbar2 from "@/components/Navbar2";
+import PublicNavbar from "@/components/PublicNavbar";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
 import { api, ApiError } from "@/lib/api";
@@ -34,7 +34,7 @@ export default async function BlogDetailPage({
   if (!post) {
     return (
       <>
-        <Navbar2 />
+        <PublicNavbar />
         <section className="gray-simple">
           <div className="container py-5 text-center">
             <h3>Post not found</h3>
@@ -56,7 +56,7 @@ export default async function BlogDetailPage({
 
   return (
     <>
-      <Navbar2 />
+      <PublicNavbar />
 
       {/* Page Title Start */}
       <div className="page-bg">

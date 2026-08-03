@@ -2,7 +2,7 @@
 
 import { Suspense, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Navbar2 from "@/components/Navbar2";
+import PublicNavbar from "@/components/PublicNavbar";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/lib/auth-context";
@@ -86,7 +86,7 @@ function SignupPageInner() {
 
   return (
     <>
-      <Navbar2 />
+      <PublicNavbar />
 
       {/* Login Form Start */}
       <section className="gray-simple ">

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import Navbar6 from "@/components/Navbar6";
+import PublicNavbar from "@/components/PublicNavbar";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
 import JobFilters from "@/components/jobs/JobFilters";
@@ -55,7 +55,7 @@ export default async function EmployersGridPage({
 
   return (
     <>
-      <Navbar6 />
+      <PublicNavbar />
 
       {/* Page Title Start */}
       <div className="page-title bg-main" style={{ background: "url(/assets/img/bg2.png) no-repeat" }}>

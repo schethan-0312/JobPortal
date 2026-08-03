@@ -1,4 +1,4 @@
-import Navbar2 from "@/components/Navbar2";
+import PublicNavbar from "@/components/PublicNavbar";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
 import RecordProfileView from "@/components/RecordProfileView";
@@ -41,7 +41,7 @@ export default async function CandidateDetailPage({
 
   return (
     <>
-      <Navbar2 />
+      <PublicNavbar />
       {candidate && <RecordProfileView candidateId={candidate.id} />}
 
       {/* Header Information Start */}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Navbar2 from "@/components/Navbar2";
+import PublicNavbar from "@/components/PublicNavbar";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/lib/auth-context";
@@ -75,7 +75,7 @@ export default function PricingPage() {
 
   return (
     <>
-      <Navbar2 />
+      <PublicNavbar />
 
       <div className="page-title bg-main" style={{ background: "url(/assets/img/bg2.png) no-repeat" }}>
         <div className="container">

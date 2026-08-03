@@ -1,4 +1,4 @@
-import Navbar2 from "@/components/Navbar2";
+import PublicNavbar from "@/components/PublicNavbar";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
 import ApplyBox from "@/components/jobs/ApplyBox";
@@ -72,7 +72,7 @@ export default async function JobDetailPage({
 
   return (
     <>
-      <Navbar2 />
+      <PublicNavbar />
 
       {/* Job Detail */}
       <section className="gray-simple py-5">
