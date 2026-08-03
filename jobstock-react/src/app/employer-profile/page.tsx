@@ -19,6 +19,10 @@ interface EmployerProfile {
   status: string;
   cultureBlurb: string | null;
   photos: string[];
+  gstCertificateUrl: string | null;
+  incorporationCertUrl: string | null;
+  signatoryIdUrl: string | null;
+  documentsSubmittedAt: string | null;
 }
 
 export default function EmployerProfilePage() {
@@ -42,6 +46,11 @@ export default function EmployerProfilePage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [uploadingCulturePhoto, setUploadingCulturePhoto] = useState(false);
   const culturePhotoInputRef = useRef<HTMLInputElement>(null);
+
+  const [uploadingDoc, setUploadingDoc] = useState<"gst" | "incorporation" | "signatory" | null>(null);
+  const gstInputRef = useRef<HTMLInputElement>(null);
+  const incorporationInputRef = useRef<HTMLInputElement>(null);
+  const signatoryInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "EMPLOYER")) {
@@ -144,6 +153,28 @@ export default function EmployerProfilePage() {
     } finally {
       setUploadingPhoto(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function handleDocumentUpload(
+    kind: "gst" | "incorporation" | "signatory",
+    field: "gstCertificateUrl" | "incorporationCertUrl" | "signatoryIdUrl",
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingDoc(kind);
+    setError(null);
+    try {
+      const { url } = await uploadFile<{ url: string }>("/uploads/document", file);
+      const updated = await api.patch<EmployerProfile>("/employers/me", { [field]: url });
+      setProfile(updated);
+      setSuccess("Document uploaded. It will be reviewed by an admin.");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to upload document");
+    } finally {
+      setUploadingDoc(null);
+      e.target.value = "";
     }
   }
 
@@ -293,6 +324,70 @@ export default function EmployerProfilePage() {
                       </div>
                     </div>
                   </div>
+              </div>
+            </div>
+            {/* Card Row End */}
+
+            {/* Card Row */}
+            <div className="card">
+              <div className="card-header">
+                <div>
+                  <h4>Verification Documents</h4>
+                  <p className="text-muted mb-0 mt-1">
+                    Upload these so an admin can verify your company before your job posts go live. PDF or Word, up to 10MB each.
+                  </p>
+                </div>
+              </div>
+              <div className="card-body">
+                <div className="row g-3">
+                  <div className="col-md-4">
+                    <label className="d-block mb-1">GST Certificate</label>
+                    {profile?.gstCertificateUrl ? (
+                      <a href={assetUrl(profile.gstCertificateUrl) ?? "#"} target="_blank" rel="noreferrer" className="d-block small mb-2 text-success">
+                        <i className="fa-solid fa-circle-check me-1"></i>Uploaded — view file
+                      </a>
+                    ) : (
+                      <p className="small text-muted mb-2">Not uploaded yet.</p>
+                    )}
+                    <button type="button" className="btn btn-sm btn-outline-main" disabled={uploadingDoc === "gst"} onClick={() => gstInputRef.current?.click()}>
+                      {uploadingDoc === "gst" ? "Uploading..." : profile?.gstCertificateUrl ? "Replace" : "Upload"}
+                    </button>
+                    <input ref={gstInputRef} type="file" accept=".pdf,.doc,.docx" onChange={(e) => handleDocumentUpload("gst", "gstCertificateUrl", e)} hidden />
+                  </div>
+                  <div className="col-md-4">
+                    <label className="d-block mb-1">Incorporation Certificate</label>
+                    {profile?.incorporationCertUrl ? (
+                      <a href={assetUrl(profile.incorporationCertUrl) ?? "#"} target="_blank" rel="noreferrer" className="d-block small mb-2 text-success">
+                        <i className="fa-solid fa-circle-check me-1"></i>Uploaded — view file
+                      </a>
+                    ) : (
+                      <p className="small text-muted mb-2">Not uploaded yet.</p>
+                    )}
+                    <button type="button" className="btn btn-sm btn-outline-main" disabled={uploadingDoc === "incorporation"} onClick={() => incorporationInputRef.current?.click()}>
+                      {uploadingDoc === "incorporation" ? "Uploading..." : profile?.incorporationCertUrl ? "Replace" : "Upload"}
+                    </button>
+                    <input ref={incorporationInputRef} type="file" accept=".pdf,.doc,.docx" onChange={(e) => handleDocumentUpload("incorporation", "incorporationCertUrl", e)} hidden />
+                  </div>
+                  <div className="col-md-4">
+                    <label className="d-block mb-1">Authorized Signatory ID</label>
+                    {profile?.signatoryIdUrl ? (
+                      <a href={assetUrl(profile.signatoryIdUrl) ?? "#"} target="_blank" rel="noreferrer" className="d-block small mb-2 text-success">
+                        <i className="fa-solid fa-circle-check me-1"></i>Uploaded — view file
+                      </a>
+                    ) : (
+                      <p className="small text-muted mb-2">Not uploaded yet.</p>
+                    )}
+                    <button type="button" className="btn btn-sm btn-outline-main" disabled={uploadingDoc === "signatory"} onClick={() => signatoryInputRef.current?.click()}>
+                      {uploadingDoc === "signatory" ? "Uploading..." : profile?.signatoryIdUrl ? "Replace" : "Upload"}
+                    </button>
+                    <input ref={signatoryInputRef} type="file" accept=".pdf,.doc,.docx" onChange={(e) => handleDocumentUpload("signatory", "signatoryIdUrl", e)} hidden />
+                  </div>
+                </div>
+                {profile?.documentsSubmittedAt && (
+                  <p className="small text-muted mt-3 mb-0">
+                    Last submitted: {new Date(profile.documentsSubmittedAt).toLocaleString()}
+                  </p>
+                )}
               </div>
             </div>
             {/* Card Row End */}

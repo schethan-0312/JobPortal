@@ -19,6 +19,10 @@ interface PendingEmployer {
   status: string;
   createdAt: string;
   user: { email: string; createdAt: string };
+  gstCertificateUrl: string | null;
+  incorporationCertUrl: string | null;
+  signatoryIdUrl: string | null;
+  documentsSubmittedAt: string | null;
 }
 
 export default function AdminEmployersPage() {
@@ -147,6 +151,29 @@ export default function AdminEmployersPage() {
                                     </div>
                                   </div>
                                   {emp.description && <p className="text-muted mb-0 mt-2">{emp.description}</p>}
+                                  <div className="d-flex flex-wrap gap-2 mt-2">
+                                    {emp.gstCertificateUrl ? (
+                                      <a href={assetUrl(emp.gstCertificateUrl) ?? "#"} target="_blank" rel="noreferrer" className="badge bg-success text-decoration-none">
+                                        <i className="fa-solid fa-file-lines me-1"></i>GST Certificate
+                                      </a>
+                                    ) : (
+                                      <span className="badge bg-secondary">No GST Certificate</span>
+                                    )}
+                                    {emp.incorporationCertUrl ? (
+                                      <a href={assetUrl(emp.incorporationCertUrl) ?? "#"} target="_blank" rel="noreferrer" className="badge bg-success text-decoration-none">
+                                        <i className="fa-solid fa-file-lines me-1"></i>Incorporation Certificate
+                                      </a>
+                                    ) : (
+                                      <span className="badge bg-secondary">No Incorporation Certificate</span>
+                                    )}
+                                    {emp.signatoryIdUrl ? (
+                                      <a href={assetUrl(emp.signatoryIdUrl) ?? "#"} target="_blank" rel="noreferrer" className="badge bg-success text-decoration-none">
+                                        <i className="fa-solid fa-file-lines me-1"></i>Signatory ID
+                                      </a>
+                                    ) : (
+                                      <span className="badge bg-secondary">No Signatory ID</span>
+                                    )}
+                                  </div>
                                   <input
                                     type="text"
                                     className="form-control form-control-sm mt-2"

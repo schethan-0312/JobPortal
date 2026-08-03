@@ -35,7 +35,11 @@ export class EmployersService {
     if (!employer) {
       throw new NotFoundException('Employer profile not found');
     }
-    return this.prisma.employer.update({ where: { userId }, data: dto });
+    const submittedNewDocument = Boolean(dto.gstCertificateUrl || dto.incorporationCertUrl || dto.signatoryIdUrl);
+    return this.prisma.employer.update({
+      where: { userId },
+      data: { ...dto, ...(submittedNewDocument ? { documentsSubmittedAt: new Date() } : {}) },
+    });
   }
 
   async listVerified(params: { location?: string; search?: string; page: number; pageSize: number }) {

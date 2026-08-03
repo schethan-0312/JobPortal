@@ -41,4 +41,19 @@ export class UpdateEmployerDto {
   @IsString({ each: true })
   @Matches(/^(https?:\/\/|\/uploads\/)/, { each: true, message: 'each photo must be a valid URL or an uploaded file path' })
   photos?: string[];
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^(https?:\/\/|\/uploads\/)/, { message: 'gstCertificateUrl must be a valid URL or an uploaded file path' })
+  gstCertificateUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^(https?:\/\/|\/uploads\/)/, { message: 'incorporationCertUrl must be a valid URL or an uploaded file path' })
+  incorporationCertUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^(https?:\/\/|\/uploads\/)/, { message: 'signatoryIdUrl must be a valid URL or an uploaded file path' })
+  signatoryIdUrl?: string;
 }

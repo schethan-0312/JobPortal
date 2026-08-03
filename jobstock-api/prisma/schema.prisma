@@ -468,6 +468,14 @@ model Employer {
   verifiedAt   DateTime?
   verifiedById String?
 
+  /// Verification documents an employer submits for admin review. Stored as
+  /// uploaded file paths (via the existing /uploads/document endpoint), not
+  /// raw text — admin looks at the actual document, not a typed claim.
+  gstCertificateUrl     String?
+  incorporationCertUrl  String?
+  signatoryIdUrl        String?
+  documentsSubmittedAt  DateTime?
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

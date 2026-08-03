@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import AdminNavbar from "@/components/AdminNavbar";
 import AdminSidebar from "@/components/AdminSidebar";
 import { useAuth } from "@/lib/auth-context";
-import { api, ApiError } from "@/lib/api";
+import { api, ApiError, assetUrl } from "@/lib/api";
 
 interface JobSummary {
   id: string;
@@ -45,6 +45,10 @@ interface EmployerDetail {
   messageCount: number;
   verificationHistory: VerificationHistoryEntry[];
   activePackage: { package: { name: string } } | null;
+  gstCertificateUrl: string | null;
+  incorporationCertUrl: string | null;
+  signatoryIdUrl: string | null;
+  documentsSubmittedAt: string | null;
 }
 
 function formatMoney(paisa: number) {
@@ -180,6 +184,40 @@ export default function AdminEmployerDetailPage() {
                     <p className="mb-1"><strong>Industry:</strong> {detail.industry ?? "—"}</p>
                     <p className="mb-1"><strong>Subscription:</strong> {detail.activePackage?.package.name ?? "None"}</p>
                     <p className="mb-0"><strong>Description:</strong> {detail.description ?? "—"}</p>
+                  </div>
+                </div>
+
+                <div className="card mb-4">
+                  <div className="card-header"><h6 className="mb-0">Verification Documents</h6></div>
+                  <div className="card-body">
+                    <div className="d-flex flex-wrap gap-2">
+                      {detail.gstCertificateUrl ? (
+                        <a href={assetUrl(detail.gstCertificateUrl) ?? "#"} target="_blank" rel="noreferrer" className="badge bg-success text-decoration-none">
+                          <i className="fa-solid fa-file-lines me-1"></i>GST Certificate
+                        </a>
+                      ) : (
+                        <span className="badge bg-secondary">No GST Certificate</span>
+                      )}
+                      {detail.incorporationCertUrl ? (
+                        <a href={assetUrl(detail.incorporationCertUrl) ?? "#"} target="_blank" rel="noreferrer" className="badge bg-success text-decoration-none">
+                          <i className="fa-solid fa-file-lines me-1"></i>Incorporation Certificate
+                        </a>
+                      ) : (
+                        <span className="badge bg-secondary">No Incorporation Certificate</span>
+                      )}
+                      {detail.signatoryIdUrl ? (
+                        <a href={assetUrl(detail.signatoryIdUrl) ?? "#"} target="_blank" rel="noreferrer" className="badge bg-success text-decoration-none">
+                          <i className="fa-solid fa-file-lines me-1"></i>Signatory ID
+                        </a>
+                      ) : (
+                        <span className="badge bg-secondary">No Signatory ID</span>
+                      )}
+                    </div>
+                    {detail.documentsSubmittedAt && (
+                      <p className="small text-muted mt-2 mb-0">
+                        Last submitted: {new Date(detail.documentsSubmittedAt).toLocaleString()}
+                      </p>
+                    )}
                   </div>
                 </div>
 
