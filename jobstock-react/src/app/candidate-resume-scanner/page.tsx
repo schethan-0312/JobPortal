@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar7 from "@/components/Navbar7";
 import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar";
+import LoginModal from "@/components/LoginModal";
 import UploadResumeModal from "@/components/candidate-dashboard/UploadResumeModal";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError } from "@/lib/api";
@@ -66,13 +67,7 @@ export default function CandidateResumeScannerPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [result, setResult] = useState<ResumeScanResult | null>(null);
 
-  useEffect(() => {
-    if (!loading && (!user || user.role !== "CANDIDATE")) {
-      router.push("/");
-    }
-  }, [loading, user, router]);
-
-  if (loading || !user || user.role !== "CANDIDATE") {
+  if (loading) {
     return null;
   }
 
@@ -122,6 +117,28 @@ export default function CandidateResumeScannerPage() {
           </div>
 
           <div className="dashboard-widg-bar d-block">
+            {!user ? (
+              <div className="alert alert-warning d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                <div>
+                  <i className="fa-solid fa-triangle-exclamation me-2"></i>
+                  <strong>Sign in required:</strong> You must be signed in as a candidate to scan your resume.
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-main"
+                  data-bs-toggle="modal"
+                  data-bs-target="#login"
+                >
+                  Sign In / Register
+                </button>
+              </div>
+            ) : user.role !== "CANDIDATE" ? (
+              <div className="alert alert-warning mb-4">
+                <i className="fa-solid fa-triangle-exclamation me-2"></i>
+                <strong>Candidate account required:</strong> You are signed in as an {user.role}. Please sign in with a candidate account to scan your resume.
+              </div>
+            ) : null}
+
             <div className="card mb-4">
               <div className="card-header">
                 <h4>Paste Your Resume Text</h4>
@@ -285,6 +302,7 @@ export default function CandidateResumeScannerPage() {
       </div>
 
       <UploadResumeModal />
+      <LoginModal />
     </>
   );
 }
