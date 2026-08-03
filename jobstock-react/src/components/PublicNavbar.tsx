@@ -37,17 +37,10 @@ export default function PublicNavbar() {
             </div>
             <div className="nav-menus-wrapper">
               <ul className="nav-menu">
-                <li className="parent-parent-menu-item">
-                  <a href="#" className="home-link">
-                    Home<span className="submenu-indicator"></span>
-                  </a>
-                  <ul className="nav-dropdown nav-submenu">
-                    <li>
-                      <Link href="/" className="sub-menu-item">
-                        Home
-                      </Link>
-                    </li>
-                  </ul>
+                <li>
+                  <Link href="/" className="sub-menu-item">
+                    Home
+                  </Link>
                 </li>
 
                 <li className="parent-parent-menu-item">
@@ -55,22 +48,10 @@ export default function PublicNavbar() {
                     For Candidate<span className="submenu-indicator"></span>
                   </a>
                   <ul className="nav-dropdown nav-submenu">
-                    <li className="parent-menu-item">
-                      <a href="#">
-                        Browse Jobs<span className="submenu-indicator"></span>
-                      </a>
-                      <ul className="nav-dropdown nav-submenu">
-                        <li>
-                          <Link href="/jobs" className="sub-menu-item">
-                            Jobs
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/jobs/list" className="sub-menu-item">
-                            Job List
-                          </Link>
-                        </li>
-                      </ul>
+                    <li>
+                      <Link href="/jobs" className="sub-menu-item">
+                        Browse Jobs
+                      </Link>
                     </li>
                     <li>
                       <Link href="/employers" className="sub-menu-item">
