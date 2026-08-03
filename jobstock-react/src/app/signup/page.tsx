@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Navbar2 from "@/components/Navbar2";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
@@ -9,13 +9,24 @@ import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api";
 
 export default function SignupPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignupPageInner />
+    </Suspense>
+  );
+}
+
+function SignupPageInner() {
   const { register } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"CANDIDATE" | "EMPLOYER">("CANDIDATE");
+  const [role, setRole] = useState<"CANDIDATE" | "EMPLOYER">(
+    searchParams.get("role") === "EMPLOYER" ? "EMPLOYER" : "CANDIDATE",
+  );
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
@@ -192,12 +203,12 @@ export default function SignupPage() {
                       <div className="form-group mb-0">
                         <p className="confirmTex">
                           By clicking Register, you agree to the
-                          <a href="#" className="text-main">
+                          <a href="/privacy" className="text-main">
                             {" "}
                             Terms and Conditions{" "}
                           </a>
                           &amp;
-                          <a href="#" className="text-main">
+                          <a href="/privacy" className="text-main">
                             {" "}
                             Privacy Policy{" "}
                           </a>
