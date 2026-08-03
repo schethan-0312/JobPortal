@@ -150,6 +150,20 @@ export class JobsService {
     });
   }
 
+  async myStats(userId: string) {
+    const employer = await this.prisma.employer.findUnique({ where: { userId } });
+    if (!employer) {
+      throw new NotFoundException('Employer profile not found');
+    }
+    const [activeJobs, totalApplicants, shortlisted, pendingReview] = await Promise.all([
+      this.prisma.job.count({ where: { employerId: employer.id, status: 'OPEN' } }),
+      this.prisma.application.count({ where: { job: { employerId: employer.id } } }),
+      this.prisma.application.count({ where: { job: { employerId: employer.id }, status: 'SHORTLISTED' } }),
+      this.prisma.application.count({ where: { job: { employerId: employer.id }, status: 'APPLIED' } }),
+    ]);
+    return { activeJobs, totalApplicants, shortlisted, pendingReview };
+  }
+
   async updateStatus(userId: string, jobId: string, dto: UpdateJobStatusDto) {
     const employer = await this.prisma.employer.findUnique({ where: { userId } });
     if (!employer) {

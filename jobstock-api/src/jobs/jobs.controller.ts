@@ -56,6 +56,13 @@ export class JobsController {
     return this.jobsService.findMine(user.userId);
   }
 
+  @Get('mine/stats')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EMPLOYER)
+  myStats(@CurrentUser() user: AuthenticatedUser) {
+    return this.jobsService.myStats(user.userId);
+  }
+
   @Get(':slug')
   findBySlug(@Param('slug') slug: string) {
     return this.jobsService.findBySlug(slug);
