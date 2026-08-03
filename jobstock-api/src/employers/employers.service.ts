@@ -18,6 +18,28 @@ const PUBLIC_EMPLOYER_SELECT = {
   createdAt: true,
 } as const;
 
+// Single-profile view needs more than the directory listing: real open jobs
+// (for the Jobs tab / departments-hiring filter) and a follower count.
+const PUBLIC_EMPLOYER_DETAIL_SELECT = {
+  ...PUBLIC_EMPLOYER_SELECT,
+  verifiedAt: true,
+  _count: { select: { followers: true } },
+  jobs: {
+    where: { status: 'OPEN' as const },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      department: true,
+      location: true,
+      jobType: true,
+      workMode: true,
+      createdAt: true,
+    },
+    orderBy: { createdAt: 'desc' as const },
+  },
+} as const;
+
 @Injectable()
 export class EmployersService {
   constructor(private readonly prisma: PrismaService) {}
@@ -66,7 +88,7 @@ export class EmployersService {
   async getPublicProfile(id: string) {
     const employer = await this.prisma.employer.findUnique({
       where: { id },
-      select: PUBLIC_EMPLOYER_SELECT,
+      select: PUBLIC_EMPLOYER_DETAIL_SELECT,
     });
     if (!employer || employer.status !== 'VERIFIED') {
       throw new NotFoundException('Employer not found');

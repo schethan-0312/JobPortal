@@ -5,7 +5,15 @@ import { useRouter } from "next/navigation";
 import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
 import { useAuth } from "@/lib/auth-context";
-import { api, ApiError } from "@/lib/api";
+import { api, ApiError, assetUrl } from "@/lib/api";
+
+interface CounterpartUser {
+  id: string;
+  email: string;
+  role?: string;
+  employer?: { companyName: string; logoUrl: string | null } | null;
+  candidateProfile?: { fullName: string; profilePhotoUrl: string | null } | null;
+}
 
 interface ConversationMessage {
   id: string;
@@ -13,8 +21,16 @@ interface ConversationMessage {
   receiverId: string;
   body: string;
   createdAt: string;
-  sender: { id: string; email: string };
-  receiver: { id: string; email: string };
+  sender: CounterpartUser;
+  receiver: CounterpartUser;
+}
+
+function displayName(u: CounterpartUser) {
+  return u.employer?.companyName || u.candidateProfile?.fullName || u.email;
+}
+
+function avatarUrl(u: CounterpartUser) {
+  return assetUrl(u.employer?.logoUrl || u.candidateProfile?.profilePhotoUrl) || "/assets/img/avatar.jpg";
 }
 
 export default function EmployerMessagesPage() {
@@ -22,7 +38,7 @@ export default function EmployerMessagesPage() {
   const router = useRouter();
 
   const [conversations, setConversations] = useState<ConversationMessage[]>([]);
-  const [selectedCounterpart, setSelectedCounterpart] = useState<{ id: string; email: string } | null>(null);
+  const [selectedCounterpart, setSelectedCounterpart] = useState<CounterpartUser | null>(null);
   const [thread, setThread] = useState<ConversationMessage[]>([]);
   const [replyText, setReplyText] = useState("");
   const [dataLoading, setDataLoading] = useState(true);
@@ -55,7 +71,7 @@ export default function EmployerMessagesPage() {
     return m.senderId === user?.userId ? m.receiver : m.sender;
   }
 
-  async function openConversation(counterpart: { id: string; email: string }) {
+  async function openConversation(counterpart: CounterpartUser) {
     setSelectedCounterpart(counterpart);
     setThreadLoading(true);
     setError(null);
@@ -126,7 +142,7 @@ export default function EmployerMessagesPage() {
             {/* Convershion */}
             <div className="messages-container margin-top-0">
               <div className="messages-headline">
-                <h4>{selectedCounterpart?.email || "Select a conversation"}</h4>
+                <h4>{selectedCounterpart ? displayName(selectedCounterpart) : "Select a conversation"}</h4>
               </div>
 
               <div className="messages-container-inner">
@@ -141,12 +157,12 @@ export default function EmployerMessagesPage() {
                         <li className={selectedCounterpart?.id === cp.id ? "active-message" : undefined} key={c.id}>
                           <a href="JavaScript:Void(0);" onClick={() => openConversation(cp)}>
                             <div className="dash-msg-avatar">
-                              <img src="/assets/img/team-1.jpg" alt="" />
+                              <img src={avatarUrl(cp)} alt="" />
                             </div>
 
                             <div className="message-by">
                               <div className="message-by-headline">
-                                <h5>{cp.email}</h5>
+                                <h5>{displayName(cp)}</h5>
                                 <span>{new Date(c.createdAt).toLocaleDateString()}</span>
                               </div>
                               <p>{c.body}</p>
@@ -167,7 +183,7 @@ export default function EmployerMessagesPage() {
                   {thread.map((m) => (
                     <div className={`message-plunch${m.senderId === user.userId ? " me" : ""}`} key={m.id}>
                       <div className="dash-msg-avatar">
-                        <img src="/assets/img/user-3.png" alt="" />
+                        <img src={m.senderId === user.userId ? "/assets/img/avatar.jpg" : avatarUrl(selectedCounterpart!)} alt="" />
                       </div>
                       <div className="dash-msg-text">
                         <p>{m.body}</p>

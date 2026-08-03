@@ -59,6 +59,9 @@ export class SmartMatchService {
       category: j.category,
       location: j.location,
       jobType: j.jobType,
+      requiredSkills: j.requiredSkills,
+      experienceMin: j.experienceMin,
+      experienceMax: j.experienceMax,
       description: j.description.slice(0, 500),
     }));
 

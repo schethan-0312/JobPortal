@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import Navbar5 from "@/components/Navbar5";
 import Footer2 from "@/components/Footer2";
@@ -37,22 +38,34 @@ interface JobsResponse {
 }
 
 function formatSalary(job: Job) {
-  if (job.salaryMin && job.salaryMax) return `$${job.salaryMin} - ${job.salaryMax}`;
-  if (job.salaryMin) return `$${job.salaryMin}`;
+  const fmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+  if (job.salaryMin && job.salaryMax) return `${fmt(job.salaryMin)} - ${fmt(job.salaryMax)}`;
+  if (job.salaryMin) return fmt(job.salaryMin);
   return "Not disclosed";
 }
 
-async function getJobs(): Promise<{ jobs: Job[]; total: number; pageSize: number; error: string | null }> {
+async function getJobs(
+  query: Record<string, string | undefined>,
+): Promise<{ jobs: Job[]; total: number; pageSize: number; error: string | null }> {
   try {
-    const data = await api.get<JobsResponse>("/jobs", { auth: false });
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(query)) {
+      if (value) params.set(key, value);
+    }
+    const data = await api.get<JobsResponse>(`/jobs?${params.toString()}`, { auth: false });
     return { jobs: data.items ?? [], total: data.total ?? 0, pageSize: data.pageSize ?? 12, error: null };
   } catch (err) {
     return { jobs: [], total: 0, pageSize: 12, error: err instanceof Error ? err.message : "Failed to load jobs" };
   }
 }
 
-export default async function JobsGridPage() {
-  const { jobs, total, pageSize, error } = await getJobs();
+export default async function JobsGridPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  const params = await searchParams;
+  const { jobs, total, pageSize, error } = await getJobs(params);
 
   return (
     <>
@@ -89,7 +102,9 @@ export default async function JobsGridPage() {
             {/* Search Sidebar */}
             <div className="col-xxl-3 col-xl-4 col-lg-4 col-md-12 col-sm-12">
               <div className="bg-white rounded mb-3">
-                <JobFilters variant="full" />
+                <Suspense fallback={null}>
+                  <JobFilters variant="full" />
+                </Suspense>
               </div>
 
               {/* Job Alert Box */}
@@ -120,7 +135,9 @@ export default async function JobsGridPage() {
             <div className="col-xxl-9 col-xl-8 col-lg-8 col-md-12 col-sm-12">
               <div className="row justify-content-center mb-4">
                 <div className="col-lg-12 col-md-12">
-                  <SortingBar total={total} shown={jobs.length} />
+                  <Suspense fallback={null}>
+                    <SortingBar total={total} shown={jobs.length} />
+                  </Suspense>
                 </div>
               </div>
 
@@ -211,7 +228,9 @@ export default async function JobsGridPage() {
                 ))}
               </div>
 
-              <Pagination total={total} pageSize={pageSize} />
+              <Suspense fallback={null}>
+                <Pagination total={total} pageSize={pageSize} />
+              </Suspense>
             </div>
           </div>
         </div>

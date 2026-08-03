@@ -10,6 +10,21 @@ import NotificationChannelsCard from "@/components/NotificationChannelsCard";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError, assetUrl, uploadFile } from "@/lib/api";
 
+interface ExperienceEntry {
+  title: string;
+  company: string;
+  startDate: string;
+  endDate?: string;
+  description?: string;
+}
+
+interface EducationEntry {
+  degree: string;
+  institution: string;
+  startYear?: string;
+  endYear?: string;
+}
+
 interface CandidateProfile {
   id: string;
   userId: string;
@@ -29,6 +44,14 @@ interface CandidateProfile {
   githubAvatarUrl: string | null;
   linkedinProfileUrl: string | null;
   videoProfileUrl: string | null;
+  experienceEntries: ExperienceEntry[] | null;
+  educationEntries: EducationEntry[] | null;
+}
+
+interface SkillAssessmentSummary {
+  skill: string;
+  passed: boolean | null;
+  status: string;
 }
 
 interface ProfileViewsResponse {
@@ -85,6 +108,15 @@ export default function CandidateProfilePage() {
   const [profileViews, setProfileViews] = useState<ProfileViewsResponse | null>(null);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  const [passedSkills, setPassedSkills] = useState<Set<string>>(new Set());
+
+  const [experienceEntries, setExperienceEntries] = useState<ExperienceEntry[]>([]);
+  const [newExperience, setNewExperience] = useState<ExperienceEntry>({ title: "", company: "", startDate: "", endDate: "", description: "" });
+  const [savingExperience, setSavingExperience] = useState(false);
+
+  const [educationEntries, setEducationEntries] = useState<EducationEntry[]>([]);
+  const [newEducation, setNewEducation] = useState<EducationEntry>({ degree: "", institution: "", startYear: "", endYear: "" });
+  const [savingEducation, setSavingEducation] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "CANDIDATE")) {
@@ -177,6 +209,8 @@ export default function CandidateProfilePage() {
         setAbout(p.about || "");
         setSkillsInput((p.skills || []).join(", "));
         setExperienceYears(p.experienceYears != null ? String(p.experienceYears) : "");
+        setExperienceEntries(p.experienceEntries || []);
+        setEducationEntries(p.educationEntries || []);
       } catch (err) {
         setError(err instanceof ApiError ? err.message : "Failed to load profile");
       } finally {
@@ -184,6 +218,68 @@ export default function CandidateProfilePage() {
       }
     })();
   }, [user]);
+
+  useEffect(() => {
+    if (!user || user.role !== "CANDIDATE") return;
+    api
+      .get<SkillAssessmentSummary[]>("/skill-assessment/mine")
+      .then((assessments) => {
+        setPassedSkills(new Set(assessments.filter((a) => a.passed).map((a) => a.skill.toLowerCase())));
+      })
+      .catch(() => {});
+  }, [user]);
+
+  async function saveExperience(entries: ExperienceEntry[]) {
+    setSavingExperience(true);
+    setError(null);
+    try {
+      const updated = await api.patch<CandidateProfile>("/candidates/me", { experienceEntries: entries });
+      setProfile(updated);
+      setExperienceEntries(updated.experienceEntries || []);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to save experience");
+    } finally {
+      setSavingExperience(false);
+    }
+  }
+
+  async function addExperience() {
+    if (!newExperience.title.trim() || !newExperience.company.trim() || !newExperience.startDate.trim()) return;
+    const next = [...experienceEntries, newExperience];
+    await saveExperience(next);
+    setNewExperience({ title: "", company: "", startDate: "", endDate: "", description: "" });
+  }
+
+  async function removeExperience(index: number) {
+    const next = experienceEntries.filter((_, i) => i !== index);
+    await saveExperience(next);
+  }
+
+  async function saveEducation(entries: EducationEntry[]) {
+    setSavingEducation(true);
+    setError(null);
+    try {
+      const updated = await api.patch<CandidateProfile>("/candidates/me", { educationEntries: entries });
+      setProfile(updated);
+      setEducationEntries(updated.educationEntries || []);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to save education");
+    } finally {
+      setSavingEducation(false);
+    }
+  }
+
+  async function addEducation() {
+    if (!newEducation.degree.trim() || !newEducation.institution.trim()) return;
+    const next = [...educationEntries, newEducation];
+    await saveEducation(next);
+    setNewEducation({ degree: "", institution: "", startYear: "", endYear: "" });
+  }
+
+  async function removeEducation(index: number) {
+    const next = educationEntries.filter((_, i) => i !== index);
+    await saveEducation(next);
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -309,11 +405,21 @@ export default function CandidateProfilePage() {
                           <p>{profile?.about || "No bio added yet."}</p>
                         </div>
                       </div>
-                      <div className="jbs-grid-job-edrs-group mt-1">
+                      <div className="jbs-grid-job-edrs-group mt-1 d-flex flex-wrap gap-2">
                         {(profile?.skills || []).length === 0 && <span>No skills added</span>}
-                        {(profile?.skills || []).map((s) => (
-                          <span key={s}>{s}</span>
-                        ))}
+                        {(profile?.skills || []).map((s) => {
+                          const verified = passedSkills.has(s.toLowerCase());
+                          return (
+                            <span
+                              key={s}
+                              title={verified ? "Verified via a passed skill assessment" : "Self-declared"}
+                              className={verified ? "text-success fw-medium" : ""}
+                            >
+                              {verified && <i className="fa-solid fa-circle-check me-1"></i>}
+                              {s}
+                            </span>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
@@ -411,6 +517,113 @@ export default function CandidateProfilePage() {
                 </div>
               </div>
             )}
+
+            {/* Experience Timeline */}
+            <div className="card mb-4">
+              <div className="card-header">
+                <h4 className="mb-0">Experience</h4>
+              </div>
+              <div className="card-body">
+                {experienceEntries.length === 0 && <p className="text-muted small mb-3">No experience added yet.</p>}
+                <div className="position-relative ps-4 mb-4" style={{ borderLeft: experienceEntries.length > 0 ? "2px solid #e9ecef" : "none" }}>
+                  {experienceEntries.map((exp, i) => (
+                    <div key={i} className="position-relative mb-4" style={{ marginLeft: -1 }}>
+                      <div
+                        className="position-absolute bg-main rounded-circle"
+                        style={{ width: 10, height: 10, left: -25, top: 4 }}
+                      />
+                      <div className="d-flex justify-content-between align-items-start">
+                        <div>
+                          <h6 className="mb-0">{exp.title}</h6>
+                          <div className="small text-muted">{exp.company}</div>
+                          <div className="small text-muted">{exp.startDate} &ndash; {exp.endDate || "Present"}</div>
+                          {exp.description && <p className="small mt-1 mb-0">{exp.description}</p>}
+                        </div>
+                        <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => removeExperience(i)} disabled={savingExperience}>
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="row g-2 align-items-end border-top pt-3">
+                  <div className="col-md-3">
+                    <label className="form-label small">Title</label>
+                    <input type="text" className="form-control form-control-sm" value={newExperience.title} onChange={(e) => setNewExperience({ ...newExperience, title: e.target.value })} />
+                  </div>
+                  <div className="col-md-3">
+                    <label className="form-label small">Company</label>
+                    <input type="text" className="form-control form-control-sm" value={newExperience.company} onChange={(e) => setNewExperience({ ...newExperience, company: e.target.value })} />
+                  </div>
+                  <div className="col-md-2">
+                    <label className="form-label small">Start</label>
+                    <input type="text" className="form-control form-control-sm" placeholder="Jan 2022" value={newExperience.startDate} onChange={(e) => setNewExperience({ ...newExperience, startDate: e.target.value })} />
+                  </div>
+                  <div className="col-md-2">
+                    <label className="form-label small">End</label>
+                    <input type="text" className="form-control form-control-sm" placeholder="Present" value={newExperience.endDate} onChange={(e) => setNewExperience({ ...newExperience, endDate: e.target.value })} />
+                  </div>
+                  <div className="col-md-2">
+                    <button type="button" className="btn btn-sm btn-main w-100" disabled={savingExperience} onClick={addExperience}>
+                      {savingExperience ? "Saving..." : "+ Add"}
+                    </button>
+                  </div>
+                  <div className="col-md-12">
+                    <label className="form-label small">Description (optional)</label>
+                    <textarea className="form-control form-control-sm" value={newExperience.description} onChange={(e) => setNewExperience({ ...newExperience, description: e.target.value })} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Education */}
+            <div className="card mb-4">
+              <div className="card-header">
+                <h4 className="mb-0">Education</h4>
+              </div>
+              <div className="card-body">
+                {educationEntries.length === 0 && <p className="text-muted small mb-3">No education added yet.</p>}
+                <div className="d-flex flex-column gap-3 mb-3">
+                  {educationEntries.map((edu, i) => (
+                    <div key={i} className="d-flex justify-content-between align-items-start border-bottom pb-2">
+                      <div>
+                        <h6 className="mb-0">{edu.degree}</h6>
+                        <div className="small text-muted">{edu.institution}</div>
+                        {(edu.startYear || edu.endYear) && (
+                          <div className="small text-muted">{edu.startYear} &ndash; {edu.endYear || "Present"}</div>
+                        )}
+                      </div>
+                      <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => removeEducation(i)} disabled={savingEducation}>
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="row g-2 align-items-end border-top pt-3">
+                  <div className="col-md-4">
+                    <label className="form-label small">Degree</label>
+                    <input type="text" className="form-control form-control-sm" value={newEducation.degree} onChange={(e) => setNewEducation({ ...newEducation, degree: e.target.value })} />
+                  </div>
+                  <div className="col-md-4">
+                    <label className="form-label small">Institution</label>
+                    <input type="text" className="form-control form-control-sm" value={newEducation.institution} onChange={(e) => setNewEducation({ ...newEducation, institution: e.target.value })} />
+                  </div>
+                  <div className="col-md-1">
+                    <label className="form-label small">Start</label>
+                    <input type="text" className="form-control form-control-sm" placeholder="2018" value={newEducation.startYear} onChange={(e) => setNewEducation({ ...newEducation, startYear: e.target.value })} />
+                  </div>
+                  <div className="col-md-1">
+                    <label className="form-label small">End</label>
+                    <input type="text" className="form-control form-control-sm" placeholder="2022" value={newEducation.endYear} onChange={(e) => setNewEducation({ ...newEducation, endYear: e.target.value })} />
+                  </div>
+                  <div className="col-md-2">
+                    <button type="button" className="btn btn-sm btn-main w-100" disabled={savingEducation} onClick={addEducation}>
+                      {savingEducation ? "Saving..." : "+ Add"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Card Row */}
             <form onSubmit={handleSave}>

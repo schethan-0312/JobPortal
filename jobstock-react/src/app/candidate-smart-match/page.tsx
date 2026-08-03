@@ -31,8 +31,9 @@ interface JobMatch {
 }
 
 function formatSalary(job: Job) {
-  if (job.salaryMin && job.salaryMax) return `$${job.salaryMin} - $${job.salaryMax}`;
-  if (job.salaryMin) return `$${job.salaryMin}`;
+  const fmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+  if (job.salaryMin && job.salaryMax) return `${fmt(job.salaryMin)} - ${fmt(job.salaryMax)}`;
+  if (job.salaryMin) return fmt(job.salaryMin);
   return "Not disclosed";
 }
 

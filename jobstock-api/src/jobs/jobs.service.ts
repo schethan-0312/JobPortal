@@ -31,6 +31,8 @@ export class JobsService {
       throw new ForbiddenException('salaryMin cannot be greater than salaryMax');
     }
 
+    const locations = dto.locations && dto.locations.length > 0 ? dto.locations : [dto.location];
+
     const job = await this.prisma.job.create({
       data: {
         employerId: employer.id,
@@ -38,10 +40,24 @@ export class JobsService {
         slug: this.slugify(dto.title),
         description: dto.description,
         category: dto.category,
-        location: dto.location,
+        location: locations[0],
         jobType: dto.jobType,
         salaryMin: dto.salaryMin,
         salaryMax: dto.salaryMax,
+        department: dto.department,
+        workMode: dto.workMode,
+        experienceMin: dto.experienceMin,
+        experienceMax: dto.experienceMax,
+        openings: dto.openings,
+        salaryVisible: dto.salaryVisible ?? true,
+        salaryType: dto.salaryType,
+        locations,
+        requiredSkills: dto.requiredSkills ?? [],
+        requirements: dto.requirements,
+        niceToHave: dto.niceToHave,
+        benefits: dto.benefits,
+        screeningQuestions: dto.screeningQuestions ?? [],
+        applicationDeadline: dto.applicationDeadline ? new Date(dto.applicationDeadline) : undefined,
       },
     });
 
@@ -57,22 +73,41 @@ export class JobsService {
     location?: string;
     search?: string;
     jobType?: string;
+    workMode?: string;
+    minExperience?: number;
+    salaryMin?: number;
+    postedWithinDays?: number;
+    sortBy?: 'newest' | 'salary';
     page: number;
     pageSize: number;
   }) {
+    const andConditions: Record<string, unknown>[] = [];
+    // A candidate with N years fits a job whose stated minimum experience is at or below N.
+    if (params.minExperience != null) {
+      andConditions.push({ OR: [{ experienceMin: null }, { experienceMin: { lte: params.minExperience } }] });
+    }
+    if (params.salaryMin != null) {
+      andConditions.push({ OR: [{ salaryMax: null }, { salaryMax: { gte: params.salaryMin } }] });
+    }
+    if (params.search) {
+      andConditions.push({
+        OR: [
+          { title: { contains: params.search, mode: 'insensitive' as const } },
+          { description: { contains: params.search, mode: 'insensitive' as const } },
+        ],
+      });
+    }
+
     const where = {
       status: 'OPEN' as const,
       ...(params.category ? { category: { equals: params.category, mode: 'insensitive' as const } } : {}),
       ...(params.location ? { location: { contains: params.location, mode: 'insensitive' as const } } : {}),
       ...(params.jobType ? { jobType: params.jobType as never } : {}),
-      ...(params.search
-        ? {
-            OR: [
-              { title: { contains: params.search, mode: 'insensitive' as const } },
-              { description: { contains: params.search, mode: 'insensitive' as const } },
-            ],
-          }
+      ...(params.workMode ? { workMode: params.workMode as never } : {}),
+      ...(params.postedWithinDays != null
+        ? { createdAt: { gte: new Date(Date.now() - params.postedWithinDays * 24 * 60 * 60 * 1000) } }
         : {}),
+      ...(andConditions.length > 0 ? { AND: andConditions } : {}),
     };
 
     const [items, total] = await Promise.all([
@@ -81,7 +116,10 @@ export class JobsService {
         include: { employer: { select: { id: true, companyName: true, logoUrl: true, status: true } } },
         skip: (params.page - 1) * params.pageSize,
         take: params.pageSize,
-        orderBy: { createdAt: 'desc' },
+        orderBy:
+          params.sortBy === 'salary'
+            ? [{ isFeatured: 'desc' }, { salaryMax: 'desc' }]
+            : [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
       }),
       this.prisma.job.count({ where }),
     ]);
@@ -110,6 +148,20 @@ export class JobsService {
       orderBy: { createdAt: 'desc' },
       include: { _count: { select: { applications: true } } },
     });
+  }
+
+  async myStats(userId: string) {
+    const employer = await this.prisma.employer.findUnique({ where: { userId } });
+    if (!employer) {
+      throw new NotFoundException('Employer profile not found');
+    }
+    const [activeJobs, totalApplicants, shortlisted, pendingReview] = await Promise.all([
+      this.prisma.job.count({ where: { employerId: employer.id, status: 'OPEN' } }),
+      this.prisma.application.count({ where: { job: { employerId: employer.id } } }),
+      this.prisma.application.count({ where: { job: { employerId: employer.id }, status: 'SHORTLISTED' } }),
+      this.prisma.application.count({ where: { job: { employerId: employer.id }, status: 'APPLIED' } }),
+    ]);
+    return { activeJobs, totalApplicants, shortlisted, pendingReview };
   }
 
   async updateStatus(userId: string, jobId: string, dto: UpdateJobStatusDto) {
