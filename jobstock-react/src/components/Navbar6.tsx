@@ -75,16 +75,6 @@ export default function Navbar6() {
                       </ul>
                     </li>
                     <li>
-                      <Link href="/job-detail/senior-developer" className="sub-menu-item">
-                        Job Detail
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/candidate-detail/senior-developer" className="sub-menu-item">
-                        Candidate Detail
-                      </Link>
-                    </li>
-                    <li>
                       <Link href="/candidate-dashboard" className="sub-menu-item">
                         Candidate Dashboard
                       </Link>
@@ -130,11 +120,6 @@ export default function Navbar6() {
                     <li>
                       <Link href="/blog" className="sub-menu-item">
                         Blogs Page
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/blog-detail/senior-developer" className="sub-menu-item">
-                        Blog Detail
                       </Link>
                     </li>
                     <li>

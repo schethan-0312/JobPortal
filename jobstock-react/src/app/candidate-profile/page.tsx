@@ -113,10 +113,12 @@ export default function CandidateProfilePage() {
   const [experienceEntries, setExperienceEntries] = useState<ExperienceEntry[]>([]);
   const [newExperience, setNewExperience] = useState<ExperienceEntry>({ title: "", company: "", startDate: "", endDate: "", description: "" });
   const [savingExperience, setSavingExperience] = useState(false);
+  const [experienceError, setExperienceError] = useState<string | null>(null);
 
   const [educationEntries, setEducationEntries] = useState<EducationEntry[]>([]);
   const [newEducation, setNewEducation] = useState<EducationEntry>({ degree: "", institution: "", startYear: "", endYear: "" });
   const [savingEducation, setSavingEducation] = useState(false);
+  const [educationError, setEducationError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "CANDIDATE")) {
@@ -244,7 +246,11 @@ export default function CandidateProfilePage() {
   }
 
   async function addExperience() {
-    if (!newExperience.title.trim() || !newExperience.company.trim() || !newExperience.startDate.trim()) return;
+    if (!newExperience.title.trim() || !newExperience.company.trim() || !newExperience.startDate.trim()) {
+      setExperienceError("Title, Company, and Start are required to add an experience entry.");
+      return;
+    }
+    setExperienceError(null);
     const next = [...experienceEntries, newExperience];
     await saveExperience(next);
     setNewExperience({ title: "", company: "", startDate: "", endDate: "", description: "" });
@@ -270,7 +276,11 @@ export default function CandidateProfilePage() {
   }
 
   async function addEducation() {
-    if (!newEducation.degree.trim() || !newEducation.institution.trim()) return;
+    if (!newEducation.degree.trim() || !newEducation.institution.trim()) {
+      setEducationError("Degree and Institution are required to add an education entry.");
+      return;
+    }
+    setEducationError(null);
     const next = [...educationEntries, newEducation];
     await saveEducation(next);
     setNewEducation({ degree: "", institution: "", startYear: "", endYear: "" });
@@ -546,6 +556,7 @@ export default function CandidateProfilePage() {
                     </div>
                   ))}
                 </div>
+                {experienceError && <div className="alert alert-danger py-2 small mb-3">{experienceError}</div>}
                 <div className="row g-2 align-items-end border-top pt-3">
                   <div className="col-md-3">
                     <label className="form-label small">Title</label>
@@ -557,11 +568,11 @@ export default function CandidateProfilePage() {
                   </div>
                   <div className="col-md-2">
                     <label className="form-label small">Start</label>
-                    <input type="text" className="form-control form-control-sm" placeholder="Jan 2022" value={newExperience.startDate} onChange={(e) => setNewExperience({ ...newExperience, startDate: e.target.value })} />
+                    <input type="text" className="form-control form-control-sm" placeholder="e.g. Jan 2022" value={newExperience.startDate} onChange={(e) => setNewExperience({ ...newExperience, startDate: e.target.value })} />
                   </div>
                   <div className="col-md-2">
                     <label className="form-label small">End</label>
-                    <input type="text" className="form-control form-control-sm" placeholder="Present" value={newExperience.endDate} onChange={(e) => setNewExperience({ ...newExperience, endDate: e.target.value })} />
+                    <input type="text" className="form-control form-control-sm" placeholder="e.g. Present" value={newExperience.endDate} onChange={(e) => setNewExperience({ ...newExperience, endDate: e.target.value })} />
                   </div>
                   <div className="col-md-2">
                     <button type="button" className="btn btn-sm btn-main w-100" disabled={savingExperience} onClick={addExperience}>
@@ -599,6 +610,7 @@ export default function CandidateProfilePage() {
                     </div>
                   ))}
                 </div>
+                {educationError && <div className="alert alert-danger py-2 small mb-3">{educationError}</div>}
                 <div className="row g-2 align-items-end border-top pt-3">
                   <div className="col-md-4">
                     <label className="form-label small">Degree</label>
@@ -610,11 +622,11 @@ export default function CandidateProfilePage() {
                   </div>
                   <div className="col-md-1">
                     <label className="form-label small">Start</label>
-                    <input type="text" className="form-control form-control-sm" placeholder="2018" value={newEducation.startYear} onChange={(e) => setNewEducation({ ...newEducation, startYear: e.target.value })} />
+                    <input type="text" className="form-control form-control-sm" placeholder="e.g. 2018" value={newEducation.startYear} onChange={(e) => setNewEducation({ ...newEducation, startYear: e.target.value })} />
                   </div>
                   <div className="col-md-1">
                     <label className="form-label small">End</label>
-                    <input type="text" className="form-control form-control-sm" placeholder="2022" value={newEducation.endYear} onChange={(e) => setNewEducation({ ...newEducation, endYear: e.target.value })} />
+                    <input type="text" className="form-control form-control-sm" placeholder="e.g. 2022" value={newEducation.endYear} onChange={(e) => setNewEducation({ ...newEducation, endYear: e.target.value })} />
                   </div>
                   <div className="col-md-2">
                     <button type="button" className="btn btn-sm btn-main w-100" disabled={savingEducation} onClick={addEducation}>
