@@ -8,14 +8,21 @@ import UploadResumeModal from "@/components/candidate-dashboard/UploadResumeModa
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError } from "@/lib/api";
 
+interface Suggestion {
+  text: string;
+  priority: "high" | "medium" | "low";
+}
+
 interface ResumeScanResult {
   overallScore: number;
+  summary: string;
   structureScore: number;
-  contentScore: number;
   keywordScore: number;
+  atsScore: number;
+  achievementScore: number;
   strengths: string[];
   weaknesses: string[];
-  suggestions: string[];
+  suggestions: Suggestion[];
   missingKeywords: string[];
 }
 
@@ -24,6 +31,12 @@ function scoreColor(score: number) {
   if (score >= 50) return "#f0ad4e";
   return "#dc3545";
 }
+
+const priorityColors: Record<Suggestion["priority"], string> = {
+  high: "#dc3545",
+  medium: "#f0ad4e",
+  low: "#6c757d",
+};
 
 function ScoreBar({ label, score }: { label: string; score: number }) {
   return (
@@ -63,10 +76,8 @@ export default function CandidateResumeScannerPage() {
     return null;
   }
 
-  async function handleScan(e: React.FormEvent) {
-    e.preventDefault();
+  async function runScan() {
     setErrorMsg(null);
-    setResult(null);
     setStatus("scanning");
     try {
       const data = await api.post<ResumeScanResult>("/resume-scanner/scan", {
@@ -79,6 +90,12 @@ export default function CandidateResumeScannerPage() {
       setStatus("error");
       setErrorMsg(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
     }
+  }
+
+  async function handleScan(e: React.FormEvent) {
+    e.preventDefault();
+    setResult(null);
+    await runScan();
   }
 
   return (
@@ -109,8 +126,8 @@ export default function CandidateResumeScannerPage() {
               <div className="card-header">
                 <h4>Paste Your Resume Text</h4>
                 <p className="text-muted mb-0 mt-1">
-                  Our AI will score your resume on structure, content, and keyword relevance, then suggest concrete
-                  improvements.
+                  Our AI will score your resume on structure, keyword match, ATS compatibility, and achievement
+                  quantification, then suggest concrete improvements.
                 </p>
               </div>
               <div className="card-body">
@@ -143,10 +160,20 @@ export default function CandidateResumeScannerPage() {
                     </div>
                   </div>
                   <div className="row mb-3">
-                    <div className="col-xl-12 col-md-12">
+                    <div className="col-xl-12 col-md-12 d-flex gap-2">
                       <button type="submit" className="btn btn-main" disabled={status === "scanning"}>
                         {status === "scanning" ? "Scanning..." : "Scan My Resume"}
                       </button>
+                      {result && (
+                        <button
+                          type="button"
+                          className="btn btn-outline-main"
+                          disabled={status === "scanning"}
+                          onClick={runScan}
+                        >
+                          {status === "scanning" ? "Rescanning..." : "Rescan After Edits"}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </form>
@@ -181,9 +208,11 @@ export default function CandidateResumeScannerPage() {
                       <div className="mt-2 fw-medium">Overall Score</div>
                     </div>
                     <div className="col-md-9">
-                      <ScoreBar label="Structure" score={result.structureScore} />
-                      <ScoreBar label="Content" score={result.contentScore} />
-                      <ScoreBar label="Keyword Relevance" score={result.keywordScore} />
+                      <p className="fs-6 mb-3">{result.summary}</p>
+                      <ScoreBar label="Formatting & Structure" score={result.structureScore} />
+                      <ScoreBar label="Keyword Match" score={result.keywordScore} />
+                      <ScoreBar label="ATS Compatibility" score={result.atsScore} />
+                      <ScoreBar label="Achievement Quantification" score={result.achievementScore} />
                     </div>
                   </div>
 
@@ -211,11 +240,18 @@ export default function CandidateResumeScannerPage() {
                   </div>
 
                   <h6>
-                    <i className="fa-solid fa-lightbulb me-2 text-warning"></i>Suggestions
+                    <i className="fa-solid fa-lightbulb me-2 text-warning"></i>Suggested Fixes
                   </h6>
-                  <ul>
+                  <ul className="list-unstyled">
                     {result.suggestions.map((s, i) => (
-                      <li key={i}>{s}</li>
+                      <li key={i} className="d-flex align-items-start gap-2 mb-2">
+                        <span
+                          className="rounded-circle flex-shrink-0 mt-1"
+                          style={{ width: 8, height: 8, backgroundColor: priorityColors[s.priority] }}
+                          title={`${s.priority} priority`}
+                        />
+                        <span>{s.text}</span>
+                      </li>
                     ))}
                   </ul>
 
