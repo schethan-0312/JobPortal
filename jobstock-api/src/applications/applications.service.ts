@@ -105,9 +105,21 @@ export class ApplicationsService {
       include: {
         candidate: {
           select: {
+            id: true,
             email: true,
             candidateProfile: {
-              select: { fullName: true, headline: true, resumeUrl: true, skills: true, location: true },
+              select: {
+                fullName: true,
+                headline: true,
+                resumeUrl: true,
+                skills: true,
+                location: true,
+                isVerified: true,
+                profilePhotoUrl: true,
+                githubUsername: true,
+                githubProfileUrl: true,
+                githubAvatarUrl: true,
+              },
             },
           },
         },
