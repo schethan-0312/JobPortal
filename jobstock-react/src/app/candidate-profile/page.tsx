@@ -374,7 +374,13 @@ export default function CandidateProfilePage() {
                     <circle className="bg" cx={70} cy={70} r={60}></circle>
                     <circle className="progress" cx={70} cy={70} r={60} strokeDasharray="326.72" strokeDashoffset="326.72"></circle>
                   </svg>
-                  <img className="avatar" src={assetUrl(profile?.profilePhotoUrl) || "/assets/img/avatar.jpg"} alt="Avatar" />
+                  {profile?.profilePhotoUrl ? (
+                    <img className="avatar" src={assetUrl(profile.profilePhotoUrl) as string} alt="Avatar" />
+                  ) : (
+                    <div className="avatar" style={{ backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px', color: '#64748b', borderRadius: '50%', width: '100%', height: '100%' }}>
+                      {profile?.fullName?.charAt(0)?.toUpperCase() || "C"}
+                    </div>
+                  )}
                   <div className="position-absolute bottom-0 start-50 translate-middle-x">
                     <span className="badge badge-md bg-white text-main rounded-pill fw-medium shadow-sm px-3 py-2">{profile?.isVerified ? "Verified" : "Unverified"}</span>
                   </div>
