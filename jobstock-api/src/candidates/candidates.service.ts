@@ -267,4 +267,24 @@ export class CandidatesService {
       include: { employer: { select: { id: true, companyName: true, logoUrl: true, location: true } } },
     });
   }
+
+  async unfollowEmployer(userId: string, employerId: string) {
+    const profile = await this.prisma.candidateProfile.findUnique({ where: { userId } });
+    if (!profile) {
+      throw new NotFoundException('Candidate profile not found');
+    }
+    await this.prisma.employerFollow.deleteMany({ where: { candidateId: profile.id, employerId } });
+    return { success: true };
+  }
+
+  async isFollowingEmployer(userId: string, employerId: string) {
+    const profile = await this.prisma.candidateProfile.findUnique({ where: { userId } });
+    if (!profile) {
+      return { following: false };
+    }
+    const existing = await this.prisma.employerFollow.findUnique({
+      where: { candidateId_employerId: { candidateId: profile.id, employerId } },
+    });
+    return { following: Boolean(existing) };
+  }
 }

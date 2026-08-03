@@ -98,6 +98,20 @@ export class CandidatesController {
     return this.candidatesService.followEmployer(user.userId, employerId);
   }
 
+  @Delete('follow-employer/:employerId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.CANDIDATE)
+  unfollowEmployer(@CurrentUser() user: AuthenticatedUser, @Param('employerId') employerId: string) {
+    return this.candidatesService.unfollowEmployer(user.userId, employerId);
+  }
+
+  @Get('follow-employer/:employerId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.CANDIDATE)
+  isFollowingEmployer(@CurrentUser() user: AuthenticatedUser, @Param('employerId') employerId: string) {
+    return this.candidatesService.isFollowingEmployer(user.userId, employerId);
+  }
+
   @Get('search')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EMPLOYER)
