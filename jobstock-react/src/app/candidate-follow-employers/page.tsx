@@ -18,10 +18,6 @@ interface FollowedEmployer {
   };
 }
 
-function slugify(title: string) {
-  return title.toLowerCase().replace(/ /g, "-");
-}
-
 export default function CandidateFollowEmployersPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -100,12 +96,12 @@ export default function CandidateFollowEmployersPage() {
                             <div className="emplors-list-head">
                               <div className="emplors-list-head-thunner">
                                 <div className="emplors-list-emp-thumb">
-                                  <a href={`/employer-detail/${slugify(item.employer.companyName)}`}>
+                                  <a href={`/employer-detail/${item.employer.id}`}>
                                     <figure><img src={assetUrl(item.employer.logoUrl) || "/assets/img/l-1.png"} className="img-fluid" alt="" /></figure>
                                   </a>
                                 </div>
                                 <div className="emplors-list-job-caption">
-                                  <div className="emplors-job-title-wrap mb-1"><h4><a href={`/employer-detail/${slugify(item.employer.companyName)}`} className="emplors-job-title">{item.employer.companyName}</a></h4></div>
+                                  <div className="emplors-job-title-wrap mb-1"><h4><a href={`/employer-detail/${item.employer.id}`} className="emplors-job-title">{item.employer.companyName}</a></h4></div>
                                   <div className="emplors-job-mrch-lists">
                                     <div className="single-mrch-lists">
                                       <span><i className="fa-solid fa-location-dot me-1"></i>{item.employer.location || "Location not set"}</span>
@@ -114,7 +110,7 @@ export default function CandidateFollowEmployersPage() {
                                 </div>
                               </div>
                               <div className="emplors-list-head-last">
-                                <a href={`/employer-detail/${slugify(item.employer.companyName)}`} className="btn btn-md btn-light-main px-3">View Company</a>
+                                <a href={`/employer-detail/${item.employer.id}`} className="btn btn-md btn-light-main px-3">View Company</a>
                               </div>
                             </div>
                           </div>
