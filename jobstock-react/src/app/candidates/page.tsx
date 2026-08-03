@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import Navbar5 from "@/components/Navbar5";
 import Footer2 from "@/components/Footer2";
@@ -74,7 +75,9 @@ export default async function CandidatesGridPage() {
             {/* Search Sidebar */}
             <div className="col-xxl-3 col-xl-4 col-lg-4 col-md-12 col-sm-12">
               <div className="side-widget-blocks">
-                <JobFilters variant="simple" />
+                <Suspense fallback={null}>
+                  <JobFilters variant="simple" />
+                </Suspense>
               </div>
             </div>
             {/* Sidebar End */}
@@ -84,7 +87,9 @@ export default async function CandidatesGridPage() {
               {/* Shorting Box */}
               <div className="row justify-content-center mb-4">
                 <div className="col-lg-12 col-md-12">
-                  <SortingBar total={total} shown={candidates.length} />
+                  <Suspense fallback={null}>
+                    <SortingBar total={total} shown={candidates.length} />
+                  </Suspense>
                 </div>
               </div>
               {/* Shorting Wrap End */}
@@ -151,7 +156,9 @@ export default async function CandidatesGridPage() {
               </div>
               {/* End All Job List */}
 
-              <Pagination total={total} pageSize={pageSize} />
+              <Suspense fallback={null}>
+                <Pagination total={total} pageSize={pageSize} />
+              </Suspense>
             </div>
             {/* Job List Wrap End*/}
           </div>
