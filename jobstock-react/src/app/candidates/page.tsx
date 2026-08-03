@@ -68,8 +68,8 @@ export default async function CandidatesGridPage({
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
                     <li className="breadcrumb-item">
-                    </li>
                       <a href="/">Home</a>
+                    </li>
                     <li className="breadcrumb-item active" aria-current="page">
                       Candidates
                     </li>
