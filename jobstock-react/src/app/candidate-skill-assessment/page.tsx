@@ -58,6 +58,7 @@ export default function CandidateSkillAssessmentPage() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [violations, setViolations] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const violationsRef = useRef(0);
   const submitRef = useRef<() => void>(() => {});
 
@@ -122,6 +123,7 @@ export default function CandidateSkillAssessmentPage() {
       setSecondsLeft(data.timeLimitSeconds);
       violationsRef.current = 0;
       setViolations(0);
+      setCurrentQuestion(0);
       setStage("quiz");
     } catch (err) {
       setStage("idle");
@@ -226,12 +228,46 @@ export default function CandidateSkillAssessmentPage() {
               </div>
             )}
 
+            {(stage === "idle" || stage === "starting") && (
+              <div className="card mb-4">
+                <div className="card-header">
+                  <h4 className="mb-0">Proctoring Rules</h4>
+                </div>
+                <div className="card-body">
+                  <div className="row g-3">
+                    <div className="col-md-6">
+                      <h6 className="small text-uppercase text-muted mb-2">What triggers a review</h6>
+                      <ul className="small mb-0">
+                        <li>Switching tabs or minimizing the window</li>
+                        <li>The window losing focus (alt-tabbing away)</li>
+                        <li>Copy/paste inside the assessment</li>
+                        <li>Exceeding the time limit for the quiz</li>
+                      </ul>
+                    </div>
+                    <div className="col-md-6">
+                      <h6 className="small text-uppercase text-muted mb-2">What passing unlocks</h6>
+                      <p className="small mb-0">
+                        Score 70% or higher with no proctoring violations and you earn a{" "}
+                        <span className="badge bg-success-subtle text-success border border-success">
+                          <i className="fa-solid fa-shield-check me-1"></i>Verified
+                        </span>{" "}
+                        badge on that skill — shown to employers on your public profile alongside your self-declared
+                        skills, and it's the strongest signal you can give that you actually know it.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {(stage === "quiz" || stage === "submitting") && quiz && (
               <div className="card mb-4" onCopy={(e) => e.preventDefault()} onPaste={(e) => e.preventDefault()}>
                 <div className="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                   <div>
                     <h4 className="mb-0">{quiz.skill} Assessment</h4>
-                    <p className="text-muted mb-0 mt-1">{quiz.totalQuestions} questions &mdash; select one answer each</p>
+                    <span className="badge bg-success-subtle text-success border border-success mt-1">
+                      <i className="fa-solid fa-shield-halved me-1"></i>Proctoring Active
+                    </span>
                   </div>
                   <span className={`badge ${secondsLeft <= 30 ? "bg-danger" : "bg-dark"} fs-6 px-3 py-2`}>
                     <i className="fa-regular fa-clock me-2"></i>
@@ -240,11 +276,6 @@ export default function CandidateSkillAssessmentPage() {
                   </span>
                 </div>
                 <div className="card-body">
-                  <p className="small text-muted mb-3">
-                    <i className="fa-solid fa-shield-halved me-1"></i>
-                    This assessment is proctored. Switching tabs, minimizing the window, or copy/pasting is logged
-                    and may disqualify verification.
-                  </p>
                   {violations > 0 && (
                     <div className="alert alert-warning">
                       <i className="fa-solid fa-triangle-exclamation me-2"></i>
@@ -253,36 +284,77 @@ export default function CandidateSkillAssessmentPage() {
                     </div>
                   )}
                   {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
-                  {quiz.questions.map((q, qi) => (
-                    <div key={qi} className="mb-4 pb-3 border-bottom">
-                      <p className="fw-medium mb-2">
-                        {qi + 1}. {q.question}
-                      </p>
-                      {q.options.map((opt, oi) => (
-                        <div className="form-check mb-1" key={oi}>
-                          <input
-                            className="form-check-input"
-                            type="radio"
-                            name={`q-${qi}`}
-                            id={`q-${qi}-o-${oi}`}
-                            checked={selectedAnswers[qi] === oi}
-                            onChange={() => selectAnswer(qi, oi)}
-                          />
-                          <label className="form-check-label" htmlFor={`q-${qi}-o-${oi}`}>
-                            {opt}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    className="btn btn-main"
-                    onClick={handleSubmit}
-                    disabled={stage === "submitting" || selectedAnswers.some((a) => a === null)}
-                  >
-                    {stage === "submitting" ? "Submitting..." : "Submit Answers"}
-                  </button>
+
+                  <div className="d-flex justify-content-center gap-2 mb-4">
+                    {quiz.questions.map((_, qi) => (
+                      <button
+                        key={qi}
+                        type="button"
+                        onClick={() => setCurrentQuestion(qi)}
+                        title={`Question ${qi + 1}${selectedAnswers[qi] !== null ? " (answered)" : ""}`}
+                        className="rounded-circle border-0 d-flex align-items-center justify-content-center"
+                        style={{
+                          width: 32,
+                          height: 32,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          backgroundColor: qi === currentQuestion ? "#0b8260" : selectedAnswers[qi] !== null ? "#c9ecdf" : "#e9ecef",
+                          color: qi === currentQuestion ? "#fff" : "#333",
+                        }}
+                      >
+                        {qi + 1}
+                      </button>
+                    ))}
+                  </div>
+
+                  <p className="small text-muted mb-2">Question {currentQuestion + 1} of {quiz.totalQuestions}</p>
+                  <div className="mb-4 pb-3">
+                    <p className="fw-medium mb-2">{quiz.questions[currentQuestion].question}</p>
+                    {quiz.questions[currentQuestion].options.map((opt, oi) => (
+                      <div className="form-check mb-1" key={oi}>
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name={`q-${currentQuestion}`}
+                          id={`q-${currentQuestion}-o-${oi}`}
+                          checked={selectedAnswers[currentQuestion] === oi}
+                          onChange={() => selectAnswer(currentQuestion, oi)}
+                        />
+                        <label className="form-check-label" htmlFor={`q-${currentQuestion}-o-${oi}`}>
+                          {opt}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="d-flex justify-content-between">
+                    <button
+                      type="button"
+                      className="btn btn-outline-main"
+                      disabled={currentQuestion === 0}
+                      onClick={() => setCurrentQuestion((q) => Math.max(0, q - 1))}
+                    >
+                      Previous
+                    </button>
+                    {currentQuestion < quiz.questions.length - 1 ? (
+                      <button
+                        type="button"
+                        className="btn btn-main"
+                        onClick={() => setCurrentQuestion((q) => Math.min(quiz.questions.length - 1, q + 1))}
+                      >
+                        Next
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="btn btn-main"
+                        onClick={handleSubmit}
+                        disabled={stage === "submitting" || selectedAnswers.some((a) => a === null)}
+                      >
+                        {stage === "submitting" ? "Submitting..." : "Submit Answers"}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
