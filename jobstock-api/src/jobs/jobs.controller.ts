@@ -26,6 +26,11 @@ export class JobsController {
     @Query('location') location?: string,
     @Query('search') search?: string,
     @Query('jobType') jobType?: string,
+    @Query('workMode') workMode?: string,
+    @Query('minExperience') minExperience?: string,
+    @Query('salaryMin') salaryMin?: string,
+    @Query('postedWithin') postedWithin?: string,
+    @Query('sortBy') sortBy?: string,
     @Query('page') page = '1',
     @Query('pageSize') pageSize = '12',
   ) {
@@ -34,6 +39,11 @@ export class JobsController {
       location,
       search,
       jobType,
+      workMode,
+      minExperience: minExperience ? parseInt(minExperience, 10) : undefined,
+      salaryMin: salaryMin ? parseInt(salaryMin, 10) : undefined,
+      postedWithinDays: postedWithin ? parseInt(postedWithin, 10) : undefined,
+      sortBy: sortBy === 'salary' ? 'salary' : 'newest',
       page: Math.max(1, parseInt(page, 10) || 1),
       pageSize: Math.min(50, Math.max(1, parseInt(pageSize, 10) || 12)),
     });

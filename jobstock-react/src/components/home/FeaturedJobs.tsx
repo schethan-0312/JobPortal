@@ -47,10 +47,6 @@ export default function FeaturedJobs() {
     })();
   }, []);
 
-  if (loaded && jobs.length === 0) {
-    return null;
-  }
-
   return (
     <section className="pt-2">
       <div className="container">
@@ -62,6 +58,18 @@ export default function FeaturedJobs() {
             </div>
           </div>
         </div>
+
+        {loaded && jobs.length === 0 && (
+          <div className="row justify-content-center">
+            <div className="col-xl-6 col-lg-8 col-md-10 text-center py-4">
+              <p className="fs-5 fw-medium mb-2">You&apos;re early — no jobs posted yet.</p>
+              <p className="text-muted mb-3">
+                Be the first to know when a new role goes live, or if you&apos;re hiring, post your own.
+              </p>
+              <a href="/employer-submit-job" className="btn btn-main px-4">Post a Job</a>
+            </div>
+          </div>
+        )}
 
         <div className="row justify-content-center gx-xl-3 gx-3 gy-4">
           {jobs.map((item) => (

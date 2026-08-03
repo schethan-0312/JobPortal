@@ -1,13 +1,4 @@
-const categories = [
-  { icon: "fa-solid fa-file-invoice", title: "Accounting & Finance" },
-  { icon: "fa-solid fa-caravan", title: "Automotive Jobs" },
-  { icon: "fa-solid fa-person-chalkboard", title: "Business & Tech" },
-  { icon: "fa-solid fa-user-graduate", title: "Education Training" },
-  { icon: "fa-solid fa-briefcase-medical", title: "Healthcare" },
-  { icon: "fa-solid fa-burger", title: "Restaurant & Food" },
-  { icon: "fa-solid fa-jet-fighter", title: "Transportation" },
-  { icon: "fa-solid fa-mobile-screen-button", title: "Telecommunications" },
-];
+import { JOB_CATEGORIES, CATEGORY_ICONS } from "@/lib/job-categories";
 
 export default function Categories() {
   return (
@@ -23,17 +14,17 @@ export default function Categories() {
         </div>
 
         <div className="row justify-content-center gx-4 gy-4">
-          {categories.map((item) => (
-            <div className="col-xl-3 col-lg-3 col-md-4 col-sm-6" key={item.title}>
+          {JOB_CATEGORIES.map((title) => (
+            <div className="col-xl-3 col-lg-3 col-md-4 col-sm-6" key={title}>
               <div className="category-box">
                 <div className="category-desc">
                   <div className="category-icon">
-                    <i className={`${item.icon} text-main`}></i>
-                    <i className={`${item.icon} abs-icon`}></i>
+                    <i className={`${CATEGORY_ICONS[title]} text-main`}></i>
+                    <i className={`${CATEGORY_ICONS[title]} abs-icon`}></i>
                   </div>
                   <div className="category-detail category-desc-text">
                     <h4 className="fs-5">
-                      <a href={`/jobs?category=${encodeURIComponent(item.title)}`}>{item.title}</a>
+                      <a href={`/jobs?category=${encodeURIComponent(title)}`}>{title}</a>
                     </h4>
                   </div>
                 </div>

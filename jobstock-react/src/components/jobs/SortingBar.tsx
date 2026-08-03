@@ -1,33 +1,46 @@
+"use client";
+
+import { useRouter, useSearchParams } from "next/navigation";
+
 interface SortingBarProps {
   total: number;
   shown: number;
 }
 
 export default function SortingBar({ total, shown }: SortingBarProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const sortBy = searchParams.get("sortBy") ?? "newest";
+  const pageSize = searchParams.get("pageSize") ?? "12";
+
+  function updateParam(key: string, value: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set(key, value);
+    params.delete("page");
+    router.push(`/jobs?${params.toString()}`);
+  }
+
   return (
     <div className="item-shorting-box">
       <div className="item-shorting clearfix">
         <div className="left-column">
           <h4 className="m-sm-0 mb-2">
-            {total === 0 ? "No results found" : `Showing 1 - ${shown} of ${total} Results`}
+            {total === 0 ? "No results found" : `Showing ${shown} of ${total} Results`}
           </h4>
         </div>
       </div>
       <div className="item-shorting-box-right">
         <div className="shorting-by me-2 small">
-          <select>
-            <option value="0">Short by (Default)</option>
-            <option value="1">Short by (Featured)</option>
-            <option value="2">Short by (Urgent)</option>
-            <option value="3">Short by (Post Date)</option>
+          <select value={sortBy} onChange={(e) => updateParam("sortBy", e.target.value)}>
+            <option value="newest">Sort by (Newest)</option>
+            <option value="salary">Sort by (Salary)</option>
           </select>
         </div>
         <div className="shorting-by small">
-          <select>
-            <option value="0">10 Per Page</option>
-            <option value="1">20 Per Page</option>
-            <option value="2">50 Per Page</option>
-            <option value="3">10 Per Page</option>
+          <select value={pageSize} onChange={(e) => updateParam("pageSize", e.target.value)}>
+            <option value="12">12 Per Page</option>
+            <option value="24">24 Per Page</option>
+            <option value="50">50 Per Page</option>
           </select>
         </div>
       </div>

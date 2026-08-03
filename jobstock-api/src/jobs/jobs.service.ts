@@ -73,22 +73,41 @@ export class JobsService {
     location?: string;
     search?: string;
     jobType?: string;
+    workMode?: string;
+    minExperience?: number;
+    salaryMin?: number;
+    postedWithinDays?: number;
+    sortBy?: 'newest' | 'salary';
     page: number;
     pageSize: number;
   }) {
+    const andConditions: Record<string, unknown>[] = [];
+    // A candidate with N years fits a job whose stated minimum experience is at or below N.
+    if (params.minExperience != null) {
+      andConditions.push({ OR: [{ experienceMin: null }, { experienceMin: { lte: params.minExperience } }] });
+    }
+    if (params.salaryMin != null) {
+      andConditions.push({ OR: [{ salaryMax: null }, { salaryMax: { gte: params.salaryMin } }] });
+    }
+    if (params.search) {
+      andConditions.push({
+        OR: [
+          { title: { contains: params.search, mode: 'insensitive' as const } },
+          { description: { contains: params.search, mode: 'insensitive' as const } },
+        ],
+      });
+    }
+
     const where = {
       status: 'OPEN' as const,
       ...(params.category ? { category: { equals: params.category, mode: 'insensitive' as const } } : {}),
       ...(params.location ? { location: { contains: params.location, mode: 'insensitive' as const } } : {}),
       ...(params.jobType ? { jobType: params.jobType as never } : {}),
-      ...(params.search
-        ? {
-            OR: [
-              { title: { contains: params.search, mode: 'insensitive' as const } },
-              { description: { contains: params.search, mode: 'insensitive' as const } },
-            ],
-          }
+      ...(params.workMode ? { workMode: params.workMode as never } : {}),
+      ...(params.postedWithinDays != null
+        ? { createdAt: { gte: new Date(Date.now() - params.postedWithinDays * 24 * 60 * 60 * 1000) } }
         : {}),
+      ...(andConditions.length > 0 ? { AND: andConditions } : {}),
     };
 
     const [items, total] = await Promise.all([
@@ -97,7 +116,10 @@ export class JobsService {
         include: { employer: { select: { id: true, companyName: true, logoUrl: true, status: true } } },
         skip: (params.page - 1) * params.pageSize,
         take: params.pageSize,
-        orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
+        orderBy:
+          params.sortBy === 'salary'
+            ? [{ isFeatured: 'desc' }, { salaryMax: 'desc' }]
+            : [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
       }),
       this.prisma.job.count({ where }),
     ]);

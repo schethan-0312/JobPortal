@@ -6,6 +6,7 @@ import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError } from "@/lib/api";
+import { JOB_CATEGORIES } from "@/lib/job-categories";
 
 interface EmployerProfile {
   id: string;
@@ -78,7 +79,7 @@ export default function EmployerSubmitJobPage() {
   const [requirements, setRequirements] = useState("");
   const [niceToHave, setNiceToHave] = useState("");
   const [benefits, setBenefits] = useState("");
-  const [category, setCategory] = useState("Web & Application");
+  const [category, setCategory] = useState<string>(JOB_CATEGORIES[0]);
   const [locations, setLocations] = useState<string[]>([]);
   const [locationInput, setLocationInput] = useState("");
   const [workMode, setWorkMode] = useState("ONSITE");
@@ -379,11 +380,9 @@ export default function EmployerSubmitJobPage() {
                         <label>Job Category</label>
                         <div className="select-ops">
                           <select value={category} onChange={(e) => setCategory(e.target.value)}>
-                            <option value="Web & Application">Web & Application</option>
-                            <option value="Banking Services">Banking Services</option>
-                            <option value="UI/UX Design">UI/UX Design</option>
-                            <option value="IOS/App Application">IOS/App Application</option>
-                            <option value="Education">Education</option>
+                            {JOB_CATEGORIES.map((cat) => (
+                              <option key={cat} value={cat}>{cat}</option>
+                            ))}
                           </select>
                         </div>
                       </div>
