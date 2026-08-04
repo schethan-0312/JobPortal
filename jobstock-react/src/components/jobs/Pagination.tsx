@@ -1,62 +1,36 @@
-"use client";
-
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-
 interface PaginationProps {
   total: number;
   pageSize: number;
 }
 
 export default function Pagination({ total, pageSize }: PaginationProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
   const totalPages = Math.ceil(total / pageSize);
-  const currentPage = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
 
   if (totalPages <= 1) {
     return null;
   }
 
-  function goToPage(num: number) {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", String(num));
-    router.push(`${pathname}?${params.toString()}`);
-  }
-
   return (
     <div className="row">
       <div className="col-lg-12 col-md-12 col-sm-12">
-        <nav aria-label="Page navigation">
+        <nav aria-label="Page navigation example">
           <ul className="pagination">
-            <li className={`page-item${currentPage <= 1 ? " disabled" : ""}`}>
-              <button
-                type="button"
-                className="page-link"
-                onClick={() => goToPage(currentPage - 1)}
-                disabled={currentPage <= 1}
-                aria-label="Previous"
-              >
+            <li className="page-item">
+              <a className="page-link" href="JavaScript:Void(0);" aria-label="Previous">
                 <span aria-hidden="true">&laquo;</span>
-              </button>
+              </a>
             </li>
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-              <li className={`page-item${num === currentPage ? " active" : ""}`} key={num}>
-                <button type="button" className="page-link" onClick={() => goToPage(num)}>
+              <li className={`page-item${num === 1 ? " active" : ""}`} key={num}>
+                <a className="page-link" href="JavaScript:Void(0);">
                   {num}
-                </button>
+                </a>
               </li>
             ))}
-            <li className={`page-item${currentPage >= totalPages ? " disabled" : ""}`}>
-              <button
-                type="button"
-                className="page-link"
-                onClick={() => goToPage(currentPage + 1)}
-                disabled={currentPage >= totalPages}
-                aria-label="Next"
-              >
+            <li className="page-item">
+              <a className="page-link" href="JavaScript:Void(0);" aria-label="Next">
                 <span aria-hidden="true">&raquo;</span>
-              </button>
+              </a>
             </li>
           </ul>
         </nav>

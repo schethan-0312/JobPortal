@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AiService } from '../ai/ai.service.js';
-import { AiFeature } from '../../generated/prisma/enums.js';
 
 interface JobMatchRanking {
   jobId: string;
@@ -59,9 +58,6 @@ export class SmartMatchService {
       category: j.category,
       location: j.location,
       jobType: j.jobType,
-      requiredSkills: j.requiredSkills,
-      experienceMin: j.experienceMin,
-      experienceMax: j.experienceMax,
       description: j.description.slice(0, 500),
     }));
 
@@ -75,12 +71,7 @@ export class SmartMatchService {
 Open jobs (JSON):
 ${JSON.stringify(jobsForPrompt)}`;
 
-    const { matches } = await this.ai.generateJson<{ matches: JobMatchRanking[] }>(
-      AiFeature.SMART_MATCH,
-      SYSTEM_PROMPT,
-      userPrompt,
-      userId,
-    );
+    const { matches } = await this.ai.generateJson<{ matches: JobMatchRanking[] }>(SYSTEM_PROMPT, userPrompt);
 
     const jobById = new Map(jobs.map((j) => [j.id, j]));
     return matches

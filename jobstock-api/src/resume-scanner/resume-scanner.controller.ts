@@ -6,6 +6,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { Role } from '../../generated/prisma/enums.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+import type { AuthenticatedUser } from '../auth/decorators/current-user.decorator.js';
 
 @Controller('resume-scanner')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -15,7 +17,7 @@ export class ResumeScannerController {
   constructor(private readonly resumeScannerService: ResumeScannerService) {}
 
   @Post('scan')
-  scan(@Body() dto: ScanResumeDto) {
-    return this.resumeScannerService.scan(dto);
+  scan(@CurrentUser() user: AuthenticatedUser, @Body() dto: ScanResumeDto) {
+    return this.resumeScannerService.scan(user.userId, dto.targetRole);
   }
 }

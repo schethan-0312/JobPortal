@@ -4960,10 +4960,6 @@ ul.shorting-list li a:hover, ul.shorting-list li a:focus, ul.shorting-list li a.
     font-size: 12px;
     font-weight: 500;
     color: rgba(0,44,63,0.6);
-    max-width: 220px;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    text-align: center;
 }
 .jbs-grid-usrs-info{
 	position: relative;
@@ -8757,8 +8753,8 @@ span.remove-from-compare {
     position: fixed;
     height:100%;
     overflow-y: scroll;
-    overflow-x: hidden;
-    width: 280px;
+    min-width:280px;
+    max-width:760px;
 }
 .dashboard-nav {
     display: block;

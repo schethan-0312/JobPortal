@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar7 from "@/components/Navbar7";
 import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar";
@@ -18,7 +18,6 @@ interface StartResponse {
   skill: string;
   totalQuestions: number;
   questions: QuizQuestion[];
-  timeLimitSeconds: number;
 }
 
 interface SubmitResponse {
@@ -28,9 +27,6 @@ interface SubmitResponse {
   totalQuestions: number;
   passed: boolean;
   correctAnswers: number[];
-  proctored: boolean;
-  timeExceeded: boolean;
-  violations: number;
 }
 
 interface HistoryItem {
@@ -40,7 +36,6 @@ interface HistoryItem {
   totalQuestions: number;
   passed: boolean;
   completedAt: string;
-  proctored?: boolean;
 }
 
 type Stage = "idle" | "starting" | "quiz" | "submitting" | "result";
@@ -56,47 +51,12 @@ export default function CandidateSkillAssessmentPage() {
   const [selectedAnswers, setSelectedAnswers] = useState<(number | null)[]>([]);
   const [result, setResult] = useState<SubmitResponse | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [secondsLeft, setSecondsLeft] = useState(0);
-  const [violations, setViolations] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const violationsRef = useRef(0);
-  const submitRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "CANDIDATE")) {
       router.push("/");
     }
   }, [loading, user, router]);
-
-  // Countdown timer — auto-submits when time runs out. Server independently
-  // recomputes elapsed time from createdAt, so this is UX only, not the source of truth.
-  useEffect(() => {
-    if (stage !== "quiz") return;
-    if (secondsLeft <= 0) {
-      submitRef.current();
-      return;
-    }
-    const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
-    return () => clearTimeout(t);
-  }, [stage, secondsLeft]);
-
-  // Tab-switch / window-blur detection — counts as a proctoring violation.
-  useEffect(() => {
-    if (stage !== "quiz") return;
-    const flag = () => {
-      violationsRef.current += 1;
-      setViolations(violationsRef.current);
-    };
-    const onVisibility = () => {
-      if (document.hidden) flag();
-    };
-    document.addEventListener("visibilitychange", onVisibility);
-    window.addEventListener("blur", flag);
-    return () => {
-      document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("blur", flag);
-    };
-  }, [stage]);
 
   useEffect(() => {
     if (user && user.role === "CANDIDATE") {
@@ -120,10 +80,6 @@ export default function CandidateSkillAssessmentPage() {
       setQuiz(data);
       setSelectedAnswers(new Array(data.questions.length).fill(null));
       setResult(null);
-      setSecondsLeft(data.timeLimitSeconds);
-      violationsRef.current = 0;
-      setViolations(0);
-      setCurrentQuestion(0);
       setStage("quiz");
     } catch (err) {
       setStage("idle");
@@ -140,13 +96,12 @@ export default function CandidateSkillAssessmentPage() {
   }
 
   async function handleSubmit() {
-    if (!quiz || stage === "submitting") return;
+    if (!quiz || selectedAnswers.some((a) => a === null)) return;
     setErrorMsg(null);
     setStage("submitting");
     try {
       const data = await api.post<SubmitResponse>(`/skill-assessment/${quiz.id}/submit`, {
-        answers: selectedAnswers.map((a) => a ?? 999),
-        violations: violationsRef.current,
+        answers: selectedAnswers,
       });
       setResult(data);
       setStage("result");
@@ -157,7 +112,6 @@ export default function CandidateSkillAssessmentPage() {
       setErrorMsg(err instanceof ApiError ? err.message : "Could not submit your answers. Try again.");
     }
   }
-  submitRef.current = handleSubmit;
 
   function resetToStart() {
     setQuiz(null);
@@ -228,133 +182,44 @@ export default function CandidateSkillAssessmentPage() {
               </div>
             )}
 
-            {(stage === "idle" || stage === "starting") && (
+            {(stage === "quiz" || stage === "submitting") && quiz && (
               <div className="card mb-4">
                 <div className="card-header">
-                  <h4 className="mb-0">Proctoring Rules</h4>
+                  <h4>{quiz.skill} Assessment</h4>
+                  <p className="text-muted mb-0 mt-1">{quiz.totalQuestions} questions &mdash; select one answer each</p>
                 </div>
                 <div className="card-body">
-                  <div className="row g-3">
-                    <div className="col-md-6">
-                      <h6 className="small text-uppercase text-muted mb-2">What triggers a review</h6>
-                      <ul className="small mb-0">
-                        <li>Switching tabs or minimizing the window</li>
-                        <li>The window losing focus (alt-tabbing away)</li>
-                        <li>Copy/paste inside the assessment</li>
-                        <li>Exceeding the time limit for the quiz</li>
-                      </ul>
-                    </div>
-                    <div className="col-md-6">
-                      <h6 className="small text-uppercase text-muted mb-2">What passing unlocks</h6>
-                      <p className="small mb-0">
-                        Score 70% or higher with no proctoring violations and you earn a{" "}
-                        <span className="badge bg-success-subtle text-success border border-success">
-                          <i className="fa-solid fa-shield-check me-1"></i>Verified
-                        </span>{" "}
-                        badge on that skill — shown to employers on your public profile alongside your self-declared
-                        skills, and it's the strongest signal you can give that you actually know it.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {(stage === "quiz" || stage === "submitting") && quiz && (
-              <div className="card mb-4" onCopy={(e) => e.preventDefault()} onPaste={(e) => e.preventDefault()}>
-                <div className="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-                  <div>
-                    <h4 className="mb-0">{quiz.skill} Assessment</h4>
-                    <span className="badge bg-success-subtle text-success border border-success mt-1">
-                      <i className="fa-solid fa-shield-halved me-1"></i>Proctoring Active
-                    </span>
-                  </div>
-                  <span className={`badge ${secondsLeft <= 30 ? "bg-danger" : "bg-dark"} fs-6 px-3 py-2`}>
-                    <i className="fa-regular fa-clock me-2"></i>
-                    {String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:
-                    {String(secondsLeft % 60).padStart(2, "0")}
-                  </span>
-                </div>
-                <div className="card-body">
-                  {violations > 0 && (
-                    <div className="alert alert-warning">
-                      <i className="fa-solid fa-triangle-exclamation me-2"></i>
-                      {violations} suspicious activity {violations === 1 ? "event" : "events"} detected (tab switch
-                      or window focus lost). This will affect your verified status.
-                    </div>
-                  )}
                   {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
-
-                  <div className="d-flex justify-content-center gap-2 mb-4">
-                    {quiz.questions.map((_, qi) => (
-                      <button
-                        key={qi}
-                        type="button"
-                        onClick={() => setCurrentQuestion(qi)}
-                        title={`Question ${qi + 1}${selectedAnswers[qi] !== null ? " (answered)" : ""}`}
-                        className="rounded-circle border-0 d-flex align-items-center justify-content-center"
-                        style={{
-                          width: 32,
-                          height: 32,
-                          fontSize: 12,
-                          fontWeight: 600,
-                          backgroundColor: qi === currentQuestion ? "#0b8260" : selectedAnswers[qi] !== null ? "#c9ecdf" : "#e9ecef",
-                          color: qi === currentQuestion ? "#fff" : "#333",
-                        }}
-                      >
-                        {qi + 1}
-                      </button>
-                    ))}
-                  </div>
-
-                  <p className="small text-muted mb-2">Question {currentQuestion + 1} of {quiz.totalQuestions}</p>
-                  <div className="mb-4 pb-3">
-                    <p className="fw-medium mb-2">{quiz.questions[currentQuestion].question}</p>
-                    {quiz.questions[currentQuestion].options.map((opt, oi) => (
-                      <div className="form-check mb-1" key={oi}>
-                        <input
-                          className="form-check-input"
-                          type="radio"
-                          name={`q-${currentQuestion}`}
-                          id={`q-${currentQuestion}-o-${oi}`}
-                          checked={selectedAnswers[currentQuestion] === oi}
-                          onChange={() => selectAnswer(currentQuestion, oi)}
-                        />
-                        <label className="form-check-label" htmlFor={`q-${currentQuestion}-o-${oi}`}>
-                          {opt}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="d-flex justify-content-between">
-                    <button
-                      type="button"
-                      className="btn btn-outline-main"
-                      disabled={currentQuestion === 0}
-                      onClick={() => setCurrentQuestion((q) => Math.max(0, q - 1))}
-                    >
-                      Previous
-                    </button>
-                    {currentQuestion < quiz.questions.length - 1 ? (
-                      <button
-                        type="button"
-                        className="btn btn-main"
-                        onClick={() => setCurrentQuestion((q) => Math.min(quiz.questions.length - 1, q + 1))}
-                      >
-                        Next
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="btn btn-main"
-                        onClick={handleSubmit}
-                        disabled={stage === "submitting" || selectedAnswers.some((a) => a === null)}
-                      >
-                        {stage === "submitting" ? "Submitting..." : "Submit Answers"}
-                      </button>
-                    )}
-                  </div>
+                  {quiz.questions.map((q, qi) => (
+                    <div key={qi} className="mb-4 pb-3 border-bottom">
+                      <p className="fw-medium mb-2">
+                        {qi + 1}. {q.question}
+                      </p>
+                      {q.options.map((opt, oi) => (
+                        <div className="form-check mb-1" key={oi}>
+                          <input
+                            className="form-check-input"
+                            type="radio"
+                            name={`q-${qi}`}
+                            id={`q-${qi}-o-${oi}`}
+                            checked={selectedAnswers[qi] === oi}
+                            onChange={() => selectAnswer(qi, oi)}
+                          />
+                          <label className="form-check-label" htmlFor={`q-${qi}-o-${oi}`}>
+                            {opt}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    className="btn btn-main"
+                    onClick={handleSubmit}
+                    disabled={stage === "submitting" || selectedAnswers.some((a) => a === null)}
+                  >
+                    {stage === "submitting" ? "Submitting..." : "Submit Answers"}
+                  </button>
                 </div>
               </div>
             )}
@@ -382,25 +247,9 @@ export default function CandidateSkillAssessmentPage() {
                   <h2 className="mb-1">
                     {result.score} / {result.totalQuestions}
                   </h2>
-                  <p className="text-muted mb-2">
+                  <p className="text-muted mb-4">
                     {Math.round((result.score / result.totalQuestions) * 100)}% score &mdash; 70% required to pass
                   </p>
-                  {result.passed && (
-                    <p className="mb-4">
-                      {result.proctored ? (
-                        <span className="badge bg-success-subtle text-success border border-success">
-                          <i className="fa-solid fa-shield-check me-1"></i>Proctored &amp; Verified
-                        </span>
-                      ) : (
-                        <span className="badge bg-warning-subtle text-warning border border-warning">
-                          <i className="fa-solid fa-triangle-exclamation me-1"></i>
-                          Passed, but not verified
-                          {result.timeExceeded ? " (time limit exceeded)" : ""}
-                          {result.violations > 0 ? ` (${result.violations} proctoring violations)` : ""}
-                        </span>
-                      )}
-                    </p>
-                  )}
                   <button type="button" className="btn btn-outline-main" onClick={resetToStart}>
                     Take Another Assessment
                   </button>
@@ -432,11 +281,6 @@ export default function CandidateSkillAssessmentPage() {
                             <span className={`badge ${h.passed ? "bg-success" : "bg-secondary"}`}>
                               {h.passed ? "Passed" : "Not Passed"}
                             </span>
-                            {h.passed && h.proctored && (
-                              <span className="badge bg-success-subtle text-success border border-success ms-1">
-                                <i className="fa-solid fa-shield-check me-1"></i>Verified
-                              </span>
-                            )}
                             <div className="small text-muted mt-2">
                               {new Date(h.completedAt).toLocaleDateString()}
                             </div>

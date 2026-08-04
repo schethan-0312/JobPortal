@@ -1,4 +1,4 @@
-import PublicNavbar from "@/components/PublicNavbar";
+import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
 import HeroBanner from "@/components/home/HeroBanner";
@@ -11,7 +11,7 @@ import CallToAction from "@/components/home/CallToAction";
 export default function Home() {
   return (
     <>
-      <PublicNavbar />
+      <Navbar />
       <HeroBanner />
       <div className="clearfix"></div>
       <FeaturedJobs />

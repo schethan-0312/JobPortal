@@ -1,56 +1,136 @@
 import { Injectable } from '@nestjs/common';
 import { AiService } from '../ai/ai.service.js';
-import { ScanResumeDto } from './dto/scan-resume.dto.js';
-import { AiFeature } from '../../generated/prisma/enums.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { createRequire } from 'node:module';
 
-export interface Suggestion {
-  text: string;
-  priority: 'high' | 'medium' | 'low';
-}
+const require = createRequire(import.meta.url);
+const pdfParse = require('pdf-parse');
+const mammoth = require('mammoth');
+const WordExtractor = require('word-extractor');
 
 export interface ResumeScanResult {
   overallScore: number;
-  summary: string;
   structureScore: number;
+  contentScore: number;
   keywordScore: number;
-  atsScore: number;
-  achievementScore: number;
   strengths: string[];
   weaknesses: string[];
-  suggestions: Suggestion[];
+  suggestions: string[];
   missingKeywords: string[];
 }
 
+export type ScanResponse = ResumeScanResult | { success: boolean; message: string };
+
 const SYSTEM_PROMPT = `You are an expert resume reviewer for a job portal called JobStock. You score resumes
-objectively on formatting/structure, keyword relevance for the target role, ATS (applicant tracking system)
-compatibility, and how well achievements are quantified with concrete numbers/impact.
+objectively on structure, content quality, and keyword relevance for the target role (if given).
 Always respond with strict JSON matching this exact shape, no markdown, no extra text:
 {
   "overallScore": number (0-100),
-  "summary": string (1 plain-language sentence summarizing the resume's overall state, e.g. "Solid experience section but weak keyword alignment for this role"),
-  "structureScore": number (0-100, formatting, section organization, readability),
-  "keywordScore": number (0-100, keyword match against the target role — if no target role given, judge general keyword strength for the candidate's apparent field),
-  "atsScore": number (0-100, how well this would parse in an ATS: standard section headers, no tables/columns/graphics implied, plain text-friendly formatting),
-  "achievementScore": number (0-100, how well accomplishments are quantified with concrete numbers, metrics, or measurable impact rather than vague duties),
+  "structureScore": number (0-100),
+  "contentScore": number (0-100),
+  "keywordScore": number (0-100),
   "strengths": string[] (2-5 concise points),
   "weaknesses": string[] (2-5 concise points),
-  "suggestions": [ { "text": string (specific, actionable, references actual resume content — not generic advice), "priority": "high" | "medium" | "low" } ] (3-6 items, ordered most important first),
+  "suggestions": string[] (3-6 actionable, specific improvements),
   "missingKeywords": string[] (relevant skills/keywords missing for the target role, empty array if no target role given)
 }
 Be honest and specific — reference actual content from the resume, not generic advice.`;
 
+/**
+ * Reusable helper to extract text from an uploaded resume file.
+ */
+export async function extractResumeText(filePath: string): Promise<string> {
+  const ext = path.extname(filePath).toLowerCase();
+
+  if (ext === '.pdf') {
+    const dataBuffer = fs.readFileSync(filePath);
+    const parsedPdf = await pdfParse(dataBuffer);
+    return parsedPdf.text || '';
+  }
+
+  if (ext === '.docx') {
+    const result = await mammoth.extractRawText({ path: filePath });
+    return result.value || '';
+  }
+
+  if (ext === '.doc') {
+    const extractor = new WordExtractor();
+    const extracted = await extractor.extract(filePath);
+    return extracted.getBody() || '';
+  }
+
+  throw new Error('Unsupported file type');
+}
+
 @Injectable()
 export class ResumeScannerService {
-  constructor(private readonly ai: AiService) {}
+  constructor(
+    private readonly ai: AiService,
+    private readonly prisma: PrismaService,
+  ) {}
 
-  async scan(dto: ScanResumeDto): Promise<ResumeScanResult> {
-    const userPrompt = `Target role: ${dto.targetRole || 'Not specified — evaluate generally'}
+  async scan(userId: string, targetRole?: string): Promise<ScanResponse> {
+    try {
+      const profile = await this.prisma.candidateProfile.findUnique({
+        where: { userId },
+      });
+
+      if (!profile || !profile.resumeUrl) {
+        return {
+          success: false,
+          message: 'Please upload your resume first.',
+        };
+      }
+
+      const filePath = path.join(process.cwd(), profile.resumeUrl);
+      const ext = path.extname(filePath).toLowerCase();
+
+      if (!['.pdf', '.doc', '.docx'].includes(ext)) {
+        return {
+          success: false,
+          message: 'Only PDF, DOC, and DOCX resumes are supported.',
+        };
+      }
+
+      if (!fs.existsSync(filePath)) {
+        return {
+          success: false,
+          message: 'Unable to extract text from the uploaded resume.',
+        };
+      }
+
+      let extractedText = '';
+      try {
+        extractedText = await extractResumeText(filePath);
+      } catch (err) {
+        return {
+          success: false,
+          message: 'Unable to extract text from the uploaded resume.',
+        };
+      }
+
+      if (!extractedText || extractedText.trim() === '') {
+        return {
+          success: false,
+          message: 'Unable to extract text from the uploaded resume.',
+        };
+      }
+
+      const userPrompt = `Target role: ${targetRole || 'Not specified — evaluate generally'}
 
 Resume text:
 """
-${dto.resumeText}
+${extractedText}
 """`;
 
-    return this.ai.generateJson<ResumeScanResult>(AiFeature.RESUME_SCANNER, SYSTEM_PROMPT, userPrompt);
+      return await this.ai.generateJson<ResumeScanResult>(SYSTEM_PROMPT, userPrompt);
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Unable to extract text from the uploaded resume.',
+      };
+    }
   }
 }

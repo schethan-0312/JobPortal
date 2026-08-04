@@ -1,6 +1,5 @@
-import { Suspense } from "react";
 import Link from "next/link";
-import PublicNavbar from "@/components/PublicNavbar";
+import Navbar6 from "@/components/Navbar6";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
 import JobFilters from "@/components/jobs/JobFilters";
@@ -27,35 +26,21 @@ interface EmployersResponse {
   pageSize: number;
 }
 
-async function getEmployers(params: {
-  location?: string;
-  search?: string;
-  page?: string;
-}): Promise<{ employers: Employer[]; total: number; pageSize: number; error: string | null }> {
+async function getEmployers(): Promise<{ employers: Employer[]; total: number; pageSize: number; error: string | null }> {
   try {
-    const query = new URLSearchParams();
-    if (params.location) query.set("location", params.location);
-    if (params.search) query.set("search", params.search);
-    if (params.page) query.set("page", params.page);
-    const qs = query.toString();
-    const data = await api.get<EmployersResponse>(`/employers${qs ? `?${qs}` : ""}`, { auth: false });
+    const data = await api.get<EmployersResponse>("/employers", { auth: false });
     return { employers: data.items ?? [], total: data.total ?? 0, pageSize: data.pageSize ?? 12, error: null };
   } catch (err) {
     return { employers: [], total: 0, pageSize: 12, error: err instanceof Error ? err.message : "Failed to load employers" };
   }
 }
 
-export default async function EmployersGridPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | undefined>>;
-}) {
-  const params = await searchParams;
-  const { employers, total, pageSize, error } = await getEmployers(params);
+export default async function EmployersGridPage() {
+  const { employers, total, pageSize, error } = await getEmployers();
 
   return (
     <>
-      <PublicNavbar />
+      <Navbar6 />
 
       {/* Page Title Start */}
       <div className="page-title bg-main" style={{ background: "url(/assets/img/bg2.png) no-repeat" }}>
@@ -88,9 +73,7 @@ export default async function EmployersGridPage({
             {/* Search Sidebar */}
             <div className="col-xxl-3 col-xl-4 col-lg-4 col-md-12 col-sm-12">
               <div className="side-widget-blocks">
-                <Suspense fallback={null}>
-                  <JobFilters variant="simple" mode="employers" />
-                </Suspense>
+                <JobFilters variant="simple" />
               </div>
             </div>
             {/* Sidebar End */}
@@ -100,9 +83,7 @@ export default async function EmployersGridPage({
               {/* Shorting Box */}
               <div className="row justify-content-center mb-4">
                 <div className="col-lg-12 col-md-12">
-                  <Suspense fallback={null}>
-                    <SortingBar total={total} shown={employers.length} />
-                  </Suspense>
+                  <SortingBar total={total} shown={employers.length} />
                 </div>
               </div>
               {/* Shorting Wrap End */}
@@ -158,9 +139,7 @@ export default async function EmployersGridPage({
               </div>
               {/* End All Job List */}
 
-              <Suspense fallback={null}>
-                <Pagination total={total} pageSize={pageSize} />
-              </Suspense>
+              <Pagination total={total} pageSize={pageSize} />
             </div>
             {/* Job List Wrap End*/}
           </div>

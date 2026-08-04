@@ -1,6 +1,5 @@
-import { Suspense } from "react";
 import Link from "next/link";
-import PublicNavbar from "@/components/PublicNavbar";
+import Navbar5 from "@/components/Navbar5";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
 import JobFilters from "@/components/jobs/JobFilters";
@@ -38,38 +37,26 @@ interface JobsResponse {
 }
 
 function formatSalary(job: Job) {
-  const fmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
-  if (job.salaryMin && job.salaryMax) return `${fmt(job.salaryMin)} - ${fmt(job.salaryMax)}`;
-  if (job.salaryMin) return fmt(job.salaryMin);
+  if (job.salaryMin && job.salaryMax) return `$${job.salaryMin} - ${job.salaryMax}`;
+  if (job.salaryMin) return `$${job.salaryMin}`;
   return "Not disclosed";
 }
 
-async function getJobs(
-  query: Record<string, string | undefined>,
-): Promise<{ jobs: Job[]; total: number; pageSize: number; error: string | null }> {
+async function getJobs(): Promise<{ jobs: Job[]; total: number; pageSize: number; error: string | null }> {
   try {
-    const params = new URLSearchParams();
-    for (const [key, value] of Object.entries(query)) {
-      if (value) params.set(key, value);
-    }
-    const data = await api.get<JobsResponse>(`/jobs?${params.toString()}`, { auth: false });
+    const data = await api.get<JobsResponse>("/jobs", { auth: false });
     return { jobs: data.items ?? [], total: data.total ?? 0, pageSize: data.pageSize ?? 12, error: null };
   } catch (err) {
     return { jobs: [], total: 0, pageSize: 12, error: err instanceof Error ? err.message : "Failed to load jobs" };
   }
 }
 
-export default async function JobsListPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | undefined>>;
-}) {
-  const params = await searchParams;
-  const { jobs, total, pageSize, error } = await getJobs(params);
+export default async function JobsListPage() {
+  const { jobs, total, pageSize, error } = await getJobs();
 
   return (
     <>
-      <PublicNavbar />
+      <Navbar5 />
 
       {/* Page Title Start */}
       <div className="page-title bg-main" style={{ background: "url(/assets/img/bg2.png) no-repeat" }}>
@@ -105,9 +92,7 @@ export default async function JobsListPage({
             {/* Search Sidebar */}
             <div className="col-lg-3 col-md-12 col-sm-12">
               <div className="side-widget-blocks">
-                <Suspense fallback={null}>
-                  <JobFilters variant="simple" />
-                </Suspense>
+                <JobFilters variant="simple" />
               </div>
             </div>
             {/* Sidebar End */}
@@ -150,9 +135,7 @@ export default async function JobsListPage({
               {/* Shorting Box */}
               <div className="row justify-content-center mb-4">
                 <div className="col-lg-12 col-md-12">
-                  <Suspense fallback={null}>
-                    <SortingBar total={total} shown={jobs.length} />
-                  </Suspense>
+                  <SortingBar total={total} shown={jobs.length} />
                 </div>
               </div>
               {/* Shorting Wrap End */}
@@ -226,9 +209,7 @@ export default async function JobsListPage({
               </div>
               {/* End All Job List */}
 
-              <Suspense fallback={null}>
-                <Pagination total={total} pageSize={pageSize} />
-              </Suspense>
+              <Pagination total={total} pageSize={pageSize} />
             </div>
             {/* Job List Wrap End*/}
           </div>

@@ -3,15 +3,6 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { SendMessageDto } from './dto/send-message.dto.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 
-// Enough to render a conversation-list avatar/name without leaking full profile data.
-const COUNTERPART_SELECT = {
-  id: true,
-  email: true,
-  role: true,
-  employer: { select: { companyName: true, logoUrl: true } },
-  candidateProfile: { select: { fullName: true, profilePhotoUrl: true } },
-} as const;
-
 @Injectable()
 export class MessagesService {
   constructor(
@@ -43,8 +34,8 @@ export class MessagesService {
       where: { OR: [{ senderId: userId }, { receiverId: userId }] },
       orderBy: { createdAt: 'desc' },
       include: {
-        sender: { select: COUNTERPART_SELECT },
-        receiver: { select: COUNTERPART_SELECT },
+        sender: { select: { id: true, email: true } },
+        receiver: { select: { id: true, email: true } },
       },
     });
 

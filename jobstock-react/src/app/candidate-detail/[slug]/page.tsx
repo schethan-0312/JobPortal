@@ -1,7 +1,6 @@
-import PublicNavbar from "@/components/PublicNavbar";
+import Navbar2 from "@/components/Navbar2";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
-import RecordProfileView from "@/components/RecordProfileView";
 import { api, ApiError, assetUrl } from "@/lib/api";
 
 interface CandidateProfile {
@@ -9,14 +8,18 @@ interface CandidateProfile {
   fullName: string;
   headline?: string;
   location?: string;
-  skills?: string[];
-  experienceYears?: number;
-  resumeUrl?: string | null;
+  about?: string;
   profilePhotoUrl?: string | null;
-  isVerified?: boolean;
-  githubUsername?: string | null;
-  githubProfileUrl?: string | null;
-  linkedinProfileUrl?: string | null;
+  resume?: {
+    resumeUrl: string | null;
+    summary: string | null;
+    skills: string[];
+    experienceYears: number | null;
+    educations: any[];
+    experiences: any[];
+    projects: any[];
+    certifications: any[];
+  } | null;
 }
 
 async function getCandidate(id: string): Promise<{ candidate: CandidateProfile | null; error: string | null }> {
@@ -41,8 +44,7 @@ export default async function CandidateDetailPage({
 
   return (
     <>
-      <PublicNavbar />
-      {candidate && <RecordProfileView candidateId={candidate.id} />}
+      <Navbar2 />
 
       {/* Header Information Start */}
       <section className="gray-simple">
@@ -69,14 +71,7 @@ export default async function CandidateDetailPage({
                     <div className="cndt-head-caption">
                       <div className="cndt-head-caption-top">
                         <div className="cndt-yior-2">
-                          <h4 className="cndt-title">
-                            {candidate.fullName}
-                            {candidate.isVerified && (
-                              <span className="badge bg-success-subtle text-success border border-success ms-2" title="Passed a proctored skill assessment">
-                                <i className="fa-solid fa-shield-check me-1"></i>Verified
-                              </span>
-                            )}
-                          </h4>
+                          <h4 className="cndt-title">{candidate.fullName}</h4>
                         </div>
                         <div className="cndt-yior-3">
                           <span>
@@ -89,30 +84,14 @@ export default async function CandidateDetailPage({
                           </span>
                           <span>
                             <i className="fa-solid fa-briefcase me-1"></i>
-                            {candidate.experienceYears != null ? `${candidate.experienceYears} Years exp.` : "—"}
+                            {candidate.resume?.experienceYears != null ? `${candidate.resume.experienceYears} Years exp.` : "—"}
                           </span>
-                          {candidate.githubUsername && (
-                            <span>
-                              <a href={candidate.githubProfileUrl ?? undefined} target="_blank" rel="noreferrer">
-                                <i className="fa-brands fa-github me-1"></i>
-                                {candidate.githubUsername}
-                              </a>
-                            </span>
-                          )}
-                          {candidate.linkedinProfileUrl && (
-                            <span>
-                              <a href={candidate.linkedinProfileUrl} target="_blank" rel="noreferrer">
-                                <i className="fa-brands fa-linkedin me-1"></i>
-                                LinkedIn
-                              </a>
-                            </span>
-                          )}
                         </div>
                       </div>
                       <div className="cndt-head-caption-bottom">
                         <div className="cndt-yior-skills">
-                          {(candidate.skills ?? []).length === 0 && <span>No skills listed</span>}
-                          {(candidate.skills ?? []).map((skill) => (
+                          {(candidate.resume?.skills ?? []).length === 0 && <span>No skills listed</span>}
+                          {(candidate.resume?.skills ?? []).map((skill) => (
                             <span key={skill}>{skill}</span>
                           ))}
                         </div>
@@ -120,8 +99,8 @@ export default async function CandidateDetailPage({
                     </div>
                   </div>
                   <div className="cndt-head-right">
-                    {candidate.resumeUrl ? (
-                      <a href={candidate.resumeUrl} target="_blank" rel="noreferrer" className="btn btn-main">
+                    {candidate.resume?.resumeUrl ? (
+                      <a href={candidate.resume?.resumeUrl} target="_blank" rel="noreferrer" className="btn btn-main">
                         Download CV
                         <i className="fa-solid fa-download ms-2"></i>
                       </a>
@@ -152,10 +131,10 @@ export default async function CandidateDetailPage({
                   <div className="cdtsr-groups-block">
                     <div className="single-cdtsr-block">
                       <div className="single-cdtsr-header">
-                        <h5>About Candidate</h5>
+                        <h5>Resume Summary</h5>
                       </div>
                       <div className="single-cdtsr-body">
-                        <p>{candidate.headline ?? "No description provided."}</p>
+                        <p>{candidate.resume?.summary || candidate.about || "No summary provided."}</p>
                       </div>
                     </div>
 
@@ -169,7 +148,7 @@ export default async function CandidateDetailPage({
                             { icon: "fa-solid fa-location-dot", title: candidate.location ?? "Not specified", name: "Location" },
                             {
                               icon: "fa-solid fa-briefcase",
-                              title: candidate.experienceYears != null ? `${candidate.experienceYears} Years` : "Not specified",
+                              title: candidate.resume?.experienceYears != null ? `${candidate.resume.experienceYears} Years` : "Not specified",
                               name: "Experience",
                             },
                             {
@@ -179,7 +158,7 @@ export default async function CandidateDetailPage({
                             },
                             {
                               icon: "fa-solid fa-layer-group",
-                              title: (candidate.skills ?? []).length > 0 ? `${(candidate.skills ?? []).length} Skills Listed` : "No skills listed",
+                              title: (candidate.resume?.skills ?? []).length > 0 ? `${(candidate.resume?.skills ?? []).length} Skills Listed` : "No skills listed",
                               name: "Skills",
                             },
                           ].map((item, idx) => (
@@ -205,11 +184,115 @@ export default async function CandidateDetailPage({
                       </div>
                       <div className="single-cdtsr-body">
                         <div className="cndts-all-skills-list">
-                          {(candidate.skills ?? []).length === 0 && <span>No skills listed</span>}
-                          {(candidate.skills ?? []).map((skill) => (
+                          {(candidate.resume?.skills ?? []).length === 0 && <span>No skills listed</span>}
+                          {(candidate.resume?.skills ?? []).map((skill) => (
                             <span key={skill}>{skill}</span>
                           ))}
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Experiences */}
+                    <div className="single-cdtsr-block">
+                      <div className="single-cdtsr-header">
+                        <h5>Experience</h5>
+                      </div>
+                      <div className="single-cdtsr-body">
+                        {(candidate.resume?.experiences ?? []).length === 0 && <p>No experience listed</p>}
+                        <ul className="timeline">
+                          {(candidate.resume?.experiences ?? []).map((exp: any) => (
+                            <li key={exp.id}>
+                              <div className="timeline-badge bg-primary"></div>
+                              <div className="timeline-panel">
+                                <div className="timeline-heading">
+                                  <h6 className="timeline-title mb-1">{exp.title}</h6>
+                                  <p className="text-muted mb-1"><small>{exp.company} | {exp.startDate || ""} - {exp.endDate || ""}</small></p>
+                                </div>
+                                <div className="timeline-body">
+                                  <p>{exp.description}</p>
+                                </div>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    {/* Educations */}
+                    <div className="single-cdtsr-block">
+                      <div className="single-cdtsr-header">
+                        <h5>Education</h5>
+                      </div>
+                      <div className="single-cdtsr-body">
+                        {(candidate.resume?.educations ?? []).length === 0 && <p>No education listed</p>}
+                        <ul className="timeline">
+                          {(candidate.resume?.educations ?? []).map((edu: any) => (
+                            <li key={edu.id}>
+                              <div className="timeline-badge bg-success"></div>
+                              <div className="timeline-panel">
+                                <div className="timeline-heading">
+                                  <h6 className="timeline-title mb-1">{edu.title}</h6>
+                                  <p className="text-muted mb-1"><small>{edu.academy} | {edu.year || ""}</small></p>
+                                </div>
+                                <div className="timeline-body">
+                                  <p>{edu.description}</p>
+                                </div>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    {/* Certifications */}
+                    <div className="single-cdtsr-block">
+                      <div className="single-cdtsr-header">
+                        <h5>Certifications</h5>
+                      </div>
+                      <div className="single-cdtsr-body">
+                        {(candidate.resume?.certifications ?? []).length === 0 && <p>No certifications listed</p>}
+                        <ul className="timeline">
+                          {(candidate.resume?.certifications ?? []).map((cert: any) => (
+                            <li key={cert.id}>
+                              <div className="timeline-badge bg-info"></div>
+                              <div className="timeline-panel">
+                                <div className="timeline-heading">
+                                  <h6 className="timeline-title mb-1">{cert.title}</h6>
+                                  <p className="text-muted mb-1"><small>{cert.year || ""}</small></p>
+                                </div>
+                                <div className="timeline-body">
+                                  <p>{cert.description}</p>
+                                </div>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    {/* Projects */}
+                    <div className="single-cdtsr-block">
+                      <div className="single-cdtsr-header">
+                        <h5>Projects</h5>
+                      </div>
+                      <div className="single-cdtsr-body">
+                        {(candidate.resume?.projects ?? []).length === 0 && <p>No projects listed</p>}
+                        <ul className="timeline">
+                          {(candidate.resume?.projects ?? []).map((proj: any) => (
+                            <li key={proj.id}>
+                              <div className="timeline-badge bg-warning"></div>
+                              <div className="timeline-panel">
+                                <div className="timeline-heading">
+                                  <h6 className="timeline-title mb-1">{proj.title}</h6>
+                                  {proj.link && <p className="text-muted mb-1"><small><a href={proj.link} target="_blank" rel="noreferrer">{proj.link}</a></small></p>}
+                                </div>
+                                <div className="timeline-body">
+                                  <p>{proj.description}</p>
+                                </div>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     </div>
 

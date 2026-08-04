@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import PublicNavbar from "@/components/PublicNavbar";
+import Navbar2 from "@/components/Navbar2";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
 import { api, ApiError } from "@/lib/api";
@@ -33,7 +33,7 @@ export default function ContactPage() {
 
   return (
     <>
-      <PublicNavbar />
+      <Navbar2 />
 
       {/* Page Title Start */}
       <section className="bg-cover bg-second" style={{ background: "url(/assets/img/bg2.png)no-repeat" }}>

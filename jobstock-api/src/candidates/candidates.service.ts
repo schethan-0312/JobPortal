@@ -1,5 +1,4 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { UpdateCandidateProfileDto } from './dto/update-candidate-profile.dto.js';
 import { CreateJobAlertDto } from './dto/create-job-alert.dto.js';
@@ -17,14 +16,7 @@ const PUBLIC_CANDIDATE_SELECT = {
   experienceYears: true,
   resumeUrl: true,
   profilePhotoUrl: true,
-  videoProfileUrl: true,
   isVerified: true,
-  githubUsername: true,
-  githubProfileUrl: true,
-  githubAvatarUrl: true,
-  linkedinProfileUrl: true,
-  experienceEntries: true,
-  educationEntries: true,
   createdAt: true,
 } as const;
 
@@ -43,7 +35,9 @@ export class CandidatesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getMyProfile(userId: string) {
-    const profile = await this.prisma.candidateProfile.findUnique({ where: { userId } });
+    const profile = await this.prisma.candidateProfile.findUnique({
+      where: { userId },
+    });
     if (!profile) {
       throw new NotFoundException('Candidate profile not found');
     }
@@ -55,9 +49,87 @@ export class CandidatesService {
     if (!profile) {
       throw new NotFoundException('Candidate profile not found');
     }
-    return this.prisma.candidateProfile.update({
-      where: { userId },
-      data: dto as unknown as Prisma.CandidateProfileUpdateInput,
+    return this.prisma.candidateProfile.update({ where: { userId }, data: dto });
+  }
+
+  async getMyResume(userId: string) {
+    const profile = await this.prisma.candidateProfile.findUnique({ where: { userId } });
+    if (!profile) throw new NotFoundException('Candidate profile not found');
+
+    const resume = await this.prisma.candidateResume.findUnique({
+      where: { candidateId: profile.id },
+      include: {
+        educations: true,
+        experiences: true,
+        projects: true,
+        certifications: true,
+      },
+    });
+    return resume || {};
+  }
+
+  async syncResume(userId: string, dto: any) {
+    const profile = await this.prisma.candidateProfile.findUnique({ where: { userId } });
+    if (!profile) throw new NotFoundException('Candidate profile not found');
+
+    return this.prisma.$transaction(async (tx) => {
+      const resume = await tx.candidateResume.upsert({
+        where: { candidateId: profile.id },
+        update: {
+          resumeUrl: dto.resumeUrl !== undefined ? dto.resumeUrl : undefined,
+          summary: dto.summary !== undefined ? dto.summary : undefined,
+          skills: dto.skills !== undefined ? dto.skills : undefined,
+          experienceYears: dto.experienceYears !== undefined ? dto.experienceYears : undefined,
+        },
+        create: {
+          candidateId: profile.id,
+          resumeUrl: dto.resumeUrl,
+          summary: dto.summary,
+          skills: dto.skills || [],
+          experienceYears: dto.experienceYears,
+        },
+      });
+
+      if (dto.educations) {
+        await tx.education.deleteMany({ where: { resumeId: resume.id } });
+        if (dto.educations.length > 0) {
+          await tx.education.createMany({
+            data: dto.educations.map((e: any) => ({ ...e, resumeId: resume.id })),
+          });
+        }
+      }
+
+      if (dto.experiences) {
+        await tx.experience.deleteMany({ where: { resumeId: resume.id } });
+        if (dto.experiences.length > 0) {
+          await tx.experience.createMany({
+            data: dto.experiences.map((e: any) => ({ ...e, resumeId: resume.id })),
+          });
+        }
+      }
+
+      if (dto.projects) {
+        await tx.project.deleteMany({ where: { resumeId: resume.id } });
+        if (dto.projects.length > 0) {
+          await tx.project.createMany({
+            data: dto.projects.map((p: any) => ({ ...p, resumeId: resume.id })),
+          });
+        }
+      }
+
+      if (dto.certifications) {
+        await tx.certification.deleteMany({ where: { resumeId: resume.id } });
+        if (dto.certifications.length > 0) {
+          await tx.certification.createMany({
+            data: dto.certifications.map((c: any) => ({ ...c, resumeId: resume.id })),
+          });
+        }
+      }
+
+      return tx.candidateResume.findUnique({
+        where: { id: resume.id },
+        include: { educations: true, experiences: true, projects: true, certifications: true },
+      });
     });
   }
 
@@ -86,43 +158,9 @@ export class CandidatesService {
     location?: string;
     skill?: string;
     minExperience?: number;
-    q?: string;
     page: number;
     pageSize: number;
   }) {
-    // `q` is a full-text/boolean query (supports "quoted phrases", AND is implicit between
-    // words, OR, and -exclude) run against headline/about/skills via Postgres websearch_to_tsquery.
-    // Kept as a raw query because Prisma has no first-class tsvector/tsquery support.
-    if (params.q && params.q.trim().length > 0) {
-      const offset = (params.page - 1) * params.pageSize;
-      const locationPattern = params.location ? `%${params.location}%` : null;
-      const minExperience = params.minExperience ?? null;
-      const rows = await this.prisma.$queryRaw<Array<{ id: string }>>`
-        SELECT id FROM "CandidateProfile"
-        WHERE to_tsvector('english', coalesce("headline",'') || ' ' || coalesce("about",'') || ' ' || array_to_string("skills", ' '))
-          @@ websearch_to_tsquery('english', ${params.q})
-          AND (${locationPattern}::text IS NULL OR "location" ILIKE ${locationPattern})
-          AND (${minExperience}::int IS NULL OR "experienceYears" >= ${minExperience})
-        ORDER BY "updatedAt" DESC
-        LIMIT ${params.pageSize} OFFSET ${offset}
-      `;
-      const countRows = await this.prisma.$queryRaw<Array<{ count: bigint }>>`
-        SELECT COUNT(*) as count FROM "CandidateProfile"
-        WHERE to_tsvector('english', coalesce("headline",'') || ' ' || coalesce("about",'') || ' ' || array_to_string("skills", ' '))
-          @@ websearch_to_tsquery('english', ${params.q})
-          AND (${locationPattern}::text IS NULL OR "location" ILIKE ${locationPattern})
-          AND (${minExperience}::int IS NULL OR "experienceYears" >= ${minExperience})
-      `;
-      const ids = rows.map((r) => r.id);
-      const items = ids.length
-        ? await this.prisma.candidateProfile.findMany({ where: { id: { in: ids } }, select: EMPLOYER_SEARCH_SELECT })
-        : [];
-      // Raw query already ordered/paginated by id — restore that order after the findMany.
-      const byId = new Map(items.map((i) => [i.id, i]));
-      const ordered = ids.map((id) => byId.get(id)).filter((x): x is (typeof items)[number] => !!x);
-      return { items: ordered, total: Number(countRows[0]?.count ?? 0), page: params.page, pageSize: params.pageSize };
-    }
-
     const where = {
       ...(params.location ? { location: { contains: params.location, mode: 'insensitive' as const } } : {}),
       ...(params.skill ? { skills: { has: params.skill } } : {}),
@@ -145,41 +183,20 @@ export class CandidatesService {
     return { items, total, page: params.page, pageSize: params.pageSize };
   }
 
-  /** Logs an employer opening a candidate's profile — powers "who viewed your profile". */
-  async recordProfileView(candidateProfileId: string, viewerUserId: string) {
-    const candidate = await this.prisma.candidateProfile.findUnique({ where: { id: candidateProfileId } });
-    if (!candidate) {
-      throw new NotFoundException('Candidate not found');
-    }
-    // A candidate viewing their own profile, or repeat views seconds apart, aren't a real signal.
-    if (candidate.userId === viewerUserId) {
-      return { logged: false };
-    }
-    await this.prisma.profileView.create({ data: { candidateId: candidateProfileId, viewerId: viewerUserId } });
-    return { logged: true };
-  }
-
-  async listMyProfileViews(userId: string) {
-    const profile = await this.prisma.candidateProfile.findUnique({ where: { userId } });
-    if (!profile) {
-      throw new NotFoundException('Candidate profile not found');
-    }
-    const [views, total] = await Promise.all([
-      this.prisma.profileView.findMany({
-        where: { candidateId: profile.id },
-        include: { viewer: { select: { employer: { select: { companyName: true, logoUrl: true } } } } },
-        orderBy: { createdAt: 'desc' },
-        take: 20,
-      }),
-      this.prisma.profileView.count({ where: { candidateId: profile.id } }),
-    ]);
-    return { views, total };
-  }
-
   async getPublicProfile(id: string) {
     const profile = await this.prisma.candidateProfile.findUnique({
       where: { id },
-      select: PUBLIC_CANDIDATE_SELECT,
+      select: {
+        ...PUBLIC_CANDIDATE_SELECT,
+        resume: {
+          include: {
+            educations: true,
+            experiences: true,
+            projects: true,
+            certifications: true,
+          }
+        }
+      }
     });
     if (!profile) {
       throw new NotFoundException('Candidate not found');
@@ -272,25 +289,5 @@ export class CandidatesService {
       where: { candidateId: profile.id },
       include: { employer: { select: { id: true, companyName: true, logoUrl: true, location: true } } },
     });
-  }
-
-  async unfollowEmployer(userId: string, employerId: string) {
-    const profile = await this.prisma.candidateProfile.findUnique({ where: { userId } });
-    if (!profile) {
-      throw new NotFoundException('Candidate profile not found');
-    }
-    await this.prisma.employerFollow.deleteMany({ where: { candidateId: profile.id, employerId } });
-    return { success: true };
-  }
-
-  async isFollowingEmployer(userId: string, employerId: string) {
-    const profile = await this.prisma.candidateProfile.findUnique({ where: { userId } });
-    if (!profile) {
-      return { following: false };
-    }
-    const existing = await this.prisma.employerFollow.findUnique({
-      where: { candidateId_employerId: { candidateId: profile.id, employerId } },
-    });
-    return { following: Boolean(existing) };
   }
 }

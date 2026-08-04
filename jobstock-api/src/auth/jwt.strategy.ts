@@ -7,7 +7,6 @@ interface JwtPayload {
   sub: string;
   email: string;
   role: string;
-  iat: number;
 }
 
 @Injectable()
@@ -29,14 +28,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       throw new UnauthorizedException('User no longer exists');
     }
-    // A force-logout sets sessionRevokedAt — any token issued before that instant
-    // is rejected even though its own signature/expiry are still technically valid.
-    if (user.sessionRevokedAt && payload.iat * 1000 < user.sessionRevokedAt.getTime()) {
-      throw new UnauthorizedException('Session has been revoked, please log in again');
-    }
-    if (user.isSuspended) {
-      throw new UnauthorizedException('This account has been suspended');
-    }
-    return { userId: user.id, email: user.email, role: user.role, adminRole: user.adminRole };
+    return { userId: user.id, email: user.email, role: user.role };
   }
 }

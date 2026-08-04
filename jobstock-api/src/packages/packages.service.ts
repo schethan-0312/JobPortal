@@ -36,23 +36,10 @@ export class PackagesService {
     if (!pkg || !pkg.isActive) {
       throw new NotFoundException('Package not found');
     }
-
-    if (pkg.audience === 'JOB_BOOST') {
-      if (!dto.jobId) {
-        throw new BadRequestException('jobId is required for a job boost purchase');
-      }
-      const employer = await this.prisma.employer.findUnique({ where: { userId } });
-      const job = await this.prisma.job.findUnique({ where: { id: dto.jobId } });
-      if (!employer || !job || job.employerId !== employer.id) {
-        throw new NotFoundException('Job not found');
-      }
-    }
-
     return this.prisma.order.create({
       data: {
         userId,
         packageId: pkg.id,
-        jobId: pkg.audience === 'JOB_BOOST' ? dto.jobId : undefined,
         amountInPaisa: pkg.priceInPaisa,
         status: 'PENDING',
       },
@@ -143,7 +130,7 @@ export class PackagesService {
   }
 
   private async activatePackage(
-    order: { id: string; userId: string; packageId: string; jobId: string | null; package: { audience: string } },
+    order: { id: string; userId: string; packageId: string; package: { audience: string } },
     gatewayRef: string,
   ) {
     const updatedOrder = await this.prisma.order.update({
@@ -160,17 +147,6 @@ export class PackagesService {
           update: { packageId: order.packageId, jobPostsUsed: 0, startedAt: new Date() },
         });
       }
-    }
-
-    if (order.package.audience === 'JOB_BOOST' && order.jobId) {
-      const BOOST_DURATION_DAYS = 30;
-      await this.prisma.job.update({
-        where: { id: order.jobId },
-        data: {
-          isFeatured: true,
-          featuredUntil: new Date(Date.now() + BOOST_DURATION_DAYS * 24 * 60 * 60 * 1000),
-        },
-      });
     }
 
     return updatedOrder;

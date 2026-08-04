@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 
-export type AdminSidebarActive = "dashboard" | "employers" | "employer-directory" | "reports" | "audit-log" | "financials" | "integrations" | "security" | "team" | "ai-monitoring" | "database" | "candidates" | "jobs" | "content" | "proctoring" | "support" | "system-config" | "analytics" | "search" | "background-jobs" | "legal" | "seo";
+export type AdminSidebarActive = "dashboard" | "employers" | "reports";
 
 interface AdminSidebarProps {
   active?: AdminSidebarActive;
@@ -57,109 +57,14 @@ export default function AdminSidebar({ active }: AdminSidebarProps) {
                   <i className="fa-solid fa-gauge-high me-2"></i>Dashboard
                 </Link>
               </li>
-              <li className={active === "search" ? "active" : undefined}>
-                <Link href="/admin-search">
-                  <i className="fa-solid fa-magnifying-glass me-2"></i>Global Search
-                </Link>
-              </li>
-              <li className={active === "candidates" ? "active" : undefined}>
-                <Link href="/admin-candidates">
-                  <i className="fa-solid fa-user-graduate me-2"></i>Candidates
-                </Link>
-              </li>
               <li className={active === "employers" ? "active" : undefined}>
                 <Link href="/admin-employers">
                   <i className="fa-solid fa-user-check me-2"></i>Verify Employers
                 </Link>
               </li>
-              <li className={active === "employer-directory" ? "active" : undefined}>
-                <Link href="/admin-employer-directory">
-                  <i className="fa-solid fa-building me-2"></i>Employer Directory
-                </Link>
-              </li>
-              <li className={active === "jobs" ? "active" : undefined}>
-                <Link href="/admin-jobs">
-                  <i className="fa-solid fa-briefcase me-2"></i>Job Moderation
-                </Link>
-              </li>
               <li className={active === "reports" ? "active" : undefined}>
                 <Link href="/admin-reports">
                   <i className="fa-solid fa-flag me-2"></i>Reports
-                </Link>
-              </li>
-              <li className={active === "content" ? "active" : undefined}>
-                <Link href="/admin-content">
-                  <i className="fa-solid fa-newspaper me-2"></i>Content Moderation
-                </Link>
-              </li>
-              <li className={active === "legal" ? "active" : undefined}>
-                <Link href="/admin-legal">
-                  <i className="fa-solid fa-scale-balanced me-2"></i>Legal &amp; Compliance
-                </Link>
-              </li>
-              <li className={active === "seo" ? "active" : undefined}>
-                <Link href="/admin-seo">
-                  <i className="fa-solid fa-magnifying-glass-chart me-2"></i>SEO &amp; Content Control
-                </Link>
-              </li>
-              <li className={active === "proctoring" ? "active" : undefined}>
-                <Link href="/admin-proctoring">
-                  <i className="fa-solid fa-video me-2"></i>Proctoring Oversight
-                </Link>
-              </li>
-              <li className={active === "support" ? "active" : undefined}>
-                <Link href="/admin-support">
-                  <i className="fa-solid fa-headset me-2"></i>Support Tickets
-                </Link>
-              </li>
-              <li className={active === "system-config" ? "active" : undefined}>
-                <Link href="/admin-system-config">
-                  <i className="fa-solid fa-sliders me-2"></i>System Configuration
-                </Link>
-              </li>
-              <li className={active === "analytics" ? "active" : undefined}>
-                <Link href="/admin-analytics">
-                  <i className="fa-solid fa-chart-line me-2"></i>Analytics &amp; Reports
-                </Link>
-              </li>
-              <li className={active === "financials" ? "active" : undefined}>
-                <Link href="/admin-financials">
-                  <i className="fa-solid fa-sack-dollar me-2"></i>Financials
-                </Link>
-              </li>
-              <li className={active === "audit-log" ? "active" : undefined}>
-                <Link href="/admin-audit-log">
-                  <i className="fa-solid fa-clock-rotate-left me-2"></i>Audit Log
-                </Link>
-              </li>
-              <li className={active === "integrations" ? "active" : undefined}>
-                <Link href="/admin-integrations">
-                  <i className="fa-solid fa-plug me-2"></i>Integration Health
-                </Link>
-              </li>
-              <li className={active === "security" ? "active" : undefined}>
-                <Link href="/admin-security">
-                  <i className="fa-solid fa-shield-halved me-2"></i>Security &amp; Access
-                </Link>
-              </li>
-              <li className={active === "team" ? "active" : undefined}>
-                <Link href="/admin-team">
-                  <i className="fa-solid fa-user-shield me-2"></i>Team &amp; Permissions
-                </Link>
-              </li>
-              <li className={active === "ai-monitoring" ? "active" : undefined}>
-                <Link href="/admin-ai">
-                  <i className="fa-solid fa-robot me-2"></i>AI Monitoring
-                </Link>
-              </li>
-              <li className={active === "background-jobs" ? "active" : undefined}>
-                <Link href="/admin-background-jobs">
-                  <i className="fa-solid fa-gears me-2"></i>Background Jobs
-                </Link>
-              </li>
-              <li className={active === "database" ? "active" : undefined}>
-                <Link href="/admin-database">
-                  <i className="fa-solid fa-database me-2"></i>Database &amp; Backups
                 </Link>
               </li>
               <li>

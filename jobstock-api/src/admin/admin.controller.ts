@@ -1,5 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Req, UseGuards } from '@nestjs/common';
-import type { Request } from 'express';
+import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
 import { AdminService } from './admin.service.js';
 import { VerifyEmployerDto } from './dto/verify-employer.dto.js';
 import { ResolveReportDto } from './dto/resolve-report.dto.js';
@@ -26,9 +25,8 @@ export class AdminController {
     @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
     @Body() dto: VerifyEmployerDto,
-    @Req() req: Request,
   ) {
-    return this.adminService.verifyEmployer(user.userId, id, dto, req.ip);
+    return this.adminService.verifyEmployer(user.userId, id, dto);
   }
 
   @Get('reports')
@@ -37,18 +35,13 @@ export class AdminController {
   }
 
   @Patch('reports/:id/resolve')
-  resolveReport(
-    @CurrentUser() user: AuthenticatedUser,
-    @Param('id') id: string,
-    @Body() dto: ResolveReportDto,
-    @Req() req: Request,
-  ) {
-    return this.adminService.resolveReport(user.userId, id, dto, req.ip);
+  resolveReport(@Param('id') id: string, @Body() dto: ResolveReportDto) {
+    return this.adminService.resolveReport(id, dto);
   }
 
   @Patch('jobs/:id/flag')
-  flagJob(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string, @Req() req: Request) {
-    return this.adminService.flagJob(user.userId, id, req.ip);
+  flagJob(@Param('id') id: string) {
+    return this.adminService.flagJob(id);
   }
 
   @Get('stats')

@@ -1,4 +1,4 @@
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsString, MaxLength } from 'class-validator';
 
 export class SubmitInterviewDto {
   @IsArray()
@@ -7,11 +7,4 @@ export class SubmitInterviewDto {
   @IsString({ each: true })
   @MaxLength(3000, { each: true })
   answers!: string[];
-
-  /** Count of tab-switch/window-blur/paste events detected client-side during the interview. */
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  @Max(1000)
-  violations?: number;
 }

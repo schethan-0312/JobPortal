@@ -1,6 +1,5 @@
-import { Suspense } from "react";
 import Link from "next/link";
-import PublicNavbar from "@/components/PublicNavbar";
+import Navbar5 from "@/components/Navbar5";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
 import JobFilters from "@/components/jobs/JobFilters";
@@ -28,35 +27,21 @@ interface CandidatesResponse {
   pageSize: number;
 }
 
-async function getCandidates(params: {
-  location?: string;
-  skill?: string;
-  page?: string;
-}): Promise<{ candidates: CandidateProfile[]; total: number; pageSize: number; error: string | null }> {
+async function getCandidates(): Promise<{ candidates: CandidateProfile[]; total: number; pageSize: number; error: string | null }> {
   try {
-    const query = new URLSearchParams();
-    if (params.location) query.set("location", params.location);
-    if (params.skill) query.set("skill", params.skill);
-    if (params.page) query.set("page", params.page);
-    const qs = query.toString();
-    const data = await api.get<CandidatesResponse>(`/candidates${qs ? `?${qs}` : ""}`, { auth: false });
+    const data = await api.get<CandidatesResponse>("/candidates", { auth: false });
     return { candidates: data.items ?? [], total: data.total ?? 0, pageSize: data.pageSize ?? 12, error: null };
   } catch (err) {
     return { candidates: [], total: 0, pageSize: 12, error: err instanceof Error ? err.message : "Failed to load candidates" };
   }
 }
 
-export default async function CandidatesGridPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | undefined>>;
-}) {
-  const params = await searchParams;
-  const { candidates, total, pageSize, error } = await getCandidates(params);
+export default async function CandidatesGridPage() {
+  const { candidates, total, pageSize, error } = await getCandidates();
 
   return (
     <>
-      <PublicNavbar />
+      <Navbar5 />
 
       {/* Page Title Start */}
       <div className="page-title bg-main" style={{ background: "url(/assets/img/bg2.png) no-repeat" }}>
@@ -89,9 +74,7 @@ export default async function CandidatesGridPage({
             {/* Search Sidebar */}
             <div className="col-xxl-3 col-xl-4 col-lg-4 col-md-12 col-sm-12">
               <div className="side-widget-blocks">
-                <Suspense fallback={null}>
-                  <JobFilters variant="simple" mode="candidates" />
-                </Suspense>
+                <JobFilters variant="simple" />
               </div>
             </div>
             {/* Sidebar End */}
@@ -101,9 +84,7 @@ export default async function CandidatesGridPage({
               {/* Shorting Box */}
               <div className="row justify-content-center mb-4">
                 <div className="col-lg-12 col-md-12">
-                  <Suspense fallback={null}>
-                    <SortingBar total={total} shown={candidates.length} />
-                  </Suspense>
+                  <SortingBar total={total} shown={candidates.length} />
                 </div>
               </div>
               {/* Shorting Wrap End */}
@@ -170,9 +151,7 @@ export default async function CandidatesGridPage({
               </div>
               {/* End All Job List */}
 
-              <Suspense fallback={null}>
-                <Pagination total={total} pageSize={pageSize} />
-              </Suspense>
+              <Pagination total={total} pageSize={pageSize} />
             </div>
             {/* Job List Wrap End*/}
           </div>

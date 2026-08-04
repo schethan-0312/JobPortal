@@ -3,19 +3,13 @@ import Script from "next/script";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import AiChatWidget from "@/components/AiChatWidget";
-import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 
 export const metadata: Metadata = {
   title: "JobStock - Job Portal",
   description: "Find your career to make a better life",
-  manifest: "/manifest.json",
   icons: {
     icon: "/assets/img/favicon.png",
   },
-};
-
-export const viewport = {
-  themeColor: "#0a5f55",
 };
 
 export default function RootLayout({
@@ -35,7 +29,6 @@ export default function RootLayout({
       </head>
       <body>
         <AuthProvider>
-          <ServiceWorkerRegistration />
           <div id="main-wrapper">
             {children}
             <a href="#" id="back2Top" className="top-scroll" title="Back to top">

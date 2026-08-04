@@ -1,5 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
-import type { Request } from 'express';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service.js';
 import { RegisterDto } from './dto/register.dto.js';
@@ -22,8 +21,8 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { ttl: 60_000, limit: 5 } })
-  login(@Body() dto: LoginDto, @Req() req: Request) {
-    return this.authService.login(dto, req.ip, req.headers['user-agent']);
+  login(@Body() dto: LoginDto) {
+    return this.authService.login(dto);
   }
 
   @Get('me')

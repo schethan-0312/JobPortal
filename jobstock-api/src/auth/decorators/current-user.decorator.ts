@@ -4,7 +4,6 @@ export interface AuthenticatedUser {
   userId: string;
   email: string;
   role: string;
-  adminRole?: string | null;
 }
 
 export const CurrentUser = createParamDecorator(

@@ -29,36 +29,68 @@ export default function Footer() {
       <div>
         <div className="container">
           <div className="row">
-            <div className="col-lg-4 col-md-4">
+            <div className="col-lg-3 col-md-4">
               <div className="footer-widget">
                 <img src="/assets/img/logo-light.png" className="img-footer" alt="JobStock" />
                 <div className="footer-add">
                   <p>
-                    4th Floor, Prestige Tech Park
+                    Collins Street West, Victoria Near Bank Road
                     <br />
-                    Marathahalli, Bengaluru
-                    <br />
-                    Karnataka 560103, India
+                    Australia QHR12456.
                   </p>
+                </div>
+                <div className="foot-socials">
+                  <ul>
+                    <li>
+                      <a href="#">
+                        <i className="fa-brands fa-facebook"></i>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#">
+                        <i className="fa-brands fa-linkedin"></i>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#">
+                        <i className="fa-brands fa-google-plus"></i>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#">
+                        <i className="fa-brands fa-twitter"></i>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#">
+                        <i className="fa-brands fa-dribbble"></i>
+                      </a>
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>
-
-            <div className="col-lg-3 col-md-4">
+            <div className="col-lg-2 col-md-4">
               <div className="footer-widget">
-                <h4 className="widget-title">For Job Seekers</h4>
+                <h4 className="widget-title">For Clients</h4>
                 <ul className="footer-menu">
                   <li>
-                    <a href="/jobs">Browse Jobs</a>
+                    <a href="#">Talent Marketplace</a>
                   </li>
                   <li>
-                    <a href="/candidate-resume-scanner">Resume Scanner</a>
+                    <a href="#">Payroll Services</a>
                   </li>
                   <li>
-                    <a href="/candidate-career-navigator">Career Navigator</a>
+                    <a href="#">Direct Contracts</a>
                   </li>
                   <li>
-                    <a href="/pricing">Pricing</a>
+                    <a href="#">Hire Worldwide</a>
+                  </li>
+                  <li>
+                    <a href="#">Hire in the USA</a>
+                  </li>
+                  <li>
+                    <a href="#">How to Hire</a>
                   </li>
                 </ul>
               </div>
@@ -66,16 +98,25 @@ export default function Footer() {
 
             <div className="col-lg-2 col-md-4">
               <div className="footer-widget">
-                <h4 className="widget-title">For Employers</h4>
+                <h4 className="widget-title">Our Resources</h4>
                 <ul className="footer-menu">
                   <li>
-                    <a href="/employer-submit-job">Post a Job</a>
+                    <a href="#">Free Business tools</a>
                   </li>
                   <li>
-                    <a href="/employers">Employer Directory</a>
+                    <a href="#">Affiliate Program</a>
                   </li>
                   <li>
-                    <a href="/pricing">Pricing</a>
+                    <a href="#">Success Stories</a>
+                  </li>
+                  <li>
+                    <a href="#">Reviews</a>
+                  </li>
+                  <li>
+                    <a href="#">Resources</a>
+                  </li>
+                  <li>
+                    <a href="#">Help & Support</a>
                   </li>
                 </ul>
               </div>
@@ -83,35 +124,44 @@ export default function Footer() {
 
             <div className="col-lg-2 col-md-6">
               <div className="footer-widget">
-                <h4 className="widget-title">Company</h4>
+                <h4 className="widget-title">The Company</h4>
                 <ul className="footer-menu">
                   <li>
-                    <a href="/about-us">About Us</a>
+                    <a href="#">About Us</a>
                   </li>
                   <li>
-                    <a href="/blog">Blog</a>
+                    <a href="#">Leadership</a>
                   </li>
                   <li>
-                    <a href="/contact">Contact Us</a>
+                    <a href="#">Contact Us</a>
+                  </li>
+                  <li>
+                    <a href="#">Investor Relations</a>
+                  </li>
+                  <li>
+                    <a href="#">Trust, Safety & Security</a>
                   </li>
                 </ul>
               </div>
             </div>
 
-            <div className="col-lg-1 col-md-6">
+            <div className="col-lg-3 col-md-6">
               <div className="footer-widget">
-                <h4 className="widget-title">Support</h4>
-                <ul className="footer-menu">
-                  <li>
-                    <a href="/help">Help</a>
-                  </li>
-                  <li>
-                    <a href="/faq">FAQ</a>
-                  </li>
-                  <li>
-                    <a href="/privacy">Privacy</a>
-                  </li>
-                </ul>
+                <h4 className="widget-title">Download Apps</h4>
+                <div className="app-wrap d-flex flex-column gap-3">
+                  <div className="d-flex align-items-center bg-transparent rounded-3 px-2 py-3 gap-2">
+                    <div className="social-caption">
+                      <p className="text-uppercase text-light opacity-75 m-0">Get it on</p>
+                      <h5 className="text-light m-0">Google Play</h5>
+                    </div>
+                  </div>
+                  <div className="d-flex align-items-center bg-transparent rounded-3 px-2 py-3 gap-2">
+                    <div className="social-caption">
+                      <p className="text-uppercase text-light opacity-75 m-0">Get it on</p>
+                      <h5 className="text-light m-0">App Store</h5>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -7,7 +7,6 @@ import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { Role } from '../../generated/prisma/enums.js';
-import { SystemConfigService } from '../system-config/system-config.service.js';
 
 const BCRYPT_ROUNDS = 12;
 
@@ -16,17 +15,11 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly systemConfig: SystemConfigService,
   ) {}
 
   async register(dto: RegisterDto) {
     if (dto.role === Role.ADMIN) {
       throw new ForbiddenException('Admin accounts cannot be self-registered');
-    }
-
-    const registrationEnabled = await this.systemConfig.get('registrationEnabled');
-    if (!registrationEnabled) {
-      throw new ForbiddenException('New registrations are temporarily disabled. Please check back later.');
     }
 
     const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
@@ -73,24 +66,16 @@ export class AuthService {
     };
   }
 
-  async login(dto: LoginDto, ip?: string, userAgent?: string) {
+  async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (!user) {
-      await this.logFailedLogin(dto.email, ip, 'account not found');
       throw new UnauthorizedException('Invalid email or password');
     }
 
     const passwordMatches = await bcrypt.compare(dto.password, user.passwordHash);
     if (!passwordMatches) {
-      await this.logFailedLogin(dto.email, ip, 'wrong password');
       throw new UnauthorizedException('Invalid email or password');
     }
-
-    if (user.isSuspended) {
-      throw new UnauthorizedException('This account has been suspended. Contact support for details.');
-    }
-
-    await this.prisma.loginEvent.create({ data: { userId: user.id, ipAddress: ip, userAgent } });
 
     const { passwordHash: _omit, ...safeUser } = user;
 
@@ -98,10 +83,6 @@ export class AuthService {
       user: safeUser,
       ...this.issueTokens(user.id, user.email, user.role),
     };
-  }
-
-  private async logFailedLogin(email: string, ip: string | undefined, reason: string) {
-    await this.prisma.failedLogin.create({ data: { email, ipAddress: ip, reason } }).catch(() => {});
   }
 
   async changePassword(userId: string, dto: ChangePasswordDto) {

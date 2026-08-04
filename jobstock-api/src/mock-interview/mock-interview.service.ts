@@ -4,11 +4,8 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { AiService } from '../ai/ai.service.js';
 import { StartInterviewDto } from './dto/start-interview.dto.js';
 import { SubmitInterviewDto } from './dto/submit-interview.dto.js';
-import { AiFeature } from '../../generated/prisma/enums.js';
 
 const QUESTION_COUNT = 6;
-const TIME_LIMIT_SECONDS = 1200; // 20 minutes
-const TIME_GRACE_FACTOR = 1.15;
 
 export interface QuestionFeedback {
   rating: number;
@@ -52,10 +49,8 @@ export class MockInterviewService {
     const candidateId = await this.getCandidateId(userId);
 
     const { questions } = await this.ai.generateJson<{ questions: string[] }>(
-      AiFeature.MOCK_INTERVIEW,
       QUESTIONS_SYSTEM_PROMPT,
       `Job role: ${dto.jobRole}`,
-      userId,
     );
 
     if (!Array.isArray(questions) || questions.length === 0) {
@@ -68,14 +63,12 @@ export class MockInterviewService {
         jobRole: dto.jobRole,
         questions: questions as unknown as Prisma.InputJsonValue,
         status: 'PENDING',
-        timeLimitSeconds: TIME_LIMIT_SECONDS,
       },
     });
 
     return {
       id: interview.id,
       jobRole: interview.jobRole,
-      timeLimitSeconds: interview.timeLimitSeconds,
       questions,
     };
   }
@@ -105,13 +98,9 @@ export class MockInterviewService {
       perQuestion: QuestionFeedback[];
       overallRating: number;
       overallSummary: string;
-    }>(AiFeature.MOCK_INTERVIEW, FEEDBACK_SYSTEM_PROMPT, userPrompt, userId);
+    }>(FEEDBACK_SYSTEM_PROMPT, userPrompt);
 
     const feedback = { perQuestion, overallSummary };
-
-    const elapsedSeconds = (Date.now() - interview.createdAt.getTime()) / 1000;
-    const timeExceeded = elapsedSeconds > interview.timeLimitSeconds * TIME_GRACE_FACTOR;
-    const violations = Math.max(0, dto.violations ?? 0);
 
     const updated = await this.prisma.mockInterview.update({
       where: { id: interviewId },
@@ -121,8 +110,6 @@ export class MockInterviewService {
         overallRating,
         status: 'COMPLETED',
         completedAt: new Date(),
-        violations,
-        timeExceeded,
       },
     });
 
@@ -134,8 +121,6 @@ export class MockInterviewService {
       perQuestion,
       overallRating,
       overallSummary,
-      violations,
-      timeExceeded,
     };
   }
 

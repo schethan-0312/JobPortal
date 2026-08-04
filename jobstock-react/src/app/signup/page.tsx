@@ -1,37 +1,22 @@
 "use client";
 
-import { Suspense, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import PublicNavbar from "@/components/PublicNavbar";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import Navbar2 from "@/components/Navbar2";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api";
 
 export default function SignupPage() {
-  return (
-    <Suspense fallback={null}>
-      <SignupPageInner />
-    </Suspense>
-  );
-}
-
-function SignupPageInner() {
   const { register } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [role, setRole] = useState<"CANDIDATE" | "EMPLOYER">(
-    searchParams.get("role") === "EMPLOYER" ? "EMPLOYER" : "CANDIDATE",
-  );
+  const [role, setRole] = useState<"CANDIDATE" | "EMPLOYER">("CANDIDATE");
   const [error, setError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<{fullName?: string, email?: string, confirmPassword?: string}>({});
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
 
@@ -41,29 +26,6 @@ function SignupPageInner() {
     // re-render has actually disabled the button (a real race, not just theoretical —
     // two near-simultaneous clicks can both fire in the same tick).
     if (submittingRef.current) return;
-    
-    setFieldErrors({});
-    const errors: {fullName?: string, email?: string, confirmPassword?: string} = {};
-    
-    const nameRegex = /^[A-Za-z\s\-']+$/;
-    if (!nameRegex.test(fullName)) {
-      errors.fullName = "Full Name can only contain alphabets, spaces, hyphens and apostrophes.";
-    }
-
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(email)) {
-      errors.email = "Please enter a valid email address.";
-    }
-
-    if (password !== confirmPassword) {
-      errors.confirmPassword = "Passwords do not match.";
-    }
-
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      return;
-    }
-
     submittingRef.current = true;
     setError(null);
     setSubmitting(true);
@@ -86,7 +48,7 @@ function SignupPageInner() {
 
   return (
     <>
-      <PublicNavbar />
+      <Navbar2 />
 
       {/* Login Form Start */}
       <section className="gray-simple ">
@@ -113,13 +75,12 @@ function SignupPageInner() {
                         <label className="fw-medium fs-6 text-dark">Full Name</label>
                         <input
                           type="text"
-                          className={`form-control ${fieldErrors.fullName ? 'is-invalid' : ''}`}
+                          className="form-control"
                           placeholder="What is your name?"
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
                           required
                         />
-                        {fieldErrors.fullName && <div className="text-danger small mt-1">{fieldErrors.fullName}</div>}
                       </div>
 
                       <div className="form-group mb-0">
@@ -128,72 +89,29 @@ function SignupPageInner() {
                         </label>
                         <input
                           type="email"
-                          className={`form-control ${fieldErrors.email ? 'is-invalid' : ''}`}
+                          className="form-control"
                           placeholder="Tell us your Email ID"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           required
                         />
-                        {fieldErrors.email && <div className="text-danger small mt-1">{fieldErrors.email}</div>}
-                        {!fieldErrors.email && <span className="text-sm opacity-75">We&apos;ll send relevant jobs and updates to this email</span>}
+                        <span className="text-sm opacity-75">We&apos;ll send relevant jobs and updates to this email</span>
                       </div>
 
                       <div className="form-group mb-0">
                         <label className="fw-medium fs-6 text-dark">
                           Password<i className="text-danger text-md">*</i>
                         </label>
-                        <div className="position-relative">
-                          <input
-                            type={showPassword ? "text" : "password"}
-                            className="form-control pe-5"
-                            placeholder="(Minimum 8 characters, 1 uppercase, 1 number)"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            minLength={8}
-                          />
-                          <span 
-                            className="position-absolute top-50 end-0 translate-middle-y pe-3 cursor-pointer text-muted"
-                            style={{ cursor: "pointer" }}
-                            onClick={() => setShowPassword(!showPassword)}
-                          >
-                            {showPassword ? (
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                            ) : (
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                            )}
-                          </span>
-                        </div>
+                        <input
+                          type="password"
+                          className="form-control"
+                          placeholder="(Minimum 8 characters, 1 uppercase, 1 number)"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          minLength={8}
+                        />
                         <span className="text-sm opacity-75">This helps your account stay protected</span>
-                      </div>
-
-                      <div className="form-group mb-0">
-                        <label className="fw-medium fs-6 text-dark">
-                          Confirm Password<i className="text-danger text-md">*</i>
-                        </label>
-                        <div className="position-relative">
-                          <input
-                            type={showConfirmPassword ? "text" : "password"}
-                            className={`form-control pe-5 ${fieldErrors.confirmPassword ? 'is-invalid' : ''}`}
-                            placeholder="Confirm your password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            required
-                            minLength={8}
-                          />
-                          <span 
-                            className="position-absolute top-50 end-0 translate-middle-y pe-3 cursor-pointer text-muted"
-                            style={{ cursor: "pointer" }}
-                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          >
-                            {showConfirmPassword ? (
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                            ) : (
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                            )}
-                          </span>
-                        </div>
-                        {fieldErrors.confirmPassword && <div className="text-danger small mt-1">{fieldErrors.confirmPassword}</div>}
                       </div>
 
                       <div className="form-group mb-0">
@@ -274,12 +192,12 @@ function SignupPageInner() {
                       <div className="form-group mb-0">
                         <p className="confirmTex">
                           By clicking Register, you agree to the
-                          <a href="/privacy" className="text-main">
+                          <a href="#" className="text-main">
                             {" "}
                             Terms and Conditions{" "}
                           </a>
                           &amp;
-                          <a href="/privacy" className="text-main">
+                          <a href="#" className="text-main">
                             {" "}
                             Privacy Policy{" "}
                           </a>

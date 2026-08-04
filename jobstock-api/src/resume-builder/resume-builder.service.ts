@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AiService } from '../ai/ai.service.js';
 import { GenerateResumeDto } from './dto/generate-resume.dto.js';
-import { AiFeature } from '../../generated/prisma/enums.js';
 
 export interface ExperienceEntry {
   title: string;
@@ -76,7 +75,7 @@ ${dto.rawBackground}
       skills: string[];
       experience: ExperienceEntry[];
       education: EducationEntry[];
-    }>(AiFeature.RESUME_BUILDER, SYSTEM_PROMPT, userPrompt, userId);
+    }>(SYSTEM_PROMPT, userPrompt);
 
     return {
       fullName: profileWithUser.fullName,

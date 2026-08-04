@@ -4,26 +4,18 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar7 from "@/components/Navbar7";
 import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar";
-import LoginModal from "@/components/LoginModal";
 import UploadResumeModal from "@/components/candidate-dashboard/UploadResumeModal";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError } from "@/lib/api";
 
-interface Suggestion {
-  text: string;
-  priority: "high" | "medium" | "low";
-}
-
 interface ResumeScanResult {
   overallScore: number;
-  summary: string;
   structureScore: number;
+  contentScore: number;
   keywordScore: number;
-  atsScore: number;
-  achievementScore: number;
   strengths: string[];
   weaknesses: string[];
-  suggestions: Suggestion[];
+  suggestions: string[];
   missingKeywords: string[];
 }
 
@@ -32,12 +24,6 @@ function scoreColor(score: number) {
   if (score >= 50) return "#f0ad4e";
   return "#dc3545";
 }
-
-const priorityColors: Record<Suggestion["priority"], string> = {
-  high: "#dc3545",
-  medium: "#f0ad4e",
-  low: "#6c757d",
-};
 
 function ScoreBar({ label, score }: { label: string; score: number }) {
   return (
@@ -61,36 +47,43 @@ export default function CandidateResumeScannerPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
-  const [resumeText, setResumeText] = useState("");
   const [targetRole, setTargetRole] = useState("");
   const [status, setStatus] = useState<"idle" | "scanning" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [result, setResult] = useState<ResumeScanResult | null>(null);
 
-  if (loading) {
-    return null;
-  }
-
-  async function runScan() {
-    setErrorMsg(null);
-    setStatus("scanning");
-    try {
-      const data = await api.post<ResumeScanResult>("/resume-scanner/scan", {
-        resumeText,
-        targetRole: targetRole || undefined,
-      });
-      setResult(data);
-      setStatus("idle");
-    } catch (err) {
-      setStatus("error");
-      setErrorMsg(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
+  useEffect(() => {
+    if (!loading && (!user || user.role !== "CANDIDATE")) {
+      router.push("/");
     }
+  }, [loading, user, router]);
+
+  if (loading || !user || user.role !== "CANDIDATE") {
+    return null;
   }
 
   async function handleScan(e: React.FormEvent) {
     e.preventDefault();
+    setErrorMsg(null);
     setResult(null);
-    await runScan();
+    setStatus("scanning");
+    try {
+      const data = await api.post<any>("/resume-scanner/scan", {
+        targetRole: targetRole || undefined,
+      });
+
+      if (data.success === false || data.message) {
+        setStatus("error");
+        setErrorMsg(data.message || "Failed to scan resume.");
+        setResult(null);
+      } else {
+        setResult(data as ResumeScanResult);
+        setStatus("idle");
+      }
+    } catch (err) {
+      setStatus("error");
+      setErrorMsg(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
+    }
   }
 
   return (
@@ -117,34 +110,12 @@ export default function CandidateResumeScannerPage() {
           </div>
 
           <div className="dashboard-widg-bar d-block">
-            {!user ? (
-              <div className="alert alert-warning d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
-                <div>
-                  <i className="fa-solid fa-triangle-exclamation me-2"></i>
-                  <strong>Sign in required:</strong> You must be signed in as a candidate to scan your resume.
-                </div>
-                <button
-                  type="button"
-                  className="btn btn-sm btn-main"
-                  data-bs-toggle="modal"
-                  data-bs-target="#login"
-                >
-                  Sign In / Register
-                </button>
-              </div>
-            ) : user.role !== "CANDIDATE" ? (
-              <div className="alert alert-warning mb-4">
-                <i className="fa-solid fa-triangle-exclamation me-2"></i>
-                <strong>Candidate account required:</strong> You are signed in as an {user.role}. Please sign in with a candidate account to scan your resume.
-              </div>
-            ) : null}
-
             <div className="card mb-4">
               <div className="card-header">
-                <h4>Paste Your Resume Text</h4>
+                <h4>Scan Your Uploaded Resume</h4>
                 <p className="text-muted mb-0 mt-1">
-                  Our AI will score your resume on structure, keyword match, ATS compatibility, and achievement
-                  quantification, then suggest concrete improvements.
+                  Our AI will automatically scan your uploaded resume on structure, content, and keyword relevance, then suggest concrete
+                  improvements.
                 </p>
               </div>
               <div className="card-body">
@@ -163,34 +134,10 @@ export default function CandidateResumeScannerPage() {
                     </div>
                   </div>
                   <div className="row mb-3">
-                    <label className="col-xl-2 col-md-12 col-form-label">Resume Text</label>
-                    <div className="col-xl-7 col-md-12">
-                      <textarea
-                        className="form-control"
-                        rows={10}
-                        placeholder="Paste the full text of your resume here (minimum 50 characters)..."
-                        value={resumeText}
-                        onChange={(e) => setResumeText(e.target.value)}
-                        minLength={50}
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="row mb-3">
-                    <div className="col-xl-12 col-md-12 d-flex gap-2">
+                    <div className="col-xl-12 col-md-12">
                       <button type="submit" className="btn btn-main" disabled={status === "scanning"}>
                         {status === "scanning" ? "Scanning..." : "Scan My Resume"}
                       </button>
-                      {result && (
-                        <button
-                          type="button"
-                          className="btn btn-outline-main"
-                          disabled={status === "scanning"}
-                          onClick={runScan}
-                        >
-                          {status === "scanning" ? "Rescanning..." : "Rescan After Edits"}
-                        </button>
-                      )}
                     </div>
                   </div>
                 </form>
@@ -210,7 +157,7 @@ export default function CandidateResumeScannerPage() {
                           width: 110,
                           height: 110,
                           borderRadius: "50%",
-                          border: `6px solid ${scoreColor(result.overallScore)}`,
+                          border: `6px solid ${scoreColor(result?.overallScore ?? 0)}`,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -218,18 +165,16 @@ export default function CandidateResumeScannerPage() {
                         }}
                       >
                         <div>
-                          <div className="fs-3 fw-bold">{result.overallScore}</div>
+                          <div className="fs-3 fw-bold">{result?.overallScore ?? 0}</div>
                           <div className="small text-muted">/ 100</div>
                         </div>
                       </div>
                       <div className="mt-2 fw-medium">Overall Score</div>
                     </div>
                     <div className="col-md-9">
-                      <p className="fs-6 mb-3">{result.summary}</p>
-                      <ScoreBar label="Formatting & Structure" score={result.structureScore} />
-                      <ScoreBar label="Keyword Match" score={result.keywordScore} />
-                      <ScoreBar label="ATS Compatibility" score={result.atsScore} />
-                      <ScoreBar label="Achievement Quantification" score={result.achievementScore} />
+                      <ScoreBar label="Structure" score={result?.structureScore ?? 0} />
+                      <ScoreBar label="Content" score={result?.contentScore ?? 0} />
+                      <ScoreBar label="Keyword Relevance" score={result?.keywordScore ?? 0} />
                     </div>
                   </div>
 
@@ -239,7 +184,7 @@ export default function CandidateResumeScannerPage() {
                         <i className="fa-solid fa-circle-check me-2"></i>Strengths
                       </h6>
                       <ul>
-                        {result.strengths.map((s, i) => (
+                        {(result?.strengths ?? []).map((s, i) => (
                           <li key={i}>{s}</li>
                         ))}
                       </ul>
@@ -249,7 +194,7 @@ export default function CandidateResumeScannerPage() {
                         <i className="fa-solid fa-triangle-exclamation me-2"></i>Weaknesses
                       </h6>
                       <ul>
-                        {result.weaknesses.map((w, i) => (
+                        {(result?.weaknesses ?? []).map((w, i) => (
                           <li key={i}>{w}</li>
                         ))}
                       </ul>
@@ -257,28 +202,21 @@ export default function CandidateResumeScannerPage() {
                   </div>
 
                   <h6>
-                    <i className="fa-solid fa-lightbulb me-2 text-warning"></i>Suggested Fixes
+                    <i className="fa-solid fa-lightbulb me-2 text-warning"></i>Suggestions
                   </h6>
-                  <ul className="list-unstyled">
-                    {result.suggestions.map((s, i) => (
-                      <li key={i} className="d-flex align-items-start gap-2 mb-2">
-                        <span
-                          className="rounded-circle flex-shrink-0 mt-1"
-                          style={{ width: 8, height: 8, backgroundColor: priorityColors[s.priority] }}
-                          title={`${s.priority} priority`}
-                        />
-                        <span>{s.text}</span>
-                      </li>
+                  <ul>
+                    {(result?.suggestions ?? []).map((s, i) => (
+                      <li key={i}>{s}</li>
                     ))}
                   </ul>
 
-                  {result.missingKeywords.length > 0 && (
+                  {(result?.missingKeywords ?? []).length > 0 && (
                     <>
                       <h6 className="mt-4">
                         <i className="fa-solid fa-magnifying-glass me-2"></i>Missing Keywords
                       </h6>
                       <div>
-                        {result.missingKeywords.map((k, i) => (
+                        {(result?.missingKeywords ?? []).map((k, i) => (
                           <span key={i} className="badge bg-light text-dark border me-2 mb-2 p-2">
                             {k}
                           </span>
@@ -302,7 +240,6 @@ export default function CandidateResumeScannerPage() {
       </div>
 
       <UploadResumeModal />
-      <LoginModal />
     </>
   );
 }

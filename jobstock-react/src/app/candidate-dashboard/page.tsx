@@ -42,27 +42,6 @@ interface JobMatch {
   };
 }
 
-interface Achievement {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-  earned: boolean;
-}
-
-interface GamificationProgress {
-  profileCompletionPercent: number;
-  achievements: Achievement[];
-  earnedCount: number;
-  totalCount: number;
-}
-
-interface ProfileView {
-  id: string;
-  createdAt: string;
-  viewer: { employer: { companyName: string; logoUrl: string | null } | null };
-}
-
 function timeAgo(dateStr: string) {
   const diffMs = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diffMs / 60000);
@@ -81,8 +60,6 @@ export default function CandidateDashboardPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [recommended, setRecommended] = useState<JobMatch[] | null>(null);
-  const [progress, setProgress] = useState<GamificationProgress | null>(null);
-  const [profileViews, setProfileViews] = useState<ProfileView[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -97,16 +74,12 @@ export default function CandidateDashboardPage() {
     (async () => {
       setDataLoading(true);
       try {
-        const [notifs, apps, gamification, views] = await Promise.all([
+        const [notifs, apps] = await Promise.all([
           api.get<Notification[]>("/notifications"),
           api.get<Application[]>("/applications/mine"),
-          api.get<GamificationProgress>("/gamification/me"),
-          api.get<{ views: ProfileView[] }>("/candidates/profile-views/mine"),
         ]);
         setNotifications(notifs.slice(0, 5));
-        setApplications(apps);
-        setProgress(gamification);
-        setProfileViews(views.views.slice(0, 5));
+        setApplications(apps.slice(0, 10));
       } catch (err) {
         setError(err instanceof ApiError ? err.message : "Failed to load dashboard data");
       } finally {
@@ -186,59 +159,6 @@ export default function CandidateDashboardPage() {
             </div>
             {/* Row End */}
 
-            {/* Row Start: Profile Strength + Achievements */}
-            {progress && (
-              <div className="row gx-4 gy-4 mb-4">
-                <div className="col-xl-4 col-lg-12 col-md-12 col-sm-12">
-                  <div className="card h-100">
-                    <div className="card-header"><h4 className="mb-0">Profile Strength</h4></div>
-                    <div className="card-body d-flex flex-column align-items-center justify-content-center">
-                      <div
-                        className="d-flex align-items-center justify-content-center rounded-circle mb-3"
-                        style={{
-                          width: 120,
-                          height: 120,
-                          background: `conic-gradient(#0b8260 ${progress.profileCompletionPercent * 3.6}deg, #e9ecef 0deg)`,
-                        }}
-                      >
-                        <div className="d-flex align-items-center justify-content-center rounded-circle bg-white" style={{ width: 96, height: 96 }}>
-                          <span className="fs-4 fw-bold">{progress.profileCompletionPercent}%</span>
-                        </div>
-                      </div>
-                      {progress.profileCompletionPercent < 100 && (
-                        <a href="/candidate-profile" className="small">Complete your profile &rarr;</a>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="col-xl-8 col-lg-12 col-md-12 col-sm-12">
-                  <div className="card h-100">
-                    <div className="card-header d-flex justify-content-between align-items-center">
-                      <h4 className="mb-0">Achievements</h4>
-                      <span className="small text-muted">{progress.earnedCount} of {progress.totalCount} earned</span>
-                    </div>
-                    <div className="card-body">
-                      <div className="row gx-3 gy-3">
-                        {progress.achievements.map((a) => (
-                          <div className="col-xl-3 col-lg-3 col-md-4 col-sm-6 text-center" key={a.id} title={a.description}>
-                            <div
-                              className={`d-flex align-items-center justify-content-center rounded-circle mx-auto mb-2 ${a.earned ? "bg-main text-white" : "bg-light text-muted"}`}
-                              style={{ width: 56, height: 56 }}
-                            >
-                              <i className={`${a.icon} fs-5`}></i>
-                            </div>
-                            <div className="small" style={{ opacity: a.earned ? 1 : 0.5 }}>{a.title}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            {/* Row End */}
-
             {/* Row Start */}
             <div className="row gx-4 gy-4 mb-4">
               <div className="col-xl-8 col-lg-12 col-md-12 col-sm-12">
@@ -302,69 +222,51 @@ export default function CandidateDashboardPage() {
                     ))}
                   </div>
                 </div>
-
-                <div className="card mt-4">
-                  <div className="card-header">
-                    <h4>Who Viewed Your Profile</h4>
-                  </div>
-                  <div className="ground-list ground-list-hove">
-                    {dataLoading && <p className="p-3 text-muted">Loading...</p>}
-                    {!dataLoading && profileViews.length === 0 && <p className="p-3 text-muted">No profile views yet.</p>}
-                    {profileViews.map((v) => (
-                      <div className="ground ground-single-list" key={v.id}>
-                        <a href="JavaScript:Void(0);">
-                          <div className="btn-circle-40 text-main bg-main bg-opacity-05">
-                            <img src={assetUrl(v.viewer.employer?.logoUrl) || "/assets/img/l-1.png"} className="img-fluid rounded-circle" alt="" />
-                          </div>
-                        </a>
-                        <div className="ground-content">
-                          <h6>{v.viewer.employer?.companyName ?? "An employer"}</h6>
-                          <span className="small">{timeAgo(v.createdAt)}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </div>
             </div>
             {/* Row End */}
 
-            {/* Row Start: Application Pipeline */}
+            {/* Row Start */}
             <div className="row">
               <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                 <div className="card">
                   <div className="card-header">
-                    <h4 className="mb-0">Application Pipeline</h4>
+                    <h4 className="mb-0">Applied Jobs</h4>
                   </div>
                   <div className="card-body px-4 py-4">
                     {dataLoading && <p className="text-muted">Loading applied jobs...</p>}
                     {!dataLoading && applications.length === 0 && <p className="text-muted">You have not applied to any jobs yet.</p>}
-                    {!dataLoading && applications.length > 0 && (
-                      <div className="row gx-3 gy-4">
-                        {(["APPLIED", "REVIEWED", "SHORTLISTED", "INTERVIEW", "OFFERED"] as const).map((stage) => {
-                          const stageApps = applications.filter((a) => a.status === stage);
-                          return (
-                            <div className="col-xl-2 col-lg-4 col-md-6 col-sm-6" key={stage}>
-                              <div className="small fw-medium text-muted mb-2 text-uppercase">
-                                {stage} <span className="badge bg-secondary ms-1">{stageApps.length}</span>
-                              </div>
-                              <div className="d-flex flex-column gap-2">
-                                {stageApps.map((item) => (
-                                  <a
-                                    key={item.id}
-                                    href={`/job-detail/${item.job.slug}`}
-                                    className="border rounded p-2 text-decoration-none d-block"
-                                  >
-                                    <div className="small fw-medium text-dark">{item.job.title}</div>
-                                    <div className="small text-muted">{item.job.employer.companyName}</div>
+                    {/* Start All List */}
+                    <div className="row justify-content-start gx-3 gy-4">
+                      {applications.map((item) => (
+                        <div className="col-xl-12 col-lg-12 col-md-12" key={item.id}>
+                          <div className="jbs-list-box border">
+                            <div className="jbs-list-head">
+                              <div className="jbs-list-head-thunner">
+                                <div className="jbs-list-emp-thumb jbs-verified">
+                                  <a href={`/job-detail/${item.job.slug}`}>
+                                    <figure><img src={assetUrl(item.job.employer.logoUrl) || "/assets/img/l-1.png"} className="img-fluid" alt="" /></figure>
                                   </a>
-                                ))}
+                                </div>
+                                <div className="jbs-list-job-caption">
+                                  <div className="jbs-job-types-wrap"><span className="label text-green bg-light-green">{item.status}</span></div>
+                                  <div className="jbs-job-title-wrap"><h4><a href={`/job-detail/${item.job.slug}`} className="jbs-job-title">{item.job.title}</a></h4></div>
+                                  <div className="jbs-job-mrch-lists">
+                                    <div className="single-mrch-lists">
+                                      <span>{item.job.employer.companyName}</span>.<span><i className="fa-solid fa-location-dot me-1"></i>{item.job.location}</span>.<span>{new Date(item.appliedAt).toLocaleDateString()}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="jbs-list-head-last">
+                                <a href={`/job-detail/${item.job.slug}`} className="btn btn-md btn-gray px-3 me-2">View Detail</a>
                               </div>
                             </div>
-                          );
-                        })}
-                      </div>
-                    )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {/* End All Job List */}
                   </div>
                 </div>
               </div>

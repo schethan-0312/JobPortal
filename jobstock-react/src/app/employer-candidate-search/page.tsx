@@ -20,8 +20,6 @@ interface CandidateResult {
   profilePhotoUrl: string | null;
   isVerified: boolean;
   updatedAt: string;
-  githubUsername: string | null;
-  githubProfileUrl: string | null;
 }
 
 interface SearchResponse {
@@ -38,7 +36,6 @@ export default function EmployerCandidateSearchPage() {
   const [location, setLocation] = useState("");
   const [skill, setSkill] = useState("");
   const [minExperience, setMinExperience] = useState("");
-  const [query, setQuery] = useState("");
 
   const [results, setResults] = useState<CandidateResult[]>([]);
   const [total, setTotal] = useState(0);
@@ -72,7 +69,6 @@ export default function EmployerCandidateSearchPage() {
       if (location) params.set("location", location);
       if (skill) params.set("skill", skill);
       if (minExperience) params.set("minExperience", minExperience);
-      if (query) params.set("q", query);
       params.set("pageSize", "20");
 
       const data = await api.get<SearchResponse>(`/candidates/search?${params.toString()}`);
@@ -137,26 +133,6 @@ export default function EmployerCandidateSearchPage() {
               </div>
               <div className="card-body">
                 <form onSubmit={runSearch}>
-                  <div className="row g-3 align-items-end mb-3">
-                    <div className="col-md-9">
-                      <label className="form-label">
-                        Full-text / boolean search{" "}
-                        <span className="text-muted small">— quoted phrases, AND/OR, and -exclude all work</span>
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder='e.g. "React" AND "5 years" -intern'
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                      />
-                    </div>
-                    <div className="col-md-3">
-                      <button type="submit" className="btn btn-main w-100" disabled={status === "loading"}>
-                        {status === "loading" ? "Searching..." : "Search"}
-                      </button>
-                    </div>
-                  </div>
                   <div className="row g-3 align-items-end">
                     <div className="col-md-3">
                       <label className="form-label">Skill</label>
@@ -189,17 +165,8 @@ export default function EmployerCandidateSearchPage() {
                       />
                     </div>
                     <div className="col-md-3">
-                      <button
-                        type="button"
-                        className="btn btn-outline-secondary w-100"
-                        onClick={() => {
-                          setQuery("");
-                          setSkill("");
-                          setLocation("");
-                          setMinExperience("");
-                        }}
-                      >
-                        Clear filters
+                      <button type="submit" className="btn btn-main w-100" disabled={status === "loading"}>
+                        {status === "loading" ? "Searching..." : "Search"}
                       </button>
                     </div>
                   </div>
@@ -233,23 +200,10 @@ export default function EmployerCandidateSearchPage() {
                           <div>
                             <h5 className="mb-0">
                               <a href={`/candidate-detail/${c.id}`}>{c.fullName}</a>
-                              {c.isVerified && (
-                                <span className="badge bg-success-subtle text-success border border-success ms-2" title="Passed a proctored skill assessment">
-                                  <i className="fa-solid fa-shield-check me-1"></i>Verified
-                                </span>
-                              )}
                             </h5>
                             <div className="text-muted small">{c.headline || "No headline set"}</div>
                             <div className="small text-muted">
                               {c.experienceYears ?? 0} yrs exp &middot; {c.location || "Location unknown"}
-                              {c.githubUsername && (
-                                <>
-                                  {" "}&middot;{" "}
-                                  <a href={c.githubProfileUrl ?? undefined} target="_blank" rel="noreferrer">
-                                    <i className="fa-brands fa-github me-1"></i>{c.githubUsername}
-                                  </a>
-                                </>
-                              )}
                             </div>
                           </div>
                         </div>

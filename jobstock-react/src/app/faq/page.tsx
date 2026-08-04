@@ -1,4 +1,4 @@
-import PublicNavbar from "@/components/PublicNavbar";
+import Navbar2 from "@/components/Navbar2";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
 
@@ -88,7 +88,7 @@ const groups = [
 export default function FaqPage() {
   return (
     <>
-      <PublicNavbar />
+      <Navbar2 />
 
       {/* Page Title Start */}
       <section className="bg-cover bg-second" style={{ background: "url(/assets/img/bg2.png)no-repeat" }}>

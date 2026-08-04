@@ -37,200 +37,6 @@ enum EmployerStatus {
   VERIFIED
   REJECTED
   SUSPENDED
-  INFO_REQUESTED
-}
-
-enum VerificationDecision {
-  VERIFIED
-  REJECTED
-  INFO_REQUESTED
-}
-
-enum AdminRole {
-  SUPER_ADMIN
-  SUPPORT_ADMIN
-  FINANCE_ADMIN
-  MODERATION_ADMIN
-}
-
-enum AiFeature {
-  RESUME_SCANNER
-  CHATBOT
-  SKILL_ASSESSMENT
-  MOCK_INTERVIEW
-  CAREER_NAVIGATOR
-  SMART_MATCH
-  AUTO_SHORTLIST
-  RESUME_BUILDER
-}
-
-/// One row per Gemini call, written by AiService itself so every feature is
-/// tracked the same way without each caller having to remember to log.
-model AiUsageLog {
-  id             String    @id @default(cuid())
-  feature        AiFeature
-  userId         String?
-  success        Boolean
-  errorMessage   String?
-  latencyMs      Int
-  promptTokens   Int?
-  responseTokens Int?
-  totalTokens    Int?
-  createdAt      DateTime  @default(now())
-
-  @@index([feature, createdAt])
-  @@index([createdAt])
-}
-
-/// Per-page SEO metadata override. A page with no row here falls back to
-/// the site-wide defaults stored in SystemConfig (seoDefaultTitle etc).
-model SeoSetting {
-  path            String   @id
-  metaTitle       String?
-  metaDescription String?
-  ogImageUrl      String?
-  updatedAt       DateTime @updatedAt
-  updatedById     String?
-}
-
-/// Generic admin-editable key/value store for platform-wide settings
-/// (maintenance mode, registration toggle, support email, etc). Kept
-/// schemaless on purpose so new settings don't need a migration.
-model SystemConfig {
-  key         String   @id
-  value       Json
-  updatedAt   DateTime @updatedAt
-  updatedById String?
-}
-
-enum TicketStatus {
-  OPEN
-  IN_PROGRESS
-  RESOLVED
-  CLOSED
-}
-
-enum TicketPriority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
-}
-
-model SupportTicket {
-  id              String         @id @default(cuid())
-  userId          String
-  user            User           @relation("TicketFiledBy", fields: [userId], references: [id], onDelete: Cascade)
-  subject         String
-  status          TicketStatus   @default(OPEN)
-  priority        TicketPriority @default(MEDIUM)
-  assignedAdminId String?
-  assignedAdmin   User?          @relation("TicketAssignedAdmin", fields: [assignedAdminId], references: [id])
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  closedAt  DateTime?
-
-  messages TicketMessage[]
-
-  @@index([status])
-  @@index([userId])
-}
-
-model TicketMessage {
-  id           String        @id @default(cuid())
-  ticketId     String
-  ticket       SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  senderId     String
-  sender       User          @relation("TicketMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
-  body         String
-  /// True when written by an admin — lets the UI style admin replies distinctly
-  /// without a second join back to User.role on every render.
-  isAdminReply Boolean       @default(false)
-
-  createdAt DateTime @default(now())
-
-  @@index([ticketId, createdAt])
-}
-
-/// Per-feature kill switch, checked by AiService before every call so an
-/// admin can disable a misbehaving/expensive feature without a deploy.
-model AiFeatureConfig {
-  feature     AiFeature @id
-  enabled     Boolean   @default(true)
-  updatedAt   DateTime  @updatedAt
-  updatedById String?
-}
-
-/// Admin-editable legal/compliance documents (Privacy Policy, Terms of
-/// Service, etc). Each edit bumps version and writes a
-/// LegalDocumentRevision so there's a defensible audit trail of what the
-/// document said at any point in time.
-model LegalDocument {
-  slug        String   @id
-  title       String
-  body        String
-  version     Int      @default(1)
-  updatedAt   DateTime @updatedAt
-  updatedById String?
-
-  revisions LegalDocumentRevision[]
-}
-
-model LegalDocumentRevision {
-  id          String        @id @default(cuid())
-  slug        String
-  document    LegalDocument @relation(fields: [slug], references: [slug], onDelete: Cascade)
-  version     Int
-  title       String
-  body        String
-  updatedById String?
-  createdAt   DateTime      @default(now())
-
-  @@index([slug, version])
-}
-
-enum JobRunStatus {
-  RUNNING
-  SUCCESS
-  FAILED
-}
-
-/// One row per execution of a scheduled background job (cron or manual
-/// trigger), so admins can see run history and diagnose failures without
-/// SSHing into the server to read pm2 logs.
-model JobRunRecord {
-  id          String       @id @default(cuid())
-  jobName     String
-  status      JobRunStatus
-  triggeredBy String
-  detail      String?
-  startedAt   DateTime     @default(now())
-  completedAt DateTime?
-
-  @@index([jobName, startedAt])
-}
-
-enum BackupStatus {
-  RUNNING
-  SUCCESS
-  FAILED
-}
-
-/// One row per pg_dump attempt, manual or scheduled. The actual dump file
-/// lives on disk outside the app's git-managed directory; this row is just
-/// the metadata/audit trail an admin sees in the dashboard.
-model BackupRecord {
-  id            String       @id @default(cuid())
-  filename      String
-  status        BackupStatus
-  sizeBytes     Int?
-  errorMessage  String?
-  triggeredById String?
-  createdAt     DateTime     @default(now())
-  completedAt   DateTime?
-
-  @@index([createdAt])
 }
 
 enum JobStatus {
@@ -266,7 +72,6 @@ enum PackageAudience {
   CANDIDATE
   EMPLOYER
   RESUME
-  JOB_BOOST
 }
 
 enum OrderStatus {
@@ -284,107 +89,54 @@ enum JobType {
   INTERNSHIP
 }
 
-enum WorkMode {
-  REMOTE
-  HYBRID
-  ONSITE
-}
-
-enum SalaryType {
-  MONTHLY
-  ANNUAL
-}
-
 // ---------- Core identity ----------
 
 model User {
-  id                   String     @id @default(cuid())
-  email                String     @unique
-  passwordHash         String
-  role                 Role
-  /// Only meaningful when role = ADMIN. Governs which admin endpoints this
-  /// user can access via AdminRolesGuard; null for CANDIDATE/EMPLOYER users.
-  adminRole            AdminRole?
-  invitedById          String?
-  invitedBy            User?      @relation("AdminInvitedBy", fields: [invitedById], references: [id])
-  invitedAdmins        User[]     @relation("AdminInvitedBy")
-  isEmailVerified      Boolean    @default(false)
-  emailVerifyToken     String?    @unique
-  passwordResetToken   String?    @unique
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         Role
+  isEmailVerified Boolean @default(false)
+  emailVerifyToken String? @unique
+  passwordResetToken String? @unique
   passwordResetExpires DateTime?
-  createdAt            DateTime   @default(now())
-  updatedAt            DateTime   @updatedAt
-
-  // Notification channel opt-ins. `phoneNumber` is deliberately separate from
-  // CandidateProfile.phone — an Employer user has no candidate profile, but can
-  // still opt into SMS/WhatsApp alerts.
-  phoneNumber   String?
-  smsOptIn      Boolean @default(false)
-  whatsappOptIn Boolean @default(false)
-
-  /// Any JWT with an `iat` before this timestamp is rejected — set by an admin
-  /// force-logout. Stateless JWTs can't be individually revoked, so this is a
-  /// coarse "everything issued before now is dead" cutover instead.
-  sessionRevokedAt DateTime?
-
-  /// Admin-imposed account suspension. Checked in JwtStrategy so a suspended
-  /// user's existing tokens stop working immediately, not just future logins.
-  isSuspended     Boolean @default(false)
-  suspendedReason String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   candidateProfile CandidateProfile?
   employer         Employer?
 
-  savedJobs         SavedJob[]
-  jobAlerts         JobAlert[]
-  applications      Application[]
-  sentMessages      Message[]          @relation("MessageSender")
-  receivedMessages  Message[]          @relation("MessageReceiver")
-  notifications     Notification[]
-  orders            Order[]
-  reportsFiled      Report[]           @relation("ReportFiledBy")
-  auditLogs         AuditLog[]         @relation("AuditLogAdmin")
-  loginEvents       LoginEvent[]
-  referralsGiven    Referral[]         @relation("Referrer")
-  referredBy        Referral?          @relation("Referred")
+  savedJobs      SavedJob[]
+  jobAlerts      JobAlert[]
+  applications   Application[]
+  sentMessages     Message[] @relation("MessageSender")
+  receivedMessages Message[] @relation("MessageReceiver")
+  notifications  Notification[]
+  orders         Order[]
+  reportsFiled   Report[]  @relation("ReportFiledBy")
+  referralsGiven Referral[] @relation("Referrer")
+  referredBy     Referral?  @relation("Referred")
   blogPostsAuthored BlogPost[]
-  pushSubscriptions PushSubscription[]
-  profileViewsMade  ProfileView[]      @relation("ProfileViewer")
-  ticketsFiled      SupportTicket[]    @relation("TicketFiledBy")
-  ticketsAssigned   SupportTicket[]    @relation("TicketAssignedAdmin")
-  ticketMessages    TicketMessage[]    @relation("TicketMessageSender")
 
   @@index([role])
 }
 
 model CandidateProfile {
-  id     String @id @default(cuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  fullName        String
-  headline        String?
-  location        String?
-  phone           String?
-  about           String?
-  skills          String[]
+  fullName    String
+  headline    String?
+  location    String?
+  phone       String?
+  about       String?
+  skills      String[]
   experienceYears Int?
-  resumeUrl       String?
+  resumeUrl   String?
   profilePhotoUrl String?
-  videoProfileUrl String?
-  isVerified      Boolean  @default(false)
-  referralPoints  Int      @default(0)
-
-  githubUsername     String?
-  githubProfileUrl   String?
-  githubAvatarUrl    String?
-  linkedinProfileUrl String?
-
-  /// Structured work-history/education entries for the profile timeline.
-  /// Kept as JSON rather than separate relational tables since these are
-  /// simple ordered lists with no cross-references elsewhere in the schema.
-  experienceEntries Json?
-  educationEntries  Json?
+  isVerified  Boolean  @default(false)
+  referralPoints Int   @default(0)
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -392,90 +144,53 @@ model CandidateProfile {
   followedEmployers EmployerFollow[]
   skillAssessments  SkillAssessment[]
   mockInterviews    MockInterview[]
-  profileViews      ProfileView[]
+
+  resume      CandidateResume?
 
   @@index([location])
 }
 
-/**
- * Logged every time an employer opens a candidate's profile — powers "who viewed your profile".
- */
-model ProfileView {
-  id          String           @id @default(cuid())
-  candidateId String
-  candidate   CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  viewerId    String
-  viewer      User             @relation("ProfileViewer", fields: [viewerId], references: [id], onDelete: Cascade)
-  createdAt   DateTime         @default(now())
-
-  @@index([candidateId, createdAt])
-}
-
-/**
- * Browser push subscription (Web Push / VAPID) — one row per device/browser a user has opted in on.
- */
-model PushSubscription {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  endpoint  String   @unique
-  p256dh    String
-  auth      String
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-}
-
 model MockInterview {
-  id          String           @id @default(cuid())
-  candidateId String
-  candidate   CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  id              String    @id @default(cuid())
+  candidateId     String
+  candidate       CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
 
-  jobRole       String
-  questions     Json
-  answers       Json?
-  feedback      Json?
-  overallRating Int?
-  status        String @default("PENDING")
+  jobRole         String
+  questions       Json
+  answers         Json?
+  feedback        Json?
+  overallRating   Int?
+  status          String    @default("PENDING")
 
-  timeLimitSeconds Int     @default(1200)
-  violations       Int     @default(0)
-  timeExceeded     Boolean @default(false)
-
-  createdAt   DateTime  @default(now())
-  completedAt DateTime?
+  createdAt       DateTime  @default(now())
+  completedAt     DateTime?
 
   @@index([candidateId])
 }
 
 model SkillAssessment {
-  id          String           @id @default(cuid())
-  candidateId String
-  candidate   CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  id              String    @id @default(cuid())
+  candidateId     String
+  candidate       CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
 
-  skill          String
-  questions      Json
-  answers        Json?
-  score          Int?
-  totalQuestions Int
-  passed         Boolean?
-  status         String   @default("PENDING")
+  skill           String
+  questions       Json
+  answers         Json?
+  score           Int?
+  totalQuestions  Int
+  passed          Boolean?
+  status          String    @default("PENDING")
 
-  timeLimitSeconds Int      @default(600)
-  violations       Int      @default(0)
-  timeExceeded     Boolean  @default(false)
-  proctored        Boolean?
-
-  createdAt   DateTime  @default(now())
-  completedAt DateTime?
+  createdAt       DateTime  @default(now())
+  completedAt     DateTime?
 
   @@index([candidateId])
 }
 
 model Employer {
-  id     String @id @default(cuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   companyName  String
   logoUrl      String?
@@ -483,55 +198,28 @@ model Employer {
   website      String?
   location     String?
   industry     String?
-  cultureBlurb String?
-  photos       String[] @default([])
 
   status       EmployerStatus @default(PENDING)
   verifiedAt   DateTime?
   verifiedById String?
 
-  /// Verification documents an employer submits for admin review. Stored as
-  /// uploaded file paths (via the existing /uploads/document endpoint), not
-  /// raw text — admin looks at the actual document, not a typed claim.
-  gstCertificateUrl    String?
-  incorporationCertUrl String?
-  signatoryIdUrl       String?
-  documentsSubmittedAt DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  jobs                Job[]
-  followers           EmployerFollow[]
-  activePackage       EmployerPackageSubscription?
-  verificationHistory VerificationHistoryEntry[]
+  jobs         Job[]
+  followers    EmployerFollow[]
+  activePackage EmployerPackageSubscription?
 
   @@index([status])
 }
 
-/// Full audit trail of every verification decision on an employer — never
-/// overwritten, so "submitted → info requested → resubmitted → approved" stays
-/// visible as a real timeline, not just the current status.
-model VerificationHistoryEntry {
-  id                 String               @id @default(cuid())
-  employerId         String
-  employer           Employer             @relation(fields: [employerId], references: [id], onDelete: Cascade)
-  decision           VerificationDecision
-  reason             String?
-  requestedDocuments String[]             @default([])
-  adminId            String
-  createdAt          DateTime             @default(now())
-
-  @@index([employerId, createdAt])
-}
-
 model EmployerFollow {
-  id          String           @id @default(cuid())
+  id          String   @id @default(cuid())
   candidateId String
   candidate   CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   employerId  String
-  employer    Employer         @relation(fields: [employerId], references: [id], onDelete: Cascade)
-  createdAt   DateTime         @default(now())
+  employer    Employer @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
 
   @@unique([candidateId, employerId])
 }
@@ -539,39 +227,19 @@ model EmployerFollow {
 // ---------- Jobs & applications ----------
 
 model Job {
-  id         String   @id @default(cuid())
-  employerId String
-  employer   Employer @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  employerId   String
+  employer     Employer @relation(fields: [employerId], references: [id], onDelete: Cascade)
 
-  title       String
-  slug        String    @unique
-  description String
-  category    String
-  location    String
-  salaryMin   Int?
-  salaryMax   Int?
-  jobType     JobType
-  status      JobStatus @default(OPEN)
-
-  department        String?
-  workMode          WorkMode?
-  experienceMin     Int?
-  experienceMax     Int?
-  openings          Int       @default(1)
-  salaryVisible     Boolean   @default(true)
-  salaryType        SalaryType @default(ANNUAL)
-  /// Full set of locations this job is open in; `location` above stays in
-  /// sync with locations[0] so existing filter/search code keeps working
-  /// unchanged.
-  locations         String[]  @default([])
-  requiredSkills    String[]  @default([])
-  requirements      String?
-  niceToHave        String?
-  benefits          String?
-  screeningQuestions String[] @default([])
-  applicationDeadline DateTime?
-  isFeatured        Boolean   @default(false)
-  featuredUntil     DateTime?
+  title        String
+  slug         String   @unique
+  description  String
+  category     String
+  location     String
+  salaryMin    Int?
+  salaryMax    Int?
+  jobType      JobType
+  status       JobStatus @default(OPEN)
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -579,7 +247,6 @@ model Job {
   applications Application[]
   savedBy      SavedJob[]
   reports      Report[] @relation("ReportedJob")
-  boostOrders  Order[]
 
   @@index([status])
   @@index([category])
@@ -587,66 +254,66 @@ model Job {
 }
 
 model Application {
-  id          String @id @default(cuid())
+  id          String   @id @default(cuid())
   jobId       String
-  job         Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
   candidateId String
-  candidate   User   @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  candidate   User     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
 
-  status    ApplicationStatus @default(APPLIED)
-  coverNote String?
+  status      ApplicationStatus @default(APPLIED)
+  coverNote   String?
 
-  appliedAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  appliedAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@unique([jobId, candidateId])
   @@index([status])
 }
 
 model SavedJob {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  jobId     String
-  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId       String
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
 
   @@unique([userId, jobId])
 }
 
 model JobAlert {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  keyword   String?
-  category  String?
-  location  String?
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  keyword     String?
+  category    String?
+  location    String?
+  createdAt   DateTime @default(now())
 }
 
 // ---------- Messaging & notifications ----------
 
 model Message {
-  id         String    @id @default(cuid())
-  senderId   String
-  sender     User      @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
-  receiverId String
-  receiver   User      @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
-  body       String
-  readAt     DateTime?
-  createdAt  DateTime  @default(now())
+  id          String   @id @default(cuid())
+  senderId    String
+  sender      User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId  String
+  receiver    User     @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  body        String
+  readAt      DateTime?
+  createdAt   DateTime @default(now())
 
   @@index([senderId, receiverId])
 }
 
 model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title     String
-  body      String
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  body        String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
 
   @@index([userId, isRead])
 }
@@ -654,30 +321,30 @@ model Notification {
 // ---------- Content ----------
 
 model BlogPost {
-  id            String    @id @default(cuid())
-  authorId      String
-  author        User      @relation(fields: [authorId], references: [id])
-  title         String
-  slug          String    @unique
-  excerpt       String?
-  body          String
+  id          String   @id @default(cuid())
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  title       String
+  slug        String   @unique
+  excerpt     String?
+  body        String
   coverImageUrl String?
-  publishedAt   DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // ---------- Payments ----------
 
 model Package {
-  id           String          @id @default(cuid())
-  audience     PackageAudience
-  name         String
+  id          String   @id @default(cuid())
+  audience    PackageAudience
+  name        String
   priceInPaisa Int
   featuresJson Json
-  isActive     Boolean         @default(true)
+  isActive    Boolean  @default(true)
 
-  orders                Order[]
+  orders      Order[]
   employerSubscriptions EmployerPackageSubscription[]
 }
 
@@ -687,9 +354,6 @@ model Order {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   packageId   String
   package     Package  @relation(fields: [packageId], references: [id])
-  /// Only set for JOB_BOOST orders — which job gets featured once paid.
-  jobId       String?
-  job         Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
   amountInPaisa Int
   status      OrderStatus @default(PENDING)
   gatewayRef  String?
@@ -700,134 +364,107 @@ model Order {
 }
 
 model EmployerPackageSubscription {
-  id           String    @id @default(cuid())
-  employerId   String    @unique
-  employer     Employer  @relation(fields: [employerId], references: [id], onDelete: Cascade)
-  packageId    String
-  package      Package   @relation(fields: [packageId], references: [id])
-  jobPostsUsed Int       @default(0)
-  startedAt    DateTime  @default(now())
-  expiresAt    DateTime?
+  id          String   @id @default(cuid())
+  employerId  String   @unique
+  employer    Employer @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  packageId   String
+  package     Package  @relation(fields: [packageId], references: [id])
+  jobPostsUsed Int     @default(0)
+  startedAt   DateTime @default(now())
+  expiresAt   DateTime?
 }
 
 // ---------- Trust & safety (Admin module) ----------
 
 model Report {
-  id                 String           @id @default(cuid())
-  targetType         ReportTargetType
-  jobId              String?
-  job                Job?             @relation("ReportedJob", fields: [jobId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  targetType   ReportTargetType
+  jobId        String?
+  job          Job?     @relation("ReportedJob", fields: [jobId], references: [id], onDelete: Cascade)
   reportedEmployerId String?
-  reporterId         String
-  reporter           User             @relation("ReportFiledBy", fields: [reporterId], references: [id], onDelete: Cascade)
-  reason             String
-  status             ReportStatus     @default(OPEN)
-  resolutionNote     String?
-  createdAt          DateTime         @default(now())
-  resolvedAt         DateTime?
+  reporterId   String
+  reporter     User     @relation("ReportFiledBy", fields: [reporterId], references: [id], onDelete: Cascade)
+  reason       String
+  status       ReportStatus @default(OPEN)
+  resolutionNote String?
+  createdAt    DateTime @default(now())
+  resolvedAt   DateTime?
 
   @@index([status])
-}
-
-// ---------- Super Admin: Audit Log ----------
-
-enum AuditTargetType {
-  USER
-  EMPLOYER
-  JOB
-  TRANSACTION
-  CONFIG
-  ASSESSMENT
-  REPORT
-  ADMIN
-}
-
-/// Append-only record of every sensitive admin action. adminEmail is denormalized
-/// (copied at write time) so the log stays readable even if the admin account is
-/// later deleted — never rely on the adminId relation alone for display.
-model AuditLog {
-  id         String          @id @default(cuid())
-  adminId    String
-  admin      User            @relation("AuditLogAdmin", fields: [adminId], references: [id], onDelete: Cascade)
-  adminEmail String
-  action     String
-  targetType AuditTargetType
-  targetId   String
-  reason     String?
-  metadata   Json?
-  ipAddress  String?
-  createdAt  DateTime        @default(now())
-
-  @@index([adminId])
-  @@index([targetType, targetId])
-  @@index([action])
-  @@index([createdAt])
-}
-
-// ---------- Super Admin: Security & Access Monitoring ----------
-
-/// Every failed login attempt — used to detect brute-force patterns (repeated
-/// attempts from one IP/email in a short window).
-model FailedLogin {
-  id        String   @id @default(cuid())
-  email     String
-  ipAddress String?
-  reason    String
-  createdAt DateTime @default(now())
-
-  @@index([email])
-  @@index([ipAddress])
-  @@index([createdAt])
-}
-
-/// One row per successful login. Since auth here is stateless JWT (no server-side
-/// session table), this doubles as the "active sessions" view — a session counts
-/// as active if its most recent LoginEvent is newer than the admin's forced
-/// revocation (User.sessionRevokedAt) and within the token's own expiry window.
-model LoginEvent {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ipAddress String?
-  userAgent String?
-  createdAt DateTime @default(now())
-
-  @@index([userId, createdAt])
-}
-
-model BlockedIp {
-  id        String   @id @default(cuid())
-  ipAddress String   @unique
-  reason    String?
-  createdAt DateTime @default(now())
-}
-
-model RateLimitHit {
-  id        String   @id @default(cuid())
-  ipAddress String?
-  path      String
-  createdAt DateTime @default(now())
-
-  @@index([ipAddress])
-  @@index([createdAt])
 }
 
 // ---------- Growth (referral / gamification) ----------
 
 model Referral {
-  id           String   @id @default(cuid())
-  referrerId   String
-  referrer     User     @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
-  referredId   String   @unique
-  referred     User     @relation("Referred", fields: [referredId], references: [id], onDelete: Cascade)
-  pointsEarned Int      @default(50)
-  createdAt    DateTime @default(now())
+  id          String   @id @default(cuid())
+  referrerId  String
+  referrer    User     @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredId  String   @unique
+  referred    User     @relation("Referred", fields: [referredId], references: [id], onDelete: Cascade)
+  pointsEarned Int     @default(50)
+  createdAt   DateTime @default(now())
 }
 
-// ---------- Marketing / Newsletters ----------
+// ---------- Resume Entities ----------
 
-model NewsletterSubscription {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  subscribedAt DateTime @default(now())
+model CandidateResume {
+  id              String   @id @default(cuid())
+  candidateId     String   @unique
+  candidate       CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  
+  resumeUrl       String?
+  summary         String?
+  skills          String[]
+  experienceYears Int?
+  
+  educations      Education[]
+  experiences     Experience[]
+  projects        Project[]
+  certifications  Certification[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Education {
+  id               String   @id @default(cuid())
+  resumeId         String
+  resume           CandidateResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  title            String
+  academy          String
+  year             String
+  description      String?
+  createdAt        DateTime @default(now())
+}
+
+model Experience {
+  id               String   @id @default(cuid())
+  resumeId         String
+  resume           CandidateResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  title            String
+  company          String
+  startDate        String?
+  endDate          String?
+  description      String?
+  createdAt        DateTime @default(now())
+}
+
+model Project {
+  id               String   @id @default(cuid())
+  resumeId         String
+  resume           CandidateResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  title            String
+  link             String?
+  description      String?
+  createdAt        DateTime @default(now())
+}
+
+model Certification {
+  id               String   @id @default(cuid())
+  resumeId         String
+  resume           CandidateResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  title            String
+  year             String
+  description      String?
+  createdAt        DateTime @default(now())
 }

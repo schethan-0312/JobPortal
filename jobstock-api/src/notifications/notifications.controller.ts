@@ -1,6 +1,5 @@
-import { Body, Controller, Get, Patch, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Param, UseGuards } from '@nestjs/common';
 import { NotificationsService } from './notifications.service.js';
-import { UpdateChannelPrefsDto } from './dto/update-channel-prefs.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { AuthenticatedUser } from '../auth/decorators/current-user.decorator.js';
@@ -28,15 +27,5 @@ export class NotificationsController {
   @Patch('read-all')
   markAllRead(@CurrentUser() user: AuthenticatedUser) {
     return this.notificationsService.markAllRead(user.userId);
-  }
-
-  @Get('channels')
-  getChannelStatus(@CurrentUser() user: AuthenticatedUser) {
-    return this.notificationsService.getChannelStatus(user.userId);
-  }
-
-  @Patch('channels')
-  updateChannelPrefs(@CurrentUser() user: AuthenticatedUser, @Body() dto: UpdateChannelPrefsDto) {
-    return this.notificationsService.updateChannelPrefs(user.userId, dto);
   }
 }

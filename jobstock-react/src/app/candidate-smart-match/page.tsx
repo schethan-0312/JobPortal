@@ -31,9 +31,8 @@ interface JobMatch {
 }
 
 function formatSalary(job: Job) {
-  const fmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
-  if (job.salaryMin && job.salaryMax) return `${fmt(job.salaryMin)} - ${fmt(job.salaryMax)}`;
-  if (job.salaryMin) return fmt(job.salaryMin);
+  if (job.salaryMin && job.salaryMax) return `$${job.salaryMin} - $${job.salaryMax}`;
+  if (job.salaryMin) return `$${job.salaryMin}`;
   return "Not disclosed";
 }
 
@@ -50,10 +49,6 @@ export default function CandidateSmartMatchPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "error">("loading");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [matches, setMatches] = useState<JobMatch[] | null>(null);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [applying, setApplying] = useState(false);
-  const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
-  const [bulkMsg, setBulkMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "CANDIDATE")) {
@@ -78,42 +73,6 @@ export default function CandidateSmartMatchPage() {
     } catch (err) {
       setStatus("error");
       setErrorMsg(err instanceof ApiError ? err.message : "Could not load job matches. Try again.");
-    }
-  }
-
-  function toggleSelect(jobId: string) {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(jobId)) next.delete(jobId);
-      else next.add(jobId);
-      return next;
-    });
-  }
-
-  function selectAllStrongMatches() {
-    if (!matches) return;
-    setSelected(new Set(matches.filter((m) => m.matchScore >= 70 && !appliedIds.has(m.job.id)).map((m) => m.job.id)));
-  }
-
-  async function applyToSelected() {
-    if (selected.size === 0) return;
-    setApplying(true);
-    setBulkMsg(null);
-    try {
-      const result = await api.post<{ appliedCount: number; appliedJobIds: string[]; skippedCount: number }>(
-        "/applications/bulk",
-        { jobIds: [...selected] },
-      );
-      setAppliedIds((prev) => new Set([...prev, ...result.appliedJobIds]));
-      setSelected(new Set());
-      setBulkMsg(
-        `Applied to ${result.appliedCount} job${result.appliedCount === 1 ? "" : "s"}` +
-          (result.skippedCount > 0 ? ` — ${result.skippedCount} skipped (already applied or closed).` : "."),
-      );
-    } catch (err) {
-      setBulkMsg(err instanceof ApiError ? err.message : "Could not submit applications. Try again.");
-    } finally {
-      setApplying(false);
     }
   }
 
@@ -166,71 +125,40 @@ export default function CandidateSmartMatchPage() {
                   </p>
                 )}
                 {status === "idle" && matches && matches.length > 0 && (
-                  <>
-                    {bulkMsg && <div className="alert alert-info">{bulkMsg}</div>}
-                    <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
-                      <button type="button" className="btn btn-sm btn-outline-main" onClick={selectAllStrongMatches}>
-                        Select all 70%+ matches
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-main"
-                        disabled={selected.size === 0 || applying}
-                        onClick={applyToSelected}
-                      >
-                        {applying ? "Applying..." : `Apply to ${selected.size} selected job${selected.size === 1 ? "" : "s"}`}
-                      </button>
-                    </div>
-                    <div className="row">
-                      {matches.map((m) => {
-                        const applied = appliedIds.has(m.job.id);
-                        return (
-                          <div className="col-xl-6 col-md-12 mb-4" key={m.job.id}>
-                            <div className="job-instructor-layout border p-3 h-100">
-                              <div className="d-flex justify-content-between align-items-start mb-2">
-                                <div className="d-flex align-items-start gap-2">
-                                  {!applied && (
-                                    <input
-                                      type="checkbox"
-                                      className="form-check-input mt-1"
-                                      checked={selected.has(m.job.id)}
-                                      onChange={() => toggleSelect(m.job.id)}
-                                      aria-label={`Select ${m.job.title} for bulk apply`}
-                                    />
-                                  )}
-                                  <div>
-                                    <h5 className="mb-1">
-                                      <a href={`/job-detail/${m.job.slug}`}>{m.job.title}</a>
-                                    </h5>
-                                    <div className="text-muted">{m.job.employer?.companyName ?? "—"}</div>
-                                  </div>
-                                </div>
-                                <span
-                                  className="badge p-2"
-                                  style={{ backgroundColor: scoreColor(m.matchScore), color: "#fff", minWidth: 60 }}
-                                >
-                                  {m.matchScore}% Match
-                                </span>
-                              </div>
-                              <div className="mb-2">
-                                <span className="badge bg-light text-dark border me-2">{m.job.jobType ?? "—"}</span>
-                                <span className="badge bg-light text-dark border me-2">{m.job.location ?? "—"}</span>
-                                <span className="badge bg-light text-dark border">{formatSalary(m.job)}</span>
-                                {applied && <span className="badge bg-success ms-2">Applied</span>}
-                              </div>
-                              <ul className="mb-0 ps-3">
-                                {m.matchReasons.map((r, i) => (
-                                  <li key={i} className="small">
-                                    {r}
-                                  </li>
-                                ))}
-                              </ul>
+                  <div className="row">
+                    {matches.map((m) => (
+                      <div className="col-xl-6 col-md-12 mb-4" key={m.job.id}>
+                        <div className="job-instructor-layout border p-3 h-100">
+                          <div className="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                              <h5 className="mb-1">
+                                <a href={`/job-detail/${m.job.slug}`}>{m.job.title}</a>
+                              </h5>
+                              <div className="text-muted">{m.job.employer?.companyName ?? "—"}</div>
                             </div>
+                            <span
+                              className="badge p-2"
+                              style={{ backgroundColor: scoreColor(m.matchScore), color: "#fff", minWidth: 60 }}
+                            >
+                              {m.matchScore}% Match
+                            </span>
                           </div>
-                        );
-                      })}
-                    </div>
-                  </>
+                          <div className="mb-2">
+                            <span className="badge bg-light text-dark border me-2">{m.job.jobType ?? "—"}</span>
+                            <span className="badge bg-light text-dark border me-2">{m.job.location ?? "—"}</span>
+                            <span className="badge bg-light text-dark border">{formatSalary(m.job)}</span>
+                          </div>
+                          <ul className="mb-0 ps-3">
+                            {m.matchReasons.map((r, i) => (
+                              <li key={i} className="small">
+                                {r}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>

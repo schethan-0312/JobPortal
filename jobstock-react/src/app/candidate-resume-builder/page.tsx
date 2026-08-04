@@ -40,6 +40,42 @@ export default function CandidateResumeBuilderPage() {
   const [status, setStatus] = useState<"idle" | "generating" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [resume, setResume] = useState<BuiltResume | null>(null);
+  const [savingToProfile, setSavingToProfile] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  async function handleSaveToProfile() {
+    if (!resume) return;
+    setSavingToProfile(true);
+    setSaveSuccess(false);
+    setErrorMsg(null);
+    try {
+      await api.patch("/candidates/me", {
+        skills: resume.skills,
+        about: resume.summary,
+      });
+
+      await api.put("/candidates/me/resume-data", {
+        educations: resume.education.map((ed) => ({
+          title: ed.degree,
+          academy: ed.institution,
+          year: ed.year,
+        })),
+        experiences: resume.experience.map((exp) => ({
+          title: exp.title,
+          company: exp.company,
+          startDate: exp.duration,
+          description: exp.bullets.join("\n"),
+        })),
+      });
+
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      setErrorMsg(err instanceof ApiError ? err.message : "Failed to save profile");
+    } finally {
+      setSavingToProfile(false);
+    }
+  }
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "CANDIDATE")) {
@@ -194,9 +230,13 @@ export default function CandidateResumeBuilderPage() {
                     </div>
                   ))}
                 </div>
-                <div className="card-footer text-center no-print">
-                  <button type="button" className="btn btn-main" onClick={() => window.print()}>
+                <div className="card-footer text-center no-print d-flex justify-content-center gap-3">
+                  <button type="button" className="btn btn-light" onClick={() => window.print()}>
                     <i className="fa-solid fa-download me-2"></i>Print / Save as PDF
+                  </button>
+                  <button type="button" className="btn btn-main" onClick={handleSaveToProfile} disabled={savingToProfile}>
+                    <i className="fa-solid fa-cloud-arrow-up me-2"></i>
+                    {savingToProfile ? "Saving..." : (saveSuccess ? "Saved Successfully!" : "Save to Profile")}
                   </button>
                 </div>
               </div>

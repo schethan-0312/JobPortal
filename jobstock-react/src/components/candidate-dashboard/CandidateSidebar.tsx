@@ -81,17 +81,11 @@ export default function CandidateSidebar({ active }: CandidateSidebarProps) {
               <div className="jbs-grid-yuo">
                 <Link href="/candidate-profile">
                   <figure>
-                    {profile?.profilePhotoUrl ? (
-                      <img
-                        src={assetUrl(profile.profilePhotoUrl) as string}
-                        className="img-fluid circle"
-                        alt=""
-                      />
-                    ) : (
-                      <div className="img-fluid circle" style={{ aspectRatio: '1/1', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', color: '#64748b', borderRadius: '50%', width: '100%', height: '100%' }}>
-                        {profile?.fullName?.charAt(0)?.toUpperCase() || "C"}
-                      </div>
-                    )}
+                    <img
+                      src={assetUrl(profile?.profilePhotoUrl) || "/assets/img/user-5.png"}
+                      className="img-fluid circle"
+                      alt=""
+                    />
                   </figure>
                 </Link>
               </div>

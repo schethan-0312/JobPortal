@@ -12,32 +12,8 @@ const PUBLIC_EMPLOYER_SELECT = {
   website: true,
   location: true,
   industry: true,
-  cultureBlurb: true,
-  photos: true,
   status: true,
   createdAt: true,
-} as const;
-
-// Single-profile view needs more than the directory listing: real open jobs
-// (for the Jobs tab / departments-hiring filter) and a follower count.
-const PUBLIC_EMPLOYER_DETAIL_SELECT = {
-  ...PUBLIC_EMPLOYER_SELECT,
-  verifiedAt: true,
-  _count: { select: { followers: true } },
-  jobs: {
-    where: { status: 'OPEN' as const },
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      department: true,
-      location: true,
-      jobType: true,
-      workMode: true,
-      createdAt: true,
-    },
-    orderBy: { createdAt: 'desc' as const },
-  },
 } as const;
 
 @Injectable()
@@ -57,11 +33,7 @@ export class EmployersService {
     if (!employer) {
       throw new NotFoundException('Employer profile not found');
     }
-    const submittedNewDocument = Boolean(dto.gstCertificateUrl || dto.incorporationCertUrl || dto.signatoryIdUrl);
-    return this.prisma.employer.update({
-      where: { userId },
-      data: { ...dto, ...(submittedNewDocument ? { documentsSubmittedAt: new Date() } : {}) },
-    });
+    return this.prisma.employer.update({ where: { userId }, data: dto });
   }
 
   async listVerified(params: { location?: string; search?: string; page: number; pageSize: number }) {
@@ -88,7 +60,7 @@ export class EmployersService {
   async getPublicProfile(id: string) {
     const employer = await this.prisma.employer.findUnique({
       where: { id },
-      select: PUBLIC_EMPLOYER_DETAIL_SELECT,
+      select: PUBLIC_EMPLOYER_SELECT,
     });
     if (!employer || employer.status !== 'VERIFIED') {
       throw new NotFoundException('Employer not found');

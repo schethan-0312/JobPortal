@@ -25,13 +25,6 @@ interface EmployerJob {
   _count?: { applications: number };
 }
 
-interface EmployerProfile {
-  id: string;
-  companyName: string;
-  status: string;
-  verifiedAt: string | null;
-}
-
 function timeAgo(dateStr: string) {
   const diffMs = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diffMs / 60000);
@@ -49,8 +42,6 @@ export default function EmployerDashboardPage() {
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [jobs, setJobs] = useState<EmployerJob[]>([]);
-  const [employer, setEmployer] = useState<EmployerProfile | null>(null);
-  const [stats, setStats] = useState<{ activeJobs: number; totalApplicants: number; shortlisted: number; pendingReview: number } | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,16 +56,12 @@ export default function EmployerDashboardPage() {
     (async () => {
       setDataLoading(true);
       try {
-        const [notifs, myJobs, myStats, myEmployer] = await Promise.all([
+        const [notifs, myJobs] = await Promise.all([
           api.get<Notification[]>("/notifications"),
           api.get<EmployerJob[]>("/jobs/mine"),
-          api.get<{ activeJobs: number; totalApplicants: number; shortlisted: number; pendingReview: number }>("/jobs/mine/stats"),
-          api.get<EmployerProfile>("/employers/me"),
         ]);
         setNotifications(notifs.slice(0, 5));
         setJobs(myJobs.slice(0, 10));
-        setStats(myStats);
-        setEmployer(myEmployer);
       } catch (err) {
         setError(err instanceof ApiError ? err.message : "Failed to load dashboard data");
       } finally {
@@ -87,11 +74,14 @@ export default function EmployerDashboardPage() {
     return null;
   }
 
+  const activeJobs = jobs.filter((j) => j.status === "OPEN").length;
+  const totalApplicants = jobs.reduce((sum, j) => sum + (j._count?.applications || 0), 0);
+
   const ctrs = [
-    { icon: "fa-solid fa-business-time", class: "success", number: String(stats?.activeJobs ?? 0), title: "Active Job Posts" },
-    { icon: "fa-solid fa-user-clock", class: "info", number: String(stats?.totalApplicants ?? 0), title: "Total Applicants" },
-    { icon: "fa-solid fa-star", class: "warning", number: String(stats?.shortlisted ?? 0), title: "Shortlisted" },
-    { icon: "fa-solid fa-hourglass-half", class: "danger", number: String(stats?.pendingReview ?? 0), title: "Resumes Pending Review" },
+    { icon: "fa-solid fa-business-time", class: "success", number: String(jobs.length), title: "Posted jobs" },
+    { icon: "fa-solid fa-bookmark", class: "warning", number: String(activeJobs), title: "Active Jobs" },
+    { icon: "fa-solid fa-user-clock", class: "danger", number: String(totalApplicants), title: "Applicants" },
+    { icon: "fa-sharp fa-solid fa-comments", class: "info", number: String(notifications.length), title: "Notifications" },
   ];
 
   return (
@@ -105,15 +95,7 @@ export default function EmployerDashboardPage() {
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
               <div className="colxl-12 col-lg-12 col-md-12">
-                <div className="d-flex align-items-center gap-3 flex-wrap mb-1">
-                  <h1 className="mb-0 fs-3 fw-medium">Employer Dashboard</h1>
-                  {employer && (
-                    <span className={`badge ${employer.status === "VERIFIED" ? "bg-success" : "bg-warning text-dark"}`}>
-                      <i className={`fa-solid ${employer.status === "VERIFIED" ? "fa-circle-check" : "fa-clock"} me-1`}></i>
-                      {employer.status === "VERIFIED" ? "Verified Employer" : employer.status.replace("_", " ")}
-                    </span>
-                  )}
-                </div>
+                <h1 className="mb-1 fs-3 fw-medium">Employer Dashboard</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
                     <li className="breadcrumb-item text-muted">
@@ -165,40 +147,10 @@ export default function EmployerDashboardPage() {
                 <div className="col-xl-8 col-lg-12 col-md-12 col-sm-12">
                   <div className="card d-none d-lg-block">
                     <div className="card-header">
-                      <h4 className="mb-0">Verification Status</h4>
+                      <h4 className="mb-0">Overview</h4>
                     </div>
                     <div className="card-body">
-                      {employer?.status === "VERIFIED" ? (
-                        <div className="d-flex align-items-center gap-3">
-                          <div className="btn-circle-40 text-success bg-success bg-opacity-10 flex-shrink-0">
-                            <i className="fa-solid fa-shield-check"></i>
-                          </div>
-                          <div>
-                            <p className="mb-1 fw-medium">
-                              Verified{employer.verifiedAt ? ` on ${new Date(employer.verifiedAt).toLocaleDateString()}` : ""}
-                            </p>
-                            <p className="text-muted mb-0 small">
-                              Verified companies get a trust badge on every job post and rank higher with candidates —
-                              your listings are already benefiting from it.
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="d-flex align-items-center gap-3">
-                          <div className="btn-circle-40 text-warning bg-warning bg-opacity-10 flex-shrink-0">
-                            <i className="fa-solid fa-clock"></i>
-                          </div>
-                          <div>
-                            <p className="mb-1 fw-medium">
-                              {employer?.status === "INFO_REQUESTED" ? "Additional info requested" : "Pending admin review"}
-                            </p>
-                            <p className="text-muted mb-0 small">
-                              Once verified, your company gets a trust badge that candidates see on every job you post
-                              — verified employers see meaningfully higher application rates.
-                            </p>
-                          </div>
-                        </div>
-                      )}
+                      <p className="text-muted">You have posted {jobs.length} job{jobs.length !== 1 ? "s" : ""}, {activeJobs} currently active, with {totalApplicants} total applicants.</p>
                     </div>
                   </div>
                 </div>

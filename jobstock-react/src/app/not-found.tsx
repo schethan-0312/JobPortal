@@ -1,12 +1,12 @@
 import Link from "next/link";
-import PublicNavbar from "@/components/PublicNavbar";
+import Navbar2 from "@/components/Navbar2";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
 
 export default function NotFound() {
   return (
     <>
-      <PublicNavbar />
+      <Navbar2 />
 
       {/* Page Title Start */}
       <section

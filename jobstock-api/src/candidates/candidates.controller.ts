@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { CandidatesService } from './candidates.service.js';
 import { UpdateCandidateProfileDto } from './dto/update-candidate-profile.dto.js';
 import { CreateJobAlertDto } from './dto/create-job-alert.dto.js';
@@ -40,6 +40,20 @@ export class CandidatesController {
   @Roles(Role.CANDIDATE)
   updateMyProfile(@CurrentUser() user: AuthenticatedUser, @Body() dto: UpdateCandidateProfileDto) {
     return this.candidatesService.updateMyProfile(user.userId, dto);
+  }
+
+  @Get('me/resume')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.CANDIDATE)
+  getMyResume(@CurrentUser() user: AuthenticatedUser) {
+    return this.candidatesService.getMyResume(user.userId);
+  }
+
+  @Put('me/resume')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.CANDIDATE)
+  syncResume(@CurrentUser() user: AuthenticatedUser, @Body() dto: any) {
+    return this.candidatesService.syncResume(user.userId, dto);
   }
 
   @Get('saved-jobs')
@@ -98,20 +112,6 @@ export class CandidatesController {
     return this.candidatesService.followEmployer(user.userId, employerId);
   }
 
-  @Delete('follow-employer/:employerId')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.CANDIDATE)
-  unfollowEmployer(@CurrentUser() user: AuthenticatedUser, @Param('employerId') employerId: string) {
-    return this.candidatesService.unfollowEmployer(user.userId, employerId);
-  }
-
-  @Get('follow-employer/:employerId')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.CANDIDATE)
-  isFollowingEmployer(@CurrentUser() user: AuthenticatedUser, @Param('employerId') employerId: string) {
-    return this.candidatesService.isFollowingEmployer(user.userId, employerId);
-  }
-
   @Get('search')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EMPLOYER)
@@ -119,32 +119,16 @@ export class CandidatesController {
     @Query('location') location?: string,
     @Query('skill') skill?: string,
     @Query('minExperience') minExperience?: string,
-    @Query('q') q?: string,
     @Query('page') page = '1',
     @Query('pageSize') pageSize = '12',
   ) {
     return this.candidatesService.searchForEmployers({
       location,
       skill,
-      q,
       minExperience: minExperience ? Math.max(0, parseInt(minExperience, 10) || 0) : undefined,
       page: Math.max(1, parseInt(page, 10) || 1),
       pageSize: Math.min(50, Math.max(1, parseInt(pageSize, 10) || 12)),
     });
-  }
-
-  @Get('profile-views/mine')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.CANDIDATE)
-  listMyProfileViews(@CurrentUser() user: AuthenticatedUser) {
-    return this.candidatesService.listMyProfileViews(user.userId);
-  }
-
-  @Post(':id/view')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.EMPLOYER)
-  recordProfileView(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
-    return this.candidatesService.recordProfileView(id, user.userId);
   }
 
   @Get(':id')
