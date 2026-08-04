@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 
-export type AdminSidebarActive = "dashboard" | "employers" | "reports";
+export type AdminSidebarActive = "dashboard" | "employers" | "reports" | "ai-monitoring" | "analytics" | (string & {});
 
 interface AdminSidebarProps {
   active?: AdminSidebarActive;
