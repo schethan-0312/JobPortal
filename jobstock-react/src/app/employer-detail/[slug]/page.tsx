@@ -50,6 +50,8 @@ export default function EmployerDetailPage() {
   const [departmentFilter, setDepartmentFilter] = useState<string | null>(null);
   const [following, setFollowing] = useState(false);
   const [followBusy, setFollowBusy] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -63,10 +65,22 @@ export default function EmployerDetailPage() {
   }, [id]);
 
   useEffect(() => {
+    (async () => {
+      try {
+        const counts = await api.get<{ followersCount: number; followingCount: number }>(`/follow/counts/${id}`, { auth: false });
+        setFollowersCount(counts.followersCount);
+        setFollowingCount(counts.followingCount);
+      } catch {
+        // non-critical
+      }
+    })();
+  }, [id]);
+
+  useEffect(() => {
     if (!user || user.role !== "CANDIDATE") return;
     (async () => {
       try {
-        const res = await api.get<{ following: boolean }>(`/candidates/follow-employer/${id}`);
+        const res = await api.get<{ following: boolean }>(`/follow/status/${id}`);
         setFollowing(res.following);
       } catch {
         // non-critical
@@ -76,16 +90,28 @@ export default function EmployerDetailPage() {
 
   async function toggleFollow() {
     setFollowBusy(true);
+    const previousFollowing = following;
+    const previousCount = followersCount;
+    
+    // Optimistic UI updates
+    setFollowing(!previousFollowing);
+    setFollowersCount(previousFollowing ? previousCount - 1 : previousCount + 1);
+
     try {
-      if (following) {
-        await api.delete(`/candidates/follow-employer/${id}`);
-        setFollowing(false);
+      if (previousFollowing) {
+        await api.delete(`/follow/${id}`);
       } else {
-        await api.post(`/candidates/follow-employer/${id}`);
-        setFollowing(true);
+        await api.post(`/follow/${id}`);
       }
+      
+      // Fetch exact counts from backend to keep UI in sync
+      const counts = await api.get<{ followersCount: number; followingCount: number }>(`/follow/counts/${id}`, { auth: false });
+      setFollowersCount(counts.followersCount);
+      setFollowingCount(counts.followingCount);
     } catch {
-      // leave state unchanged on failure
+      // Revert on error
+      setFollowing(previousFollowing);
+      setFollowersCount(previousCount);
     } finally {
       setFollowBusy(false);
     }
@@ -138,12 +164,14 @@ export default function EmployerDetailPage() {
                             <i className="fa-solid fa-location-dot me-1"></i>
                             {employer.location ?? "—"}
                           </span>
-                          {employer._count && (
-                            <span>
-                              <i className="fa-solid fa-users me-1"></i>
-                              {employer._count.followers} followers
-                            </span>
-                          )}
+                          <span>
+                            <i className="fa-solid fa-users me-1"></i>
+                            {followersCount} Followers
+                          </span>
+                          <span>
+                            <i className="fa-solid fa-user-plus me-1"></i>
+                            {followingCount} Following
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -156,7 +184,7 @@ export default function EmployerDetailPage() {
                         disabled={followBusy}
                         onClick={toggleFollow}
                       >
-                        {following ? "Following" : "Follow"}
+                        {following ? "Unfollow" : "Follow"}
                       </button>
                     )}
                     {employer.website ? (

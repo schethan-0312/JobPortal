@@ -61,6 +61,7 @@ import { AdminLegalModule } from './admin-legal/admin-legal.module.js';
 import { SeoModule } from './seo/seo.module.js';
 import { AdminSeoModule } from './admin-seo/admin-seo.module.js';
 import { NewsletterModule } from './newsletter/newsletter.module.js';
+import { FollowModule } from './follow/follow.module.js';
 
 @Module({
   imports: [
@@ -127,6 +128,7 @@ import { NewsletterModule } from './newsletter/newsletter.module.js';
     SeoModule,
     AdminSeoModule,
     NewsletterModule,
+    FollowModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: LoggingThrottlerGuard }],

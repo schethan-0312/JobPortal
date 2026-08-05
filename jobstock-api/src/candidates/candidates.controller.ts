@@ -9,23 +9,30 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { AuthenticatedUser } from '../auth/decorators/current-user.decorator.js';
 import { Role } from '../../generated/prisma/enums.js';
 
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard.js';
+
 @Controller('candidates')
 export class CandidatesController {
   constructor(private readonly candidatesService: CandidatesService) {}
 
   @Get()
+  @UseGuards(OptionalJwtAuthGuard)
   list(
+    @CurrentUser() user: AuthenticatedUser | null,
     @Query('location') location?: string,
     @Query('skill') skill?: string,
     @Query('page') page = '1',
     @Query('pageSize') pageSize = '12',
   ) {
-    return this.candidatesService.listPublic({
-      location,
-      skill,
-      page: Math.max(1, parseInt(page, 10) || 1),
-      pageSize: Math.min(50, Math.max(1, parseInt(pageSize, 10) || 12)),
-    });
+    return this.candidatesService.listPublic(
+      {
+        location,
+        skill,
+        page: Math.max(1, parseInt(page, 10) || 1),
+        pageSize: Math.min(50, Math.max(1, parseInt(pageSize, 10) || 12)),
+      },
+      user,
+    );
   }
 
   @Get('me')

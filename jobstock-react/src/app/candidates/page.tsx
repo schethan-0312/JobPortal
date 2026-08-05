@@ -5,6 +5,7 @@ import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
 import JobFilters from "@/components/jobs/JobFilters";
 import SortingBar from "@/components/jobs/SortingBar";
+import CandidatesListClient from "./CandidatesListClient";
 import Pagination from "@/components/jobs/Pagination";
 import FindJobCta from "@/components/jobs/FindJobCta";
 import FilterModal from "@/components/jobs/FilterModal";
@@ -52,6 +53,13 @@ export default async function CandidatesGridPage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const params = await searchParams;
+  
+  const query = new URLSearchParams();
+  if (params.location) query.set("location", params.location);
+  if (params.skill) query.set("skill", params.skill);
+  if (params.page) query.set("page", params.page);
+  const qs = query.toString();
+
   const { candidates, total, pageSize, error } = await getCandidates(params);
 
   return (
@@ -109,65 +117,13 @@ export default async function CandidatesGridPage({
               {/* Shorting Wrap End */}
 
               {/* Start All List */}
-              {error && <p className="text-danger mb-3">{error}</p>}
-              {!error && candidates.length === 0 && <p className="text-muted mb-3">No candidates found</p>}
-              <div className="row justify-content-center gx-3 gy-4">
-                {candidates.map((item) => (
-                  <div className="col-xl-4 col-lg-6 col-md-6 col-12" key={item.id}>
-                    <div className="jbs-grid-usrs-block border">
-                      <div className="jbs-grid-usrs-thumb">
-                        <div className="jbs-grid-yuo jbs-verified">
-                          <Link href={`/candidate-detail/${item.id}`}>
-                            <figure>
-                              <img
-                                src={assetUrl(item.profilePhotoUrl) || "/assets/img/avatar.jpg"}
-                                className="img-fluid circle"
-                                alt=""
-                              />
-                            </figure>
-                          </Link>
-                        </div>
-                      </div>
-                      <div className="jbs-grid-usrs-caption">
-                        <div className="jbs-tiosk">
-                          <h4 className="jbs-tiosk-title">
-                            <Link href={`/candidate-detail/${item.id}`}>{item.fullName}</Link>
-                          </h4>
-                          <div className="jbs-tiosk-subtitle">
-                            <span>{item.headline ?? "—"}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="jbs-grid-usrs-info">
-                        <div className="jbs-info-ico-style bold">
-                          <div className="jbs-single-y1 style-2">
-                            <span>
-                              <i className="fa-solid fa-location-dot"></i>
-                            </span>
-                            {item.location ?? "—"}
-                          </div>
-                          <div className="jbs-single-y1 style-3">
-                            <span>
-                              <i className="fa-solid fa-coins"></i>
-                            </span>
-                            {item.experienceYears != null ? `${item.experienceYears} Years exp.` : "—"}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="jbs-grid-usrs-contact">
-                        <div className="jbs-btn-groups">
-                          <a href="#" className="btn btn-md btn-gray px-4">
-                            Message
-                          </a>
-                          <Link href={`/candidate-detail/${item.id}`} className="btn btn-md btn-main px-4">
-                            View Detail
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <CandidatesListClient 
+                initialCandidates={candidates} 
+                initialTotal={total} 
+                initialPageSize={pageSize} 
+                initialError={error} 
+                qs={qs} 
+              />
               {/* End All Job List */}
 
               <Suspense fallback={null}>
