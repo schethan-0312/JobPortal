@@ -323,6 +323,9 @@ model User {
   candidateProfile CandidateProfile?
   employer         Employer?
 
+  followsCandidate  CandidateEmployerFollow[] @relation("UserFollowing")
+  followedBy        CandidateEmployerFollow[] @relation("UserFollowers")
+
   savedJobs         SavedJob[]
   jobAlerts         JobAlert[]
   applications      Application[]
@@ -847,4 +850,16 @@ model NewsletterSubscription {
   id           String   @id @default(cuid())
   email        String   @unique
   subscribedAt DateTime @default(now())
+}
+
+model CandidateEmployerFollow {
+  id          String   @id @default(cuid())
+  followerId  String   @map("follower_id")
+  follower    User     @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  followingId String   @map("following_id")
+  following   User     @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@unique([followerId, followingId])
+  @@map("candidate_employer_follows")
 }

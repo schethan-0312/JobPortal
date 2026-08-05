@@ -30,6 +30,39 @@ import { AutoShortlistModule } from './auto-shortlist/auto-shortlist.module.js';
 import { UploadsModule } from './uploads/uploads.module.js';
 import { ResumeBuilderModule } from './resume-builder/resume-builder.module.js';
 import { ResumeParserModule } from './resume-parser/resume-parser.module.js';
+import { GamificationModule } from './gamification/gamification.module.js';
+import { SocialAuthModule } from './social-auth/social-auth.module.js';
+import { PushModule } from './push/push.module.js';
+import { SmsModule } from './sms/sms.module.js';
+import { AuditLogModule } from './audit-log/audit-log.module.js';
+import { AdminFinancialsModule } from './admin-financials/admin-financials.module.js';
+import { AdminIntegrationsModule } from './admin-integrations/admin-integrations.module.js';
+import { AdminSecurityModule } from './admin-security/admin-security.module.js';
+import { LoggingThrottlerGuard } from './admin-security/logging-throttler.guard.js';
+import { IpBlocklistMiddleware } from './admin-security/ip-blocklist.middleware.js';
+import { AdminEmployerManagementModule } from './admin-employer-management/admin-employer-management.module.js';
+import { AdminTeamModule } from './admin-team/admin-team.module.js';
+import { AdminAiModule } from './admin-ai/admin-ai.module.js';
+import { AdminDatabaseModule } from './admin-database/admin-database.module.js';
+import { AdminCandidateManagementModule } from './admin-candidate-management/admin-candidate-management.module.js';
+import { AdminJobModerationModule } from './admin-job-moderation/admin-job-moderation.module.js';
+import { AdminContentModerationModule } from './admin-content-moderation/admin-content-moderation.module.js';
+import { AdminProctoringModule } from './admin-proctoring/admin-proctoring.module.js';
+import { SupportModule } from './support/support.module.js';
+import { AdminSupportModule } from './admin-support/admin-support.module.js';
+import { SystemConfigModule } from './system-config/system-config.module.js';
+import { AdminSystemConfigModule } from './admin-system-config/admin-system-config.module.js';
+import { MaintenanceModeMiddleware } from './system-config/maintenance-mode.middleware.js';
+import { AdminAnalyticsModule } from './admin-analytics/admin-analytics.module.js';
+import { AdminSearchModule } from './admin-search/admin-search.module.js';
+import { ScheduledJobsModule } from './scheduled-jobs/scheduled-jobs.module.js';
+import { AdminBackgroundJobsModule } from './admin-background-jobs/admin-background-jobs.module.js';
+import { LegalModule } from './legal/legal.module.js';
+import { AdminLegalModule } from './admin-legal/admin-legal.module.js';
+import { SeoModule } from './seo/seo.module.js';
+import { AdminSeoModule } from './admin-seo/admin-seo.module.js';
+import { NewsletterModule } from './newsletter/newsletter.module.js';
+import { FollowModule } from './follow/follow.module.js';
 
 @Module({
   imports: [
@@ -68,6 +101,36 @@ import { ResumeParserModule } from './resume-parser/resume-parser.module.js';
     ResumeBuilderModule,
     UploadsModule,
     ResumeParserModule,
+    GamificationModule,
+    SocialAuthModule,
+    PushModule,
+    SmsModule,
+    AuditLogModule,
+    AdminFinancialsModule,
+    AdminIntegrationsModule,
+    AdminSecurityModule,
+    AdminEmployerManagementModule,
+    AdminTeamModule,
+    AdminAiModule,
+    AdminDatabaseModule,
+    AdminCandidateManagementModule,
+    AdminJobModerationModule,
+    AdminContentModerationModule,
+    AdminProctoringModule,
+    SupportModule,
+    AdminSupportModule,
+    SystemConfigModule,
+    AdminSystemConfigModule,
+    AdminAnalyticsModule,
+    AdminSearchModule,
+    ScheduledJobsModule,
+    AdminBackgroundJobsModule,
+    LegalModule,
+    AdminLegalModule,
+    SeoModule,
+    AdminSeoModule,
+    NewsletterModule,
+    FollowModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],

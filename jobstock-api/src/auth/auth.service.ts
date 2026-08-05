@@ -7,6 +7,8 @@ import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { Role } from '../../generated/prisma/enums.js';
+import { SystemConfigService } from '../system-config/system-config.service.js';
+import { EmailService } from '../email/email.service.js';
 
 const BCRYPT_ROUNDS = 12;
 
@@ -15,6 +17,8 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly systemConfig: SystemConfigService,
+    private readonly emailService: EmailService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -98,6 +102,88 @@ export class AuthService {
 
     const newPasswordHash = await bcrypt.hash(dto.newPassword, BCRYPT_ROUNDS);
     await this.prisma.user.update({ where: { id: userId }, data: { passwordHash: newPasswordHash } });
+
+    return { success: true };
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      // Return success even if user not found to prevent email enumeration
+      return { success: true };
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+    const expires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordResetToken: hashedOtp,
+        passwordResetExpires: expires,
+      },
+    });
+
+    await this.emailService.sendPasswordResetOtp(user.email, otp);
+
+    return { success: true };
+  }
+
+  async verifyOtp(email: string, otp: string) {
+    const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        email,
+        passwordResetToken: hashedOtp,
+        passwordResetExpires: { gt: new Date() },
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('OTP is invalid or has expired');
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordResetToken: hashedToken,
+        passwordResetExpires: expires,
+      },
+    });
+
+    return { token: resetToken };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        passwordResetToken: hashedToken,
+        passwordResetExpires: { gt: new Date() },
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Token is invalid or has expired');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        passwordResetToken: null,
+        passwordResetExpires: null,
+      },
+    });
 
     return { success: true };
   }

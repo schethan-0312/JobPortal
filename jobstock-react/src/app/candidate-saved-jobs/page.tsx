@@ -41,7 +41,7 @@ export default function CandidateSavedJobsPage() {
     (async () => {
       setDataLoading(true);
       try {
-        const jobs = await api.get<SavedJob[]>("/candidates/saved-jobs");
+        const jobs = await api.get<SavedJob[]>("/candidates/saved-jobs", { cache: "no-store" });
         setSavedJobs(jobs);
       } catch (err) {
         setError(err instanceof ApiError ? err.message : "Failed to load saved jobs");
@@ -114,14 +114,14 @@ export default function CandidateSavedJobsPage() {
                               <div className="jbs-list-head-thunner">
                                 <div className="jbs-list-emp-thumb jbs-verified">
                                   <a href={`/job-detail/${item.job.slug}`}>
-                                    <figure><img src={assetUrl(item.job.employer.logoUrl) || "/assets/img/l-1.png"} className="img-fluid" alt="" /></figure>
+                                    <figure><img src={assetUrl(item.job.employer?.logoUrl) || "/assets/img/l-1.png"} className="img-fluid" alt="" /></figure>
                                   </a>
                                 </div>
                                 <div className="jbs-list-job-caption">
                                   <div className="jbs-job-title-wrap"><h4><a href={`/job-detail/${item.job.slug}`} className="jbs-job-title">{item.job.title}</a></h4></div>
                                   <div className="jbs-job-mrch-lists">
                                     <div className="single-mrch-lists">
-                                      <span>{item.job.employer.companyName}</span>.<span><i className="fa-solid fa-location-dot me-1"></i>{item.job.location}</span>.<span>Saved {new Date(item.createdAt).toLocaleDateString()}</span>
+                                      <span>{item.job.employer?.companyName || "Unknown"}</span>.<span><i className="fa-solid fa-location-dot me-1"></i>{item.job.location}</span>.<span>Saved {new Date(item.createdAt).toLocaleDateString()}</span>
                                     </div>
                                   </div>
                                 </div>

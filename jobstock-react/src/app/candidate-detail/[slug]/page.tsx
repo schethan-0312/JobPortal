@@ -1,6 +1,8 @@
 import Navbar2 from "@/components/Navbar2";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
+import RecordProfileView from "@/components/RecordProfileView";
+import CandidateFollowHeader from "@/components/CandidateFollowHeader";
 import { api, ApiError, assetUrl } from "@/lib/api";
 
 interface CandidateProfile {
@@ -34,6 +36,15 @@ async function getCandidate(id: string): Promise<{ candidate: CandidateProfile |
   }
 }
 
+async function getFollowCounts(id: string): Promise<{ followersCount: number; followingCount: number }> {
+  try {
+    const counts = await api.get<{ followersCount: number; followingCount: number }>(`/follow/counts/${id}`, { auth: false });
+    return counts;
+  } catch {
+    return { followersCount: 0, followingCount: 0 };
+  }
+}
+
 export default async function CandidateDetailPage({
   params,
 }: {
@@ -41,6 +52,7 @@ export default async function CandidateDetailPage({
 }) {
   const { slug } = await params;
   const { candidate, error } = await getCandidate(slug);
+  const counts = candidate ? await getFollowCounts(candidate.id) : { followersCount: 0, followingCount: 0 };
 
   return (
     <>
@@ -57,63 +69,7 @@ export default async function CandidateDetailPage({
                 </div>
               )}
               {candidate && (
-                <div className="cndt-head-block">
-                  <div className="cndt-head-left">
-                    <div className="cndt-head-thumb">
-                      <figure>
-                        <img
-                          src={assetUrl(candidate.profilePhotoUrl) || "/assets/img/avatar.jpg"}
-                          className="img-fluid circle"
-                          alt=""
-                        />
-                      </figure>
-                    </div>
-                    <div className="cndt-head-caption">
-                      <div className="cndt-head-caption-top">
-                        <div className="cndt-yior-2">
-                          <h4 className="cndt-title">{candidate.fullName}</h4>
-                        </div>
-                        <div className="cndt-yior-3">
-                          <span>
-                            <i className="fa-solid fa-user-graduate me-1"></i>
-                            {candidate.headline ?? "—"}
-                          </span>
-                          <span>
-                            <i className="fa-solid fa-location-dot me-1"></i>
-                            {candidate.location ?? "—"}
-                          </span>
-                          <span>
-                            <i className="fa-solid fa-briefcase me-1"></i>
-                            {candidate.resume?.experienceYears != null ? `${candidate.resume.experienceYears} Years exp.` : "—"}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="cndt-head-caption-bottom">
-                        <div className="cndt-yior-skills">
-                          {(candidate.resume?.skills ?? []).length === 0 && <span>No skills listed</span>}
-                          {(candidate.resume?.skills ?? []).map((skill) => (
-                            <span key={skill}>{skill}</span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="cndt-head-right">
-                    {candidate.resume?.resumeUrl ? (
-                      <a href={candidate.resume?.resumeUrl} target="_blank" rel="noreferrer" className="btn btn-main">
-                        Download CV
-                        <i className="fa-solid fa-download ms-2"></i>
-                      </a>
-                    ) : (
-                      <button type="button" className="btn btn-main" disabled>
-                        No Resume
-                      </button>
-                    )}
-                    <button type="button" className="btn btn-outline-main ms-2">
-                      <i className="fa-solid fa-bookmark"></i>
-                    </button>
-                  </div>
-                </div>
+                <CandidateFollowHeader candidate={candidate} initialCounts={counts} />
               )}
             </div>
           </div>

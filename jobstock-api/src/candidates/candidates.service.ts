@@ -135,11 +135,18 @@ export class CandidatesService {
     });
   }
 
-  async listPublic(params: { location?: string; skill?: string; page: number; pageSize: number }) {
-    const where = {
+  async listPublic(
+    params: { location?: string; skill?: string; page: number; pageSize: number },
+    user?: { role: string; userId: string } | null,
+  ) {
+    const where: Prisma.CandidateProfileWhereInput = {
       ...(params.location ? { location: { contains: params.location, mode: 'insensitive' as const } } : {}),
       ...(params.skill ? { skills: { has: params.skill } } : {}),
     };
+
+    if (user && user.role === 'CANDIDATE') {
+      where.userId = { not: user.userId };
+    }
 
     const [items, total] = await Promise.all([
       this.prisma.candidateProfile.findMany({

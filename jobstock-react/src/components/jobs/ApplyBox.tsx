@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError } from "@/lib/api";
 
@@ -8,8 +8,30 @@ export default function ApplyBox({ jobId }: { jobId: string }) {
   const { user, loading } = useAuth();
   const [applying, setApplying] = useState(false);
   const [applied, setApplied] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [coverNote, setCoverNote] = useState("");
+
+  useEffect(() => {
+    if (user && user.role === "CANDIDATE") {
+      api.get<any[]>(`/candidates/saved-jobs?t=${Date.now()}`, { cache: "no-store" }).then(jobs => {
+        if (jobs.some(j => j.jobId === jobId)) {
+          setSaved(true);
+        }
+      }).catch(err => {
+        console.error("Failed to fetch saved jobs", err);
+      });
+
+      api.get<any[]>(`/applications/mine?t=${Date.now()}`, { cache: "no-store" }).then(apps => {
+        if (apps.some(a => a.jobId === jobId)) {
+          setApplied(true);
+        }
+      }).catch(err => {
+        console.error("Failed to fetch applications", err);
+      });
+    }
+  }, [user, jobId]);
 
   if (loading) {
     return (
@@ -29,6 +51,9 @@ export default function ApplyBox({ jobId }: { jobId: string }) {
         <a href="/signup" className="btn btn-md btn-gray">
           Sign Up
         </a>
+        <button type="button" className="btn btn-md btn-light" data-bs-toggle="modal" data-bs-target="#login">
+          <i className="fa-regular fa-bookmark me-2"></i> Save Job
+        </button>
       </div>
     );
   }
@@ -54,6 +79,33 @@ export default function ApplyBox({ jobId }: { jobId: string }) {
     }
   }
 
+  async function handleToggleSave() {
+    setSaving(true);
+    setMessage(null);
+    try {
+      if (saved) {
+        await api.delete(`/candidates/saved-jobs/${jobId}`);
+        setSaved(false);
+        setMessage("Job removed from saved jobs.");
+      } else {
+        await api.post(`/candidates/saved-jobs/${jobId}`, {});
+        setSaved(true);
+        setMessage("Job saved successfully.");
+        // Redirect the user so they can immediately see it appeared on the saved jobs page
+        window.location.href = "/candidate-saved-jobs";
+      }
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 409 && !saved) {
+        setSaved(true);
+        setMessage("You have already saved this job.");
+      } else {
+        setMessage(err instanceof Error ? err.message : "Failed to update saved job. Please try again.");
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div>
       <div className="d-flex align-items-center flex-wrap gap-2">
@@ -63,7 +115,21 @@ export default function ApplyBox({ jobId }: { jobId: string }) {
           onClick={handleApply}
           disabled={applying || applied}
         >
-          {applied ? "Applied ✓" : applying ? "Applying..." : "Apply Now"}
+          {applied ? "Applied" : applying ? "Applying..." : "Apply Now"}
+        </button>
+        <button 
+          type="button" 
+          className="btn btn-md btn-light"
+          onClick={handleToggleSave}
+          disabled={saving}
+        >
+          {saved ? (
+            <><i className="fa-solid fa-bookmark me-2 text-main"></i> Saved</>
+          ) : saving ? (
+            <><i className="fa-regular fa-bookmark me-2"></i> Saving...</>
+          ) : (
+            <><i className="fa-regular fa-bookmark me-2"></i> Save Job</>
+          )}
         </button>
       </div>
       {!applied && (
@@ -77,7 +143,7 @@ export default function ApplyBox({ jobId }: { jobId: string }) {
           />
         </div>
       )}
-      {message && <p className={`mt-2 mb-0 ${applied ? "text-success" : "text-danger"}`}>{message}</p>}
+      {message && <p className={`mt-2 mb-0 ${message.includes("Failed") ? "text-danger" : "text-success"}`}>{message}</p>}
     </div>
   );
 }

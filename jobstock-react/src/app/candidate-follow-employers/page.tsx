@@ -10,10 +10,16 @@ import { api, ApiError, assetUrl } from "@/lib/api";
 
 interface FollowedEmployer {
   id: string;
-  employer: {
+  employer?: {
     id: string;
     companyName: string;
     logoUrl: string | null;
+    location: string | null;
+  };
+  candidate?: {
+    id: string;
+    fullName: string;
+    profilePhotoUrl: string | null;
     location: string | null;
   };
 }
@@ -31,27 +37,36 @@ export default function CandidateFollowEmployersPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && (!user || user.role !== "CANDIDATE")) {
+    if (!loading && (!user || (user.role !== "CANDIDATE" && user.role !== "EMPLOYER"))) {
       router.push("/");
     }
   }, [loading, user, router]);
 
   useEffect(() => {
-    if (!user || user.role !== "CANDIDATE") return;
+    if (!user || (user.role !== "CANDIDATE" && user.role !== "EMPLOYER")) return;
     (async () => {
       setDataLoading(true);
       try {
-        const list = await api.get<FollowedEmployer[]>("/candidates/followed-employers");
+        const list = await api.get<FollowedEmployer[]>("/follow/following");
         setEmployers(list);
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Failed to load followed employers");
+        setError(err instanceof ApiError ? err.message : "Failed to load followed profiles");
       } finally {
         setDataLoading(false);
       }
     })();
   }, [user]);
 
-  if (loading || !user || user.role !== "CANDIDATE") {
+  async function handleUnfollow(targetId: string) {
+    try {
+      await api.delete(`/follow/${targetId}`);
+      setEmployers((prev) => prev.filter((item) => item.employer?.id !== targetId && item.candidate?.id !== targetId));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to unfollow profile");
+    }
+  }
+
+  if (loading || !user || (user.role !== "CANDIDATE" && user.role !== "EMPLOYER")) {
     return null;
   }
 
@@ -66,12 +81,18 @@ export default function CandidateFollowEmployersPage() {
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
               <div className="colxl-12 col-lg-12 col-md-12">
-                <h1 className="mb-1 fs-3 fw-medium">Following Employers</h1>
+                <h1 className="mb-1 fs-3 fw-medium">
+                  {user.role === "EMPLOYER" ? "Following Candidates" : "Following Employers"}
+                </h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
-                    <li className="breadcrumb-item text-muted"><a href="#">Candidate</a></li>
+                    <li className="breadcrumb-item text-muted"><a href="#">{user.role === "EMPLOYER" ? "Employer" : "Candidate"}</a></li>
                     <li className="breadcrumb-item text-muted"><a href="#">Dashboard</a></li>
-                    <li className="breadcrumb-item"><a href="#" className="text-main">Following Employers</a></li>
+                    <li className="breadcrumb-item">
+                      <a href="#" className="text-main">
+                        {user.role === "EMPLOYER" ? "Following Candidates" : "Following Employers"}
+                      </a>
+                    </li>
                   </ol>
                 </nav>
               </div>
@@ -87,39 +108,84 @@ export default function CandidateFollowEmployersPage() {
               <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                 <div className="card">
                   <div className="card-header">
-                    <h6 className="mb-0">{employers.length} followed employer{employers.length !== 1 ? "s" : ""}</h6>
+                    <h6 className="mb-0">
+                      {employers.length} followed {user.role === "EMPLOYER" ? "candidate" : "employer"}{employers.length !== 1 ? "s" : ""}
+                    </h6>
                   </div>
                   <div className="card-body">
                     {dataLoading && <p className="text-muted">Loading...</p>}
-                    {!dataLoading && employers.length === 0 && <p className="text-muted">You are not following any employers yet.</p>}
+                    {!dataLoading && employers.length === 0 && (
+                      <p className="text-muted">
+                        You are not following any {user.role === "EMPLOYER" ? "candidates" : "employers"} yet.
+                      </p>
+                    )}
                     {/* Start All List */}
                     <div className="row justify-content-start gx-3 gy-4">
-                      {employers.map((item) => (
-                        <div className="col-xl-12 col-lg-12 col-md-12 col-12" key={item.id}>
-                          <div className="emplors-list-box border">
-                            <div className="emplors-list-head">
-                              <div className="emplors-list-head-thunner">
-                                <div className="emplors-list-emp-thumb">
-                                  <a href={`/employer-detail/${slugify(item.employer.companyName)}`}>
-                                    <figure><img src={assetUrl(item.employer.logoUrl) || "/assets/img/l-1.png"} className="img-fluid" alt="" /></figure>
-                                  </a>
-                                </div>
-                                <div className="emplors-list-job-caption">
-                                  <div className="emplors-job-title-wrap mb-1"><h4><a href={`/employer-detail/${slugify(item.employer.companyName)}`} className="emplors-job-title">{item.employer.companyName}</a></h4></div>
-                                  <div className="emplors-job-mrch-lists">
-                                    <div className="single-mrch-lists">
-                                      <span><i className="fa-solid fa-location-dot me-1"></i>{item.employer.location || "Location not set"}</span>
+                      {employers.map((item) => {
+                        const isCandidate = Boolean(item.candidate);
+                        const detailUrl = isCandidate 
+                          ? `/candidate-detail/${item.candidate!.id}` 
+                          : `/employer-detail/${item.employer!.id}`;
+                        const logoUrl = isCandidate 
+                          ? item.candidate!.profilePhotoUrl 
+                          : item.employer!.logoUrl;
+                        const defaultImg = isCandidate 
+                          ? "/assets/img/avatar.jpg" 
+                          : "/assets/img/l-1.png";
+                        const name = isCandidate 
+                          ? item.candidate!.fullName 
+                          : item.employer!.companyName;
+                        const location = isCandidate 
+                          ? item.candidate!.location 
+                          : item.employer!.location;
+                        const viewText = isCandidate 
+                          ? "View Profile" 
+                          : "View Company";
+                        const targetId = isCandidate 
+                          ? item.candidate!.id 
+                          : item.employer!.id;
+
+                        return (
+                          <div className="col-xl-12 col-lg-12 col-md-12 col-12" key={item.id}>
+                            <div className="emplors-list-box border">
+                              <div className="emplors-list-head">
+                                <div className="emplors-list-head-thunner">
+                                  <div className="emplors-list-emp-thumb">
+                                    <a href={detailUrl}>
+                                      <figure><img src={assetUrl(logoUrl) || defaultImg} className="img-fluid" alt="" /></figure>
+                                    </a>
+                                  </div>
+                                  <div className="emplors-list-job-caption">
+                                    <div className="emplors-job-title-wrap mb-1">
+                                      <h4>
+                                        <a href={detailUrl} className="emplors-job-title">
+                                          {name}
+                                        </a>
+                                      </h4>
+                                    </div>
+                                    <div className="emplors-job-mrch-lists">
+                                      <div className="single-mrch-lists">
+                                        <span><i className="fa-solid fa-location-dot me-1"></i>{location || "Location not set"}</span>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                              <div className="emplors-list-head-last">
-                                <a href={`/employer-detail/${slugify(item.employer.companyName)}`} className="btn btn-md btn-light-main px-3">View Company</a>
+                                <div className="emplors-list-head-last d-flex gap-2">
+                                  <a href={detailUrl} className="btn btn-md btn-light-main px-3">{viewText}</a>
+                                  <button
+                                    type="button"
+                                    className="btn btn-md btn-outline-danger px-3"
+                                    onClick={() => handleUnfollow(targetId)}
+                                    disabled={loadingId === targetId}
+                                  >
+                                    {loadingId === targetId ? "..." : "Unfollow"}
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

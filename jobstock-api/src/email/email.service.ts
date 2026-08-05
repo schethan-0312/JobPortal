@@ -81,4 +81,30 @@ export class EmailService {
       this.logger.error(`Failed to send admin notification email for ${subscriberEmail}`, error);
     }
   }
+
+  async sendPasswordResetOtp(email: string, otp: string) {
+    if (!this.transporter) {
+      this.logger.warn(`EmailService is not configured. Password reset OTP for ${email} is: ${otp}`);
+      return;
+    }
+
+    const from = process.env.EMAIL_FROM || process.env.EMAIL_USERNAME;
+    const mailOptions = {
+      from: `"JobStock Security" <${from}>`,
+      to: email,
+      subject: 'Password Reset OTP',
+      text: `Hello,\n\nYou requested a password reset for your JobStock account. Your 6-digit One-Time Password (OTP) is:\n\n${otp}\n\nThis OTP is valid for 5 minutes. If you did not request this, please ignore this email.\n\nBest regards,\nThe JobStock Team`,
+      html: `<p>Hello,</p><p>You requested a password reset for your JobStock account. Your 6-digit One-Time Password (OTP) is:</p><h2 style="font-size:32px;letter-spacing:5px;text-align:center;color:#007bff;margin:20px 0;">${otp}</h2><p>This OTP is valid for 5 minutes. If you did not request this, please ignore this email.</p><br><p>Best regards,<br>The JobStock Team</p>`,
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      this.logger.log(`Password reset OTP sent to ${email}`);
+    } catch (error) {
+      this.logger.error(`Failed to send password reset OTP to ${email}`, error);
+      this.logger.warn(`Fallback: Password reset OTP for ${email} is: ${otp}`);
+    }
+  }
 }
+// Trigger rebuild
+
