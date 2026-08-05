@@ -18,6 +18,6 @@ export class ResumeScannerController {
 
   @Post('scan')
   scan(@CurrentUser() user: AuthenticatedUser, @Body() dto: ScanResumeDto) {
-    return this.resumeScannerService.scan(user.userId, dto.targetRole);
+    return this.resumeScannerService.scan(user.userId, dto);
   }
 }

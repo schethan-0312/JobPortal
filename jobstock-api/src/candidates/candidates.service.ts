@@ -79,6 +79,7 @@ export class CandidatesService {
           resumeUrl: dto.resumeUrl !== undefined ? dto.resumeUrl : undefined,
           summary: dto.summary !== undefined ? dto.summary : undefined,
           skills: dto.skills !== undefined ? dto.skills : undefined,
+          languages: dto.languages !== undefined ? dto.languages : undefined,
           experienceYears: dto.experienceYears !== undefined ? dto.experienceYears : undefined,
         },
         create: {
@@ -86,6 +87,7 @@ export class CandidatesService {
           resumeUrl: dto.resumeUrl,
           summary: dto.summary,
           skills: dto.skills || [],
+          languages: dto.languages || [],
           experienceYears: dto.experienceYears,
         },
       });

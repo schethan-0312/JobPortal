@@ -45,7 +45,7 @@ export default function AiChatWidget() {
   }
 
   return (
-    <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 1050 }}>
+    <div className="no-print" style={{ position: "fixed", bottom: 24, right: 24, zIndex: 1050 }}>
       {open && (
         <div
           style={{

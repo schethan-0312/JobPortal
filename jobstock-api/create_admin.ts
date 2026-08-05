@@ -10,8 +10,8 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  const email = 'admin@jobstock.com';
-  const password = 'AdminPassword123!';
+  const email = 'admin@gmail.com';
+  const password = 'Admin@123';
   const passwordHash = await bcrypt.hash(password, 10);
   
   const existing = await prisma.user.findUnique({ where: { email } });

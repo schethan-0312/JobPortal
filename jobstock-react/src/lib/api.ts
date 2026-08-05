@@ -95,8 +95,13 @@ export async function uploadFile<T = unknown>(path: string, file: File): Promise
 
 export function assetUrl(path: string | null | undefined): string | null {
   if (!path) return null;
-  if (path.startsWith("http")) return path;
-  return `${API_URL.replace(/\/api$/, "")}${path}`;
+  if (path.startsWith("http") || path.startsWith("data:")) return path;
+  try {
+    const url = new URL(API_URL);
+    return `${url.origin}${path}`;
+  } catch {
+    return `${API_URL.replace(/\/api.*$/, "")}${path}`;
+  }
 }
 
 export const api = {

@@ -9,9 +9,9 @@ import { Role } from '../../generated/prisma/enums.js';
 describe('AuthService', () => {
   let service: AuthService;
   let prisma: {
-    user: { findUnique: jest.Mock; create: jest.Mock; update: jest.Mock };
-    referral: { create: jest.Mock };
-    candidateProfile: { updateMany: jest.Mock };
+    user: { findUnique: jest.Mock<any>; create: jest.Mock<any>; update: jest.Mock<any> };
+    referral: { create: jest.Mock<any> };
+    candidateProfile: { updateMany: jest.Mock<any> };
   };
   let jwtService: { sign: jest.Mock };
 
@@ -52,7 +52,7 @@ describe('AuthService', () => {
 
       await service.register({ email: 'new@test.com', password: 'PlainText123', role: Role.CANDIDATE, fullName: 'New' });
 
-      const createArgs = prisma.user.create.mock.calls[0][0];
+      const createArgs = prisma.user.create.mock.calls[0][0] as any;
       expect(createArgs.data.passwordHash).not.toBe('PlainText123');
       expect(createArgs.data.passwordHash).toMatch(/^\$2[aby]\$/); // bcrypt hash format
     });

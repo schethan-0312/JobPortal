@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AiService } from '../ai/ai.service.js';
 import { GenerateResumeDto } from './dto/generate-resume.dto.js';
+import { SuggestImprovementDto } from './dto/suggest-improvement.dto.js';
 
 export interface ExperienceEntry {
   title: string;
@@ -17,14 +18,29 @@ export interface EducationEntry {
   year: string;
 }
 
+export interface ProjectEntry {
+  title: string;
+  link?: string;
+  description: string;
+}
+
+export interface CertificationEntry {
+  title: string;
+  year: string;
+  description: string;
+}
+
 export interface BuiltResume {
   fullName: string;
   headline: string;
   contact: { email?: string; phone?: string; location?: string };
   summary: string;
   skills: string[];
+  languages: string[];
   experience: ExperienceEntry[];
   education: EducationEntry[];
+  projects: ProjectEntry[];
+  certifications: CertificationEntry[];
 }
 
 const SYSTEM_PROMPT = `You are an expert resume writer for a job portal, producing ATS-friendly, professionally
@@ -38,8 +54,11 @@ Respond with strict JSON, no markdown, no extra text:
 {
   "summary": string,
   "skills": string[] (deduplicated, most relevant first),
+  "languages": string[] (extracted spoken or written languages, or empty array),
   "experience": [ { "title": string, "company": string, "duration": string, "bullets": string[] } ],
-  "education": [ { "degree": string, "institution": string, "year": string } ]
+  "education": [ { "degree": string, "institution": string, "year": string } ],
+  "projects": [ { "title": string, "link": string (or empty), "description": string } ],
+  "certifications": [ { "title": string, "year": string, "description": string } ]
 }`;
 
 @Injectable()
@@ -73,8 +92,11 @@ ${dto.rawBackground}
     const generated = await this.ai.generateJson<{
       summary: string;
       skills: string[];
+      languages: string[];
       experience: ExperienceEntry[];
       education: EducationEntry[];
+      projects: ProjectEntry[];
+      certifications: CertificationEntry[];
     }>(SYSTEM_PROMPT, userPrompt);
 
     return {
@@ -87,8 +109,23 @@ ${dto.rawBackground}
       },
       summary: generated.summary,
       skills: generated.skills,
-      experience: generated.experience,
-      education: generated.education,
+      languages: generated.languages || [],
+      experience: generated.experience || [],
+      education: generated.education || [],
+      projects: generated.projects || [],
+      certifications: generated.certifications || [],
     };
+  }
+
+  async suggestImprovement(userId: string, dto: SuggestImprovementDto) {
+    const PROMPT = `You are an expert resume reviewer and copywriter.
+The candidate wants to improve the following text from the "${dto.sectionType}" section of their resume.
+Provide an improved, professional version of this text.
+If it is a bullet point or paragraph, rewrite it using strong action verbs, quantifiable metrics where implied, and impactful phrasing.
+If it is a list of skills, suggest a more professional grouping or formatting, or add obviously missing foundational keywords.
+Return only the improved text, no extra conversational text.`;
+
+    const result = await this.ai.generateText(PROMPT, `Text to improve:\n"""\n${dto.text}\n"""`);
+    return { suggestion: result.trim() };
   }
 }

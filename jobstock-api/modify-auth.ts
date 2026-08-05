@@ -1,0 +1,1 @@
+const fs = require('fs'); let c = fs.readFileSync('src/auth/auth.service.ts', 'utf8'); c = c.replace('const user = await this.prisma.user.findUnique({ where: { email: dto.email } });', 'const user = await this.prisma.user.findUnique({ where: { email: dto.email } }); console.log(\[DEBUG] user:\, user);'); fs.writeFileSync('src/auth/auth.service.ts', c);

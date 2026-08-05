@@ -5,4 +5,12 @@ export class GeneratePathDto {
   @IsString()
   @MaxLength(200)
   targetIndustry?: string;
+
+  @IsOptional()
+  @IsString()
+  sourceType?: 'profile' | 'resume' | 'upload' = 'profile';
+
+  @IsOptional()
+  @IsString()
+  sourceText?: string;
 }

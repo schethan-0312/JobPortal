@@ -1,0 +1,470 @@
+// Prisma schema for JobStock platform
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- Contact ----------
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String?
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([isRead])
+}
+
+// ---------- Enums ----------
+
+enum Role {
+  CANDIDATE
+  EMPLOYER
+  ADMIN
+}
+
+enum EmployerStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  SUSPENDED
+}
+
+enum JobStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  FLAGGED
+}
+
+enum ApplicationStatus {
+  APPLIED
+  REVIEWED
+  SHORTLISTED
+  INTERVIEW
+  OFFERED
+  REJECTED
+  WITHDRAWN
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED
+  DISMISSED
+}
+
+enum ReportTargetType {
+  JOB
+  EMPLOYER
+  USER
+}
+
+enum PackageAudience {
+  CANDIDATE
+  EMPLOYER
+  RESUME
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  FREELANCE
+  INTERNSHIP
+}
+
+// ---------- Core identity ----------
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         Role
+  isEmailVerified Boolean @default(false)
+  emailVerifyToken String? @unique
+  passwordResetToken String? @unique
+  passwordResetExpires DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  candidateProfile CandidateProfile?
+  employer         Employer?
+
+  savedJobs      SavedJob[]
+  jobAlerts      JobAlert[]
+  applications   Application[]
+  sentMessages     Message[] @relation("MessageSender")
+  receivedMessages Message[] @relation("MessageReceiver")
+  notifications  Notification[]
+  orders         Order[]
+  reportsFiled   Report[]  @relation("ReportFiledBy")
+  referralsGiven Referral[] @relation("Referrer")
+  referredBy     Referral?  @relation("Referred")
+  blogPostsAuthored BlogPost[]
+
+  @@index([role])
+}
+
+model CandidateProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  fullName    String
+  headline    String?
+  location    String?
+  phone       String?
+  about       String?
+  skills      String[]
+  experienceYears Int?
+  resumeUrl   String?
+  profilePhotoUrl String?
+  isVerified  Boolean  @default(false)
+  referralPoints Int   @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  followedEmployers EmployerFollow[]
+  skillAssessments  SkillAssessment[]
+  mockInterviews    MockInterview[]
+
+  resume      CandidateResume?
+
+  @@index([location])
+}
+
+model MockInterview {
+  id              String    @id @default(cuid())
+  candidateId     String
+  candidate       CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  jobRole         String
+  questions       Json
+  answers         Json?
+  feedback        Json?
+  overallRating   Int?
+  status          String    @default("PENDING")
+
+  createdAt       DateTime  @default(now())
+  completedAt     DateTime?
+
+  @@index([candidateId])
+}
+
+model SkillAssessment {
+  id              String    @id @default(cuid())
+  candidateId     String
+  candidate       CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  skill           String
+  questions       Json
+  answers         Json?
+  score           Int?
+  totalQuestions  Int
+  passed          Boolean?
+  status          String    @default("PENDING")
+
+  createdAt       DateTime  @default(now())
+  completedAt     DateTime?
+
+  @@index([candidateId])
+}
+
+model Employer {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  companyName  String
+  logoUrl      String?
+  description  String?
+  website      String?
+  location     String?
+  industry     String?
+
+  status       EmployerStatus @default(PENDING)
+  verifiedAt   DateTime?
+  verifiedById String?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  jobs         Job[]
+  followers    EmployerFollow[]
+  activePackage EmployerPackageSubscription?
+
+  @@index([status])
+}
+
+model EmployerFollow {
+  id          String   @id @default(cuid())
+  candidateId String
+  candidate   CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  employerId  String
+  employer    Employer @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([candidateId, employerId])
+}
+
+// ---------- Jobs & applications ----------
+
+model Job {
+  id           String   @id @default(cuid())
+  employerId   String
+  employer     Employer @relation(fields: [employerId], references: [id], onDelete: Cascade)
+
+  title        String
+  slug         String   @unique
+  description  String
+  category     String
+  location     String
+  salaryMin    Int?
+  salaryMax    Int?
+  jobType      JobType
+  status       JobStatus @default(OPEN)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  applications Application[]
+  savedBy      SavedJob[]
+  reports      Report[] @relation("ReportedJob")
+
+  @@index([status])
+  @@index([category])
+  @@index([location])
+}
+
+model Application {
+  id          String   @id @default(cuid())
+  jobId       String
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidateId String
+  candidate   User     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  status      ApplicationStatus @default(APPLIED)
+  coverNote   String?
+
+  appliedAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([jobId, candidateId])
+  @@index([status])
+}
+
+model SavedJob {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId       String
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, jobId])
+}
+
+model JobAlert {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  keyword     String?
+  category    String?
+  location    String?
+  createdAt   DateTime @default(now())
+}
+
+// ---------- Messaging & notifications ----------
+
+model Message {
+  id          String   @id @default(cuid())
+  senderId    String
+  sender      User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId  String
+  receiver    User     @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  body        String
+  readAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([senderId, receiverId])
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  body        String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([userId, isRead])
+}
+
+// ---------- Content ----------
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  title       String
+  slug        String   @unique
+  excerpt     String?
+  body        String
+  coverImageUrl String?
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ---------- Payments ----------
+
+model Package {
+  id          String   @id @default(cuid())
+  audience    PackageAudience
+  name        String
+  priceInPaisa Int
+  featuresJson Json
+  isActive    Boolean  @default(true)
+
+  orders      Order[]
+  employerSubscriptions EmployerPackageSubscription[]
+}
+
+model Order {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  packageId   String
+  package     Package  @relation(fields: [packageId], references: [id])
+  amountInPaisa Int
+  status      OrderStatus @default(PENDING)
+  gatewayRef  String?
+  razorpayOrderId String? @unique
+  createdAt   DateTime @default(now())
+
+  @@index([userId, status])
+}
+
+model EmployerPackageSubscription {
+  id          String   @id @default(cuid())
+  employerId  String   @unique
+  employer    Employer @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  packageId   String
+  package     Package  @relation(fields: [packageId], references: [id])
+  jobPostsUsed Int     @default(0)
+  startedAt   DateTime @default(now())
+  expiresAt   DateTime?
+}
+
+// ---------- Trust & safety (Admin module) ----------
+
+model Report {
+  id           String   @id @default(cuid())
+  targetType   ReportTargetType
+  jobId        String?
+  job          Job?     @relation("ReportedJob", fields: [jobId], references: [id], onDelete: Cascade)
+  reportedEmployerId String?
+  reporterId   String
+  reporter     User     @relation("ReportFiledBy", fields: [reporterId], references: [id], onDelete: Cascade)
+  reason       String
+  status       ReportStatus @default(OPEN)
+  resolutionNote String?
+  createdAt    DateTime @default(now())
+  resolvedAt   DateTime?
+
+  @@index([status])
+}
+
+// ---------- Growth (referral / gamification) ----------
+
+model Referral {
+  id          String   @id @default(cuid())
+  referrerId  String
+  referrer    User     @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredId  String   @unique
+  referred    User     @relation("Referred", fields: [referredId], references: [id], onDelete: Cascade)
+  pointsEarned Int     @default(50)
+  createdAt   DateTime @default(now())
+}
+
+// ---------- Resume Entities ----------
+
+model CandidateResume {
+  id              String   @id @default(cuid())
+  candidateId     String   @unique
+  candidate       CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  
+  resumeUrl       String?
+  summary         String?
+  skills          String[]
+  experienceYears Int?
+  
+  educations      Education[]
+  experiences     Experience[]
+  projects        Project[]
+  certifications  Certification[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Education {
+  id               String   @id @default(cuid())
+  resumeId         String
+  resume           CandidateResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  title            String
+  academy          String
+  year             String
+  description      String?
+  createdAt        DateTime @default(now())
+}
+
+model Experience {
+  id               String   @id @default(cuid())
+  resumeId         String
+  resume           CandidateResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  title            String
+  company          String
+  startDate        String?
+  endDate          String?
+  description      String?
+  createdAt        DateTime @default(now())
+}
+
+model Project {
+  id               String   @id @default(cuid())
+  resumeId         String
+  resume           CandidateResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  title            String
+  link             String?
+  description      String?
+  createdAt        DateTime @default(now())
+}
+
+model Certification {
+  id               String   @id @default(cuid())
+  resumeId         String
+  resume           CandidateResume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  title            String
+  year             String
+  description      String?
+  createdAt        DateTime @default(now())
+}

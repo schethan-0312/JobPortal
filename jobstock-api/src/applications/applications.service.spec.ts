@@ -7,8 +7,8 @@ import { NotificationsService } from '../notifications/notifications.service.js'
 describe('ApplicationsService', () => {
   let service: ApplicationsService;
   let prisma: {
-    job: { findUnique: jest.Mock };
-    application: { findUnique: jest.Mock; create: jest.Mock; update: jest.Mock };
+    job: { findUnique: jest.Mock<any> };
+    application: { findUnique: jest.Mock<any>; create: jest.Mock<any>; update: jest.Mock<any> };
   };
   let notifications: { create: jest.Mock };
 

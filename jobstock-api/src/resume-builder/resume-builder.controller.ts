@@ -2,6 +2,7 @@ import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { ResumeBuilderService } from './resume-builder.service.js';
 import { GenerateResumeDto } from './dto/generate-resume.dto.js';
+import { SuggestImprovementDto } from './dto/suggest-improvement.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
@@ -19,5 +20,10 @@ export class ResumeBuilderController {
   @Post('generate')
   generate(@CurrentUser() user: AuthenticatedUser, @Body() dto: GenerateResumeDto) {
     return this.resumeBuilderService.generate(user.userId, dto);
+  }
+
+  @Post('suggest')
+  suggest(@CurrentUser() user: AuthenticatedUser, @Body() dto: SuggestImprovementDto) {
+    return this.resumeBuilderService.suggestImprovement(user.userId, dto);
   }
 }

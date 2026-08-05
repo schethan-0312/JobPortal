@@ -14,6 +14,7 @@ interface CandidateProfile {
   resumeUrl: string | null;
   summary: string | null;
   skills: string[];
+  languages: string[];
   experienceYears: number | null;
   educations: EducationInput[];
   experiences: ExperienceInput[];
@@ -28,6 +29,7 @@ export default function CandidateResumePage() {
   const [profile, setProfile] = useState<CandidateProfile | null>(null);
   const [resumeUrl, setResumeUrl] = useState("");
   const [skillsInput, setSkillsInput] = useState("");
+  const [languagesInput, setLanguagesInput] = useState("");
   const [experienceYears, setExperienceYears] = useState("");
   const [summary, setSummary] = useState("");
 
@@ -66,6 +68,7 @@ export default function CandidateResumePage() {
           } as any);
           setResumeUrl(draft.resumeUrl || "");
           setSkillsInput((draft.skills || []).join(", "));
+          setLanguagesInput((draft.languages || []).join(", "));
           setExperienceYears(draft.experienceYears != null ? String(draft.experienceYears) : "");
           setSummary(draft.summary || "");
           setIsDraft(true);
@@ -74,6 +77,7 @@ export default function CandidateResumePage() {
           setProfile(p);
           setResumeUrl(p.resumeUrl || "");
           setSkillsInput((p.skills || []).join(", "));
+          setLanguagesInput((p.languages || []).join(", "));
           setExperienceYears(p.experienceYears != null ? String(p.experienceYears) : "");
           setSummary(p.summary || "");
         }
@@ -92,10 +96,12 @@ export default function CandidateResumePage() {
     setSuccess(null);
     try {
       const skills = skillsInput.split(",").map((s) => s.trim()).filter(Boolean);
+      const languages = languagesInput.split(",").map((s) => s.trim()).filter(Boolean);
       const payload = {
         resumeUrl: resumeUrl || undefined,
         summary,
         skills,
+        languages,
         experienceYears: experienceYears ? Number(experienceYears) : undefined,
         educations: profile?.educations || [],
         experiences: profile?.experiences || [],
@@ -197,6 +203,12 @@ export default function CandidateResumePage() {
                     <div className="form-group">
                       <label>Skills (comma separated)</label>
                       <input type="text" className="form-control" value={skillsInput} onChange={(e) => setSkillsInput(e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="col-xl-6 col-lg-6 col-md-6">
+                    <div className="form-group">
+                      <label>Languages (comma separated)</label>
+                      <input type="text" className="form-control" value={languagesInput} onChange={(e) => setLanguagesInput(e.target.value)} />
                     </div>
                   </div>
                   <div className="col-xl-12 col-lg-12 col-md-12">

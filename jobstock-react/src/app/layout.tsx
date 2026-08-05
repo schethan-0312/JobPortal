@@ -31,7 +31,7 @@ export default function RootLayout({
         <AuthProvider>
           <div id="main-wrapper">
             {children}
-            <a href="#" id="back2Top" className="top-scroll" title="Back to top">
+            <a href="#" id="back2Top" className="top-scroll no-print" title="Back to top">
               <i className="bi bi-arrow-up"></i>
             </a>
             <AiChatWidget />

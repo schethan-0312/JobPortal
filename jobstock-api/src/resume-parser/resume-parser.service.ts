@@ -11,6 +11,7 @@ Always respond with strict JSON matching this exact shape, no markdown, no extra
   "headline": string (a short professional headline based on the resume, or empty),
   "about": string (a brief professional summary, or empty),
   "skills": string[] (array of technical and soft skills),
+  "languages": string[] (array of spoken or written languages),
   "experienceYears": number (estimated total years of experience, or null if cannot determine),
   "educations": [
     {
@@ -52,6 +53,7 @@ export interface ParseResult {
   headline: string;
   about: string;
   skills: string[];
+  languages: string[];
   experienceYears: number | null;
   educations: any[];
   experiences: any[];
