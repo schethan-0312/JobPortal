@@ -74,7 +74,7 @@ export default function LoginModal() {
                   <label>User Name</label>
                 </div>
 
-                <div className="form-floating mb-4">
+                <div className="form-floating mb-2">
                   <input
                     type="password"
                     className="form-control"
@@ -84,6 +84,20 @@ export default function LoginModal() {
                     required
                   />
                   <label>Password</label>
+                </div>
+                
+                <div className="text-end mb-4">
+                  <a 
+                    href="/forgot-password" 
+                    className="text-sm text-main text-decoration-underline"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      document.querySelector<HTMLElement>('#login .mod-close')?.click();
+                      router.push('/forgot-password');
+                    }}
+                  >
+                    Forgot Password?
+                  </a>
                 </div>
 
                 <div className="form-group">
@@ -107,3 +121,4 @@ export default function LoginModal() {
     </div>
   );
 }
+

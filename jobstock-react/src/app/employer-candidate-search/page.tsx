@@ -63,17 +63,31 @@ export default function EmployerCandidateSearchPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  async function runSearch(e?: React.FormEvent) {
+  async function runSearch(
+    e?: React.FormEvent,
+    overrides?: {
+      location?: string;
+      skill?: string;
+      minExperience?: string;
+      query?: string;
+    }
+  ) {
     e?.preventDefault();
     setStatus("loading");
     setError(null);
     try {
+      const searchLocation = overrides ? overrides.location : location;
+      const searchSkill = overrides ? overrides.skill : skill;
+      const searchMinExperience = overrides ? overrides.minExperience : minExperience;
+      const searchQuery = overrides ? overrides.query : query;
+
       const params = new URLSearchParams();
-      if (location) params.set("location", location);
-      if (skill) params.set("skill", skill);
-      if (minExperience) params.set("minExperience", minExperience);
-      if (query) params.set("q", query);
+      if (searchLocation) params.set("location", searchLocation);
+      if (searchSkill) params.set("skill", searchSkill);
+      if (searchMinExperience) params.set("minExperience", searchMinExperience);
+      if (searchQuery) params.set("q", searchQuery);
       params.set("pageSize", "20");
+      params.set("_t", Date.now().toString());
 
       const data = await api.get<SearchResponse>(`/candidates/search?${params.toString()}`);
       setResults(data.items);
@@ -83,6 +97,19 @@ export default function EmployerCandidateSearchPage() {
       setStatus("error");
       setError(err instanceof ApiError ? err.message : "Could not load candidates. Try again.");
     }
+  }
+
+  function clearFilters() {
+    setQuery("");
+    setSkill("");
+    setLocation("");
+    setMinExperience("");
+    runSearch(undefined, {
+      location: "",
+      skill: "",
+      minExperience: "",
+      query: "",
+    });
   }
 
   async function sendMessage(candidate: CandidateResult) {
@@ -192,12 +219,7 @@ export default function EmployerCandidateSearchPage() {
                       <button
                         type="button"
                         className="btn btn-outline-secondary w-100"
-                        onClick={() => {
-                          setQuery("");
-                          setSkill("");
-                          setLocation("");
-                          setMinExperience("");
-                        }}
+                        onClick={clearFilters}
                       >
                         Clear filters
                       </button>

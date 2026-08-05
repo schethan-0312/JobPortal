@@ -119,6 +119,7 @@ export class ApplicationsService {
                 githubUsername: true,
                 githubProfileUrl: true,
                 githubAvatarUrl: true,
+                experienceYears: true,
               },
             },
           },

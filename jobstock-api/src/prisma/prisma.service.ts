@@ -9,7 +9,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
     });
   }
-
   async onModuleInit() {
     await this.$connect();
   }
