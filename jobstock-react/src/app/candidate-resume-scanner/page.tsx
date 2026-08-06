@@ -158,7 +158,7 @@ export default function CandidateResumeScannerPage() {
               <div className="card-header">
                 <h4>AI Semantic Evaluation</h4>
                 <p className="text-muted mb-0 mt-1">
-                  Our Gemini-powered AI will semantically compare your resume against the target job description to compute detailed matches, detect missing skills, and give concrete suggestions.
+                  Our AI will semantically compare your resume against the target job description to compute detailed matches, detect missing skills, and give concrete suggestions.
                 </p>
               </div>
               <div className="card-body">
@@ -235,7 +235,7 @@ export default function CandidateResumeScannerPage() {
 
                   <div>
                     <button type="submit" className="btn btn-main btn-lg" disabled={status === "scanning" || (sourceType === "upload" && !resumeUrl) || (sourceType === "paste" && !pastedText)}>
-                      {status === "scanning" ? <><i className="fa-solid fa-circle-notch fa-spin me-2"></i>Scanning with Gemini AI...</> : "Scan My Resume"}
+                      {status === "scanning" ? <><i className="fa-solid fa-circle-notch fa-spin me-2"></i>Scanning...</> : "Scan My Resume"}
                     </button>
                   </div>
                 </form>

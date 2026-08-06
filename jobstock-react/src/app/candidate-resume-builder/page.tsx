@@ -334,7 +334,9 @@ Education: ${(parsedData.educations || []).map((ed: any) => `${ed.title} at ${ed
                   <div className="row">
                     <div className="col-xl-12 col-md-12 offset-xl-2 d-flex gap-3 align-items-center">
                       <button type="submit" className="btn btn-main" disabled={status === "generating"}>
-                        {status === "generating" ? "Building Resume..." : "Generate My Resume"}
+                        {status === "generating" ? (
+                          <><i className="fa-solid fa-spinner fa-spin me-2"></i>Building Resume...</>
+                        ) : "Generate My Resume"}
                       </button>
                       <input 
                         type="file" 
@@ -349,8 +351,11 @@ Education: ${(parsedData.educations || []).map((ed: any) => `${ed.title} at ${ed
                         onClick={() => fileInputRef.current?.click()}
                         disabled={status === "generating"}
                       >
-                        <i className="fa-solid fa-cloud-arrow-up me-2"></i>
-                        Upload Resume (PDF / DOCX) instead
+                        {status === "generating" ? (
+                          <><i className="fa-solid fa-spinner fa-spin me-2"></i>Processing...</>
+                        ) : (
+                          <><i className="fa-solid fa-cloud-arrow-up me-2"></i>Upload Resume (PDF / DOCX) instead</>
+                        )}
                       </button>
                     </div>
                   </div>

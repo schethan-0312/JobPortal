@@ -11,6 +11,7 @@ export default function LoginModal() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
@@ -74,9 +75,9 @@ export default function LoginModal() {
                   <label>User Name</label>
                 </div>
 
-                <div className="form-floating mb-2">
+                <div className="form-floating mb-2 position-relative">
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     className="form-control"
                     placeholder="Password"
                     value={password}
@@ -84,6 +85,13 @@ export default function LoginModal() {
                     required
                   />
                   <label>Password</label>
+                  <span 
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="position-absolute top-50 translate-middle-y"
+                    style={{ right: '15px', cursor: 'pointer', zIndex: 100 }}
+                  >
+                    <i className={`fa-solid ${showPassword ? "fa-eye-slash" : "fa-eye"} text-muted`}></i>
+                  </span>
                 </div>
                 
                 <div className="text-end mb-4">
