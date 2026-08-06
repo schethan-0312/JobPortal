@@ -2,12 +2,11 @@ import Link from "next/link";
 import Navbar5 from "@/components/Navbar5";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
-import JobFilters from "@/components/jobs/JobFilters";
-import SortingBar from "@/components/jobs/SortingBar";
-import CandidatesListClient from "./CandidatesListClient";
 import Pagination from "@/components/jobs/Pagination";
 import FindJobCta from "@/components/jobs/FindJobCta";
 import FilterModal from "@/components/jobs/FilterModal";
+import SortingBar from "@/components/jobs/SortingBar";
+import CandidatesListClient from "./CandidatesListClient";
 import { api, assetUrl } from "@/lib/api";
 
 interface CandidateProfile {
@@ -90,16 +89,32 @@ export default async function CandidatesGridPage({
       <section>
         <div className="container">
           <div className="row">
-            {/* Search Sidebar */}
-            <div className="col-xxl-3 col-xl-4 col-lg-4 col-md-12 col-sm-12">
-              <div className="side-widget-blocks">
-                <JobFilters variant="simple" />
-              </div>
-            </div>
-            {/* Sidebar End */}
-
             {/* Job List Wrap */}
-            <div className="col-xxl-9 col-xl-8 col-lg-8 col-md-12 col-sm-12">
+            <div className="col-12">
+              
+              {/* Candidate Search Form */}
+              <div className="card mb-4 border-0 shadow-sm">
+                <div className="card-body p-4">
+                  <form action="/candidates" method="GET" className="row g-3 align-items-end">
+                    <div className="col-md-5">
+                      <div className="form-group mb-0">
+                        <label className="form-label text-muted">Keyword or Skill</label>
+                        <input type="text" name="skill" className="form-control" placeholder="e.g. React, Manager" defaultValue={params.skill || ""} />
+                      </div>
+                    </div>
+                    <div className="col-md-5">
+                      <div className="form-group mb-0">
+                        <label className="form-label text-muted">Location</label>
+                        <input type="text" name="location" className="form-control" placeholder="e.g. New York, Remote" defaultValue={params.location || ""} />
+                      </div>
+                    </div>
+                    <div className="col-md-2">
+                      <button type="submit" className="btn btn-main w-100">Search</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+
               {/* Shorting Box */}
               <div className="row justify-content-center mb-4">
                 <div className="col-lg-12 col-md-12">

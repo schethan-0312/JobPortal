@@ -111,6 +111,7 @@ export default function CandidateResumePage() {
       const updated = await api.put<CandidateProfile>("/candidates/me/resume", payload);
       setProfile(updated);
       setSuccess("Resume saved successfully.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
       setIsDraft(false);
       sessionStorage.removeItem("resumeDraft");
     } catch (err) {

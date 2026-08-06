@@ -36,6 +36,7 @@ export default function EmployerCandidateSearchPage() {
   const [location, setLocation] = useState("");
   const [skill, setSkill] = useState("");
   const [minExperience, setMinExperience] = useState("");
+  const [query, setQuery] = useState("");
 
   const [results, setResults] = useState<CandidateResult[]>([]);
   const [total, setTotal] = useState(0);

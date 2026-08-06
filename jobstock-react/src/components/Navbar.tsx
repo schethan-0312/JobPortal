@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import AuthMenu from "./AuthMenu";
+import { useAuth } from "@/lib/auth-context";
 
 export default function Navbar() {
+  const { user } = useAuth();
+
   return (
     <>
       <div className="header header-transparent change-logo">
@@ -29,14 +34,26 @@ export default function Navbar() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/candidates" className="sub-menu-item">
-                    Candidates
-                  </Link>
+                  {!user ? (
+                    <a href="#" className="sub-menu-item" data-bs-toggle="modal" data-bs-target="#login">
+                      Candidates
+                    </a>
+                  ) : (
+                    <Link href="/candidates" className="sub-menu-item">
+                      Candidates
+                    </Link>
+                  )}
                 </li>
                 <li>
-                  <Link href="/employers" className="sub-menu-item">
-                    Employers
-                  </Link>
+                  {!user ? (
+                    <a href="#" className="sub-menu-item" data-bs-toggle="modal" data-bs-target="#login">
+                      Employers
+                    </a>
+                  ) : (
+                    <Link href="/employers" className="sub-menu-item">
+                      Employers
+                    </Link>
+                  )}
                 </li>
                 <li>
                   <Link href="/blog" className="sub-menu-item">

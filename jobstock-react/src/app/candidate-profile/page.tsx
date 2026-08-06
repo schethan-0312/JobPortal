@@ -91,6 +91,7 @@ export default function CandidateProfilePage() {
       });
       setProfile(updated);
       setSuccess("Profile saved successfully.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to save profile");
     } finally {

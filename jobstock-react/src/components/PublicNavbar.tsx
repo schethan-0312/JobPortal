@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import AuthMenu from "./AuthMenu";
+import { useAuth } from "@/lib/auth-context";
 
 /**
  * The single navbar used across every public-facing page (logged-out or
@@ -12,6 +15,8 @@ import AuthMenu from "./AuthMenu";
  * employer) is intentionally separate — different context, sidebar layout.
  */
 export default function PublicNavbar() {
+  const { user } = useAuth();
+
   return (
     <>
       <div className="header header-light">
@@ -43,51 +48,67 @@ export default function PublicNavbar() {
                   </Link>
                 </li>
 
-                <li className="parent-parent-menu-item">
-                  <a href="#" className="home-link">
-                    For Candidate<span className="submenu-indicator"></span>
-                  </a>
-                  <ul className="nav-dropdown nav-submenu">
-                    <li>
-                      <Link href="/jobs" className="sub-menu-item">
-                        Browse Jobs
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/employers" className="sub-menu-item">
-                        Browse Companies
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/candidate-dashboard" className="sub-menu-item">
-                        Candidate Dashboard
-                      </Link>
-                    </li>
-                  </ul>
-                </li>
+                {!user ? (
+                  <li>
+                    <a href="#" className="sub-menu-item" data-bs-toggle="modal" data-bs-target="#login">
+                      For Candidate
+                    </a>
+                  </li>
+                ) : (
+                  <li className="parent-parent-menu-item">
+                    <a href="#" className="home-link">
+                      For Candidate<span className="submenu-indicator"></span>
+                    </a>
+                    <ul className="nav-dropdown nav-submenu">
+                      <li>
+                        <Link href="/jobs" className="sub-menu-item">
+                          Browse Jobs
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/employers" className="sub-menu-item">
+                          Browse Companies
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/candidate-dashboard" className="sub-menu-item">
+                          Candidate Dashboard
+                        </Link>
+                      </li>
+                    </ul>
+                  </li>
+                )}
 
-                <li className="parent-parent-menu-item">
-                  <a href="#" className="home-link">
-                    For Employer<span className="submenu-indicator"></span>
-                  </a>
-                  <ul className="nav-dropdown nav-submenu">
-                    <li>
-                      <Link href="/candidates" className="sub-menu-item">
-                        Browse Candidates
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/signup?role=EMPLOYER" className="sub-menu-item">
-                        Post a Job
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/employer-dashboard" className="sub-menu-item">
-                        Employer Dashboard
-                      </Link>
-                    </li>
-                  </ul>
-                </li>
+                {!user ? (
+                  <li>
+                    <a href="#" className="sub-menu-item" data-bs-toggle="modal" data-bs-target="#login">
+                      For Employer
+                    </a>
+                  </li>
+                ) : (
+                  <li className="parent-parent-menu-item">
+                    <a href="#" className="home-link">
+                      For Employer<span className="submenu-indicator"></span>
+                    </a>
+                    <ul className="nav-dropdown nav-submenu">
+                      <li>
+                        <Link href="/candidates" className="sub-menu-item">
+                          Browse Candidates
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/signup?role=EMPLOYER" className="sub-menu-item">
+                          Post a Job
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/employer-dashboard" className="sub-menu-item">
+                          Employer Dashboard
+                        </Link>
+                      </li>
+                    </ul>
+                  </li>
+                )}
 
                 <li className="parent-parent-menu-item">
                   <a href="#" className="home-link">

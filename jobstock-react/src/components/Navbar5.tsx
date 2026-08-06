@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import AuthMenu from "./AuthMenu";
+import { useAuth } from "@/lib/auth-context";
 
 export default function Navbar5() {
+  const { user } = useAuth();
+
   return (
     <>
       <div className="header header-dark">
@@ -40,87 +45,103 @@ export default function Navbar5() {
                   </ul>
                 </li>
 
-                <li className="parent-parent-menu-item">
-                  <a href="#" className="home-link">
-                    For Candidate<span className="submenu-indicator"></span>
-                  </a>
-                  <ul className="nav-dropdown nav-submenu">
-                    <li className="parent-menu-item">
-                      <a href="#">
-                        Browse Jobs<span className="submenu-indicator"></span>
-                      </a>
-                      <ul className="nav-dropdown nav-submenu">
-                        <li>
-                          <Link href="/jobs" className="sub-menu-item">
-                            Jobs
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/jobs/list" className="sub-menu-item">
-                            Job List
-                          </Link>
-                        </li>
-                      </ul>
-                    </li>
-                    <li className="parent-menu-item">
-                      <a href="#">
-                        Browse Candidate<span className="submenu-indicator"></span>
-                      </a>
-                      <ul className="nav-dropdown nav-submenu">
-                        <li>
-                          <Link href="/candidates" className="sub-menu-item">
-                            Candidates
-                          </Link>
-                        </li>
-                      </ul>
-                    </li>
-                    <li>
-                      <Link href="/job-detail/senior-developer" className="sub-menu-item">
-                        Job Detail
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/candidate-detail/senior-developer" className="sub-menu-item">
-                        Candidate Detail
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/candidate-dashboard" className="sub-menu-item">
-                        Candidate Dashboard
-                      </Link>
-                    </li>
-                  </ul>
-                </li>
+                {!user ? (
+                  <li>
+                    <a href="#" className="sub-menu-item" data-bs-toggle="modal" data-bs-target="#login">
+                      For Candidate
+                    </a>
+                  </li>
+                ) : (
+                  <li className="parent-parent-menu-item">
+                    <a href="#" className="home-link">
+                      For Candidate<span className="submenu-indicator"></span>
+                    </a>
+                    <ul className="nav-dropdown nav-submenu">
+                      <li className="parent-menu-item">
+                        <a href="#">
+                          Browse Jobs<span className="submenu-indicator"></span>
+                        </a>
+                        <ul className="nav-dropdown nav-submenu">
+                          <li>
+                            <Link href="/jobs" className="sub-menu-item">
+                              Jobs
+                            </Link>
+                          </li>
+                          <li>
+                            <Link href="/jobs/list" className="sub-menu-item">
+                              Job List
+                            </Link>
+                          </li>
+                        </ul>
+                      </li>
+                      <li className="parent-menu-item">
+                        <a href="#">
+                          Browse Candidate<span className="submenu-indicator"></span>
+                        </a>
+                        <ul className="nav-dropdown nav-submenu">
+                          <li>
+                            <Link href="/candidates" className="sub-menu-item">
+                              Candidates
+                            </Link>
+                          </li>
+                        </ul>
+                      </li>
+                      <li>
+                        <Link href="/job-detail/senior-developer" className="sub-menu-item">
+                          Job Detail
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/candidate-detail/senior-developer" className="sub-menu-item">
+                          Candidate Detail
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/candidate-dashboard" className="sub-menu-item">
+                          Candidate Dashboard
+                        </Link>
+                      </li>
+                    </ul>
+                  </li>
+                )}
 
-                <li className="parent-parent-menu-item">
-                  <a href="#" className="home-link">
-                    For Employer<span className="submenu-indicator"></span>
-                  </a>
-                  <ul className="nav-dropdown nav-submenu">
-                    <li className="parent-menu-item">
-                      <a href="#">
-                        Explore Employers<span className="submenu-indicator"></span>
-                      </a>
-                      <ul className="nav-dropdown nav-submenu">
-                        <li>
-                          <Link href="/employers" className="sub-menu-item">
-                            Employers
-                          </Link>
-                        </li>
-                      </ul>
-                    </li>
-                    <li>
-                      <Link href="/employer-detail/senior-developer" className="sub-menu-item">
-                        Employer Detail
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/employer-dashboard" className="sub-menu-item">
-                        Employer Dashboard
-                      </Link>
-                    </li>
-                  </ul>
-                </li>
+                {!user ? (
+                  <li>
+                    <a href="#" className="sub-menu-item" data-bs-toggle="modal" data-bs-target="#login">
+                      For Employer
+                    </a>
+                  </li>
+                ) : (
+                  <li className="parent-parent-menu-item">
+                    <a href="#" className="home-link">
+                      For Employer<span className="submenu-indicator"></span>
+                    </a>
+                    <ul className="nav-dropdown nav-submenu">
+                      <li className="parent-menu-item">
+                        <a href="#">
+                          Explore Employers<span className="submenu-indicator"></span>
+                        </a>
+                        <ul className="nav-dropdown nav-submenu">
+                          <li>
+                            <Link href="/employers" className="sub-menu-item">
+                              Employers
+                            </Link>
+                          </li>
+                        </ul>
+                      </li>
+                      <li>
+                        <Link href="/employer-detail/senior-developer" className="sub-menu-item">
+                          Employer Detail
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/employer-dashboard" className="sub-menu-item">
+                          Employer Dashboard
+                        </Link>
+                      </li>
+                    </ul>
+                  </li>
+                )}
 
                 <li className="parent-parent-menu-item">
                   <a href="#" className="home-link">

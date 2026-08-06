@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const categories = [
   { icon: "fa-solid fa-file-invoice", title: "Accounting & Finance" },
   { icon: "fa-solid fa-caravan", title: "Automotive Jobs" },
@@ -25,19 +27,19 @@ export default function Categories() {
         <div className="row justify-content-center gx-4 gy-4">
           {categories.map((item) => (
             <div className="col-xl-3 col-lg-3 col-md-4 col-sm-6" key={item.title}>
-              <div className="category-box">
+              <Link href={`/jobs?category=${encodeURIComponent(item.title)}`} className="category-box d-block text-decoration-none">
                 <div className="category-desc">
                   <div className="category-icon">
                     <i className={`${item.icon} text-main`}></i>
                     <i className={`${item.icon} abs-icon`}></i>
                   </div>
                   <div className="category-detail category-desc-text">
-                    <h4 className="fs-5">
-                      <a href={`/jobs?category=${encodeURIComponent(item.title)}`}>{item.title}</a>
+                    <h4 className="fs-5 text-dark">
+                      {item.title}
                     </h4>
                   </div>
                 </div>
-              </div>
+              </Link>
             </div>
           ))}
         </div>

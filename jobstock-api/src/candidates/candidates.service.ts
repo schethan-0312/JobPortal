@@ -1,4 +1,5 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { UpdateCandidateProfileDto } from './dto/update-candidate-profile.dto.js';
 import { CreateJobAlertDto } from './dto/create-job-alert.dto.js';

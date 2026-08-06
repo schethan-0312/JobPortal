@@ -35,6 +35,7 @@ export default function CandidateFollowEmployersPage() {
   const [employers, setEmployers] = useState<FollowedEmployer[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || (user.role !== "CANDIDATE" && user.role !== "EMPLOYER"))) {
@@ -58,11 +59,14 @@ export default function CandidateFollowEmployersPage() {
   }, [user]);
 
   async function handleUnfollow(targetId: string) {
+    setLoadingId(targetId);
     try {
       await api.delete(`/follow/${targetId}`);
       setEmployers((prev) => prev.filter((item) => item.employer?.id !== targetId && item.candidate?.id !== targetId));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to unfollow profile");
+    } finally {
+      setLoadingId(null);
     }
   }
 
