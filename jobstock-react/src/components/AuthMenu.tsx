@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 
 export default function AuthMenu() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   if (loading) {
     return null;
@@ -43,13 +44,17 @@ export default function AuthMenu() {
     router.push("/");
   }
 
+  const showDashboard = pathname !== "/candidate-dashboard";
+
   return (
     <ul className="nav-menu nav-menu-social align-to-right">
-      <li>
-        <Link href={dashboardHref}>
-          <i className="fas fa-user me-2"></i>Dashboard
-        </Link>
-      </li>
+      {showDashboard && (
+        <li>
+          <Link href={dashboardHref}>
+            <i className="fas fa-user me-2"></i>Dashboard
+          </Link>
+        </li>
+      )}
       <li className="list-buttons ms-2">
         <a href="#!" onClick={handleLogout}>
           <i className="bi bi-box-arrow-right me-2"></i>Logout

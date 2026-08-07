@@ -20,7 +20,7 @@ export default function SignupPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [role, setRole] = useState<"CANDIDATE" | "EMPLOYER">("CANDIDATE");
   const [agreeTerms, setAgreeTerms] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
 
@@ -31,42 +31,54 @@ export default function SignupPage() {
     // two near-simultaneous clicks can both fire in the same tick).
     if (submittingRef.current) return;
 
+    const newErrors: Record<string, string> = {};
+
     if (/\d/.test(fullName)) {
-      setError("Full name cannot contain numbers.");
-      return;
+      newErrors.fullName = "Full name cannot contain numbers.";
     }
 
     const invalidEmailChars = /[!#$%^&*]/;
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (invalidEmailChars.test(email) || !emailRegex.test(email)) {
-      setError("Please enter a valid email address (should not contain special characters like !, #, $, %, ^, &, *).");
-      return;
+      newErrors.email = "Please enter a valid email address (should not contain special characters like !, #, $, %, ^, &, *).";
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
+      newErrors.confirmPassword = "Passwords do not match.";
     }
 
     if (!agreeTerms) {
-      setError("You must agree to the Terms and Conditions to register.");
+      newErrors.agreeTerms = "You must agree to the Terms and Conditions to register.";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
     submittingRef.current = true;
-    setError(null);
+    setErrors({});
     setSubmitting(true);
     try {
       const user = await register({ fullName, email, password, role });
       router.push(user.role === "CANDIDATE" ? "/candidate-dashboard" : "/employer-dashboard");
     } catch (err) {
-      setError(
-        err instanceof ApiError
-          ? Array.isArray(err.body && (err.body as { message?: string[] }).message)
-            ? (err.body as { message: string[] }).message.join(", ")
-            : err.message
-          : "Registration failed. Please try again.",
-      );
+      let msg = "Registration failed. Please try again.";
+      if (err instanceof ApiError) {
+        msg = Array.isArray(err.body && (err.body as { message?: string[] }).message)
+          ? (err.body as { message: string[] }).message.join(", ")
+          : err.message || msg;
+      }
+      const lowerMsg = msg.toLowerCase();
+      if (lowerMsg.includes("email")) {
+        setErrors({ email: msg });
+      } else if (lowerMsg.includes("password")) {
+        setErrors({ password: msg });
+      } else if (lowerMsg.includes("name")) {
+        setErrors({ fullName: msg });
+      } else {
+        setErrors({ general: msg });
+      }
     } finally {
       submittingRef.current = false;
       setSubmitting(false);
@@ -96,7 +108,7 @@ export default function SignupPage() {
                     </div>
 
                     <div className="form-float d-flex flex-column gap-4">
-                      {error && <div className="alert alert-danger py-2">{error}</div>}
+                      {errors.general && <div className="alert alert-danger py-2">{errors.general}</div>}
 
                       <div className="form-group mb-0">
                         <label className="fw-medium fs-6 text-dark">Full Name</label>
@@ -105,9 +117,15 @@ export default function SignupPage() {
                           className="form-control"
                           placeholder="What is your name?"
                           value={fullName}
-                          onChange={(e) => setFullName(e.target.value)}
+                          onChange={(e) => {
+                            setFullName(e.target.value);
+                            if (errors.fullName) setErrors((prev) => ({ ...prev, fullName: "" }));
+                          }}
                           required
                         />
+                        {errors.fullName && (
+                          <div className="text-danger text-sm mt-1">{errors.fullName}</div>
+                        )}
                       </div>
 
                       <div className="form-group mb-0">
@@ -119,10 +137,16 @@ export default function SignupPage() {
                           className="form-control"
                           placeholder="Tell us your Email ID"
                           value={email}
-                          onChange={(e) => setEmail(e.target.value)}
+                          onChange={(e) => {
+                            setEmail(e.target.value);
+                            if (errors.email) setErrors((prev) => ({ ...prev, email: "" }));
+                          }}
                           required
                         />
-                        <span className="text-sm opacity-75">We&apos;ll send relevant jobs and updates to this email</span>
+                        <span className="text-sm opacity-75 d-block">We&apos;ll send relevant jobs and updates to this email</span>
+                        {errors.email && (
+                          <div className="text-danger text-sm mt-1">{errors.email}</div>
+                        )}
                       </div>
 
                       <div className="form-group mb-0">
@@ -135,7 +159,10 @@ export default function SignupPage() {
                             className="form-control"
                             placeholder="(Minimum 8 characters, 1 uppercase, 1 number)"
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(e) => {
+                              setPassword(e.target.value);
+                              if (errors.password) setErrors((prev) => ({ ...prev, password: "" }));
+                            }}
                             required
                             minLength={8}
                           />
@@ -147,7 +174,10 @@ export default function SignupPage() {
                             <i className={`fa-solid ${showPassword ? "fa-eye-slash" : "fa-eye"} text-muted`}></i>
                           </span>
                         </div>
-                        <span className="text-sm opacity-75">This helps your account stay protected</span>
+                        <span className="text-sm opacity-75 d-block">This helps your account stay protected</span>
+                        {errors.password && (
+                          <div className="text-danger text-sm mt-1">{errors.password}</div>
+                        )}
                       </div>
 
                       <div className="form-group mb-0">
@@ -160,7 +190,10 @@ export default function SignupPage() {
                             className="form-control"
                             placeholder="Confirm your password"
                             value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            onChange={(e) => {
+                              setConfirmPassword(e.target.value);
+                              if (errors.confirmPassword) setErrors((prev) => ({ ...prev, confirmPassword: "" }));
+                            }}
                             required
                           />
                           <span
@@ -171,6 +204,9 @@ export default function SignupPage() {
                             <i className={`fa-solid ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"} text-muted`}></i>
                           </span>
                         </div>
+                        {errors.confirmPassword && (
+                          <div className="text-danger text-sm mt-1">{errors.confirmPassword}</div>
+                        )}
                       </div>
 
                       <div className="form-group mb-0">
@@ -255,7 +291,10 @@ export default function SignupPage() {
                             className="form-check-input"
                             id="agreeTerms"
                             checked={agreeTerms}
-                            onChange={(e) => setAgreeTerms(e.target.checked)}
+                            onChange={(e) => {
+                              setAgreeTerms(e.target.checked);
+                              if (errors.agreeTerms) setErrors((prev) => ({ ...prev, agreeTerms: "" }));
+                            }}
                             required
                           />
                           <label className="form-check-label text-muted text-md ms-1" htmlFor="agreeTerms">
@@ -269,6 +308,9 @@ export default function SignupPage() {
                             </a>{" "}
                             of Jobstock.com
                           </label>
+                          {errors.agreeTerms && (
+                            <div className="text-danger text-sm mt-1">{errors.agreeTerms}</div>
+                          )}
                         </div>
                         <button type="submit" className="btn btn-main full-width" disabled={submitting}>
                           {submitting ? "Registering..." : "Register now"}

@@ -28,6 +28,7 @@ export default function LoginModal() {
       closeBtn?.click();
       if (user.role === "CANDIDATE") router.push("/candidate-dashboard");
       else if (user.role === "EMPLOYER") router.push("/employer-dashboard");
+      else if (user.role === "ADMIN") router.push("/admin-dashboard");
       else router.push("/");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Login failed. Please try again.");
@@ -72,7 +73,7 @@ export default function LoginModal() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                   />
-                  <label>User Name</label>
+                  <label>User Email</label>
                 </div>
 
                 <div className="form-floating mb-2 position-relative">
