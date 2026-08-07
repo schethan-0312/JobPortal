@@ -133,12 +133,12 @@ export default function Navbar8() {
 
   return (
     <>
-      <div className="header header-dark head-fixed">
+      <div className="header header-light head-fixed">
         <div className="container-fluid">
           <nav id="navigation" className="navigation navigation-landscape">
             <div className="nav-header">
               <Link className="nav-brand" href="/">
-                <img src="/assets/img/logo-light.png" className="logo" alt="JobStock" />
+                <img src="/assets/img/logo.png" className="logo" alt="JobStock" />
               </Link>
               <div className="nav-toggle"></div>
               <ul className="mobile_nav dhsbrd">
@@ -175,124 +175,6 @@ export default function Navbar8() {
             </div>
             <div className="nav-menus-wrapper">
               <ul className="nav-menu">
-                <li className="parent-parent-menu-item">
-                  <a href="#!" className="home-link">
-                    Home<span className="submenu-indicator"></span>
-                  </a>
-                  <ul className="nav-dropdown nav-submenu">
-                    <li>
-                      <Link href="/" className="sub-menu-item">
-                        Home
-                      </Link>
-                    </li>
-                  </ul>
-                </li>
-
-                <li className="parent-parent-menu-item">
-                  <a href="#!" className="home-link">
-                    For Candidate<span className="submenu-indicator"></span>
-                  </a>
-                  <ul className="nav-dropdown nav-submenu">
-                    <li className="parent-menu-item">
-                      <a href="#!">
-                        Browse Jobs<span className="submenu-indicator"></span>
-                      </a>
-                      <ul className="nav-dropdown nav-submenu">
-                        <li>
-                          <Link href="/jobs" className="sub-menu-item">
-                            Jobs
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/jobs/list" className="sub-menu-item">
-                            Job List
-                          </Link>
-                        </li>
-                      </ul>
-                    </li>
-                    <li className="parent-menu-item">
-                      <a href="#!">
-                        Browse Candidate<span className="submenu-indicator"></span>
-                      </a>
-                      <ul className="nav-dropdown nav-submenu">
-                        <li>
-                          <Link href="/candidates" className="sub-menu-item">
-                            Candidates
-                          </Link>
-                        </li>
-                      </ul>
-                    </li>
-                    <li>
-                      <Link href="/candidate-dashboard" className="sub-menu-item">
-                        Candidate Dashboard
-                      </Link>
-                    </li>
-                  </ul>
-                </li>
-
-                <li className="parent-parent-menu-item">
-                  <a href="#!" className="home-link">
-                    For Employer<span className="submenu-indicator"></span>
-                  </a>
-                  <ul className="nav-dropdown nav-submenu">
-                    <li className="parent-menu-item">
-                      <a href="#!">
-                        Explore Employers<span className="submenu-indicator"></span>
-                      </a>
-                      <ul className="nav-dropdown nav-submenu">
-                        <li>
-                          <Link href="/employers" className="sub-menu-item">
-                            Employers
-                          </Link>
-                        </li>
-                      </ul>
-                    </li>
-                    <li>
-                      <Link href="/employer-dashboard" className="sub-menu-item">
-                        Employer Dashboard
-                      </Link>
-                    </li>
-                  </ul>
-                </li>
-
-                <li className="parent-parent-menu-item">
-                  <a href="#!" className="home-link">
-                    Pages<span className="submenu-indicator"></span>
-                  </a>
-                  <ul className="nav-dropdown nav-submenu">
-                    <li>
-                      <Link href="/about-us" className="sub-menu-item">
-                        About Us
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/blog" className="sub-menu-item">
-                        Blogs Page
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/privacy" className="sub-menu-item">
-                        Terms &amp; Privacy
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/faq" className="sub-menu-item">
-                        FAQ&apos;s
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/contact" className="sub-menu-item">
-                        Contacts
-                      </Link>
-                    </li>
-                  </ul>
-                </li>
-
-                <li>
-                  <Link href="/help" className="sub-menu-item">
-                    Help
-                  </Link>
-                </li>
               </ul>
 
               <ul className="nav-menu nav-menu-social align-to-right dhsbrd">
