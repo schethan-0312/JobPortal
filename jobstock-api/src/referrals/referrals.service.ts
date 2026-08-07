@@ -23,6 +23,7 @@ export class ReferralsService {
       }),
       this.prisma.candidateProfile.findUnique({ where: { userId }, select: { referralPoints: true } }),
     ]);
-    return { referrals, totalPoints: profile?.referralPoints ?? 0 };
+    const totalPoints = referrals.length > 0 ? referrals.length * 100 : (profile?.referralPoints ?? 0);
+    return { referrals, totalPoints };
   }
 }

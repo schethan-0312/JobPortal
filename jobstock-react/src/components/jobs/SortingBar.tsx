@@ -27,7 +27,6 @@ export default function SortingBar({ total, shown }: SortingBarProps) {
             <option value="0">10 Per Page</option>
             <option value="1">20 Per Page</option>
             <option value="2">50 Per Page</option>
-            <option value="3">10 Per Page</option>
           </select>
         </div>
       </div>

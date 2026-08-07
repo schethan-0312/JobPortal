@@ -50,7 +50,7 @@ export class AuthService {
     if (dto.referralCode && dto.referralCode !== user.id) {
       const referrer = await this.prisma.user.findUnique({ where: { id: dto.referralCode } });
       if (referrer) {
-        const REFERRAL_POINTS = 50;
+        const REFERRAL_POINTS = 100;
         await this.prisma.referral.create({
           data: { referrerId: referrer.id, referredId: user.id, pointsEarned: REFERRAL_POINTS },
         });

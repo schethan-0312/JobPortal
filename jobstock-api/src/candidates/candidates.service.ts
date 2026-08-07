@@ -42,6 +42,18 @@ export class CandidatesService {
     if (!profile) {
       throw new NotFoundException('Candidate profile not found');
     }
+
+    const referralCount = await this.prisma.referral.count({ where: { referrerId: userId } });
+    if (referralCount > 0) {
+      const expectedPoints = referralCount * 100;
+      if (profile.referralPoints !== expectedPoints) {
+        return this.prisma.candidateProfile.update({
+          where: { userId },
+          data: { referralPoints: expectedPoints },
+        });
+      }
+    }
+
     return profile;
   }
 

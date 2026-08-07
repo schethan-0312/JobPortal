@@ -44,6 +44,21 @@ export default function CandidateProfilePage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const referralLink = user
+    ? typeof window !== "undefined"
+      ? `${window.location.origin}/signup?ref=${user.userId}`
+      : `http://localhost:3000/signup?ref=${user.userId}`
+    : "";
+
+  function handleCopyReferral() {
+    if (referralLink && typeof window !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(referralLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "CANDIDATE")) {
@@ -223,6 +238,58 @@ export default function CandidateProfilePage() {
                 </div>
               </div>
 
+            </div>
+
+            {/* Referral Link Card */}
+            <div className="card mb-4">
+              <div className="card-header d-flex justify-content-between align-items-center">
+                <h4 className="mb-0">
+                  <i className="fa-solid fa-gift text-main me-2"></i>
+                  Referral Link
+                </h4>
+                <span className="badge bg-main text-white px-3 py-2 rounded-pill font--bold">
+                  {profile?.referralPoints ?? 0} Referral Points
+                </span>
+              </div>
+              <div className="card-body">
+                <p className="text-muted text-sm mb-3">
+                  Share your unique referral link with friends and colleagues to earn 100 referral points when they sign up!
+                </p>
+                <div className="row align-items-center g-3">
+                  <div className="col-lg-8 col-md-7">
+                    <div className="form-group mb-0">
+                      <label className="fw-medium text-dark text-sm mb-1">Your Referral Link</label>
+                      <div className="input-group">
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={referralLink}
+                          readOnly
+                        />
+                        <button
+                          type="button"
+                          className="btn btn-main px-4"
+                          onClick={handleCopyReferral}
+                        >
+                          <i className={`fa-solid ${copied ? "fa-check" : "fa-copy"} me-1`}></i>
+                          {copied ? "Copied!" : "Copy Link"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-lg-4 col-md-5">
+                    <div className="form-group mb-0">
+                      <label className="fw-medium text-dark text-sm mb-1">Your Referral Code</label>
+                      <input
+                        type="text"
+                        className="form-control bg-light"
+                        value={user?.userId ?? ""}
+                        readOnly
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Card Row */}

@@ -1,16 +1,18 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Navbar2 from "@/components/Navbar2";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api";
 
-export default function SignupPage() {
+function SignupForm() {
   const { register } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const refCode = searchParams?.get("ref") || undefined;
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -20,6 +22,7 @@ export default function SignupPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [role, setRole] = useState<"CANDIDATE" | "EMPLOYER">("CANDIDATE");
   const [agreeTerms, setAgreeTerms] = useState(false);
+  const [referralCode, setReferralCode] = useState(refCode || "");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
@@ -60,7 +63,13 @@ export default function SignupPage() {
     setErrors({});
     setSubmitting(true);
     try {
-      const user = await register({ fullName, email, password, role });
+      const user = await register({
+        fullName,
+        email,
+        password,
+        role,
+        referralCode: referralCode.trim() || undefined,
+      });
       router.push(user.role === "CANDIDATE" ? "/candidate-dashboard" : "/employer-dashboard");
     } catch (err) {
       let msg = "Registration failed. Please try again.";
@@ -211,6 +220,20 @@ export default function SignupPage() {
 
                       <div className="form-group mb-0">
                         <label className="fw-medium fs-6 text-dark">
+                          Referral Code <span className="text-muted text-sm fw-normal">(Optional)</span>
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Have a referral code? Enter it here"
+                          value={referralCode}
+                          onChange={(e) => setReferralCode(e.target.value)}
+                        />
+                        <span className="text-sm opacity-75 d-block">Enter a friend&apos;s referral code to give them 100 bonus points</span>
+                      </div>
+
+                      <div className="form-group mb-0">
+                        <label className="fw-medium fs-6 text-dark">
                           Work status<i className="text-danger text-md">*</i>
                         </label>
                         <div className="row g-4">
@@ -351,5 +374,13 @@ export default function SignupPage() {
       <LoginModal />
       <Footer2 />
     </>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignupForm />
+    </Suspense>
   );
 }
