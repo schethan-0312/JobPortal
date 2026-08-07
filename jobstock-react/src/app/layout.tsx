@@ -3,6 +3,8 @@ import Script from "next/script";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import AiChatWidget from "@/components/AiChatWidget";
+import BackButton from "@/components/BackButton";
+import NavigationInitializer from "@/components/NavigationInitializer";
 
 export const metadata: Metadata = {
   title: "JobStock - Job Portal",
@@ -35,6 +37,8 @@ export default function RootLayout({
               <i className="bi bi-arrow-up"></i>
             </a>
             <AiChatWidget />
+            <BackButton />
+            <NavigationInitializer />
           </div>
         </AuthProvider>
 

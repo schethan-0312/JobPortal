@@ -16,7 +16,7 @@ export default function AuthMenu() {
     return (
       <ul className="nav-menu nav-menu-social align-to-right">
         <li>
-          <a href="#" data-bs-toggle="modal" data-bs-target="#login">
+          <a href="#!" data-bs-toggle="modal" data-bs-target="#login">
             <i className="fas fa-sign-in-alt me-2"></i>Sign In
           </a>
         </li>
@@ -51,7 +51,7 @@ export default function AuthMenu() {
         </Link>
       </li>
       <li className="list-buttons ms-2">
-        <a href="#" onClick={handleLogout}>
+        <a href="#!" onClick={handleLogout}>
           <i className="bi bi-box-arrow-right me-2"></i>Logout
         </a>
       </li>

@@ -176,7 +176,7 @@ export default function Navbar8() {
             <div className="nav-menus-wrapper">
               <ul className="nav-menu">
                 <li className="parent-parent-menu-item">
-                  <a href="#" className="home-link">
+                  <a href="#!" className="home-link">
                     Home<span className="submenu-indicator"></span>
                   </a>
                   <ul className="nav-dropdown nav-submenu">
@@ -189,12 +189,12 @@ export default function Navbar8() {
                 </li>
 
                 <li className="parent-parent-menu-item">
-                  <a href="#" className="home-link">
+                  <a href="#!" className="home-link">
                     For Candidate<span className="submenu-indicator"></span>
                   </a>
                   <ul className="nav-dropdown nav-submenu">
                     <li className="parent-menu-item">
-                      <a href="#">
+                      <a href="#!">
                         Browse Jobs<span className="submenu-indicator"></span>
                       </a>
                       <ul className="nav-dropdown nav-submenu">
@@ -211,7 +211,7 @@ export default function Navbar8() {
                       </ul>
                     </li>
                     <li className="parent-menu-item">
-                      <a href="#">
+                      <a href="#!">
                         Browse Candidate<span className="submenu-indicator"></span>
                       </a>
                       <ul className="nav-dropdown nav-submenu">
@@ -231,12 +231,12 @@ export default function Navbar8() {
                 </li>
 
                 <li className="parent-parent-menu-item">
-                  <a href="#" className="home-link">
+                  <a href="#!" className="home-link">
                     For Employer<span className="submenu-indicator"></span>
                   </a>
                   <ul className="nav-dropdown nav-submenu">
                     <li className="parent-menu-item">
-                      <a href="#">
+                      <a href="#!">
                         Explore Employers<span className="submenu-indicator"></span>
                       </a>
                       <ul className="nav-dropdown nav-submenu">
@@ -256,7 +256,7 @@ export default function Navbar8() {
                 </li>
 
                 <li className="parent-parent-menu-item">
-                  <a href="#" className="home-link">
+                  <a href="#!" className="home-link">
                     Pages<span className="submenu-indicator"></span>
                   </a>
                   <ul className="nav-dropdown nav-submenu">

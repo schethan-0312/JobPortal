@@ -6,7 +6,12 @@ import JobFilters from "@/components/jobs/JobFilters";
 import SortingBar from "@/components/jobs/SortingBar";
 import Pagination from "@/components/jobs/Pagination";
 import FindJobCta from "@/components/jobs/FindJobCta";
-import { api, assetUrl } from "@/lib/api";
+import { assetUrl } from "@/lib/api";
+
+// Force dynamic rendering so searchParams are re-evaluated on every request
+export const dynamic = "force-dynamic";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
 
 interface Employer {
   id: string;
@@ -42,17 +47,34 @@ function formatSalary(job: Job) {
   return "Not disclosed";
 }
 
-async function getJobs(): Promise<{ jobs: Job[]; total: number; pageSize: number; error: string | null }> {
+async function getJobs(params?: Record<string, string | undefined>): Promise<{ jobs: Job[]; total: number; pageSize: number; error: string | null }> {
   try {
-    const data = await api.get<JobsResponse>("/jobs", { auth: false });
+    const query = new URLSearchParams();
+    if (params?.category) query.set("category", params.category);
+    if (params?.location) query.set("location", params.location);
+    if (params?.search) query.set("search", params.search);
+    if (params?.jobType) query.set("jobType", params.jobType);
+    if (params?.page) query.set("page", params.page);
+    
+    const qs = query.toString();
+    const url = qs ? `${API_BASE}/jobs?${qs}` : `${API_BASE}/jobs`;
+    
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`Failed: ${res.status}`);
+    const data: JobsResponse = await res.json();
     return { jobs: data.items ?? [], total: data.total ?? 0, pageSize: data.pageSize ?? 12, error: null };
   } catch (err) {
     return { jobs: [], total: 0, pageSize: 12, error: err instanceof Error ? err.message : "Failed to load jobs" };
   }
 }
 
-export default async function JobsGridPage() {
-  const { jobs, total, pageSize, error } = await getJobs();
+export default async function JobsGridPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  const params = await searchParams;
+  const { jobs, total, pageSize, error } = await getJobs(params);
 
   return (
     <>
