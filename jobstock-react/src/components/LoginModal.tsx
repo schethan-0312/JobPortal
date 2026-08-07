@@ -119,9 +119,17 @@ export default function LoginModal() {
           <div className="modal-footer">
             <p>
               Don&apos;t have an account yet?
-              <Link href="/signup" className="text-main font--bold ms-1">
+              <a
+                href="/signup"
+                className="text-main font--bold ms-1"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.querySelector<HTMLElement>('#login .mod-close')?.click();
+                  router.push('/signup');
+                }}
+              >
                 Sign Up
-              </Link>
+              </a>
             </p>
           </div>
         </div>
