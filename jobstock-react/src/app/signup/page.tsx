@@ -15,7 +15,11 @@ export default function SignupPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [role, setRole] = useState<"CANDIDATE" | "EMPLOYER">("CANDIDATE");
+  const [agreeTerms, setAgreeTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
@@ -26,6 +30,29 @@ export default function SignupPage() {
     // re-render has actually disabled the button (a real race, not just theoretical —
     // two near-simultaneous clicks can both fire in the same tick).
     if (submittingRef.current) return;
+
+    if (/\d/.test(fullName)) {
+      setError("Full name cannot contain numbers.");
+      return;
+    }
+
+    const invalidEmailChars = /[!#$%^&*]/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (invalidEmailChars.test(email) || !emailRegex.test(email)) {
+      setError("Please enter a valid email address (should not contain special characters like !, #, $, %, ^, &, *).");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    if (!agreeTerms) {
+      setError("You must agree to the Terms and Conditions to register.");
+      return;
+    }
+
     submittingRef.current = true;
     setError(null);
     setSubmitting(true);
@@ -102,16 +129,48 @@ export default function SignupPage() {
                         <label className="fw-medium fs-6 text-dark">
                           Password<i className="text-danger text-md">*</i>
                         </label>
-                        <input
-                          type="password"
-                          className="form-control"
-                          placeholder="(Minimum 8 characters, 1 uppercase, 1 number)"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          required
-                          minLength={8}
-                        />
+                        <div className="position-relative">
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            className="form-control"
+                            placeholder="(Minimum 8 characters, 1 uppercase, 1 number)"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            minLength={8}
+                          />
+                          <span
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="position-absolute top-50 translate-middle-y"
+                            style={{ right: "15px", cursor: "pointer", zIndex: 10 }}
+                          >
+                            <i className={`fa-solid ${showPassword ? "fa-eye-slash" : "fa-eye"} text-muted`}></i>
+                          </span>
+                        </div>
                         <span className="text-sm opacity-75">This helps your account stay protected</span>
+                      </div>
+
+                      <div className="form-group mb-0">
+                        <label className="fw-medium fs-6 text-dark">
+                          Confirm Password<i className="text-danger text-md">*</i>
+                        </label>
+                        <div className="position-relative">
+                          <input
+                            type={showConfirmPassword ? "text" : "password"}
+                            className="form-control"
+                            placeholder="Confirm your password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            required
+                          />
+                          <span
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="position-absolute top-50 translate-middle-y"
+                            style={{ right: "15px", cursor: "pointer", zIndex: 10 }}
+                          >
+                            <i className={`fa-solid ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"} text-muted`}></i>
+                          </span>
+                        </div>
                       </div>
 
                       <div className="form-group mb-0">
@@ -190,19 +249,27 @@ export default function SignupPage() {
                       </div>
 
                       <div className="form-group mb-0">
-                        <p className="confirmTex">
-                          By clicking Register, you agree to the
-                          <a href="#" className="text-main">
-                            {" "}
-                            Terms and Conditions{" "}
-                          </a>
-                          &amp;
-                          <a href="#" className="text-main">
-                            {" "}
-                            Privacy Policy{" "}
-                          </a>
-                          of Jobstock.com
-                        </p>
+                        <div className="form-check mb-3">
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            id="agreeTerms"
+                            checked={agreeTerms}
+                            onChange={(e) => setAgreeTerms(e.target.checked)}
+                            required
+                          />
+                          <label className="form-check-label text-muted text-md ms-1" htmlFor="agreeTerms">
+                            I agree to the{" "}
+                            <a href="/privacy" className="text-main">
+                              Terms and Conditions
+                            </a>{" "}
+                            &amp;{" "}
+                            <a href="/privacy" className="text-main">
+                              Privacy Policy
+                            </a>{" "}
+                            of Jobstock.com
+                          </label>
+                        </div>
                         <button type="submit" className="btn btn-main full-width" disabled={submitting}>
                           {submitting ? "Registering..." : "Register now"}
                         </button>

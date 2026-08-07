@@ -23,6 +23,7 @@ export default function EmployerProfilePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const alertRef = useRef<HTMLDivElement>(null);
 
   const [profile, setProfile] = useState<EmployerProfile | null>(null);
   const [companyName, setCompanyName] = useState("");
@@ -36,6 +37,24 @@ export default function EmployerProfilePage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
+  const scrollToTop = () => {
+    if (alertRef.current) {
+      const yOffset = -110; // Leaves space for sticky navbar header at top
+      const y = alertRef.current.getBoundingClientRect().top + window.scrollY + yOffset;
+      window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+    } else if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  useEffect(() => {
+    if (success || error) {
+      scrollToTop();
+      const timer = setTimeout(scrollToTop, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [success, error]);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "EMPLOYER")) {
@@ -78,8 +97,10 @@ export default function EmployerProfilePage() {
       });
       setProfile(updated);
       setSuccess("Profile saved successfully.");
+      scrollToTop();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to save profile");
+      scrollToTop();
     } finally {
       setSaving(false);
     }
@@ -95,8 +116,10 @@ export default function EmployerProfilePage() {
       const updated = await api.patch<EmployerProfile>("/employers/me", { logoUrl: url });
       setProfile(updated);
       setSuccess("Logo updated.");
+      scrollToTop();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to upload logo");
+      scrollToTop();
     } finally {
       setUploadingPhoto(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -140,8 +163,10 @@ export default function EmployerProfilePage() {
 
           <div className="dashboard-widg-bar d-block">
 
-            {error && <div className="alert alert-danger">{error}</div>}
-            {success && <div className="alert alert-success">{success}</div>}
+            <div ref={alertRef} style={{ scrollMarginTop: "110px" }}>
+              {error && <div className="alert alert-danger">{error}</div>}
+              {success && <div className="alert alert-success">{success}</div>}
+            </div>
             {dataLoading && <p className="text-muted">Loading profile...</p>}
 
             <div className="dashboard-profle-wrapper mb-4">

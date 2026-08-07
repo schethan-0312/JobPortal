@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
@@ -24,6 +24,7 @@ const jobTypeOptions = [
 export default function EmployerSubmitJobPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const alertRef = useRef<HTMLDivElement>(null);
 
   const [employer, setEmployer] = useState<EmployerProfile | null>(null);
   const [employerLoading, setEmployerLoading] = useState(true);
@@ -39,6 +40,24 @@ export default function EmployerSubmitJobPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  const scrollToTop = () => {
+    if (alertRef.current) {
+      const yOffset = -110;
+      const y = alertRef.current.getBoundingClientRect().top + window.scrollY + yOffset;
+      window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+    } else if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  useEffect(() => {
+    if (success || error) {
+      scrollToTop();
+      const timer = setTimeout(scrollToTop, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [success, error]);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "EMPLOYER")) {
@@ -67,6 +86,7 @@ export default function EmployerSubmitJobPage() {
     setSuccess(null);
     if (!title.trim() || !description.trim() || !category.trim() || !location.trim()) {
       setError("Please fill in job title, summary, category and location.");
+      scrollToTop();
       return;
     }
     setSubmitting(true);
@@ -86,12 +106,14 @@ export default function EmployerSubmitJobPage() {
       setLocation("");
       setSalaryMin("");
       setSalaryMax("");
+      scrollToTop();
     } catch (err) {
       if (err instanceof ApiError && err.status === 403) {
         setError("Your employer account is not verified yet. Only verified employers can post jobs.");
       } else {
         setError(err instanceof ApiError ? err.message : "Failed to post job");
       }
+      scrollToTop();
     } finally {
       setSubmitting(false);
     }
@@ -136,13 +158,15 @@ export default function EmployerSubmitJobPage() {
 
           <div className="dashboard-widg-bar d-block">
 
-            {!employerLoading && notVerified && (
-              <div className="alert alert-warning">
-                Your employer account status is <strong>{employer?.status}</strong>. Only VERIFIED employers can post jobs. You can still fill this form, but submitting will be rejected until verification completes.
-              </div>
-            )}
-            {error && <div className="alert alert-danger">{error}</div>}
-            {success && <div className="alert alert-success">{success}</div>}
+            <div ref={alertRef} style={{ scrollMarginTop: "110px" }}>
+              {!employerLoading && notVerified && (
+                <div className="alert alert-warning">
+                  Your employer account status is <strong>{employer?.status}</strong>. Only VERIFIED employers can post jobs. You can still fill this form, but submitting will be rejected until verification completes.
+                </div>
+              )}
+              {error && <div className="alert alert-danger">{error}</div>}
+              {success && <div className="alert alert-success">{success}</div>}
+            </div>
 
             {/* Card Row */}
             <form onSubmit={handleSubmit}>
