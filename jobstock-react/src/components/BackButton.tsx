@@ -14,10 +14,10 @@ export default function BackButton() {
       onClick={() => router.back()}
       className="btn btn-main btn-sm no-print"
       style={{
-        position: "fixed",
+        position: "absolute",
         top: "90px",
-        right: "20px",
-        zIndex: 9999,
+        right: "30px",
+        zIndex: 99,
         display: "inline-flex",
         alignItems: "center",
         gap: "0.5rem",
