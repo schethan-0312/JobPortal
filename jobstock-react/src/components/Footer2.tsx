@@ -102,27 +102,27 @@ export default function Footer2() {
                 <div className="foot-socials">
                   <ul>
                     <li>
-                      <a href="#">
+                      <a href="#!">
                         <i className="fa-brands fa-facebook"></i>
                       </a>
                     </li>
                     <li>
-                      <a href="#">
+                      <a href="#!">
                         <i className="fa-brands fa-linkedin"></i>
                       </a>
                     </li>
                     <li>
-                      <a href="#">
+                      <a href="#!">
                         <i className="fa-brands fa-google-plus"></i>
                       </a>
                     </li>
                     <li>
-                      <a href="#">
+                      <a href="#!">
                         <i className="fa-brands fa-twitter"></i>
                       </a>
                     </li>
                     <li>
-                      <a href="#">
+                      <a href="#!">
                         <i className="fa-brands fa-dribbble"></i>
                       </a>
                     </li>
@@ -135,22 +135,22 @@ export default function Footer2() {
                 <h4 className="widget-title text-main">For Clients</h4>
                 <ul className="footer-menu">
                   <li>
-                    <a href="#">Talent Marketplace</a>
+                    <a href="#!">Talent Marketplace</a>
                   </li>
                   <li>
-                    <a href="#">Payroll Services</a>
+                    <a href="#!">Payroll Services</a>
                   </li>
                   <li>
-                    <a href="#">Direct Contracts</a>
+                    <a href="#!">Direct Contracts</a>
                   </li>
                   <li>
-                    <a href="#">Hire Worldwide</a>
+                    <a href="#!">Hire Worldwide</a>
                   </li>
                   <li>
-                    <a href="#">Hire in the USA</a>
+                    <a href="#!">Hire in the USA</a>
                   </li>
                   <li>
-                    <a href="#">How to Hire</a>
+                    <a href="#!">How to Hire</a>
                   </li>
                 </ul>
               </div>
@@ -161,22 +161,22 @@ export default function Footer2() {
                 <h4 className="widget-title text-main">Our Resources</h4>
                 <ul className="footer-menu">
                   <li>
-                    <a href="#">Free Business tools</a>
+                    <a href="#!">Free Business tools</a>
                   </li>
                   <li>
-                    <a href="#">Affiliate Program</a>
+                    <a href="#!">Affiliate Program</a>
                   </li>
                   <li>
-                    <a href="#">Success Stories</a>
+                    <a href="#!">Success Stories</a>
                   </li>
                   <li>
-                    <a href="#">Upwork Reviews</a>
+                    <a href="#!">Upwork Reviews</a>
                   </li>
                   <li>
-                    <a href="#">Resources</a>
+                    <a href="#!">Resources</a>
                   </li>
                   <li>
-                    <a href="#">Help &amp; Support</a>
+                    <a href="#!">Help &amp; Support</a>
                   </li>
                 </ul>
               </div>
@@ -187,19 +187,19 @@ export default function Footer2() {
                 <h4 className="widget-title text-main">The Company</h4>
                 <ul className="footer-menu">
                   <li>
-                    <a href="#">About Us</a>
+                    <a href="#!">About Us</a>
                   </li>
                   <li>
-                    <a href="#">Leadership</a>
+                    <a href="#!">Leadership</a>
                   </li>
                   <li>
-                    <a href="#">Contact Us</a>
+                    <a href="#!">Contact Us</a>
                   </li>
                   <li>
-                    <a href="#">Investor Relations</a>
+                    <a href="#!">Investor Relations</a>
                   </li>
                   <li>
-                    <a href="#">Trust, Safety &amp; Security</a>
+                    <a href="#!">Trust, Safety &amp; Security</a>
                   </li>
                 </ul>
               </div>

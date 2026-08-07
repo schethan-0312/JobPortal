@@ -83,13 +83,14 @@ export default function HeroBanner() {
                   Grow Your Career with <span className="text-main">JobStock</span>
                 </h1>
               </div>
-              <div className="hero-search-content verticle-space">
+              <form action="/jobs" method="GET" className="hero-search-content verticle-space">
                 <div className="row">
                   <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                     <div className="form-group">
                       <div className="input-with-icon">
                         <input
                           type="text"
+                          name="search"
                           className="form-control border"
                           placeholder="Search Job Keywords.."
                         />
@@ -101,24 +102,25 @@ export default function HeroBanner() {
                   <div className="col-xl-6 col-lg-12 col-md-6 col-sm-6">
                     <div className="form-group">
                       <label>Job Category</label>
-                      <select className="form-control">
-                        <option value="1">Software & Application</option>
-                        <option value="2">Banking</option>
-                        <option value="3">Health & Medical</option>
-                        <option value="4">Mobile & App</option>
-                        <option value="5">Education</option>
+                      <select name="category" className="form-control">
+                        <option value="">All Categories</option>
+                        <option value="Software">Software & Application</option>
+                        <option value="Banking">Banking</option>
+                        <option value="Health">Health & Medical</option>
+                        <option value="Mobile">Mobile & App</option>
+                        <option value="Education">Education</option>
                       </select>
                     </div>
                   </div>
                   <div className="col-xl-6 col-lg-12 col-md-6 col-sm-6">
                     <div className="form-group">
                       <label>Job Type</label>
-                      <select className="form-control">
-                        <option value="1">All Type</option>
-                        <option value="2">Full Time</option>
-                        <option value="3">Part Time</option>
-                        <option value="4">Contractor</option>
-                        <option value="5">Freelance</option>
+                      <select name="jobType" className="form-control">
+                        <option value="">All Type</option>
+                        <option value="Full Time">Full Time</option>
+                        <option value="Part Time">Part Time</option>
+                        <option value="Contractor">Contractor</option>
+                        <option value="Freelance">Freelance</option>
                       </select>
                     </div>
                   </div>
@@ -171,7 +173,7 @@ export default function HeroBanner() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </form>
             </div>
           </div>
         </div>

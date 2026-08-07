@@ -119,7 +119,7 @@ export default function AdminSidebar({ active }: AdminSidebarProps) {
                 <Link href="/admin-system-config"><i className="fa-solid fa-sliders me-2"></i>System Config</Link>
               </li>
               <li>
-                <a href="#" onClick={(e) => { e.preventDefault(); handleLogout(); }}>
+                <a href="#!" onClick={(e) => { e.preventDefault(); handleLogout(); }}>
                   <i className="fa-solid fa-power-off me-2"></i>Log Out
                 </a>
               </li>

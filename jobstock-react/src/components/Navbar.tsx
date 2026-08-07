@@ -35,7 +35,7 @@ export default function Navbar() {
                 </li>
                 <li>
                   {!user ? (
-                    <a href="#" className="sub-menu-item" data-bs-toggle="modal" data-bs-target="#login">
+                    <a href="#!" className="sub-menu-item" data-bs-toggle="modal" data-bs-target="#login">
                       Candidates
                     </a>
                   ) : (
@@ -46,7 +46,7 @@ export default function Navbar() {
                 </li>
                 <li>
                   {!user ? (
-                    <a href="#" className="sub-menu-item" data-bs-toggle="modal" data-bs-target="#login">
+                    <a href="#!" className="sub-menu-item" data-bs-toggle="modal" data-bs-target="#login">
                       Employers
                     </a>
                   ) : (

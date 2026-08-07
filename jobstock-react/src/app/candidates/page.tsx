@@ -7,7 +7,11 @@ import FindJobCta from "@/components/jobs/FindJobCta";
 import FilterModal from "@/components/jobs/FilterModal";
 import SortingBar from "@/components/jobs/SortingBar";
 import CandidatesListClient from "./CandidatesListClient";
-import { api, assetUrl } from "@/lib/api";
+import { assetUrl } from "@/lib/api";
+
+export const dynamic = "force-dynamic";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
 
 interface CandidateProfile {
   id: string;
@@ -34,8 +38,10 @@ async function getCandidates(params?: Record<string, string | undefined>): Promi
     if (params?.skill) query.set("skill", params.skill);
     if (params?.page) query.set("page", params.page);
     const qs = query.toString();
-    const url = qs ? `/candidates?${qs}` : "/candidates";
-    const data = await api.get<CandidatesResponse>(url, { auth: false });
+    const url = qs ? `${API_BASE}/candidates?${qs}` : `${API_BASE}/candidates`;
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`Failed: ${res.status}`);
+    const data: CandidatesResponse = await res.json();
     return { candidates: data.items ?? [], total: data.total ?? 0, pageSize: data.pageSize ?? 12, error: null };
   } catch (err) {
     return { candidates: [], total: 0, pageSize: 12, error: err instanceof Error ? err.message : "Failed to load candidates" };
