@@ -3,7 +3,7 @@
 import { Suspense, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Navbar2 from "@/components/Navbar2";
-import Footer2 from "@/components/Footer2";
+import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@/lib/api";
@@ -372,7 +372,7 @@ function SignupForm() {
       </section>
 
       <LoginModal />
-      <Footer2 />
+      <Footer />
     </>
   );
 }

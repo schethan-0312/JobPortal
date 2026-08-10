@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Navbar5 from "@/components/Navbar5";
-import Footer2 from "@/components/Footer2";
+import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
 import JobFilters from "@/components/jobs/JobFilters";
 import SortingBar from "@/components/jobs/SortingBar";
@@ -151,7 +151,7 @@ export default async function EmployersGridPage() {
 
       <LoginModal />
 
-      <Footer2 />
+      <Footer />
     </>
   );
 }

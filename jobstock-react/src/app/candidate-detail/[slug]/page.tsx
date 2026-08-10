@@ -1,5 +1,5 @@
 import Navbar2 from "@/components/Navbar2";
-import Footer2 from "@/components/Footer2";
+import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
 import RecordProfileView from "@/components/RecordProfileView";
 import CandidateFollowHeader from "@/components/CandidateFollowHeader";
@@ -324,7 +324,7 @@ export default async function CandidateDetailPage({
       </section>
 
       <LoginModal />
-      <Footer2 />
+      <Footer />
     </>
   );
 }

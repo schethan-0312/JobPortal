@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import PublicNavbar from "@/components/PublicNavbar";
-import Footer2 from "@/components/Footer2";
+import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
 import { api, ApiError } from "@/lib/api";
 import Link from "next/link";
@@ -332,7 +332,7 @@ export default function ForgotPasswordPage() {
           </div>
         </div>
       </section>
-      <Footer2 />
+      <Footer />
       <LoginModal />
     </>
   );

@@ -90,9 +90,16 @@ export default function CandidateProfilePage() {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
-    setSaving(true);
     setError(null);
     setSuccess(null);
+
+    if (phone && phone.trim() !== "" && !/^\d{10}$/.test(phone)) {
+      setError("Phone number must be exactly 10 digits.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    setSaving(true);
     try {
       const skills = skillsInput.split(",").map((s) => s.trim()).filter(Boolean);
       const updated = await api.patch<CandidateProfile>("/candidates/me", {
@@ -359,7 +366,20 @@ export default function CandidateProfilePage() {
                     <div className="col-xl-6 col-lg-6 col-md-12">
                       <div className="form-group">
                         <label>Phone no.</label>
-                        <input type="text" className="form-control" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                        <input
+                          type="tel"
+                          className="form-control"
+                          placeholder="10-digit phone number"
+                          maxLength={10}
+                          inputMode="numeric"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                        />
+                        {phone.length > 0 && phone.length < 10 && (
+                          <small className="text-danger d-block mt-1">
+                            Phone number must be 10 digits ({phone.length}/10)
+                          </small>
+                        )}
                       </div>
                     </div>
 

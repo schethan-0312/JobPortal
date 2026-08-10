@@ -1,5 +1,5 @@
 import Navbar2 from "@/components/Navbar2";
-import Footer2 from "@/components/Footer2";
+import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
 import { api, ApiError } from "@/lib/api";
 
@@ -41,7 +41,7 @@ export default async function BlogDetailPage({
           </div>
         </section>
         <LoginModal />
-        <Footer2 />
+        <Footer />
       </>
     );
   }
@@ -194,7 +194,7 @@ export default async function BlogDetailPage({
       </section>
 
       <LoginModal />
-      <Footer2 />
+      <Footer />
     </>
   );
 }

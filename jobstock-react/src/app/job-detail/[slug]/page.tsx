@@ -1,5 +1,5 @@
-import Navbar2 from "@/components/Navbar2";
-import Footer2 from "@/components/Footer2";
+import Navbar5 from "@/components/Navbar5";
+import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
 import ApplyBox from "@/components/jobs/ApplyBox";
 import { api, ApiError, assetUrl } from "@/lib/api";
@@ -37,9 +37,49 @@ async function getJob(slug: string): Promise<{ job: Job | null; error: string | 
   }
 }
 
+function formatAmount(val: number): { text: string; unit: "L" | "k" | "" } {
+  if (val >= 100000) {
+    const lakh = val / 100000;
+    const formatted = Number.isInteger(lakh) ? lakh.toString() : parseFloat(lakh.toFixed(2)).toString();
+    return { text: formatted, unit: "L" };
+  }
+  if (val >= 1000) {
+    const k = Math.round(val / 100) / 10;
+    const formatted = Number.isInteger(k) ? k.toString() : parseFloat(k.toFixed(1)).toString();
+    return { text: `${formatted}k`, unit: "k" };
+  }
+  return { text: val.toString(), unit: "" };
+}
+
 function formatSalary(job: Job) {
-  if (job.salaryMin && job.salaryMax) return `$${job.salaryMin}-${job.salaryMax}/month`;
-  if (job.salaryMin) return `$${job.salaryMin}/month`;
+  const { salaryMin, salaryMax } = job;
+  if (!salaryMin && !salaryMax) return "Not disclosed";
+
+  if (salaryMin && salaryMax) {
+    const minObj = formatAmount(salaryMin);
+    const maxObj = formatAmount(salaryMax);
+
+    if (minObj.unit === "L" && maxObj.unit === "L") {
+      return `₹${minObj.text} - ${maxObj.text} LPA`;
+    }
+    if (minObj.unit === "k" && maxObj.unit === "k") {
+      return `₹${minObj.text} - ${maxObj.text} PA`;
+    }
+    return `₹${minObj.text} - ${maxObj.text} LPA`;
+  }
+
+  if (salaryMin) {
+    const minObj = formatAmount(salaryMin);
+    if (minObj.unit === "L") return `₹${minObj.text} LPA`;
+    return `₹${minObj.text} PA`;
+  }
+
+  if (salaryMax) {
+    const maxObj = formatAmount(salaryMax);
+    if (maxObj.unit === "L") return `Up to ₹${maxObj.text} LPA`;
+    return `Up to ₹${maxObj.text} PA`;
+  }
+
   return "Not disclosed";
 }
 
@@ -53,7 +93,7 @@ export default async function JobDetailPage({
 
   return (
     <>
-      <Navbar2 />
+      <Navbar5 />
 
       {/* Job Detail */}
       <section className="gray-simple py-5">
@@ -205,7 +245,7 @@ export default async function JobDetailPage({
       </section>
 
       <LoginModal />
-      <Footer2 />
+      <Footer />
     </>
   );
 }

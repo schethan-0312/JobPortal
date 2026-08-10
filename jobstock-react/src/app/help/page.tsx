@@ -1,5 +1,5 @@
-import Navbar2 from "@/components/Navbar2";
-import Footer2 from "@/components/Footer2";
+import Navbar5 from "@/components/Navbar5";
+import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
 
 const topics = [
@@ -32,7 +32,7 @@ const topics = [
 export default function HelpPage() {
   return (
     <>
-      <Navbar2 />
+      <Navbar5 />
 
       {/* Page Title Start */}
       <section className="bg-cover bg-second" style={{ background: "url(/assets/img/bg2.png)no-repeat" }}>
@@ -120,7 +120,7 @@ export default function HelpPage() {
       </section>
 
       <LoginModal />
-      <Footer2 />
+      <Footer />
     </>
   );
 }

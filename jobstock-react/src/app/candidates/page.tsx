@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Navbar5 from "@/components/Navbar5";
-import Footer2 from "@/components/Footer2";
+import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
 import Pagination from "@/components/jobs/Pagination";
 import FindJobCta from "@/components/jobs/FindJobCta";
@@ -153,7 +153,7 @@ export default async function CandidatesGridPage({
 
       <FilterModal />
 
-      <Footer2 />
+      <Footer />
     </>
   );
 }

@@ -1,4 +1,19 @@
+"use client";
+
+import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
+
 export default function CallToAction() {
+  const { user } = useAuth();
+
+  const getStartedHref = user
+    ? user.role === "EMPLOYER"
+      ? "/employer-dashboard"
+      : user.role === "ADMIN"
+      ? "/admin-dashboard"
+      : "/candidate-dashboard"
+    : "/signup";
+
   return (
     <section
       className="bg-cover call-action-container dark bg-main"
@@ -15,12 +30,12 @@ export default function CallToAction() {
                 </p>
               </div>
               <div className="call-action-buttons mt-3">
-                <a href="/jobs" className="btn btn-lg btn-dark fw-medium px-xl-5 px-lg-4 me-2">
+                <Link href="/jobs" className="btn btn-lg btn-dark fw-medium px-xl-5 px-lg-4 me-2">
                   Browse Jobs
-                </a>
-                <a href="/signup" className="btn btn-lg btn-whites fw-medium px-xl-5 px-lg-4 text-main">
+                </Link>
+                <Link href={getStartedHref} className="btn btn-lg btn-whites fw-medium px-xl-5 px-lg-4 text-main">
                   Get Started
-                </a>
+                </Link>
               </div>
             </div>
           </div>

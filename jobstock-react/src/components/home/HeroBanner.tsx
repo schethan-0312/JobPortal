@@ -154,13 +154,13 @@ export default function HeroBanner() {
                     <div className="form-group">
                       <label>Expected Salary</label>
                       <select className="form-control">
-                        <option value="1">$500 - $1000 PA</option>
-                        <option value="2">$200 - $5000 PA</option>
-                        <option value="3">$5000 - $10000 PA</option>
-                        <option value="4">$10000 - $20000 PA</option>
-                        <option value="5">$20000 - $40000 PA</option>
-                        <option value="6">$40000 - $50000 PA</option>
-                        <option value="7">$50000 - $100000 PA</option>
+                        <option value="1">₹500 - ₹1000 PA</option>
+                        <option value="2">₹200 - ₹5000 PA</option>
+                        <option value="3">₹5000 - ₹10000 PA</option>
+                        <option value="4">₹10000 - ₹20000 PA</option>
+                        <option value="5">₹20000 - ₹40000 PA</option>
+                        <option value="6">₹40000 - ₹50000 PA</option>
+                        <option value="7">₹50000 - ₹100000 PA</option>
                       </select>
                     </div>
                   </div>

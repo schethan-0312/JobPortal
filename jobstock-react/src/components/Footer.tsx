@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
+import RoleMismatchModal from "./RoleMismatchModal";
 
 interface PublicStats {
   totalJobs: number;
@@ -11,7 +15,10 @@ interface PublicStats {
 }
 
 export default function Footer() {
+  const { user } = useAuth();
+  const router = useRouter();
   const [stats, setStats] = useState<PublicStats | null>(null);
+  const [mismatchRole, setMismatchRole] = useState<"CANDIDATE" | "EMPLOYER" | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -19,206 +26,264 @@ export default function Footer() {
         const data = await api.get<PublicStats>("/stats", { auth: false });
         setStats(data);
       } catch {
-        // stats are decorative — fail silently, section just won't render
+        // fail silently if stats unavailable
       }
     })();
   }, []);
 
+  const openLoginModal = () => {
+    const loginModalBtn = document.querySelector<HTMLElement>('[data-bs-target="#login"]');
+    if (loginModalBtn) {
+      loginModalBtn.click();
+    } else {
+      router.push("/signup");
+    }
+  };
+
+  const handleLinkClick = (
+    e: React.MouseEvent,
+    href: string,
+    requiredRole?: "CANDIDATE" | "EMPLOYER",
+    candidateOnly?: boolean
+  ) => {
+    if (user?.role === "EMPLOYER" && (requiredRole === "CANDIDATE" || candidateOnly)) {
+      e.preventDefault();
+      setMismatchRole("CANDIDATE");
+      return;
+    }
+
+    if (user?.role === "CANDIDATE" && requiredRole === "EMPLOYER") {
+      e.preventDefault();
+      setMismatchRole("EMPLOYER");
+      return;
+    }
+
+    if (!user && requiredRole) {
+      e.preventDefault();
+      openLoginModal();
+      return;
+    }
+  };
+
+  function SmartFooterLink({
+    href,
+    label,
+    requiredRole,
+    candidateOnly,
+  }: {
+    href: string;
+    label: string;
+    requiredRole?: "CANDIDATE" | "EMPLOYER";
+    candidateOnly?: boolean;
+  }) {
+    const isEmployerBlocked = user?.role === "EMPLOYER" && (requiredRole === "CANDIDATE" || candidateOnly);
+    const isCandidateBlocked = user?.role === "CANDIDATE" && requiredRole === "EMPLOYER";
+    const isLoggedOutBlocked = !user && !!requiredRole;
+
+    if (isEmployerBlocked || isCandidateBlocked || isLoggedOutBlocked) {
+      return (
+        <a
+          href={href}
+          onClick={(e) => handleLinkClick(e, href, requiredRole, candidateOnly)}
+          data-bs-toggle={!user ? "modal" : undefined}
+          data-bs-target={!user ? "#login" : undefined}
+        >
+          {label}
+        </a>
+      );
+    }
+
+    return <Link href={href}>{label}</Link>;
+  }
+
   return (
-    <footer className="footer skin-dark-footer">
-      <div>
-        <div className="container">
-          <div className="row">
-            <div className="col-lg-3 col-md-4">
-              <div className="footer-widget">
-                <img src="/assets/img/logo-light.png" className="img-footer" alt="JobStock" />
-                <div className="footer-add">
-                  <p>
-                    Collins Street West, Victoria Near Bank Road
-                    <br />
-                    Australia QHR12456.
-                  </p>
-                </div>
-                <div className="foot-socials">
-                  <ul>
+    <>
+      <footer className="footer skin-dark-footer">
+        <div>
+          <div className="container">
+            {/* Brand Header Row */}
+            <div className="row align-items-center justify-content-between pb-4 mb-4 border-bottom border-secondary border-opacity-25 gy-3">
+              <div className="col-lg-5 col-md-6">
+                <Link href="/">
+                  <img src="/assets/img/logo-light.png" className="img-footer mb-2" alt="JobStock" />
+                </Link>
+                <p className="text-light opacity-75 m-0 text-sm">
+                  Find the right opportunities, connect with top companies, and build your career with JobStock.
+                </p>
+              </div>
+              <div className="col-lg-5 col-md-6 text-md-end">
+                <p className="text-light opacity-75 small mb-2">
+                  <i className="fa-solid fa-location-dot me-2 text-main"></i> Victoria Near Bank Road, Australia
+                  <span className="mx-2">|</span>
+                  <i className="fa-solid fa-envelope me-2 text-main"></i> support@jobstock.com
+                </p>
+                <div className="foot-socials d-inline-block">
+                  <ul className="mb-0">
                     <li>
-                      <a href="#!">
+                      <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                         <i className="fa-brands fa-facebook"></i>
                       </a>
                     </li>
                     <li>
-                      <a href="#!">
+                      <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
                         <i className="fa-brands fa-linkedin"></i>
                       </a>
                     </li>
                     <li>
-                      <a href="#!">
-                        <i className="fa-brands fa-google-plus"></i>
-                      </a>
-                    </li>
-                    <li>
-                      <a href="#!">
+                      <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
                         <i className="fa-brands fa-twitter"></i>
                       </a>
                     </li>
                     <li>
-                      <a href="#!">
-                        <i className="fa-brands fa-dribbble"></i>
+                      <a href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                        <i className="fa-brands fa-github"></i>
                       </a>
                     </li>
                   </ul>
                 </div>
               </div>
             </div>
-            <div className="col-lg-2 col-md-4">
-              <div className="footer-widget">
-                <h4 className="widget-title">For Clients</h4>
+
+            {/* 4 Equal Navigation Columns Grid */}
+            <div className="footer-nav-grid">
+              {/* Column 1: For Job Seekers */}
+              <div className="footer-widget mb-0">
+                <h4 className="widget-title">For Job Seekers</h4>
                 <ul className="footer-menu">
-                  <li>
-                    <a href="#!">Talent Marketplace</a>
-                  </li>
-                  <li>
-                    <a href="#!">Payroll Services</a>
-                  </li>
-                  <li>
-                    <a href="#!">Direct Contracts</a>
-                  </li>
-                  <li>
-                    <a href="#!">Hire Worldwide</a>
-                  </li>
-                  <li>
-                    <a href="#!">Hire in the USA</a>
-                  </li>
-                  <li>
-                    <a href="#!">How to Hire</a>
-                  </li>
+                  <li><SmartFooterLink href="/jobs" label="Find Jobs" candidateOnly={true} /></li>
+                  <li><SmartFooterLink href="/jobs" label="Quick Apply" candidateOnly={true} /></li>
+                  <li><SmartFooterLink href="/employers" label="Explore Employers" candidateOnly={true} /></li>
+                  <li><SmartFooterLink href="/candidate-saved-jobs" label="Saved Jobs" requiredRole="CANDIDATE" /></li>
+                  <li><SmartFooterLink href="/candidate-applied-jobs" label="Applied Jobs" requiredRole="CANDIDATE" /></li>
+                  <li><SmartFooterLink href="/candidate-profile" label="My Profile" requiredRole="CANDIDATE" /></li>
+                  <li><SmartFooterLink href="/candidate-alert-job" label="Job Alerts" requiredRole="CANDIDATE" /></li>
                 </ul>
               </div>
-            </div>
 
-            <div className="col-lg-2 col-md-4">
-              <div className="footer-widget">
-                <h4 className="widget-title">Our Resources</h4>
+              {/* Column 2: For Employers */}
+              <div className="footer-widget mb-0">
+                <h4 className="widget-title">For Employers</h4>
                 <ul className="footer-menu">
-                  <li>
-                    <a href="#!">Free Business tools</a>
-                  </li>
-                  <li>
-                    <a href="#!">Affiliate Program</a>
-                  </li>
-                  <li>
-                    <a href="#!">Success Stories</a>
-                  </li>
-                  <li>
-                    <a href="#!">Reviews</a>
-                  </li>
-                  <li>
-                    <a href="#!">Resources</a>
-                  </li>
-                  <li>
-                    <a href="#!">Help & Support</a>
-                  </li>
+                  <li><SmartFooterLink href="/employer-submit-job" label="Post a Job" requiredRole="EMPLOYER" /></li>
+                  <li><SmartFooterLink href="/employer-jobs" label="Manage Jobs" requiredRole="EMPLOYER" /></li>
+                  <li><SmartFooterLink href="/employer-applicants-jobs" label="Manage Applications" requiredRole="EMPLOYER" /></li>
+                  <li><SmartFooterLink href="/employer-candidate-search" label="Find Candidates" requiredRole="EMPLOYER" /></li>
+                  <li><SmartFooterLink href="/employer-dashboard" label="Employer Dashboard" requiredRole="EMPLOYER" /></li>
+                  <li><SmartFooterLink href="/employer-profile" label="Company Profile" requiredRole="EMPLOYER" /></li>
                 </ul>
               </div>
-            </div>
 
-            <div className="col-lg-2 col-md-6">
-              <div className="footer-widget">
-                <h4 className="widget-title">The Company</h4>
+              {/* Column 3: AI & Career Tools */}
+              <div className="footer-widget mb-0">
+                <h4 className="widget-title">AI & Career Tools</h4>
                 <ul className="footer-menu">
-                  <li>
-                    <a href="#!">About Us</a>
-                  </li>
-                  <li>
-                    <a href="#!">Leadership</a>
-                  </li>
-                  <li>
-                    <a href="#!">Contact Us</a>
-                  </li>
-                  <li>
-                    <a href="#!">Investor Relations</a>
-                  </li>
-                  <li>
-                    <a href="#!">Trust, Safety & Security</a>
-                  </li>
+                  <li><SmartFooterLink href="/candidate-resume-builder" label="AI Resume Builder" requiredRole="CANDIDATE" /></li>
+                  <li><SmartFooterLink href="/candidate-resume-scanner" label="Resume Health Scanner" requiredRole="CANDIDATE" /></li>
+                  <li><SmartFooterLink href="/candidate-skill-assessment" label="Skill Assessments" requiredRole="CANDIDATE" /></li>
+                  <li><SmartFooterLink href="/candidate-mock-interview" label="Mock Interviews" requiredRole="CANDIDATE" /></li>
+                  <li><SmartFooterLink href="/candidate-career-navigator" label="Career Path Navigator" requiredRole="CANDIDATE" /></li>
+                  <li><SmartFooterLink href="/candidate-smart-match" label="Smart Job Matches" requiredRole="CANDIDATE" /></li>
                 </ul>
               </div>
-            </div>
 
-            <div className="col-lg-3 col-md-6">
-              <div className="footer-widget">
-                <h4 className="widget-title">Download Apps</h4>
-                <div className="app-wrap d-flex flex-column gap-3">
-                  <div className="d-flex align-items-center bg-transparent rounded-3 px-2 py-3 gap-2">
-                    <div className="social-caption">
-                      <p className="text-uppercase text-light opacity-75 m-0">Get it on</p>
-                      <h5 className="text-light m-0">Google Play</h5>
-                    </div>
-                  </div>
-                  <div className="d-flex align-items-center bg-transparent rounded-3 px-2 py-3 gap-2">
-                    <div className="social-caption">
-                      <p className="text-uppercase text-light opacity-75 m-0">Get it on</p>
-                      <h5 className="text-light m-0">App Store</h5>
-                    </div>
-                  </div>
-                </div>
+              {/* Column 4: Company */}
+              <div className="footer-widget mb-0">
+                <h4 className="widget-title">Company</h4>
+                <ul className="footer-menu">
+                  <li><SmartFooterLink href="/about-us" label="About Us" /></li>
+                  <li><SmartFooterLink href="/blog" label="Latest News & Blog" /></li>
+                  <li><SmartFooterLink href="/faq" label="FAQs" /></li>
+                  <li><SmartFooterLink href="/help" label="Help & Support" /></li>
+                  <li><SmartFooterLink href="/contact" label="Contact Us" /></li>
+                  <li><SmartFooterLink href="/privacy" label="Privacy & Terms" /></li>
+                </ul>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="footer-bottom">
-        <div className="container">
-          <div className="row align-items-center justify-content-between">
-            <div className="col-xl-4 col-lg-5 col-md-5">
-              <p className="mb-0">
-                &copy; {new Date().getFullYear()} JobStock. Built with{" "}
-                <i className="mdi mdi-heart text-danger"></i>
-              </p>
-            </div>
+        <style jsx>{`
+          .footer-nav-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 2.5rem;
+            width: 100%;
+          }
+          @media (max-width: 991px) {
+            .footer-nav-grid {
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+              gap: 2rem;
+            }
+          }
+          @media (max-width: 575px) {
+            .footer-nav-grid {
+              grid-template-columns: repeat(1, minmax(0, 1fr));
+              gap: 1.5rem;
+            }
+          }
+        `}</style>
 
-            {stats && (
-              <div className="col-xl-8 col-lg-7 col-md-7 overflow-hidden">
-                <div className="job-info-count-group">
-                  <div className="single-jb-info-count">
-                    <div className="jbs-y7">
-                      <h5 className="ctr">{stats.totalJobs}</h5>
+        {/* Bottom Footer */}
+        <div className="footer-bottom mt-4">
+          <div className="container">
+            <div className="row align-items-center justify-content-between gy-3">
+              <div className="col-xl-4 col-lg-5 col-md-5">
+                <p className="mb-0">
+                  &copy; {new Date().getFullYear()} JobStock. Built with{" "}
+                  <i className="mdi mdi-heart text-danger"></i>. All rights reserved.
+                </p>
+              </div>
+
+              {stats && (
+                <div className="col-xl-8 col-lg-7 col-md-7 overflow-hidden">
+                  <div className="job-info-count-group">
+                    <div className="single-jb-info-count">
+                      <div className="jbs-y7">
+                        <h5 className="ctr">{stats.totalJobs}</h5>
+                      </div>
+                      <div className="jbs-y5">
+                        <p>Jobs Posted</p>
+                      </div>
                     </div>
-                    <div className="jbs-y5">
-                      <p>Jobs Posted</p>
+                    <div className="single-jb-info-count">
+                      <div className="jbs-y7">
+                        <h5 className="ctr">{stats.totalCandidates}</h5>
+                      </div>
+                      <div className="jbs-y5">
+                        <p>Candidates</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="single-jb-info-count">
-                    <div className="jbs-y7">
-                      <h5 className="ctr">{stats.totalCandidates}</h5>
+                    <div className="single-jb-info-count">
+                      <div className="jbs-y7">
+                        <h5 className="ctr">{stats.totalApplications}</h5>
+                      </div>
+                      <div className="jbs-y5">
+                        <p>Applications</p>
+                      </div>
                     </div>
-                    <div className="jbs-y5">
-                      <p>Candidates</p>
-                    </div>
-                  </div>
-                  <div className="single-jb-info-count">
-                    <div className="jbs-y7">
-                      <h5 className="ctr">{stats.totalApplications}</h5>
-                    </div>
-                    <div className="jbs-y5">
-                      <p>Applications</p>
-                    </div>
-                  </div>
-                  <div className="single-jb-info-count">
-                    <div className="jbs-y7">
-                      <h5 className="ctr">{stats.totalVerifiedEmployers}</h5>
-                    </div>
-                    <div className="jbs-y5">
-                      <p>Verified Companies</p>
+                    <div className="single-jb-info-count">
+                      <div className="jbs-y7">
+                        <h5 className="ctr">{stats.totalVerifiedEmployers}</h5>
+                      </div>
+                      <div className="jbs-y5">
+                        <p>Verified Companies</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </footer>
+      </footer>
+
+      {/* Role Mismatch Modal */}
+      <RoleMismatchModal
+        show={!!mismatchRole}
+        requiredRole={mismatchRole}
+        onClose={() => setMismatchRole(null)}
+        onOpenLogin={openLoginModal}
+      />
+    </>
   );
 }

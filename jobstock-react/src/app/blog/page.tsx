@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Navbar5 from "@/components/Navbar5";
-import Footer2 from "@/components/Footer2";
+import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
 import { api } from "@/lib/api";
 
@@ -119,7 +119,7 @@ export default async function BlogPage() {
       </section>
 
       <LoginModal />
-      <Footer2 />
+      <Footer />
     </>
   );
 }

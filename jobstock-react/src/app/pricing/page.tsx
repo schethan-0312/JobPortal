@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import PublicNavbar from "@/components/PublicNavbar";
-import Footer2 from "@/components/Footer2";
+import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
@@ -144,7 +144,7 @@ export default function PricingPage() {
       </section>
 
       <LoginModal />
-      <Footer2 />
+      <Footer />
     </>
   );
 }

@@ -1,0 +1,1582 @@
+[
+  {
+    "file": "src\\app\\admin-ai\\page.tsx",
+    "line": 84,
+    "text": "await api.patch(`/admin/ai/feature-config/${feature}`, { enabled });"
+  },
+  {
+    "file": "src\\app\\admin-ai\\page.tsx",
+    "line": 168,
+    "text": "<span className={`badge ${f.enabled ? \"bg-success\" : \"bg-danger\"}`}>"
+  },
+  {
+    "file": "src\\app\\admin-ai\\page.tsx",
+    "line": 174,
+    "text": "{f.successRate === null ? \"—\" : `${f.successRate}%`}"
+  },
+  {
+    "file": "src\\app\\admin-ai\\page.tsx",
+    "line": 176,
+    "text": "<td className=\"small\">{f.avgLatencyMs === null ? \"—\" : `${f.avgLatencyMs} ms`}</td>"
+  },
+  {
+    "file": "src\\app\\admin-ai\\page.tsx",
+    "line": 181,
+    "text": "className={`btn btn-sm ${f.enabled ? \"btn-outline-danger\" : \"btn-outline-success\"}`}"
+  },
+  {
+    "file": "src\\app\\admin-analytics\\page.tsx",
+    "line": 36,
+    "text": "return `₹${(paisa / 100).toLocaleString(\"en-IN\")}`;"
+  },
+  {
+    "file": "src\\app\\admin-analytics\\page.tsx",
+    "line": 48,
+    "text": "height: `${Math.max(2, (d.count / max) * 100)}%`,"
+  },
+  {
+    "file": "src\\app\\admin-analytics\\page.tsx",
+    "line": 52,
+    "text": "title={`${d.date}: ${d.count}`}"
+  },
+  {
+    "file": "src\\app\\admin-analytics\\page.tsx",
+    "line": 80,
+    "text": "api.get<Overview>(`/admin/analytics/overview?days=${days}`),"
+  },
+  {
+    "file": "src\\app\\admin-analytics\\page.tsx",
+    "line": 93,
+    "text": "const res = await fetch(`${API_URL}/admin/analytics/export?report=${report}&days=${days}`, {"
+  },
+  {
+    "file": "src\\app\\admin-analytics\\page.tsx",
+    "line": 94,
+    "text": "headers: { Authorization: `Bearer ${token}` },"
+  },
+  {
+    "file": "src\\app\\admin-analytics\\page.tsx",
+    "line": 100,
+    "text": "a.download = `${report}-${days}d.csv`;"
+  },
+  {
+    "file": "src\\app\\admin-analytics\\page.tsx",
+    "line": 139,
+    "text": "className={`btn btn-sm ${days === d ? \"btn-main\" : \"btn-outline-main\"}`}"
+  },
+  {
+    "file": "src\\app\\admin-audit-log\\page.tsx",
+    "line": 59,
+    "text": "const res = await api.get<AuditLogResponse>(`/admin/audit-log?${params.toString()}`);"
+  },
+  {
+    "file": "src\\app\\admin-background-jobs\\page.tsx",
+    "line": 64,
+    "text": "const res = await api.get<{ items: JobRun[] }>(`/admin/background-jobs/${jobName}/history`);"
+  },
+  {
+    "file": "src\\app\\admin-background-jobs\\page.tsx",
+    "line": 75,
+    "text": "await api.post(`/admin/background-jobs/${jobName}/run`);"
+  },
+  {
+    "file": "src\\app\\admin-background-jobs\\page.tsx",
+    "line": 78,
+    "text": "const res = await api.get<{ items: JobRun[] }>(`/admin/background-jobs/${jobName}/history`);"
+  },
+  {
+    "file": "src\\app\\admin-background-jobs\\page.tsx",
+    "line": 127,
+    "text": "<span className={`badge ${"
+  },
+  {
+    "file": "src\\app\\admin-background-jobs\\page.tsx",
+    "line": 165,
+    "text": "<span className={`badge ${"
+  },
+  {
+    "file": "src\\app\\admin-background-jobs\\page.tsx",
+    "line": 175,
+    "text": "? `${Math.round((new Date(r.completedAt).getTime() - new Date(r.startedAt).getTime()) / 1000)}s`"
+  },
+  {
+    "file": "src\\app\\admin-candidates\\page.tsx",
+    "line": 52,
+    "text": "const res = await api.get<CandidateListResponse>(`/admin/candidate-management?${params.toString()}`);"
+  },
+  {
+    "file": "src\\app\\admin-candidates\\page.tsx",
+    "line": 126,
+    "text": "<tr key={c.id} style={{ cursor: \"pointer\" }} onClick={() => router.push(`/admin-candidates/${c.id}`)}>"
+  },
+  {
+    "file": "src\\app\\admin-candidates\\page.tsx",
+    "line": 137,
+    "text": "<span className={`badge ${c.isSuspended ? \"bg-danger\" : \"bg-success\"}`}>"
+  },
+  {
+    "file": "src\\app\\admin-candidates\\[id]\\page.tsx",
+    "line": 79,
+    "text": "const res = await api.get<CandidateDetail>(`/admin/candidate-management/${id}`);"
+  },
+  {
+    "file": "src\\app\\admin-candidates\\[id]\\page.tsx",
+    "line": 95,
+    "text": "await api.post(`/admin/candidate-management/${id}/suspend`, { reason: reason || undefined });"
+  },
+  {
+    "file": "src\\app\\admin-candidates\\[id]\\page.tsx",
+    "line": 108,
+    "text": "await api.post(`/admin/candidate-management/${id}/unsuspend`);"
+  },
+  {
+    "file": "src\\app\\admin-candidates\\[id]\\page.tsx",
+    "line": 121,
+    "text": "await api.patch(`/admin/candidate-management/${id}/toggle-verified`);"
+  },
+  {
+    "file": "src\\app\\admin-candidates\\[id]\\page.tsx",
+    "line": 187,
+    "text": "<span className={`badge ${detail.isSuspended ? \"bg-danger\" : \"bg-success\"}`}>"
+  },
+  {
+    "file": "src\\app\\admin-candidates\\[id]\\page.tsx",
+    "line": 241,
+    "text": "<span>{a.score !== null ? `${a.score}/${a.totalQuestions}` : a.status}</span>"
+  },
+  {
+    "file": "src\\app\\admin-candidates\\[id]\\page.tsx",
+    "line": 261,
+    "text": "<span>{m.overallRating !== null ? `${m.overallRating}/5` : m.status}</span>"
+  },
+  {
+    "file": "src\\app\\admin-content\\page.tsx",
+    "line": 43,
+    "text": "const res = await api.get<BlogListResponse>(`/admin/content-moderation/blog-posts?${params.toString()}`);"
+  },
+  {
+    "file": "src\\app\\admin-content\\page.tsx",
+    "line": 59,
+    "text": "await api.patch(`/admin/content-moderation/blog-posts/${id}/published`, { published });"
+  },
+  {
+    "file": "src\\app\\admin-content\\page.tsx",
+    "line": 73,
+    "text": "await api.delete(`/admin/content-moderation/blog-posts/${id}`);"
+  },
+  {
+    "file": "src\\app\\admin-content\\page.tsx",
+    "line": 144,
+    "text": "<span className={`badge ${p.publishedAt ? \"bg-success\" : \"bg-secondary\"}`}>"
+  },
+  {
+    "file": "src\\app\\admin-dashboard\\page.tsx",
+    "line": 102,
+    "text": "<div className={`bloud-icon text-${item.class} bg-${item.class} bg-opacity-05`}>"
+  },
+  {
+    "file": "src\\app\\admin-database\\page.tsx",
+    "line": 35,
+    "text": "return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`;"
+  },
+  {
+    "file": "src\\app\\admin-database\\page.tsx",
+    "line": 92,
+    "text": "const data = await api.get(`/admin/database/users/${gdprUserId.trim()}/export`);"
+  },
+  {
+    "file": "src\\app\\admin-database\\page.tsx",
+    "line": 105,
+    "text": "await api.post(`/admin/database/users/${gdprUserId.trim()}/purge`);"
+  },
+  {
+    "file": "src\\app\\admin-database\\page.tsx",
+    "line": 182,
+    "text": "<span className={`badge ${"
+  },
+  {
+    "file": "src\\app\\admin-employer-directory\\page.tsx",
+    "line": 29,
+    "text": "return `₹${(paisa / 100).toLocaleString(\"en-IN\")}`;"
+  },
+  {
+    "file": "src\\app\\admin-employer-directory\\page.tsx",
+    "line": 55,
+    "text": "const res = await api.get<DirectoryResponse>(`/admin/employer-management?${params.toString()}`);"
+  },
+  {
+    "file": "src\\app\\admin-employer-directory\\page.tsx",
+    "line": 134,
+    "text": "onClick={() => router.push(`/admin-employer-directory/${e.id}`)}"
+  },
+  {
+    "file": "src\\app\\admin-employer-directory\\page.tsx",
+    "line": 139,
+    "text": "className={`badge ${"
+  },
+  {
+    "file": "src\\app\\admin-employer-directory\\[id]\\page.tsx",
+    "line": 55,
+    "text": "return `₹${(paisa / 100).toLocaleString(\"en-IN\")}`;"
+  },
+  {
+    "file": "src\\app\\admin-employer-directory\\[id]\\page.tsx",
+    "line": 76,
+    "text": "const res = await api.get<EmployerDetail>(`/admin/employer-management/${id}`);"
+  },
+  {
+    "file": "src\\app\\admin-employer-directory\\[id]\\page.tsx",
+    "line": 93,
+    "text": "await api.patch(`/admin/content-moderation/employers/${id}/clear-content`, {"
+  },
+  {
+    "file": "src\\app\\admin-employers\\page.tsx",
+    "line": 60,
+    "text": "await api.patch(`/admin/employers/${id}/verify`, { decision });"
+  },
+  {
+    "file": "src\\app\\admin-employers\\page.tsx",
+    "line": 62,
+    "text": "setSuccessMsg(`Employer ${decision === \"VERIFIED\" ? \"verified\" : \"rejected\"} successfully.`);"
+  },
+  {
+    "file": "src\\app\\admin-financials\\page.tsx",
+    "line": 56,
+    "text": "return `₹${(paisa / 100).toLocaleString(\"en-IN\", { maximumFractionDigits: 2 })}`;"
+  },
+  {
+    "file": "src\\app\\admin-financials\\page.tsx",
+    "line": 88,
+    "text": "api.get<TransactionsResponse>(`/admin/financials/transactions${statusFilter ? `?status=${statusFilter}` : \"\"}`),"
+  },
+  {
+    "file": "src\\app\\admin-financials\\page.tsx",
+    "line": 114,
+    "text": "await api.post(`/admin/financials/transactions/${refundTarget.id}/refund`, { reason: refundReason });"
+  },
+  {
+    "file": "src\\app\\admin-financials\\page.tsx",
+    "line": 115,
+    "text": "setSuccessMsg(`Refunded ${formatMoney(refundTarget.amountInPaisa)} for ${refundTarget.user.email}.`);"
+  },
+  {
+    "file": "src\\app\\admin-financials\\page.tsx",
+    "line": 161,
+    "text": "className={`alert d-flex align-items-center gap-2 fw-medium ${"
+  },
+  {
+    "file": "src\\app\\admin-financials\\page.tsx",
+    "line": 166,
+    "text": "<i className={`fa-solid ${mode.mode === \"LIVE\" ? \"fa-triangle-exclamation\" : \"fa-flask\"}`}></i>"
+  },
+  {
+    "file": "src\\app\\admin-financials\\page.tsx",
+    "line": 193,
+    "text": "{refundRate ? `${(refundRate.refundRate * 100).toFixed(1)}%` : \"—\"}"
+  },
+  {
+    "file": "src\\app\\admin-financials\\page.tsx",
+    "line": 256,
+    "text": "className={`badge ${"
+  },
+  {
+    "file": "src\\app\\admin-integrations\\page.tsx",
+    "line": 103,
+    "text": "className={`alert d-flex align-items-center gap-2 fw-medium ${"
+  },
+  {
+    "file": "src\\app\\admin-jobs\\page.tsx",
+    "line": 52,
+    "text": "const res = await api.get<JobListResponse>(`/admin/job-moderation?${params.toString()}`);"
+  },
+  {
+    "file": "src\\app\\admin-jobs\\page.tsx",
+    "line": 127,
+    "text": "<tr key={j.id} style={{ cursor: \"pointer\" }} onClick={() => router.push(`/admin-jobs/${j.id}`)}>"
+  },
+  {
+    "file": "src\\app\\admin-jobs\\page.tsx",
+    "line": 137,
+    "text": "className={`badge ${"
+  },
+  {
+    "file": "src\\app\\admin-jobs\\[id]\\page.tsx",
+    "line": 53,
+    "text": "const res = await api.get<JobDetail>(`/admin/job-moderation/${id}`);"
+  },
+  {
+    "file": "src\\app\\admin-jobs\\[id]\\page.tsx",
+    "line": 69,
+    "text": "await api.patch(`/admin/job-moderation/${id}/status`, { status });"
+  },
+  {
+    "file": "src\\app\\admin-jobs\\[id]\\page.tsx",
+    "line": 141,
+    "text": "{detail.salaryMin && detail.salaryMax ? `₹${detail.salaryMin} - ₹${detail.salaryMax}` : \"Not specified\"}"
+  },
+  {
+    "file": "src\\app\\admin-jobs\\[id]\\page.tsx",
+    "line": 158,
+    "text": "<span className={`badge ${r.status === \"OPEN\" ? \"bg-warning\" : \"bg-secondary\"}`}>{r.status}</span>"
+  },
+  {
+    "file": "src\\app\\admin-legal\\page.tsx",
+    "line": 95,
+    "text": "<td className=\"small\">{r.doc ? `v${r.doc.version}` : \"—\"}</td>"
+  },
+  {
+    "file": "src\\app\\admin-legal\\page.tsx",
+    "line": 101,
+    "text": "onClick={() => router.push(`/admin-legal/${r.slug}`)}"
+  },
+  {
+    "file": "src\\app\\admin-legal\\page.tsx",
+    "line": 117,
+    "text": "onClick={() => router.push(`/admin-legal/${d.slug}`)}"
+  },
+  {
+    "file": "src\\app\\admin-legal\\[slug]\\page.tsx",
+    "line": 49,
+    "text": "const res = await api.get<LegalDocDetail>(`/admin/legal/${slug}`);"
+  },
+  {
+    "file": "src\\app\\admin-legal\\[slug]\\page.tsx",
+    "line": 53,
+    "text": "const rev = await api.get<Revision[]>(`/admin/legal/${slug}/revisions`);"
+  },
+  {
+    "file": "src\\app\\admin-legal\\[slug]\\page.tsx",
+    "line": 74,
+    "text": "await api.put(`/admin/legal/${slug}`, { title, body });"
+  },
+  {
+    "file": "src\\app\\admin-legal\\[slug]\\page.tsx",
+    "line": 119,
+    "text": "<h6 className=\"mb-0\">Edit {doc ? `(current: v${doc.version})` : \"(new document)\"}</h6>"
+  },
+  {
+    "file": "src\\app\\admin-proctoring\\page.tsx",
+    "line": 60,
+    "text": "api.get<{ items: AssessmentRow[] }>(`/admin/proctoring/assessments?flaggedOnly=${flaggedOnly}`),"
+  },
+  {
+    "file": "src\\app\\admin-proctoring\\page.tsx",
+    "line": 61,
+    "text": "api.get<{ items: InterviewRow[] }>(`/admin/proctoring/interviews?flaggedOnly=${flaggedOnly}`),"
+  },
+  {
+    "file": "src\\app\\admin-proctoring\\page.tsx",
+    "line": 81,
+    "text": "await api.post(`/admin/proctoring/assessments/${id}/invalidate`);"
+  },
+  {
+    "file": "src\\app\\admin-proctoring\\page.tsx",
+    "line": 95,
+    "text": "await api.post(`/admin/proctoring/interviews/${id}/invalidate`);"
+  },
+  {
+    "file": "src\\app\\admin-proctoring\\page.tsx",
+    "line": 190,
+    "text": "<td className=\"small\">{a.score !== null ? `${a.score}/${a.totalQuestions}` : \"—\"}</td>"
+  },
+  {
+    "file": "src\\app\\admin-proctoring\\page.tsx",
+    "line": 230,
+    "text": "<td className=\"small\">{i.overallRating !== null ? `${i.overallRating}/5` : \"—\"}</td>"
+  },
+  {
+    "file": "src\\app\\admin-reports\\page.tsx",
+    "line": 62,
+    "text": "await api.patch(`/admin/reports/${id}/resolve`, resolutionNote ? { resolutionNote } : {});"
+  },
+  {
+    "file": "src\\app\\admin-reports\\page.tsx",
+    "line": 76,
+    "text": "await api.patch(`/admin/jobs/${jobId}/flag`);"
+  },
+  {
+    "file": "src\\app\\admin-search\\page.tsx",
+    "line": 59,
+    "text": "const res = await api.get<SearchResult[]>(`/admin/search?q=${encodeURIComponent(query.trim())}`);"
+  },
+  {
+    "file": "src\\app\\admin-search\\page.tsx",
+    "line": 130,
+    "text": "<i className={`fa-solid ${TYPE_ICONS[type as SearchResult[\"type\"]]} me-2`}></i>"
+  },
+  {
+    "file": "src\\app\\admin-security\\page.tsx",
+    "line": 94,
+    "text": "if (!confirm(`Force-logout ${email}? They'll need to log in again.`)) return;"
+  },
+  {
+    "file": "src\\app\\admin-security\\page.tsx",
+    "line": 97,
+    "text": "await api.post(`/admin/security/sessions/${userId}/revoke`);"
+  },
+  {
+    "file": "src\\app\\admin-security\\page.tsx",
+    "line": 98,
+    "text": "setSuccessMsg(`${email}'s session revoked.`);"
+  },
+  {
+    "file": "src\\app\\admin-security\\page.tsx",
+    "line": 112,
+    "text": "setSuccessMsg(`${newIp} blocked.`);"
+  },
+  {
+    "file": "src\\app\\admin-security\\page.tsx",
+    "line": 122,
+    "text": "await api.delete(`/admin/security/blocked-ips/${id}`);"
+  },
+  {
+    "file": "src\\app\\admin-security\\page.tsx",
+    "line": 123,
+    "text": "setSuccessMsg(`${ip} unblocked.`);"
+  },
+  {
+    "file": "src\\app\\admin-security\\page.tsx",
+    "line": 163,
+    "text": "{failedLogins.suspiciousIps.map((s) => `${s.ipAddress} (${s.attemptsLastHour} attempts/hr)`).join(\", \")}"
+  },
+  {
+    "file": "src\\app\\admin-seo\\page.tsx",
+    "line": 83,
+    "text": "await api.put(`/admin/seo/overrides?path=${encodeURIComponent(newPath.trim())}`, {"
+  },
+  {
+    "file": "src\\app\\admin-seo\\page.tsx",
+    "line": 99,
+    "text": "await api.delete(`/admin/seo/overrides?path=${encodeURIComponent(path)}`);"
+  },
+  {
+    "file": "src\\app\\admin-support\\page.tsx",
+    "line": 56,
+    "text": "api.get<{ items: TicketRow[] }>(`/admin/support/tickets?${params.toString()}`),"
+  },
+  {
+    "file": "src\\app\\admin-support\\page.tsx",
+    "line": 168,
+    "text": "<tr key={t.id} style={{ cursor: \"pointer\" }} onClick={() => router.push(`/admin-support/${t.id}`)}>"
+  },
+  {
+    "file": "src\\app\\admin-support\\page.tsx",
+    "line": 172,
+    "text": "<span className={`badge ${"
+  },
+  {
+    "file": "src\\app\\admin-support\\page.tsx",
+    "line": 179,
+    "text": "<span className={`badge ${"
+  },
+  {
+    "file": "src\\app\\admin-support\\[id]\\page.tsx",
+    "line": 48,
+    "text": "const res = await api.get<TicketDetail>(`/admin/support/tickets/${id}`);"
+  },
+  {
+    "file": "src\\app\\admin-support\\[id]\\page.tsx",
+    "line": 64,
+    "text": "await api.post(`/admin/support/tickets/${id}/assign`);"
+  },
+  {
+    "file": "src\\app\\admin-support\\[id]\\page.tsx",
+    "line": 77,
+    "text": "await api.patch(`/admin/support/tickets/${id}`, { status });"
+  },
+  {
+    "file": "src\\app\\admin-support\\[id]\\page.tsx",
+    "line": 91,
+    "text": "await api.post(`/admin/support/tickets/${id}/reply`, { body: reply.trim() });"
+  },
+  {
+    "file": "src\\app\\admin-support\\[id]\\page.tsx",
+    "line": 171,
+    "text": "className={`p-2 rounded ${m.isAdminReply ? \"bg-main-subtle\" : \"bg-light\"}`}"
+  },
+  {
+    "file": "src\\app\\admin-team\\page.tsx",
+    "line": 82,
+    "text": "setSuccessMsg(`Admin ${res.email} created. Share the one-time password below with them securely.`);"
+  },
+  {
+    "file": "src\\app\\admin-team\\page.tsx",
+    "line": 97,
+    "text": "await api.patch(`/admin/team/${id}/role`, { adminRole });"
+  },
+  {
+    "file": "src\\app\\admin-team\\page.tsx",
+    "line": 112,
+    "text": "await api.post(`/admin/team/${id}/force-logout`);"
+  },
+  {
+    "file": "src\\app\\blog\\page.tsx",
+    "line": 77,
+    "text": "<Link href={`/blog-detail/${post.slug}`}>{post.title}</Link>"
+  },
+  {
+    "file": "src\\app\\blog\\page.tsx",
+    "line": 85,
+    "text": "<Link href={`/blog-detail/${post.slug}`} className=\"btn btn-blog-link\">"
+  },
+  {
+    "file": "src\\app\\blog-detail\\[slug]\\page.tsx",
+    "line": 19,
+    "text": "return await api.get<BlogPostDetail>(`/blog/${slug}`, { auth: false });"
+  },
+  {
+    "file": "src\\app\\blog-detail\\[slug]\\page.tsx",
+    "line": 65,
+    "text": "src={article.img ? `/${article.img}` : \"/assets/img/slider-5.jpg\"}"
+  },
+  {
+    "file": "src\\app\\candidate-alert-job\\page.tsx",
+    "line": 83,
+    "text": "await api.delete(`/candidates/job-alerts/${id}`);"
+  },
+  {
+    "file": "src\\app\\candidate-applied-jobs\\page.tsx",
+    "line": 73,
+    "text": "await api.patch(`/applications/${id}/withdraw`);"
+  },
+  {
+    "file": "src\\app\\candidate-applied-jobs\\page.tsx",
+    "line": 131,
+    "text": "<a href={`/job-detail/${item.job.slug}`}>"
+  },
+  {
+    "file": "src\\app\\candidate-applied-jobs\\page.tsx",
+    "line": 136,
+    "text": "<div className=\"jbs-job-title-wrap\"><h4><a href={`/job-detail/${item.job.slug}`} className=\"jbs-job-title\">{item.job.title}</a></h4></div>"
+  },
+  {
+    "file": "src\\app\\candidate-applied-jobs\\page.tsx",
+    "line": 148,
+    "text": "<div className=\"elsocrio-jbs\"><span className={`text-sm-muted text-light bg-${statusClass[item.status] || \"secondary\"} py-2 px-3 rounded`}>{item.status}</span></div>"
+  },
+  {
+    "file": "src\\app\\candidate-applied-jobs\\page.tsx",
+    "line": 162,
+    "text": "<a href={`/job-detail/${item.job.slug}`} className=\"btn btn-md btn-light-main px-3\"><i className=\"fa-solid fa-eye\"></i></a>"
+  },
+  {
+    "file": "src\\app\\candidate-change-password\\page.tsx",
+    "line": 110,
+    "text": "<i className={`fa-solid ${showCurrent ? \"fa-eye-slash\" : \"fa-eye\"} text-muted`}></i>"
+  },
+  {
+    "file": "src\\app\\candidate-change-password\\page.tsx",
+    "line": 133,
+    "text": "<i className={`fa-solid ${showNew ? \"fa-eye-slash\" : \"fa-eye\"} text-muted`}></i>"
+  },
+  {
+    "file": "src\\app\\candidate-change-password\\page.tsx",
+    "line": 155,
+    "text": "<i className={`fa-solid ${showConfirm ? \"fa-eye-slash\" : \"fa-eye\"} text-muted`}></i>"
+  },
+  {
+    "file": "src\\app\\candidate-dashboard\\page.tsx",
+    "line": 49,
+    "text": "if (mins < 60) return `${mins} min ago`;"
+  },
+  {
+    "file": "src\\app\\candidate-dashboard\\page.tsx",
+    "line": 51,
+    "text": "if (hours < 24) return `${hours} hour${hours > 1 ? \"s\" : \"\"} ago`;"
+  },
+  {
+    "file": "src\\app\\candidate-dashboard\\page.tsx",
+    "line": 53,
+    "text": "return `${days} day${days > 1 ? \"s\" : \"\"} ago`;"
+  },
+  {
+    "file": "src\\app\\candidate-dashboard\\page.tsx",
+    "line": 146,
+    "text": "<div className={`bloud-icon text-${item.class} bg-${item.class} bg-opacity-05`}>"
+  },
+  {
+    "file": "src\\app\\candidate-dashboard\\page.tsx",
+    "line": 185,
+    "text": "href={`/job-detail/${m.job.slug}`}"
+  },
+  {
+    "file": "src\\app\\candidate-dashboard\\page.tsx",
+    "line": 215,
+    "text": "<div className={`btn-circle-40 text-${n.isRead ? \"info\" : \"warning\"} bg-${n.isRead ? \"info\" : \"warning\"} bg-opacity-05`}><i className=\"fas fa-bell\"></i></div>"
+  },
+  {
+    "file": "src\\app\\candidate-dashboard\\page.tsx",
+    "line": 247,
+    "text": "<a href={`/job-detail/${item.job.slug}`}>"
+  },
+  {
+    "file": "src\\app\\candidate-dashboard\\page.tsx",
+    "line": 253,
+    "text": "<div className=\"jbs-job-title-wrap\"><h4><a href={`/job-detail/${item.job.slug}`} className=\"jbs-job-title\">{item.job.title}</a></h4></div>"
+  },
+  {
+    "file": "src\\app\\candidate-dashboard\\page.tsx",
+    "line": 262,
+    "text": "<a href={`/job-detail/${item.job.slug}`} className=\"btn btn-md btn-gray px-3 me-2\">View Detail</a>"
+  },
+  {
+    "file": "src\\app\\candidate-detail\\[slug]\\page.tsx",
+    "line": 29,
+    "text": "const candidate = await api.get<CandidateProfile>(`/candidates/${id}`, { auth: false });"
+  },
+  {
+    "file": "src\\app\\candidate-detail\\[slug]\\page.tsx",
+    "line": 41,
+    "text": "const counts = await api.get<{ followersCount: number; followingCount: number }>(`/follow/counts/${id}`, { auth: false });"
+  },
+  {
+    "file": "src\\app\\candidate-detail\\[slug]\\page.tsx",
+    "line": 107,
+    "text": "title: candidate.resume?.experienceYears != null ? `${candidate.resume.experienceYears} Years` : \"Not specified\","
+  },
+  {
+    "file": "src\\app\\candidate-detail\\[slug]\\page.tsx",
+    "line": 117,
+    "text": "title: (candidate.resume?.skills ?? []).length > 0 ? `${(candidate.resume?.skills ?? []).length} Skills Listed` : \"No skills listed\","
+  },
+  {
+    "file": "src\\app\\candidate-follow-employers\\page.tsx",
+    "line": 64,
+    "text": "await api.delete(`/follow/${targetId}`);"
+  },
+  {
+    "file": "src\\app\\candidate-follow-employers\\page.tsx",
+    "line": 131,
+    "text": "? `/candidate-detail/${item.candidate!.id}`"
+  },
+  {
+    "file": "src\\app\\candidate-follow-employers\\page.tsx",
+    "line": 132,
+    "text": ": `/employer-detail/${item.employer!.id}`;"
+  },
+  {
+    "file": "src\\app\\candidate-messages\\page.tsx",
+    "line": 64,
+    "text": "const msgs = await api.get<ConversationMessage[]>(`/messages/conversations/${counterpart.id}`);"
+  },
+  {
+    "file": "src\\app\\candidate-messages\\page.tsx",
+    "line": 159,
+    "text": "<div className={`message-plunch${m.senderId === user.userId ? \" me\" : \"\"}`} key={m.id}>"
+  },
+  {
+    "file": "src\\app\\candidate-mock-interview\\page.tsx",
+    "line": 105,
+    "text": "const data = await api.post<SubmitResponse>(`/mock-interview/${interview.id}/submit`, { answers });"
+  },
+  {
+    "file": "src\\app\\candidate-profile\\page.tsx",
+    "line": 51,
+    "text": "? `${window.location.origin}/signup?ref=${user.userId}`"
+  },
+  {
+    "file": "src\\app\\candidate-profile\\page.tsx",
+    "line": 52,
+    "text": ": `http://localhost:3000/signup?ref=${user.userId}`"
+  },
+  {
+    "file": "src\\app\\candidate-profile\\page.tsx",
+    "line": 96,
+    "text": "if (phone && phone.trim() !== \"\" && !/^\\d{10}$/.test(phone)) {"
+  },
+  {
+    "file": "src\\app\\candidate-profile\\page.tsx",
+    "line": 281,
+    "text": "<i className={`fa-solid ${copied ? \"fa-check\" : \"fa-copy\"} me-1`}></i>"
+  },
+  {
+    "file": "src\\app\\candidate-resume\\page.tsx",
+    "line": 265,
+    "text": "<a className=\"btn btn-collapse\" data-bs-toggle=\"collapse\" href={`#edu${idx}`} role=\"button\" aria-expanded=\"false\">{edu.title}</a>"
+  },
+  {
+    "file": "src\\app\\candidate-resume\\page.tsx",
+    "line": 269,
+    "text": "<div className=\"collapse show\" id={`edu${idx}`}>"
+  },
+  {
+    "file": "src\\app\\candidate-resume\\page.tsx",
+    "line": 337,
+    "text": "<a className=\"btn btn-collapse\" data-bs-toggle=\"collapse\" href={`#exp${idx}`} role=\"button\" aria-expanded=\"true\">{exp.title} {exp.company ? `at ${exp.company}` : ''}</a>"
+  },
+  {
+    "file": "src\\app\\candidate-resume\\page.tsx",
+    "line": 341,
+    "text": "<div className=\"collapse show\" id={`exp${idx}`}>"
+  },
+  {
+    "file": "src\\app\\candidate-resume\\page.tsx",
+    "line": 353,
+    "text": "<div className=\"col-md-10\"><input type=\"text\" className=\"form-control\" value={`${exp.startDate || ''} - ${exp.endDate || ''}`} disabled /></div>"
+  },
+  {
+    "file": "src\\app\\candidate-resume\\page.tsx",
+    "line": 409,
+    "text": "<a className=\"btn btn-collapse\" data-bs-toggle=\"collapse\" href={`#cert${idx}`} role=\"button\" aria-expanded=\"true\">{cert.title}</a>"
+  },
+  {
+    "file": "src\\app\\candidate-resume\\page.tsx",
+    "line": 413,
+    "text": "<div className=\"collapse show\" id={`cert${idx}`}>"
+  },
+  {
+    "file": "src\\app\\candidate-resume\\page.tsx",
+    "line": 476,
+    "text": "<a className=\"btn btn-collapse\" data-bs-toggle=\"collapse\" href={`#proj${idx}`} role=\"button\" aria-expanded=\"true\">{proj.title}</a>"
+  },
+  {
+    "file": "src\\app\\candidate-resume\\page.tsx",
+    "line": 480,
+    "text": "<div className=\"collapse show\" id={`proj${idx}`}>"
+  },
+  {
+    "file": "src\\app\\candidate-resume-builder\\page.tsx",
+    "line": 129,
+    "text": "if (window.confirm(`AI Suggestion:\\n\\n${res.suggestion}\\n\\nWould you like to replace your text with this suggestion?`)) {"
+  },
+  {
+    "file": "src\\app\\candidate-resume-builder\\page.tsx",
+    "line": 176,
+    "text": "Summary: ${parsedData.about || parsedData.summary || ''}"
+  },
+  {
+    "file": "src\\app\\candidate-resume-builder\\page.tsx",
+    "line": 177,
+    "text": "Skills: ${(parsedData.skills || []).join(', ')}"
+  },
+  {
+    "file": "src\\app\\candidate-resume-builder\\page.tsx",
+    "line": 178,
+    "text": "Experience: ${(parsedData.experiences || []).map((exp: any) => `${exp.title} at ${exp.company} (${exp.startDate}): ${exp.description}`).join('\\n')}"
+  },
+  {
+    "file": "src\\app\\candidate-resume-builder\\page.tsx",
+    "line": 179,
+    "text": "Education: ${(parsedData.educations || []).map((ed: any) => `${ed.title} at ${ed.academy} (${ed.year})`).join('\\n')}"
+  },
+  {
+    "file": "src\\app\\candidate-resume-builder\\page.tsx",
+    "line": 394,
+    "text": "className={`color-swatch ${accentColor === color.value ? 'active' : ''}`}"
+  },
+  {
+    "file": "src\\app\\candidate-resume-scanner\\page.tsx",
+    "line": 44,
+    "text": "style={{ width: `${score}%`, backgroundColor: scoreColor(score) }}"
+  },
+  {
+    "file": "src\\app\\candidate-resume-scanner\\page.tsx",
+    "line": 173,
+    "text": "<button type=\"button\" className={`nav-link fw-bold me-2 border ${sourceType === \"saved\" ? \"active bg-main text-white border-0\" : \"\"}`} style={sourceType !== \"saved\" ? { backgroundColor: \"#ffffff\", color: \"#28a745\", borderColor: \"#28a745\" } : {}} onClick={() => setSourceType(\"saved\")}>"
+  },
+  {
+    "file": "src\\app\\candidate-resume-scanner\\page.tsx",
+    "line": 178,
+    "text": "<button type=\"button\" className={`nav-link fw-bold me-2 border ${sourceType === \"upload\" ? \"active bg-main text-white border-0\" : \"\"}`} style={sourceType !== \"upload\" ? { backgroundColor: \"#ffffff\", color: \"#28a745\", borderColor: \"#28a745\" } : {}} onClick={() => setSourceType(\"upload\")}>"
+  },
+  {
+    "file": "src\\app\\candidate-resume-scanner\\page.tsx",
+    "line": 183,
+    "text": "<button type=\"button\" className={`nav-link fw-bold me-2 border ${sourceType === \"paste\" ? \"active bg-main text-white border-0\" : \"\"}`} style={sourceType !== \"paste\" ? { backgroundColor: \"#ffffff\", color: \"#28a745\", borderColor: \"#28a745\" } : {}} onClick={() => setSourceType(\"paste\")}>"
+  },
+  {
+    "file": "src\\app\\candidate-resume-scanner\\page.tsx",
+    "line": 266,
+    "text": "border: `8px solid ${scoreColor(result?.overallScore ?? 0)}`,"
+  },
+  {
+    "file": "src\\app\\candidate-saved-jobs\\page.tsx",
+    "line": 58,
+    "text": "await api.delete(`/candidates/saved-jobs/${jobId}`);"
+  },
+  {
+    "file": "src\\app\\candidate-saved-jobs\\page.tsx",
+    "line": 116,
+    "text": "<a href={`/job-detail/${item.job.slug}`}>"
+  },
+  {
+    "file": "src\\app\\candidate-saved-jobs\\page.tsx",
+    "line": 121,
+    "text": "<div className=\"jbs-job-title-wrap\"><h4><a href={`/job-detail/${item.job.slug}`} className=\"jbs-job-title\">{item.job.title}</a></h4></div>"
+  },
+  {
+    "file": "src\\app\\candidate-saved-jobs\\page.tsx",
+    "line": 139,
+    "text": "<a href={`/job-detail/${item.job.slug}`} className=\"btn btn-md btn-light-main px-3\">View Detail</a>"
+  },
+  {
+    "file": "src\\app\\candidate-skill-assessment\\page.tsx",
+    "line": 103,
+    "text": "const data = await api.post<SubmitResponse>(`/skill-assessment/${quiz.id}/submit`, {"
+  },
+  {
+    "file": "src\\app\\candidate-skill-assessment\\page.tsx",
+    "line": 203,
+    "text": "name={`q-${qi}`}"
+  },
+  {
+    "file": "src\\app\\candidate-skill-assessment\\page.tsx",
+    "line": 204,
+    "text": "id={`q-${qi}-o-${oi}`}"
+  },
+  {
+    "file": "src\\app\\candidate-skill-assessment\\page.tsx",
+    "line": 208,
+    "text": "<label className=\"form-check-label\" htmlFor={`q-${qi}-o-${oi}`}>"
+  },
+  {
+    "file": "src\\app\\candidate-skill-assessment\\page.tsx",
+    "line": 234,
+    "text": "className={`badge ${result.passed ? \"bg-success\" : \"bg-danger\"} p-3 fs-6 mb-3`}"
+  },
+  {
+    "file": "src\\app\\candidate-skill-assessment\\page.tsx",
+    "line": 271,
+    "text": "className={`card h-100 ${h.passed ? \"border-success\" : \"border-secondary\"}`}"
+  },
+  {
+    "file": "src\\app\\candidate-skill-assessment\\page.tsx",
+    "line": 281,
+    "text": "<span className={`badge ${h.passed ? \"bg-success\" : \"bg-secondary\"}`}>"
+  },
+  {
+    "file": "src\\app\\candidate-smart-match\\page.tsx",
+    "line": 34,
+    "text": "if (job.salaryMin && job.salaryMax) return `$${job.salaryMin} - $${job.salaryMax}`;"
+  },
+  {
+    "file": "src\\app\\candidate-smart-match\\page.tsx",
+    "line": 35,
+    "text": "if (job.salaryMin) return `$${job.salaryMin}`;"
+  },
+  {
+    "file": "src\\app\\candidate-smart-match\\page.tsx",
+    "line": 135,
+    "text": "<a href={`/job-detail/${m.job.slug}`}>{m.job.title}</a>"
+  },
+  {
+    "file": "src\\app\\candidates\\CandidatesListClient.tsx",
+    "line": 53,
+    "text": ".get<CandidatesResponse>(`/candidates${qs ? `?${qs}` : \"\"}`, { auth: true })"
+  },
+  {
+    "file": "src\\app\\candidates\\CandidatesListClient.tsx",
+    "line": 87,
+    "text": "<Link href={`/candidate-detail/${item.id}`}>"
+  },
+  {
+    "file": "src\\app\\candidates\\CandidatesListClient.tsx",
+    "line": 101,
+    "text": "<Link href={`/candidate-detail/${item.id}`}>{item.fullName}</Link>"
+  },
+  {
+    "file": "src\\app\\candidates\\CandidatesListClient.tsx",
+    "line": 120,
+    "text": "{item.experienceYears != null ? `${item.experienceYears} Years exp.` : \"—\"}"
+  },
+  {
+    "file": "src\\app\\candidates\\CandidatesListClient.tsx",
+    "line": 129,
+    "text": "<Link href={`/candidate-detail/${item.id}`} className=\"btn btn-md btn-main px-4\">"
+  },
+  {
+    "file": "src\\app\\candidates\\page.tsx",
+    "line": 41,
+    "text": "const url = qs ? `${API_BASE}/candidates?${qs}` : `${API_BASE}/candidates`;"
+  },
+  {
+    "file": "src\\app\\candidates\\page.tsx",
+    "line": 43,
+    "text": "if (!res.ok) throw new Error(`Failed: ${res.status}`);"
+  },
+  {
+    "file": "src\\app\\employer-applicants-jobs\\page.tsx",
+    "line": 72,
+    "text": "const list = await api.get<Applicant[]>(`/applications/for-job/${selectedJobId}`);"
+  },
+  {
+    "file": "src\\app\\employer-applicants-jobs\\page.tsx",
+    "line": 86,
+    "text": "await api.patch(`/applications/${applicationId}/status`, { status });"
+  },
+  {
+    "file": "src\\app\\employer-auto-shortlist\\page.tsx",
+    "line": 77,
+    "text": "const data = await api.get<RankedCandidate[]>(`/auto-shortlist/job/${selectedJobId}`);"
+  },
+  {
+    "file": "src\\app\\employer-auto-shortlist\\page.tsx",
+    "line": 89,
+    "text": "await api.patch(`/applications/${applicationId}/status`, { status: newStatus });"
+  },
+  {
+    "file": "src\\app\\employer-candidate-search\\page.tsx",
+    "line": 90,
+    "text": "const data = await api.get<SearchResponse>(`/candidates/search?${params.toString()}`);"
+  },
+  {
+    "file": "src\\app\\employer-candidate-search\\page.tsx",
+    "line": 217,
+    "text": "<h4>{status === \"loading\" ? \"Searching...\" : `${total} Candidate${total !== 1 ? \"s\" : \"\"} Found`}</h4>"
+  },
+  {
+    "file": "src\\app\\employer-candidate-search\\page.tsx",
+    "line": 240,
+    "text": "<a href={`/candidate-detail/${c.id}`}>{c.fullName}</a>"
+  },
+  {
+    "file": "src\\app\\employer-candidate-search\\page.tsx",
+    "line": 299,
+    "text": "<a href={`/candidate-detail/${c.id}`} className=\"btn btn-sm btn-outline-main\">"
+  },
+  {
+    "file": "src\\app\\employer-dashboard\\page.tsx",
+    "line": 32,
+    "text": "if (mins < 60) return `${mins} min ago`;"
+  },
+  {
+    "file": "src\\app\\employer-dashboard\\page.tsx",
+    "line": 34,
+    "text": "if (hours < 24) return `${hours} hour${hours > 1 ? \"s\" : \"\"} ago`;"
+  },
+  {
+    "file": "src\\app\\employer-dashboard\\page.tsx",
+    "line": 36,
+    "text": "return `${days} day${days > 1 ? \"s\" : \"\"} ago`;"
+  },
+  {
+    "file": "src\\app\\employer-dashboard\\page.tsx",
+    "line": 129,
+    "text": "<div className={`bloud-icon text-${item.class} bg-${item.class} bg-opacity-05`}>"
+  },
+  {
+    "file": "src\\app\\employer-dashboard\\page.tsx",
+    "line": 170,
+    "text": "<div className={`btn-circle-40 text-${n.isRead ? \"info\" : \"warning\"} bg-${n.isRead ? \"info\" : \"warning\"} bg-opacity-05`}>"
+  },
+  {
+    "file": "src\\app\\employer-dashboard\\page.tsx",
+    "line": 206,
+    "text": "<a href={`/job-detail/${item.slug}`}>"
+  },
+  {
+    "file": "src\\app\\employer-dashboard\\page.tsx",
+    "line": 215,
+    "text": "<a href={`/job-detail/${item.slug}`} className=\"jbs-job-title\">"
+  },
+  {
+    "file": "src\\app\\employer-dashboard\\page.tsx",
+    "line": 223,
+    "text": "<span className={`text-sm-muted text-light bg-${item.status === \"OPEN\" ? \"green\" : \"red\"} label`}>{item._count?.applications ?? 0} Applicants</span>"
+  },
+  {
+    "file": "src\\app\\employer-detail\\[slug]\\page.tsx",
+    "line": 59,
+    "text": "const data = await api.get<Employer>(`/employers/${id}`, { auth: false });"
+  },
+  {
+    "file": "src\\app\\employer-detail\\[slug]\\page.tsx",
+    "line": 70,
+    "text": "const counts = await api.get<{ followersCount: number; followingCount: number }>(`/follow/counts/${id}`, { auth: false });"
+  },
+  {
+    "file": "src\\app\\employer-detail\\[slug]\\page.tsx",
+    "line": 83,
+    "text": "const res = await api.get<{ following: boolean }>(`/follow/status/${id}`);"
+  },
+  {
+    "file": "src\\app\\employer-detail\\[slug]\\page.tsx",
+    "line": 102,
+    "text": "await api.delete(`/follow/${id}`);"
+  },
+  {
+    "file": "src\\app\\employer-detail\\[slug]\\page.tsx",
+    "line": 104,
+    "text": "await api.post(`/follow/${id}`);"
+  },
+  {
+    "file": "src\\app\\employer-detail\\[slug]\\page.tsx",
+    "line": 108,
+    "text": "const counts = await api.get<{ followersCount: number; followingCount: number }>(`/follow/counts/${id}`, { auth: false });"
+  },
+  {
+    "file": "src\\app\\employer-detail\\[slug]\\page.tsx",
+    "line": 183,
+    "text": "className={`btn ${following ? \"btn-outline-main\" : \"btn-main\"}`}"
+  },
+  {
+    "file": "src\\app\\employer-detail\\[slug]\\page.tsx",
+    "line": 215,
+    "text": "className={`nav-link ${tab === t ? \"active\" : \"\"}`}"
+  },
+  {
+    "file": "src\\app\\employer-detail\\[slug]\\page.tsx",
+    "line": 218,
+    "text": "{t === \"overview\" ? \"Overview\" : t === \"culture\" ? \"Why Join Us\" : `Jobs (${employer.jobs.length})`}"
+  },
+  {
+    "file": "src\\app\\employer-detail\\[slug]\\page.tsx",
+    "line": 272,
+    "text": "className={`btn btn-sm ${departmentFilter === null ? \"btn-main\" : \"btn-outline-main\"}`}"
+  },
+  {
+    "file": "src\\app\\employer-detail\\[slug]\\page.tsx",
+    "line": 281,
+    "text": "className={`btn btn-sm ${departmentFilter === dept ? \"btn-main\" : \"btn-outline-main\"}`}"
+  },
+  {
+    "file": "src\\app\\employer-detail\\[slug]\\page.tsx",
+    "line": 295,
+    "text": "href={`/job-detail/${job.slug}`}"
+  },
+  {
+    "file": "src\\app\\employer-jobs\\page.tsx",
+    "line": 58,
+    "text": "await api.patch(`/jobs/${job.id}/status`, { status: newStatus });"
+  },
+  {
+    "file": "src\\app\\employer-jobs\\page.tsx",
+    "line": 140,
+    "text": "<a href={`/job-detail/${item.slug}`}>"
+  },
+  {
+    "file": "src\\app\\employer-jobs\\page.tsx",
+    "line": 149,
+    "text": "<a href={`/job-detail/${item.slug}`} className=\"jbs-job-title\">"
+  },
+  {
+    "file": "src\\app\\employer-jobs\\page.tsx",
+    "line": 157,
+    "text": "<span className={`text-sm-muted text-light bg-${item.status === \"OPEN\" ? \"green\" : \"red\"} label`}>{item._count?.applications ?? 0} Applicants</span>"
+  },
+  {
+    "file": "src\\app\\employer-jobs\\page.tsx",
+    "line": 172,
+    "text": "className={`rounded btn-md px-3 ${item.status === \"OPEN\" ? \"text-danger bg-light-red\" : \"text-success bg-light-green\"}`}"
+  },
+  {
+    "file": "src\\app\\employer-messages\\page.tsx",
+    "line": 63,
+    "text": "const msgs = await api.get<ConversationMessage[]>(`/messages/conversations/${counterpart.id}`);"
+  },
+  {
+    "file": "src\\app\\employer-messages\\page.tsx",
+    "line": 168,
+    "text": "<div className={`message-plunch${m.senderId === user.userId ? \" me\" : \"\"}`} key={m.id}>"
+  },
+  {
+    "file": "src\\app\\employer-package\\page.tsx",
+    "line": 103,
+    "text": "const rpOrder = await api.post<RazorpayOrderResponse>(`/packages/orders/${order.id}/razorpay-order`);"
+  },
+  {
+    "file": "src\\app\\employer-package\\page.tsx",
+    "line": 111,
+    "text": "description: `${pkg.name} package`,"
+  },
+  {
+    "file": "src\\app\\employer-package\\page.tsx",
+    "line": 114,
+    "text": "await api.post(`/packages/orders/${order.id}/verify-razorpay`, {"
+  },
+  {
+    "file": "src\\app\\employer-package\\page.tsx",
+    "line": 119,
+    "text": "setSuccess(`Payment successful — \"${pkg.name}\" package activated.`);"
+  },
+  {
+    "file": "src\\app\\employer-profile\\page.tsx",
+    "line": 177,
+    "text": "<span className={`badge badge-md bg-white rounded-pill fw-medium shadow-sm px-3 py-2 ${profile?.status === \"VERIFIED\" ? \"text-success\" : \"text-warning\"}`}>{profile?.status || \"PENDING\"}</span>"
+  },
+  {
+    "file": "src\\app\\employer-shortlist-candidates\\page.tsx",
+    "line": 63,
+    "text": "const applicants = await api.get<Applicant[]>(`/applications/for-job/${job.id}`);"
+  },
+  {
+    "file": "src\\app\\employer-shortlist-candidates\\page.tsx",
+    "line": 85,
+    "text": "await api.patch(`/applications/${applicationId}/status`, { status });"
+  },
+  {
+    "file": "src\\app\\employers\\page.tsx",
+    "line": 99,
+    "text": "<Link href={`/employer-detail/${item.id}`}>"
+  },
+  {
+    "file": "src\\app\\employers\\page.tsx",
+    "line": 116,
+    "text": "<Link href={`/employer-detail/${item.id}`} className=\"emplors-job-title\">"
+  },
+  {
+    "file": "src\\app\\faq\\page.tsx",
+    "line": 119,
+    "text": "const collapseId = `${group.id}-collapse-${qIdx}`;"
+  },
+  {
+    "file": "src\\app\\faq\\page.tsx",
+    "line": 120,
+    "text": "const headingId = `${group.id}-heading-${qIdx}`;"
+  },
+  {
+    "file": "src\\app\\faq\\page.tsx",
+    "line": 126,
+    "text": "className={`accordion-button${isFirst ? \"\" : \" collapsed\"}`}"
+  },
+  {
+    "file": "src\\app\\faq\\page.tsx",
+    "line": 129,
+    "text": "data-bs-target={`#${collapseId}`}"
+  },
+  {
+    "file": "src\\app\\faq\\page.tsx",
+    "line": 138,
+    "text": "className={`accordion-collapse collapse${isFirst ? \" show\" : \"\"}`}"
+  },
+  {
+    "file": "src\\app\\faq\\page.tsx",
+    "line": 140,
+    "text": "data-bs-parent={`#${group.id}`}"
+  },
+  {
+    "file": "src\\app\\forgot-password\\page.tsx",
+    "line": 147,
+    "text": "{step === \"OTP\" && `We've sent a 6-digit verification code to ${email}.`}"
+  },
+  {
+    "file": "src\\app\\forgot-password\\page.tsx",
+    "line": 235,
+    "text": "{resendTimer > 0 ? `Resend OTP in ${resendTimer}s` : \"Resend OTP\"}"
+  },
+  {
+    "file": "src\\app\\forgot-password\\page.tsx",
+    "line": 277,
+    "text": "<i className={`fa-solid ${showPassword ? \"fa-eye-slash\" : \"fa-eye\"}`}></i>"
+  },
+  {
+    "file": "src\\app\\forgot-password\\page.tsx",
+    "line": 300,
+    "text": "<i className={`fa-solid ${showConfirmPassword ? \"fa-eye-slash\" : \"fa-eye\"}`}></i>"
+  },
+  {
+    "file": "src\\app\\help\\page.tsx",
+    "line": 67,
+    "text": "<i className={`${topic.icon} text-main fs-2 mb-3`}></i>"
+  },
+  {
+    "file": "src\\app\\job-detail\\[slug]\\page.tsx",
+    "line": 30,
+    "text": "const job = await api.get<Job>(`/jobs/${slug}`, { auth: false });"
+  },
+  {
+    "file": "src\\app\\job-detail\\[slug]\\page.tsx",
+    "line": 41,
+    "text": "if (job.salaryMin && job.salaryMax) return `$${job.salaryMin}-${job.salaryMax}/month`;"
+  },
+  {
+    "file": "src\\app\\job-detail\\[slug]\\page.tsx",
+    "line": 42,
+    "text": "if (job.salaryMin) return `$${job.salaryMin}/month`;"
+  },
+  {
+    "file": "src\\app\\jobs\\list\\page.tsx",
+    "line": 45,
+    "text": "if (job.salaryMin && job.salaryMax) return `$${job.salaryMin} - ${job.salaryMax}`;"
+  },
+  {
+    "file": "src\\app\\jobs\\list\\page.tsx",
+    "line": 46,
+    "text": "if (job.salaryMin) return `$${job.salaryMin}`;"
+  },
+  {
+    "file": "src\\app\\jobs\\list\\page.tsx",
+    "line": 60,
+    "text": "const url = qs ? `${API_BASE}/jobs?${qs}` : `${API_BASE}/jobs`;"
+  },
+  {
+    "file": "src\\app\\jobs\\list\\page.tsx",
+    "line": 63,
+    "text": "if (!res.ok) throw new Error(`Failed: ${res.status}`);"
+  },
+  {
+    "file": "src\\app\\jobs\\list\\page.tsx",
+    "line": 142,
+    "text": "<Link href={`/job-detail/${item.slug}`}>"
+  },
+  {
+    "file": "src\\app\\jobs\\list\\page.tsx",
+    "line": 158,
+    "text": "<Link href={`/job-detail/${item.slug}`} className=\"jbs-job-title\">"
+  },
+  {
+    "file": "src\\app\\jobs\\page.tsx",
+    "line": 48,
+    "text": "if (job.salaryMin && job.salaryMax) return `$${job.salaryMin} - ${job.salaryMax}`;"
+  },
+  {
+    "file": "src\\app\\jobs\\page.tsx",
+    "line": 49,
+    "text": "if (job.salaryMin) return `$${job.salaryMin}`;"
+  },
+  {
+    "file": "src\\app\\jobs\\page.tsx",
+    "line": 63,
+    "text": "const url = qs ? `${API_BASE}/jobs?${qs}` : `${API_BASE}/jobs`;"
+  },
+  {
+    "file": "src\\app\\jobs\\page.tsx",
+    "line": 66,
+    "text": "if (!res.ok) throw new Error(`Failed: ${res.status}`);"
+  },
+  {
+    "file": "src\\app\\jobs\\page.tsx",
+    "line": 142,
+    "text": "<Link href={`/job-detail/${item.slug}`}>"
+  },
+  {
+    "file": "src\\app\\jobs\\page.tsx",
+    "line": 158,
+    "text": "<Link href={`/job-detail/${item.slug}`} className=\"jbs-job-title\">"
+  },
+  {
+    "file": "src\\app\\jobs\\page.tsx",
+    "line": 204,
+    "text": "<Link href={`/job-detail/${item.slug}`} className=\"btn btn-md btn-light-main px-4\">"
+  },
+  {
+    "file": "src\\app\\pricing\\page.tsx",
+    "line": 20,
+    "text": "return `₹${(paisa / 100).toLocaleString(\"en-IN\")}`;"
+  },
+  {
+    "file": "src\\app\\pricing\\page.tsx",
+    "line": 26,
+    "text": "<div className={`pricing-table-box h-100 ${featured ? \"border border-main shadow-sm\" : \"border\"}`} style={{ borderRadius: 12, padding: \"2rem\", position: \"relative\" }}>"
+  },
+  {
+    "file": "src\\app\\pricing\\page.tsx",
+    "line": 45,
+    "text": "<a href={ctaHref} className={`btn w-100 ${featured ? \"btn-main\" : \"btn-outline-main\"}`}>"
+  },
+  {
+    "file": "src\\app\\signup\\page.tsx",
+    "line": 44,
+    "text": "const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/;"
+  },
+  {
+    "file": "src\\app\\signup\\page.tsx",
+    "line": 183,
+    "text": "<i className={`fa-solid ${showPassword ? \"fa-eye-slash\" : \"fa-eye\"} text-muted`}></i>"
+  },
+  {
+    "file": "src\\app\\signup\\page.tsx",
+    "line": 213,
+    "text": "<i className={`fa-solid ${showConfirmPassword ? \"fa-eye-slash\" : \"fa-eye\"} text-muted`}></i>"
+  },
+  {
+    "file": "src\\components\\CandidateFollowHeader.tsx",
+    "line": 38,
+    "text": "const res = await api.get<{ following: boolean }>(`/follow/status/${candidate.id}`);"
+  },
+  {
+    "file": "src\\components\\CandidateFollowHeader.tsx",
+    "line": 61,
+    "text": "await api.delete(`/follow/${candidate.id}`);"
+  },
+  {
+    "file": "src\\components\\CandidateFollowHeader.tsx",
+    "line": 63,
+    "text": "await api.post(`/follow/${candidate.id}`);"
+  },
+  {
+    "file": "src\\components\\CandidateFollowHeader.tsx",
+    "line": 67,
+    "text": "const counts = await api.get<{ followersCount: number; followingCount: number }>(`/follow/counts/${candidate.id}`, { auth: false });"
+  },
+  {
+    "file": "src\\components\\CandidateFollowHeader.tsx",
+    "line": 115,
+    "text": "{candidate.experienceYears != null ? `${candidate.experienceYears} Years exp.` : \"—\"}"
+  },
+  {
+    "file": "src\\components\\CandidateFollowHeader.tsx",
+    "line": 156,
+    "text": "className={`btn ${following ? \"btn-outline-main\" : \"btn-main\"}`}"
+  },
+  {
+    "file": "src\\components\\home\\Categories.tsx",
+    "line": 30,
+    "text": "<Link href={`/jobs?category=${encodeURIComponent(item.title)}`} className=\"category-box d-block text-decoration-none\">"
+  },
+  {
+    "file": "src\\components\\home\\Categories.tsx",
+    "line": 33,
+    "text": "<i className={`${item.icon} text-main`}></i>"
+  },
+  {
+    "file": "src\\components\\home\\Categories.tsx",
+    "line": 34,
+    "text": "<i className={`${item.icon} abs-icon`}></i>"
+  },
+  {
+    "file": "src\\components\\home\\FeaturedJobs.tsx",
+    "line": 27,
+    "text": "if (job.salaryMin && job.salaryMax) return `$${job.salaryMin} - ${job.salaryMax}`;"
+  },
+  {
+    "file": "src\\components\\home\\FeaturedJobs.tsx",
+    "line": 28,
+    "text": "if (job.salaryMin) return `$${job.salaryMin}`;"
+  },
+  {
+    "file": "src\\components\\home\\FeaturedJobs.tsx",
+    "line": 73,
+    "text": "<a href={`/job-detail/${item.slug}`}>"
+  },
+  {
+    "file": "src\\components\\home\\FeaturedJobs.tsx",
+    "line": 83,
+    "text": "<a href={`/job-detail/${item.slug}`}>{item.title}</a>"
+  },
+  {
+    "file": "src\\components\\home\\FeaturesProcess.tsx",
+    "line": 66,
+    "text": "<i className={`${s.icon} text-main`}></i>"
+  },
+  {
+    "file": "src\\components\\home\\FeaturesProcess.tsx",
+    "line": 88,
+    "text": "<i className={`${s.icon} text-main`}></i>"
+  },
+  {
+    "file": "src\\components\\home\\HeroBanner.tsx",
+    "line": 157,
+    "text": "<option value=\"1\">$500 - $1000 PA</option>"
+  },
+  {
+    "file": "src\\components\\home\\HeroBanner.tsx",
+    "line": 158,
+    "text": "<option value=\"2\">$200 - $5000 PA</option>"
+  },
+  {
+    "file": "src\\components\\home\\HeroBanner.tsx",
+    "line": 159,
+    "text": "<option value=\"3\">$5000 - $10000 PA</option>"
+  },
+  {
+    "file": "src\\components\\home\\HeroBanner.tsx",
+    "line": 160,
+    "text": "<option value=\"4\">$10000 - $20000 PA</option>"
+  },
+  {
+    "file": "src\\components\\home\\HeroBanner.tsx",
+    "line": 161,
+    "text": "<option value=\"5\">$20000 - $40000 PA</option>"
+  },
+  {
+    "file": "src\\components\\home\\HeroBanner.tsx",
+    "line": 162,
+    "text": "<option value=\"6\">$40000 - $50000 PA</option>"
+  },
+  {
+    "file": "src\\components\\home\\HeroBanner.tsx",
+    "line": 163,
+    "text": "<option value=\"7\">$50000 - $100000 PA</option>"
+  },
+  {
+    "file": "src\\components\\jobs\\ApplyBox.tsx",
+    "line": 18,
+    "text": "api.get<any[]>(`/candidates/saved-jobs?t=${Date.now()}`, { cache: \"no-store\" }).then(jobs => {"
+  },
+  {
+    "file": "src\\components\\jobs\\ApplyBox.tsx",
+    "line": 26,
+    "text": "api.get<any[]>(`/applications/mine?t=${Date.now()}`, { cache: \"no-store\" }).then(apps => {"
+  },
+  {
+    "file": "src\\components\\jobs\\ApplyBox.tsx",
+    "line": 87,
+    "text": "await api.delete(`/candidates/saved-jobs/${jobId}`);"
+  },
+  {
+    "file": "src\\components\\jobs\\ApplyBox.tsx",
+    "line": 91,
+    "text": "await api.post(`/candidates/saved-jobs/${jobId}`, {});"
+  },
+  {
+    "file": "src\\components\\jobs\\ApplyBox.tsx",
+    "line": 146,
+    "text": "{message && <p className={`mt-2 mb-0 ${message.includes(\"Failed\") ? \"text-danger\" : \"text-success\"}`}>{message}</p>}"
+  },
+  {
+    "file": "src\\components\\jobs\\FilterModal.tsx",
+    "line": 22,
+    "text": "const id = `m${score.replace(\".\", \"\")}`;"
+  },
+  {
+    "file": "src\\components\\jobs\\FilterModal.tsx",
+    "line": 43,
+    "text": "const id = `v${score.replace(\".\", \"\")}`;"
+  },
+  {
+    "file": "src\\components\\jobs\\FilterModal.tsx",
+    "line": 182,
+    "text": "const id = `s-${i + 1}`;"
+  },
+  {
+    "file": "src\\components\\jobs\\JobFilters.tsx",
+    "line": 31,
+    "text": "router.push(queryString ? `/jobs?${queryString}` : \"/jobs\");"
+  },
+  {
+    "file": "src\\components\\jobs\\JobFilters.tsx",
+    "line": 116,
+    "text": "id={`cat_${idx}`}"
+  },
+  {
+    "file": "src\\components\\jobs\\JobFilters.tsx",
+    "line": 124,
+    "text": "htmlFor={`cat_${idx}`}"
+  },
+  {
+    "file": "src\\components\\jobs\\JobFilters.tsx",
+    "line": 154,
+    "text": "id={`jtype_${idx}`}"
+  },
+  {
+    "file": "src\\components\\jobs\\JobFilters.tsx",
+    "line": 162,
+    "text": "htmlFor={`jtype_${idx}`}"
+  },
+  {
+    "file": "src\\components\\jobs\\Pagination.tsx",
+    "line": 24,
+    "text": "<li className={`page-item${num === 1 ? \" active\" : \"\"}`} key={num}>"
+  },
+  {
+    "file": "src\\components\\jobs\\QuickApplyButton.tsx",
+    "line": 19,
+    "text": "api.get<any[]>(`/applications/mine?t=${Date.now()}`, { cache: \"no-store\" })"
+  },
+  {
+    "file": "src\\components\\jobs\\SaveBookmarkButton.tsx",
+    "line": 18,
+    "text": "api.get<any[]>(`/candidates/saved-jobs?t=${Date.now()}`, { cache: \"no-store\" })"
+  },
+  {
+    "file": "src\\components\\jobs\\SaveBookmarkButton.tsx",
+    "line": 47,
+    "text": "await api.delete(`/candidates/saved-jobs/${jobId}`);"
+  },
+  {
+    "file": "src\\components\\jobs\\SaveBookmarkButton.tsx",
+    "line": 50,
+    "text": "await api.post(`/candidates/saved-jobs/${jobId}`, {});"
+  },
+  {
+    "file": "src\\components\\jobs\\SaveBookmarkButton.tsx",
+    "line": 71,
+    "text": "<i className={`fa-${saved ? \"solid text-main\" : \"regular text-muted\"} fa-bookmark fs-5`}></i>"
+  },
+  {
+    "file": "src\\components\\jobs\\SortingBar.tsx",
+    "line": 12,
+    "text": "{total === 0 ? \"No results found\" : `Showing 1 - ${shown} of ${total} Results`}"
+  },
+  {
+    "file": "src\\components\\LoginModal.tsx",
+    "line": 94,
+    "text": "<i className={`fa-solid ${showPassword ? \"fa-eye-slash\" : \"fa-eye\"} text-muted`}></i>"
+  },
+  {
+    "file": "src\\components\\Navbar7.tsx",
+    "line": 64,
+    "text": "<div className={`ntf-list-groups-icon ${n.isRead ? \"text-muted\" : \"text-main\"}`}>"
+  },
+  {
+    "file": "src\\components\\Navbar8.tsx",
+    "line": 64,
+    "text": "<div className={`ntf-list-groups-icon ${n.isRead ? \"text-muted\" : \"text-main\"}`}>"
+  },
+  {
+    "file": "src\\components\\NotificationChannelsCard.tsx",
+    "line": 80,
+    "text": "<button type=\"button\" className={`btn btn-sm ${pushOn ? \"btn-outline-danger\" : \"btn-main\"}`} disabled={busy} onClick={togglePush}>"
+  },
+  {
+    "file": "src\\components\\RecordProfileView.tsx",
+    "line": 15,
+    "text": "api.post(`/candidates/${candidateId}/view`).catch(() => {});"
+  },
+  {
+    "file": "src\\components\\resume-templates\\TemplateRenderer.tsx",
+    "line": 326,
+    "text": "<div className={`template-wrapper template-${templateId}`} style={{ \"--accent\": accentColor } as any}>"
+  },
+  {
+    "file": "src\\components\\resume-templates\\TemplateRenderer.tsx",
+    "line": 348,
+    "text": "text-align: ${photoAlignment};"
+  },
+  {
+    "file": "src\\components\\resume-templates\\TemplateRenderer.tsx",
+    "line": 377,
+    "text": "margin-left: ${photoAlignment === \"center\" ? \"auto\" : photoAlignment === \"right\" ? \"auto\" : \"0\"};"
+  },
+  {
+    "file": "src\\components\\resume-templates\\TemplateRenderer.tsx",
+    "line": 378,
+    "text": "margin-right: ${photoAlignment === \"center\" ? \"auto\" : photoAlignment === \"left\" ? \"auto\" : \"0\"};"
+  },
+  {
+    "file": "src\\lib\\api.ts",
+    "line": 41,
+    "text": "finalHeaders[\"Authorization\"] = `Bearer ${token}`;"
+  },
+  {
+    "file": "src\\lib\\api.ts",
+    "line": 45,
+    "text": "const res = await fetch(`${API_URL}${path}`, { ...rest, headers: finalHeaders });"
+  },
+  {
+    "file": "src\\lib\\api.ts",
+    "line": 59,
+    "text": "(body as { message?: string | string[] })?.message?.toString() ?? `Request failed with ${res.status}`;"
+  },
+  {
+    "file": "src\\lib\\api.ts",
+    "line": 71,
+    "text": "const res = await fetch(`${API_URL}${path}`, {"
+  },
+  {
+    "file": "src\\lib\\api.ts",
+    "line": 73,
+    "text": "headers: token ? { Authorization: `Bearer ${token}` } : undefined,"
+  },
+  {
+    "file": "src\\lib\\api.ts",
+    "line": 89,
+    "text": "(body as { message?: string | string[] })?.message?.toString() ?? `Upload failed with ${res.status}`;"
+  },
+  {
+    "file": "src\\lib\\api.ts",
+    "line": 101,
+    "text": "return `${url.origin}${path}`;"
+  },
+  {
+    "file": "src\\lib\\api.ts",
+    "line": 103,
+    "text": "return `${API_URL.replace(/\\/api.*$/, \"\")}${path}`;"
+  },
+  {
+    "file": "src\\lib\\push.ts",
+    "line": 43,
+    "text": "await api.delete(`/push/subscribe?endpoint=${encodeURIComponent(endpoint)}`);"
+  }
+]

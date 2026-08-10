@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Navbar2 from "@/components/Navbar2";
-import Footer2 from "@/components/Footer2";
+import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
 
 export default function NotFound() {
@@ -43,7 +43,7 @@ export default function NotFound() {
       </section>
 
       <LoginModal />
-      <Footer2 />
+      <Footer />
     </>
   );
 }
