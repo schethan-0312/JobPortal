@@ -1,4 +1,4 @@
-import Navbar2 from "@/components/Navbar2";
+import Navbar5 from "@/components/Navbar5";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
 
@@ -58,7 +58,7 @@ const sections = [
 export default function PrivacyPage() {
   return (
     <>
-      <Navbar2 />
+      <Navbar5 />
 
       {/* Page Title Start */}
       <section className="bg-cover bg-second" style={{ background: "url(/assets/img/bg2.png)no-repeat" }}>

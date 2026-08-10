@@ -6,7 +6,12 @@ import JobFilters from "@/components/jobs/JobFilters";
 import SortingBar from "@/components/jobs/SortingBar";
 import Pagination from "@/components/jobs/Pagination";
 import FindJobCta from "@/components/jobs/FindJobCta";
-import { api, assetUrl } from "@/lib/api";
+import QuickApplyButton from "@/components/jobs/QuickApplyButton";
+import { assetUrl } from "@/lib/api";
+
+export const dynamic = "force-dynamic";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
 
 interface Employer {
   id: string;
@@ -42,17 +47,34 @@ function formatSalary(job: Job) {
   return "Not disclosed";
 }
 
-async function getJobs(): Promise<{ jobs: Job[]; total: number; pageSize: number; error: string | null }> {
+async function getJobs(params?: Record<string, string | undefined>): Promise<{ jobs: Job[]; total: number; pageSize: number; error: string | null }> {
   try {
-    const data = await api.get<JobsResponse>("/jobs", { auth: false });
+    const query = new URLSearchParams();
+    if (params?.category) query.set("category", params.category);
+    if (params?.location) query.set("location", params.location);
+    if (params?.search) query.set("search", params.search);
+    if (params?.jobType) query.set("jobType", params.jobType);
+    if (params?.page) query.set("page", params.page);
+
+    const qs = query.toString();
+    const url = qs ? `${API_BASE}/jobs?${qs}` : `${API_BASE}/jobs`;
+
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`Failed: ${res.status}`);
+    const data: JobsResponse = await res.json();
     return { jobs: data.items ?? [], total: data.total ?? 0, pageSize: data.pageSize ?? 12, error: null };
   } catch (err) {
     return { jobs: [], total: 0, pageSize: 12, error: err instanceof Error ? err.message : "Failed to load jobs" };
   }
 }
 
-export default async function JobsListPage() {
-  const { jobs, total, pageSize, error } = await getJobs();
+export default async function JobsListPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  const params = await searchParams;
+  const { jobs, total, pageSize, error } = await getJobs(params);
 
   return (
     <>
@@ -99,39 +121,6 @@ export default async function JobsListPage() {
 
             {/* Job List Wrap */}
             <div className="col-lg-9 col-md-12 col-sm-12">
-              {/* Job Alert Box */}
-              <div className="row justify-content-center">
-                <div className="col-lg-12 col-md-12">
-                  <div className="light-jbs-alert mb-3">
-                    <div className="row justify-content-center g-3">
-                      <div className="col-xl-5 col-lg-4 col-md-4">
-                        <div className="form-group m-0">
-                          <input type="text" className="form-control" placeholder="Job Title" />
-                        </div>
-                      </div>
-                      <div className="col-xl-4 col-lg-4 col-md-4">
-                        <div className="form-group m-0">
-                          <select>
-                            <option value="1">Daily Base</option>
-                            <option value="2">Weekly Base</option>
-                            <option value="3">Monthly Base</option>
-                            <option value="4">Anualy Base</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="col-xl-3 col-lg-4 col-md-4">
-                        <div className="form-group m-0">
-                          <button type="button" className="btn btn-main fs-6 fw-medium full-width">
-                            Save Job Alert!
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {/* Job Alert Box End */}
-
               {/* Shorting Box */}
               <div className="row justify-content-center mb-4">
                 <div className="col-lg-12 col-md-12">
@@ -195,9 +184,7 @@ export default async function JobsListPage() {
                           </div>
                         </div>
                         <div className="jbs-list-head-last">
-                          <a href="JavaScript:Void(0);" className="btn btn-md btn-main px-3">
-                            Quick Apply
-                          </a>
+                          <QuickApplyButton jobId={item.id} className="btn btn-md btn-main px-3" />
                         </div>
                       </div>
                       <div className="jbs-grid-job-description">

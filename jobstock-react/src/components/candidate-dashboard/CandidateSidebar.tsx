@@ -161,7 +161,7 @@ export default function CandidateSidebar({ active }: CandidateSidebarProps) {
               </li>
               <li className={active === "saved-jobs" ? "active" : undefined}>
                 <Link href="/candidate-saved-jobs">
-                  <i className="fa-solid fa-bookmark me-2"></i>Shortlist Jobs
+                  <i className="fa-solid fa-bookmark me-2"></i>Saved Jobs
                 </Link>
               </li>
               <li className={active === "follow-employers" ? "active" : undefined}>

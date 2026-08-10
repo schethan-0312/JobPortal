@@ -6,6 +6,9 @@ import JobFilters from "@/components/jobs/JobFilters";
 import SortingBar from "@/components/jobs/SortingBar";
 import Pagination from "@/components/jobs/Pagination";
 import FindJobCta from "@/components/jobs/FindJobCta";
+import JobSubscribeForm from "@/components/jobs/JobSubscribeForm";
+import QuickApplyButton from "@/components/jobs/QuickApplyButton";
+import SaveBookmarkButton from "@/components/jobs/SaveBookmarkButton";
 import { assetUrl } from "@/lib/api";
 
 // Force dynamic rendering so searchParams are re-evaluated on every request
@@ -114,28 +117,8 @@ export default async function JobsGridPage({
                 <JobFilters variant="full" />
               </div>
 
-              {/* Job Alert Box */}
-              <div
-                className="alert-jbemail-box bg-cover"
-                style={{ background: "#016551 url(/assets/img/alert-bg.png) no-repeat" }}
-              >
-                <div className="alert-bxr-wrap">
-                  <div className="alert-bxr-captions mb-3">
-                    <h4 className="text-light">Get The Latest Jobs Right Into Your Inbox!</h4>
-                    <p className="text-light opacity-75">We just want your email address!</p>
-                  </div>
-                  <div className="alert-bxr-forms">
-                    <form>
-                      <div className="newsltr-form">
-                        <input type="text" className="form-control" placeholder="Enter Your email" />
-                        <button type="button" className="btn btn-subscribe bg-dark">
-                          Subscribe
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              </div>
+              {/* Job Alert Box / Subscribe */}
+              <JobSubscribeForm />
             </div>
             {/* Sidebar End */}
 
@@ -180,9 +163,7 @@ export default async function JobsGridPage({
                           </div>
                         </div>
                         <div className="jbs-grid-jbs-saved">
-                          <a href="JavaScript:Void(0);" className="bkrs">
-                            <i className="fa-regular fa-bookmark"></i>
-                          </a>
+                          <SaveBookmarkButton jobId={item.id} />
                         </div>
                       </div>
                       <div className="jbs-grid-job-edrs mt-3">
@@ -223,9 +204,7 @@ export default async function JobsGridPage({
                           <Link href={`/job-detail/${item.slug}`} className="btn btn-md btn-light-main px-4">
                             View Detail
                           </Link>
-                          <a href="JavaScript:Void(0);" className="btn btn-md btn-main px-4">
-                            Quick Apply
-                          </a>
+                          <QuickApplyButton jobId={item.id} />
                         </div>
                       </div>
                     </div>

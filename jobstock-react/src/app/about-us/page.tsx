@@ -1,4 +1,4 @@
-import Navbar2 from "@/components/Navbar2";
+import Navbar5 from "@/components/Navbar5";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
 
@@ -23,7 +23,7 @@ const needs = [
 export default function AboutUsPage() {
   return (
     <>
-      <Navbar2 />
+      <Navbar5 />
 
       {/* Page Title Start */}
       <section

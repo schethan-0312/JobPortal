@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Navbar6 from "@/components/Navbar6";
+import Navbar5 from "@/components/Navbar5";
 import Footer2 from "@/components/Footer2";
 import LoginModal from "@/components/LoginModal";
 import JobFilters from "@/components/jobs/JobFilters";
@@ -40,7 +40,7 @@ export default async function EmployersGridPage() {
 
   return (
     <>
-      <Navbar6 />
+      <Navbar5 />
 
       {/* Page Title Start */}
       <div className="page-title bg-main" style={{ background: "url(/assets/img/bg2.png) no-repeat" }}>

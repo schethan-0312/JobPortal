@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Navbar7 from "@/components/Navbar7";
+import Navbar5 from "@/components/Navbar5";
 import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar";
 import UploadResumeModal from "@/components/candidate-dashboard/UploadResumeModal";
 import { useAuth } from "@/lib/auth-context";
@@ -91,7 +91,7 @@ export default function CandidateMessagesPage() {
 
   return (
     <>
-      <Navbar7 />
+      <Navbar5 />
 
       <div className="dashboard-wrap bg-light">
         <CandidateSidebar active="messages" />

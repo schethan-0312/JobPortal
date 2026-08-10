@@ -60,11 +60,35 @@ export class JobsService {
     page: number;
     pageSize: number;
   }) {
+    const jobTypeMap: Record<string, string> = {
+      'full-time': 'FULL_TIME',
+      'full_time': 'FULL_TIME',
+      'part-time': 'PART_TIME',
+      'part_time': 'PART_TIME',
+      contract: 'CONTRACT',
+      freelance: 'FREELANCE',
+      internship: 'INTERNSHIP',
+    };
+
+    let mappedJobType: string | undefined;
+    if (params.jobType) {
+      const normalized = params.jobType.toLowerCase().replace(/\s+/g, '_');
+      mappedJobType =
+        jobTypeMap[normalized] ||
+        (['FULL_TIME', 'PART_TIME', 'CONTRACT', 'FREELANCE', 'INTERNSHIP'].includes(params.jobType.toUpperCase())
+          ? params.jobType.toUpperCase()
+          : undefined);
+    }
+
     const where = {
       status: 'OPEN' as const,
       ...(params.category ? { category: { equals: params.category, mode: 'insensitive' as const } } : {}),
       ...(params.location ? { location: { contains: params.location, mode: 'insensitive' as const } } : {}),
-      ...(params.jobType ? { jobType: params.jobType as never } : {}),
+      ...(mappedJobType
+        ? { jobType: mappedJobType as never }
+        : params.jobType?.toLowerCase() === 'remote'
+          ? { location: { contains: 'remote', mode: 'insensitive' as const } }
+          : {}),
       ...(params.search
         ? {
             OR: [
