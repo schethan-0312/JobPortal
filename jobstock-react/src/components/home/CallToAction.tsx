@@ -17,7 +17,7 @@ export default function CallToAction() {
   return (
     <section
       className="bg-cover call-action-container dark bg-main"
-      style={{ background: "url(/assets/img/footer-bg-dark.png) no-repeat" }}
+  
     >
       <div className="container">
         <div className="row justify-content-center">
@@ -30,7 +30,7 @@ export default function CallToAction() {
                 </p>
               </div>
               <div className="call-action-buttons mt-3">
-                <Link href="/jobs" className="btn btn-lg btn-dark fw-medium px-xl-5 px-lg-4 me-2">
+                <Link href="/jobs" className="btn btn-lg btn-whites fw-medium px-xl-5 px-lg-4 me-2">
                   Browse Jobs
                 </Link>
                 <Link href={getStartedHref} className="btn btn-lg btn-whites fw-medium px-xl-5 px-lg-4 text-main">

@@ -98,14 +98,15 @@ export default function Navbar5() {
                         Contacts
                       </Link>
                     </li>
-                  </ul>
-                </li>
-
-                <li>
+                     <li>
                   <Link href="/help" className="sub-menu-item">
                     Help
                   </Link>
                 </li>
+                  </ul>
+                </li>
+
+               
               </ul>
 
               <AuthMenu />

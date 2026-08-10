@@ -113,9 +113,9 @@ export default function Footer() {
               </div>
               <div className="col-lg-5 col-md-6 text-md-end">
                 <p className="text-light opacity-75 small mb-2">
-                  <i className="fa-solid fa-location-dot me-2 text-main"></i> Victoria Near Bank Road, Australia
+                  <i className="fa-solid fa-location-dot me-2 text-main"></i> #176 jp nagar, banglore
                   <span className="mx-2">|</span>
-                  <i className="fa-solid fa-envelope me-2 text-main"></i> support@jobstock.com
+                  <i className="fa-solid fa-envelope me-2 text-main"></i> gtech@gmail.com
                 </p>
                 <div className="foot-socials d-inline-block">
                   <ul className="mb-0">
@@ -174,17 +174,7 @@ export default function Footer() {
               </div>
 
               {/* Column 3: AI & Career Tools */}
-              <div className="footer-widget mb-0">
-                <h4 className="widget-title">AI & Career Tools</h4>
-                <ul className="footer-menu">
-                  <li><SmartFooterLink href="/candidate-resume-builder" label="AI Resume Builder" requiredRole="CANDIDATE" /></li>
-                  <li><SmartFooterLink href="/candidate-resume-scanner" label="Resume Health Scanner" requiredRole="CANDIDATE" /></li>
-                  <li><SmartFooterLink href="/candidate-skill-assessment" label="Skill Assessments" requiredRole="CANDIDATE" /></li>
-                  <li><SmartFooterLink href="/candidate-mock-interview" label="Mock Interviews" requiredRole="CANDIDATE" /></li>
-                  <li><SmartFooterLink href="/candidate-career-navigator" label="Career Path Navigator" requiredRole="CANDIDATE" /></li>
-                  <li><SmartFooterLink href="/candidate-smart-match" label="Smart Job Matches" requiredRole="CANDIDATE" /></li>
-                </ul>
-              </div>
+             
 
               {/* Column 4: Company */}
               <div className="footer-widget mb-0">
@@ -229,49 +219,12 @@ export default function Footer() {
             <div className="row align-items-center justify-content-between gy-3">
               <div className="col-xl-4 col-lg-5 col-md-5">
                 <p className="mb-0">
-                  &copy; {new Date().getFullYear()} JobStock. Built with{" "}
-                  <i className="mdi mdi-heart text-danger"></i>. All rights reserved.
+                  &copy; {new Date().getFullYear()} JobStock. 
+                 All rights reserved.
                 </p>
               </div>
 
-              {stats && (
-                <div className="col-xl-8 col-lg-7 col-md-7 overflow-hidden">
-                  <div className="job-info-count-group">
-                    <div className="single-jb-info-count">
-                      <div className="jbs-y7">
-                        <h5 className="ctr">{stats.totalJobs}</h5>
-                      </div>
-                      <div className="jbs-y5">
-                        <p>Jobs Posted</p>
-                      </div>
-                    </div>
-                    <div className="single-jb-info-count">
-                      <div className="jbs-y7">
-                        <h5 className="ctr">{stats.totalCandidates}</h5>
-                      </div>
-                      <div className="jbs-y5">
-                        <p>Candidates</p>
-                      </div>
-                    </div>
-                    <div className="single-jb-info-count">
-                      <div className="jbs-y7">
-                        <h5 className="ctr">{stats.totalApplications}</h5>
-                      </div>
-                      <div className="jbs-y5">
-                        <p>Applications</p>
-                      </div>
-                    </div>
-                    <div className="single-jb-info-count">
-                      <div className="jbs-y7">
-                        <h5 className="ctr">{stats.totalVerifiedEmployers}</h5>
-                      </div>
-                      <div className="jbs-y5">
-                        <p>Verified Companies</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+            
             </div>
           </div>
         </div>

@@ -1355,7 +1355,7 @@ div[data-overlay] p{
   fill:var(--maincolor) !important;
 }
 .text-main {
-  color:var(--maincolor) !important;
+  color:black;
 }
 .text-white {
   color:#ffffff !important;
@@ -7910,6 +7910,7 @@ ul.shorting-list li a:hover, ul.shorting-list li a:focus, ul.shorting-list li a.
     background: #ffffff;
     border-radius: 50%;
     font-size: 25px;
+    color:#000000
 }
 .hired-box-slack {
     position: relative;

@@ -1,9 +1,10 @@
-import Navbar2 from "@/components/Navbar2";
+import Navbar2 from "@/components/Navbar5";
 import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
 import RecordProfileView from "@/components/RecordProfileView";
 import CandidateFollowHeader from "@/components/CandidateFollowHeader";
 import { api, ApiError, assetUrl } from "@/lib/api";
+import Navbar5 from "@/components/Navbar5";
 
 interface CandidateProfile {
   id: string;
@@ -56,7 +57,7 @@ export default async function CandidateDetailPage({
 
   return (
     <>
-      <Navbar2 />
+      <Navbar5 />
 
       {/* Header Information Start */}
       <section className="gray-simple">
@@ -294,7 +295,7 @@ export default async function CandidateDetailPage({
       {/* Full Candidate Details End */}
 
       {/* Call To Action */}
-      <section className="bg-cover bg-main" style={{ background: "url(/assets/img/footer-bg-dark.png)no-repeat" }}>
+      <section className="bg-cover bg-main" >
         <div className="container">
           <div className="row justify-content-center">
             <div className="col-xl-7 col-lg-10 col-md-12 col-sm-12">
@@ -310,7 +311,7 @@ export default async function CandidateDetailPage({
                   </p>
                 </div>
                 <div className="call-action-buttons mt-3">
-                  <a href="/jobs" className="btn btn-lg btn-dark fw-medium px-xl-5 px-lg-4 me-2">
+                  <a href="/jobs" className="btn btn-lg  btn-whites fw-medium px-xl-5 px-lg-4 me-2">
                     Browse Jobs
                   </a>
                   <a href="/signup" className="btn btn-lg btn-whites fw-medium px-xl-5 px-lg-4 text-main">

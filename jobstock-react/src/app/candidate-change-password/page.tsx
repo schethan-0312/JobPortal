@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Navbar5 from "@/components/Navbar5";
+import Navbar7 from "@/components/Navbar7";
 import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar";
 import UploadResumeModal from "@/components/candidate-dashboard/UploadResumeModal";
 import { useAuth } from "@/lib/auth-context";
@@ -57,7 +57,7 @@ export default function CandidateChangePasswordPage() {
 
   return (
     <>
-      <Navbar5 />
+      <Navbar7 />
 
       <div className="dashboard-wrap bg-light">
         <CandidateSidebar active="change-password" />

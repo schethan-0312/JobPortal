@@ -9,7 +9,7 @@ export default function VideoBanner() {
     <section
       className="bg-cover position-relative overflow-hidden"
       style={{
-        background: "#17ac6a url(/assets/img/video-bg.jpg) no-repeat center center/cover",
+        background: "#17ac21 url(/assets/img/video-bg.jpg) no-repeat center center/cover",
         minHeight: "480px",
       }}
       data-overlay="4"

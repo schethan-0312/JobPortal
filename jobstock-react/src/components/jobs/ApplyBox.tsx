@@ -91,8 +91,6 @@ export default function ApplyBox({ jobId }: { jobId: string }) {
         await api.post(`/candidates/saved-jobs/${jobId}`, {});
         setSaved(true);
         setMessage("Job saved successfully.");
-        // Redirect the user so they can immediately see it appeared on the saved jobs page
-        window.location.href = "/candidate-saved-jobs";
       }
     } catch (err) {
       if (err instanceof ApiError && err.status === 409 && !saved) {

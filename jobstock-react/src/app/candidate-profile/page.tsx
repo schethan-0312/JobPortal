@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import Navbar5 from "@/components/Navbar5";
+import Navbar7 from "@/components/Navbar7";
 import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar";
 import UploadResumeModal from "@/components/candidate-dashboard/UploadResumeModal";
 import VerifyEmailModal from "@/components/candidate-dashboard/VerifyEmailModal";
@@ -145,7 +145,7 @@ export default function CandidateProfilePage() {
 
   return (
     <>
-      <Navbar5 />
+      <Navbar7 />
 
       <div className="dashboard-wrap bg-light">
         <CandidateSidebar active="profile" />

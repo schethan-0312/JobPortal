@@ -173,7 +173,7 @@ export default async function JobDetailPage({
                           </div>
                           <div className="signle-jbs-info-yelos">
                             <div className="signle-yelos-subtitle">
-                              <span className="text-sm-muted mb-1">Sallary</span>
+                              <span className="text-sm-muted mb-1">Salary</span>
                             </div>
                             <div className="signle-yelos-title">
                               <h6 className="m-0 text-main">{formatSalary(job)}</h6>

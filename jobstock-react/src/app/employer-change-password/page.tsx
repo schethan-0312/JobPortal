@@ -17,6 +17,10 @@ export default function EmployerChangePasswordPage() {
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
   useEffect(() => {
     if (!loading && (!user || user.role !== "EMPLOYER")) {
       router.push("/");
@@ -95,41 +99,68 @@ export default function EmployerChangePasswordPage() {
                   <div className="row mb-3">
                     <label className="col-xl-2 col-md-12 col-form-label">Old Password</label>
                     <div className="col-xl-7 col-md-12">
-                      <input
-                        type="password"
-                        className="form-control"
-                        placeholder="*******"
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                        required
-                      />
+                      <div className="position-relative">
+                        <input
+                          type={showCurrent ? "text" : "password"}
+                          className="form-control"
+                          placeholder="*******"
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
+                          required
+                        />
+                        <span 
+                          className="position-absolute top-50 translate-middle-y" 
+                          style={{ right: '15px', cursor: 'pointer', zIndex: 10 }}
+                          onClick={() => setShowCurrent(!showCurrent)}
+                        >
+                          <i className={`fa-solid ${showCurrent ? "fa-eye-slash" : "fa-eye"} text-muted`}></i>
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <div className="row mb-3">
                     <label className="col-xl-2 col-md-12 col-form-label">New Password</label>
                     <div className="col-xl-7 col-md-12">
-                      <input
-                        type="password"
-                        className="form-control"
-                        placeholder="*******"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        required
-                        minLength={8}
-                      />
+                      <div className="position-relative">
+                        <input
+                          type={showNew ? "text" : "password"}
+                          className="form-control"
+                          placeholder="*******"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          required
+                          minLength={8}
+                        />
+                        <span 
+                          className="position-absolute top-50 translate-middle-y" 
+                          style={{ right: '15px', cursor: 'pointer', zIndex: 10 }}
+                          onClick={() => setShowNew(!showNew)}
+                        >
+                          <i className={`fa-solid ${showNew ? "fa-eye-slash" : "fa-eye"} text-muted`}></i>
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <div className="row mb-3">
                     <label className="col-xl-2 col-md-12 col-form-label">Confirm Password</label>
                     <div className="col-xl-7 col-md-12">
-                      <input
-                        type="password"
-                        className="form-control"
-                        placeholder="*******"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                      />
+                      <div className="position-relative">
+                        <input
+                          type={showConfirm ? "text" : "password"}
+                          className="form-control"
+                          placeholder="*******"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          required
+                        />
+                        <span 
+                          className="position-absolute top-50 translate-middle-y" 
+                          style={{ right: '15px', cursor: 'pointer', zIndex: 10 }}
+                          onClick={() => setShowConfirm(!showConfirm)}
+                        >
+                          <i className={`fa-solid ${showConfirm ? "fa-eye-slash" : "fa-eye"} text-muted`}></i>
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <div className="row mb-3">

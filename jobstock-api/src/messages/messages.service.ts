@@ -21,6 +21,26 @@ export class MessagesService {
 
     const message = await this.prisma.message.create({
       data: { senderId, receiverId: dto.receiverId, body: dto.body },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            email: true,
+            role: true,
+            candidateProfile: { select: { fullName: true, profilePhotoUrl: true } },
+            employer: { select: { companyName: true, logoUrl: true } },
+          },
+        },
+        receiver: {
+          select: {
+            id: true,
+            email: true,
+            role: true,
+            candidateProfile: { select: { fullName: true, profilePhotoUrl: true } },
+            employer: { select: { companyName: true, logoUrl: true } },
+          },
+        },
+      },
     });
 
     await this.notifications.create(dto.receiverId, 'New message', 'You have received a new message');
@@ -34,8 +54,24 @@ export class MessagesService {
       where: { OR: [{ senderId: userId }, { receiverId: userId }] },
       orderBy: { createdAt: 'desc' },
       include: {
-        sender: { select: { id: true, email: true } },
-        receiver: { select: { id: true, email: true } },
+        sender: {
+          select: {
+            id: true,
+            email: true,
+            role: true,
+            candidateProfile: { select: { fullName: true, profilePhotoUrl: true } },
+            employer: { select: { companyName: true, logoUrl: true } },
+          },
+        },
+        receiver: {
+          select: {
+            id: true,
+            email: true,
+            role: true,
+            candidateProfile: { select: { fullName: true, profilePhotoUrl: true } },
+            employer: { select: { companyName: true, logoUrl: true } },
+          },
+        },
       },
     });
 
@@ -62,6 +98,26 @@ export class MessagesService {
         ],
       },
       orderBy: { createdAt: 'asc' },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            email: true,
+            role: true,
+            candidateProfile: { select: { fullName: true, profilePhotoUrl: true } },
+            employer: { select: { companyName: true, logoUrl: true } },
+          },
+        },
+        receiver: {
+          select: {
+            id: true,
+            email: true,
+            role: true,
+            candidateProfile: { select: { fullName: true, profilePhotoUrl: true } },
+            employer: { select: { companyName: true, logoUrl: true } },
+          },
+        },
+      },
     });
 
     await this.prisma.message.updateMany({

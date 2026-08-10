@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Navbar5 from "@/components/Navbar5";
+import Navbar7 from "@/components/Navbar7";
 import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar";
 import UploadResumeModal from "@/components/candidate-dashboard/UploadResumeModal";
 import TemplateRenderer, { BuiltResume } from "@/components/resume-templates/TemplateRenderer";
@@ -268,7 +268,7 @@ Education: ${(parsedData.educations || []).map((ed: any) => `${ed.title} at ${ed
         .draggable-section.drag-over { border-top: 2px solid #2563eb; }
       `}</style>
       <div className="no-print">
-        <Navbar5 />
+        <Navbar7 />
       </div>
 
       <div className="dashboard-wrap bg-light">

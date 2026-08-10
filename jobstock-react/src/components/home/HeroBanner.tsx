@@ -36,9 +36,7 @@ export default function HeroBanner() {
       <div className="container position-relative z-9">
         <div className="row justify-content-between align-items-center">
           <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12">
-            <h6 className="text-green fw-medium d-inline-flex align-items-center mb-3">
-              <span className="bg-green w-10 h-05 me-2"></span>Get Hot & Trending Jobs
-            </h6>
+            
             <h1 className="mb-4">Real Jobs, Real People, Real Success</h1>
             <p className="fs-5">
               Getting a new job is never easy. Check what new jobs we have in store for you on
@@ -125,45 +123,10 @@ export default function HeroBanner() {
                     </div>
                   </div>
 
-                  <div className="col-xl-6 col-lg-6 col-md-6 col-sm-6">
-                    <div className="form-group">
-                      <label>Job Level</label>
-                      <select className="form-control">
-                        <option value="1">Junior Level</option>
-                        <option value="2">Mid Level</option>
-                        <option value="3">Manager</option>
-                        <option value="4">Team Leader</option>
-                        <option value="5">Senior Level</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="col-xl-6 col-lg-6 col-md-6 col-sm-6">
-                    <div className="form-group">
-                      <label>Experience</label>
-                      <select className="form-control">
-                        <option value="1">1 Year</option>
-                        <option value="2">2 Year</option>
-                        <option value="3">3 Year</option>
-                        <option value="4">4 Year</option>
-                        <option value="5">5 Year</option>
-                      </select>
-                    </div>
-                  </div>
+                  
+                
 
-                  <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
-                    <div className="form-group">
-                      <label>Expected Salary</label>
-                      <select className="form-control">
-                        <option value="1">₹500 - ₹1000 PA</option>
-                        <option value="2">₹200 - ₹5000 PA</option>
-                        <option value="3">₹5000 - ₹10000 PA</option>
-                        <option value="4">₹10000 - ₹20000 PA</option>
-                        <option value="5">₹20000 - ₹40000 PA</option>
-                        <option value="6">₹40000 - ₹50000 PA</option>
-                        <option value="7">₹50000 - ₹100000 PA</option>
-                      </select>
-                    </div>
-                  </div>
+                 
 
                   <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                     <div className="form-group">

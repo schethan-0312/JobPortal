@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { api, assetUrl } from "@/lib/api";
 
 interface Employer {
@@ -76,8 +77,8 @@ export default function FeaturedJobs() {
   useEffect(() => {
     (async () => {
       try {
-        const data = await api.get<JobsResponse>("/jobs?pageSize=8", { auth: false });
-        setJobs(data.items ?? []);
+        const data = await api.get<JobsResponse>("/jobs?pageSize=4", { auth: false });
+        setJobs((data.items ?? []).slice(0, 4));
       } catch {
         setJobs([]);
       } finally {
@@ -103,24 +104,24 @@ export default function FeaturedJobs() {
         </div>
 
         <div className="row justify-content-center gx-xl-3 gx-3 gy-4">
-          {jobs.map((item) => (
+          {jobs.slice(0, 4).map((item) => (
             <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12" key={item.id}>
               <div className="job-instructor-layout border">
                 <div className="brows-job-type">
                   <span>{item.jobType ?? "—"}</span>
                 </div>
                 <div className="job-instructor-thumb">
-                  <a href={`/job-detail/${item.slug}`}>
+                  <Link href={`/job-detail/${item.slug}`}>
                     <img
                       src={assetUrl(item.employer?.logoUrl) || "/assets/img/l-1.png"}
                       className="img-fluid"
                       alt=""
                     />
-                  </a>
+                  </Link>
                 </div>
                 <div className="job-instructor-content">
                   <h4 className="instructor-title">
-                    <a href={`/job-detail/${item.slug}`}>{item.title}</a>
+                    <Link href={`/job-detail/${item.slug}`}>{item.title}</Link>
                   </h4>
                   <div className="instructor-skills">{item.employer?.companyName ?? "—"}</div>
                 </div>
@@ -135,6 +136,15 @@ export default function FeaturedJobs() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* View All Button */}
+        <div className="row justify-content-center mt-5">
+          <div className="col-lg-12 text-center">
+            <Link href="/jobs" className="btn btn-main btn-md px-5 rounded-pill fw-medium">
+              View All Jobs <i className="fa-solid fa-arrow-right ms-2"></i>
+            </Link>
+          </div>
         </div>
       </div>
     </section>
