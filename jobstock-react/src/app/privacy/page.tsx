@@ -1,7 +1,7 @@
 import Navbar5 from "@/components/Navbar5";
 import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
-import CallToAction from "@/components/home/CallToAction";
+
 
 const sections = [
   {
@@ -100,7 +100,7 @@ export default function PrivacyPage() {
       </section>
       {/* Policy Sections End */}
 
-      <CallToAction />
+      
 
       <LoginModal />
       <Footer />

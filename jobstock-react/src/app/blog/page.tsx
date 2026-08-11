@@ -96,27 +96,7 @@ export default async function BlogPage() {
       </section>
       {/* Blog List End */}
 
-      {/* Call To Action */}
-      <section className="bg-cover bg-main" style={{ background: "url(/assets/img/footer-bg-dark.png)no-repeat" }}>
-        <div className="container">
-          <div className="row justify-content-center">
-            <div className="col-xl-7 col-lg-10 col-md-12 col-sm-12">
-              <div className="call-action-wrap">
-                <div className="sec-heading center">
-                  <h2 className="lh-base mb-3 text-light">
-                    Find The Perfect Job
-                    <br />
-                    on JobStock That is Superb For You
-                  </h2>
-                  <p className="fs-6 text-light">
-                    Join thousands of job seekers and employers who trust JobStock to find the right fit, faster.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
       <LoginModal />
       <Footer />

@@ -1,7 +1,7 @@
 import Navbar5 from "@/components/Navbar5";
 import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
-import CallToAction from "@/components/home/CallToAction";
+
 
 const groups = [
   {
@@ -153,7 +153,7 @@ export default function FaqPage() {
       </section>
       {/* FAQ's Section */}
 
-      <CallToAction />
+     
 
       <LoginModal />
       <Footer />

@@ -5,6 +5,7 @@ import Navbar5 from "@/components/Navbar5";
 import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
 import { api, ApiError } from "@/lib/api";
+import styles from "./Contact.module.css";
 
 export default function ContactPage() {
   const [name, setName] = useState("");
@@ -36,149 +37,155 @@ export default function ContactPage() {
       <Navbar5 />
 
       {/* Page Title Start */}
-      <section className="bg-cover bg-second" style={{ background: "url(/assets/img/bg2.png)no-repeat" }}>
-        <div className="container">
-          <div className="row">
-            <div className="col-lg-12 col-md-12">
-              <h2 className="ipt-title text-light">Get In touch</h2>
-              <span className="text-light opacity-75">Get all latest news and updates</span>
-            </div>
-          </div>
+      <section className="bg-cover bg-light py-5">
+        <div className="container py-4 text-center">
+          <h1 className="fw-bold text-dark mb-3">Get In Touch</h1>
+          <p className="text-muted fs-5 mb-0">We're here to help you take the next step in your career or business.</p>
         </div>
       </section>
       {/* Page Title End */}
 
-      {/* Contact Start */}
-      <section>
+      {/* Contact Section Start */}
+      <section className={styles.contactSection}>
         <div className="container">
-          <div className="row justify-content-center">
-            <div className="col-lg-7 col-md-10 text-center">
-              <div className="sec-heading center">
-                <label className="label text-success bg-light-success">Grow Your Business</label>
-                <h2>Activate Next Now</h2>
-                <p>
-                  Please fill the form and we will guide you to the best solution. Our experts will get in touch
-                  soon.
+          <div className="row justify-content-center gx-5">
+            
+            {/* Contact Info Sidebar */}
+            <div className="col-lg-4 col-md-10 mb-5 mb-lg-0">
+              <div className="mb-4">
+                <h3 className="fw-bold mb-4">Contact Information</h3>
+                <p className="text-muted mb-4">
+                  Have questions about our platform, enterprise pricing, or need technical support? Reach out to us directly.
                 </p>
               </div>
-            </div>
-          </div>
 
-          <div className="row align-items-center justify-content-center">
-            <div className="col-lg-10 col-md-12">
-              <form className="mt-4" id="myForm" onSubmit={handleSubmit}>
-                {status === "success" && (
-                  <div className="alert alert-success" id="simple-msg">
-                    Thanks — your message has been received. We&apos;ll get back to you soon.
-                  </div>
-                )}
-                {status === "error" && (
-                  <p className="mb-0 text-danger" id="error-msg">
-                    {errorMsg}
-                  </p>
-                )}
-                <div className="row">
-                  <div className="col-lg-6 col-md-6">
-                    <div className="form-group">
-                      <label>Name</label>
-                      <input
-                        name="name"
-                        id="name"
-                        type="text"
-                        className="form-control simple"
-                        placeholder="Name :"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                      />
+              <div className={styles.infoCard}>
+                <div className={styles.infoIcon}>
+                  <i className="mdi mdi-map-marker"></i>
+                </div>
+                <div className={styles.infoContent}>
+                  <h4>Our Office</h4>
+                  <p>123 Tech Boulevard<br />Innovation District, NY 10001</p>
+                </div>
+              </div>
+
+              <div className={styles.infoCard}>
+                <div className={styles.infoIcon}>
+                  <i className="mdi mdi-email-outline"></i>
+                </div>
+                <div className={styles.infoContent}>
+                  <h4>Email Us</h4>
+                  <p>support@jobstock.com<br />sales@jobstock.com</p>
+                </div>
+              </div>
+
+              <div className={styles.infoCard}>
+                <div className={styles.infoIcon}>
+                  <i className="mdi mdi-phone-outline"></i>
+                </div>
+                <div className={styles.infoContent}>
+                  <h4>Call Us</h4>
+                  <p>+1 (555) 123-4567<br />Mon-Fri, 9am to 6pm EST</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Form */}
+            <div className="col-lg-7 col-md-10">
+              <div className={styles.formWrapper}>
+                <h3 className="fw-bold mb-4">Send us a Message</h3>
+                
+                <form id="myForm" onSubmit={handleSubmit}>
+                  {status === "success" && (
+                    <div className={styles.alertSuccess}>
+                      <i className="mdi mdi-check-circle me-2"></i>
+                      Thanks — your message has been received. We'll get back to you soon.
                     </div>
-                  </div>
-                  <div className="col-lg-6 col-md-6">
-                    <div className="form-group">
-                      <label>Email</label>
-                      <input
-                        name="email"
-                        id="email"
-                        type="email"
-                        className="form-control simple"
-                        placeholder="Email :"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                      />
+                  )}
+                  {status === "error" && (
+                    <div className={styles.alertError}>
+                      <i className="mdi mdi-alert-circle me-2"></i>
+                      {errorMsg}
                     </div>
-                  </div>
-                  <div className="col-lg-12 col-md-12">
-                    <div className="form-group">
-                      <label>Subject</label>
-                      <input
-                        name="subject"
-                        id="subject"
-                        type="text"
-                        className="form-control simple"
-                        placeholder="Subject :"
-                        value={subject}
-                        onChange={(e) => setSubject(e.target.value)}
-                      />
+                  )}
+                  
+                  <div className="row">
+                    <div className="col-md-6">
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>Your Name <span className="text-danger">*</span></label>
+                        <input
+                          type="text"
+                          className={styles.formControl}
+                          placeholder="John Doe"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          required
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div className="col-lg-12 col-md-12">
-                    <div className="form-group">
-                      <label>Message</label>
-                      <textarea
-                        name="Message"
-                        id="Message"
-                        className="form-control simple"
-                        placeholder="Message :"
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        required
-                      ></textarea>
+                    
+                    <div className="col-md-6">
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>Email Address <span className="text-danger">*</span></label>
+                        <input
+                          type="email"
+                          className={styles.formControl}
+                          placeholder="john@example.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div className="col-lg-12 col-md-12">
-                    <div className="form-group">
+                    
+                    <div className="col-md-12">
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>Subject</label>
+                        <input
+                          type="text"
+                          className={styles.formControl}
+                          placeholder="How can we help?"
+                          value={subject}
+                          onChange={(e) => setSubject(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="col-md-12">
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>Message <span className="text-danger">*</span></label>
+                        <textarea
+                          className={styles.formControl}
+                          placeholder="Tell us more about your inquiry..."
+                          value={message}
+                          onChange={(e) => setMessage(e.target.value)}
+                          required
+                        ></textarea>
+                      </div>
+                    </div>
+                    
+                    <div className="col-md-12 mt-2">
                       <button
                         type="submit"
-                        id="submit"
-                        name="send"
-                        className="btn btn-main px-5"
+                        className={styles.submitBtn}
                         disabled={status === "submitting"}
                       >
-                        {status === "submitting" ? "Sending..." : "Submit Request"}
+                        {status === "submitting" ? (
+                          <span><i className="mdi mdi-loading mdi-spin me-2"></i> Sending...</span>
+                        ) : (
+                          "Submit Request"
+                        )}
                       </button>
                     </div>
                   </div>
-                </div>
-              </form>
-            </div>
-          </div>
-
-        </div>
-      </section>
-      {/* Contact End */}
-
-      {/* Call To Action */}
-      <section className="bg-cover bg-main" style={{ background: "url(/assets/img/footer-bg-dark.png)no-repeat" }}>
-        <div className="container">
-          <div className="row justify-content-center">
-            <div className="col-xl-7 col-lg-10 col-md-12 col-sm-12">
-              <div className="call-action-wrap">
-                <div className="sec-heading center">
-                  <h2 className="lh-base mb-3 text-light">
-                    Find The Perfect Job
-                    <br />
-                    on JobStock That is Superb For You
-                  </h2>
-                  <p className="fs-6 text-light">
-                    Join thousands of job seekers and employers who trust JobStock to find the right fit, faster.
-                  </p>
-                </div>
+                </form>
               </div>
             </div>
+            
           </div>
         </div>
       </section>
+      {/* Contact Section End */}
 
       <LoginModal />
       <Footer />

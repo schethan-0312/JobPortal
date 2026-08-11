@@ -1,0 +1,136 @@
+.contactSection {
+  padding: 80px 0;
+  background-color: #f8fafc;
+}
+
+.formWrapper {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+  border: 1px solid #e2e8f0;
+  border-top: 5px solid #0b8260;
+}
+
+.formGroup {
+  margin-bottom: 24px;
+}
+
+.formLabel {
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 8px;
+  display: block;
+  font-size: 0.95rem;
+}
+
+.formControl {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background-color: #f8fafc;
+  color: #0f172a;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.formControl:focus {
+  outline: none;
+  border-color: #0b8260;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(11, 130, 96, 0.1);
+}
+
+.formControl::placeholder {
+  color: #94a3b8;
+}
+
+textarea.formControl {
+  min-height: 150px;
+  resize: vertical;
+}
+
+.submitBtn {
+  background-color: #0b8260;
+  color: #ffffff;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.submitBtn:hover {
+  background-color: #09684c;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(11, 130, 96, 0.2);
+}
+
+.submitBtn:disabled {
+  background-color: #94a3b8;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.alertSuccess {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #34d399;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+
+.alertError {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #f87171;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+
+.infoCard {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.infoIcon {
+  width: 48px;
+  height: 48px;
+  background: rgba(11, 130, 96, 0.1);
+  color: #0b8260;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.infoContent h4 {
+  margin: 0 0 8px 0;
+  color: #0f172a;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.infoContent p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.6;
+}
