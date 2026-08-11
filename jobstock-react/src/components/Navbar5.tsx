@@ -9,7 +9,7 @@ export default function Navbar5() {
 
   return (
     <>
-      <div className="header header-dark head-fixed">
+      <div className="header header-dark head-fixed" style={{ backgroundColor: "#64b1b3" }}>
         <div className="container">
           <nav id="navigation" className="navigation navigation-landscape">
             <div className="nav-header">

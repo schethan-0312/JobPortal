@@ -98,27 +98,32 @@ export default function Footer() {
 
   return (
     <>
-      <footer className="footer skin-dark-footer">
+      <footer className="footer custom-theme-footer">
         <div>
           <div className="container">
             {/* Brand Header Row */}
-            <div className="row align-items-center justify-content-between pb-3 mb-3 border-bottom border-secondary border-opacity-25 gy-2">
+            <div className="row align-items-center justify-content-between pb-4 mb-4 footer-top-border gy-3">
               <div className="col-lg-5 col-md-6">
                 <Link href="/">
-                  <img src="/assets/img/logo-light.png" className="img-footer mb-1" style={{ marginBottom: "0.5rem" }} alt="JobStock" />
+                  <img
+                    src="/assets/img/logo-light.png"
+                    className="img-footer mb-2"
+                    style={{ height: "38px", width: "auto" }}
+                    alt="JobStock"
+                  />
                 </Link>
-                <p className="text-light opacity-75 m-0 text-sm">
+                <p className="m-0 text-sm" style={{ color: "rgba(255, 255, 255, 0.85)", lineHeight: 1.6, fontSize: "0.925rem" }}>
                   Find the right opportunities, connect with top companies, and build your career with JobStock.
                 </p>
               </div>
               <div className="col-lg-5 col-md-6 text-md-end">
-                <p className="text-light opacity-75 small mb-1">
-                  <i className="fa-solid fa-location-dot me-2 text-main"></i> #176 jp nagar, banglore
-                  <span className="mx-2">|</span>
-                  <i className="fa-solid fa-envelope me-2 text-main"></i> gtech@gmail.com
+                <p className="small mb-2" style={{ color: "rgba(255, 255, 255, 0.85)", fontSize: "0.875rem" }}>
+                  <i className="fa-solid fa-location-dot me-2" style={{ color: "#5df0c2" }}></i> #176 jp nagar, banglore
+                  <span className="mx-2" style={{ opacity: 0.5 }}>|</span>
+                  <i className="fa-solid fa-envelope me-2" style={{ color: "#5df0c2" }}></i> gtech@gmail.com
                 </p>
                 <div className="foot-socials d-inline-block">
-                  <ul className="mb-0">
+                  <ul className="mb-0 p-0 d-flex gap-2 justify-content-md-end" style={{ listStyle: "none" }}>
                     <li>
                       <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                         <i className="fa-brands fa-facebook"></i>
@@ -175,7 +180,7 @@ export default function Footer() {
 
               {/* Column 3: AI & Career Tools */}
               <div className="footer-widget mb-0">
-                <h4 className="widget-title">AI & Career Tools</h4>
+                <h4 className="widget-title">AI &amp; Career Tools</h4>
                 <ul className="footer-menu">
                   <li><SmartFooterLink href="/candidate-resume-builder" label="AI Resume Builder" requiredRole="CANDIDATE" /></li>
                   <li><SmartFooterLink href="/candidate-resume-scanner" label="AI Resume Scanner" requiredRole="CANDIDATE" /></li>
@@ -191,11 +196,11 @@ export default function Footer() {
                 <h4 className="widget-title">Company</h4>
                 <ul className="footer-menu">
                   <li><SmartFooterLink href="/about-us" label="About Us" /></li>
-                  <li><SmartFooterLink href="/blog" label="Latest News & Blog" /></li>
+                  <li><SmartFooterLink href="/blog" label="Latest News &amp; Blog" /></li>
                   <li><SmartFooterLink href="/faq" label="FAQs" /></li>
-                  <li><SmartFooterLink href="/help" label="Help & Support" /></li>
+                  <li><SmartFooterLink href="/help" label="Help &amp; Support" /></li>
                   <li><SmartFooterLink href="/contact" label="Contact Us" /></li>
-                  <li><SmartFooterLink href="/privacy" label="Privacy & Terms" /></li>
+                  <li><SmartFooterLink href="/privacy" label="Privacy &amp; Terms" /></li>
                 </ul>
               </div>
             </div>
@@ -203,23 +208,64 @@ export default function Footer() {
         </div>
 
         <style jsx>{`
-          footer.skin-dark-footer {
-            padding: 30px 0 15px !important;
+          footer.custom-theme-footer {
+            background-color: #145758 !important;
+            color: #ffffff !important;
+            font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+            padding: 45px 0 20px !important;
+          }
+          .footer-top-border {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
           }
           :global(.footer-widget) {
             padding: 0 !important;
           }
           :global(h4.widget-title) {
-            margin-bottom: 10px !important;
+            color: #ffffff !important;
+            font-size: 1.05rem !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.3px !important;
+            margin-bottom: 14px !important;
           }
-          :global(.footer-widget ul li) {
-            margin-top: 6px !important;
+          :global(.footer-menu) {
+            list-style: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
           }
-          :global(.foot-socials) {
-            margin-top: 0.4rem !important;
+          :global(.footer-menu li) {
+            margin-top: 8px !important;
+          }
+          :global(.footer-menu li a) {
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-size: 0.925rem !important;
+            font-weight: 500 !important;
+            text-decoration: none !important;
+            transition: all 0.2s ease !important;
+          }
+          :global(.footer-menu li a:hover) {
+            color: #5df0c2 !important;
+            padding-left: 3px !important;
+          }
+          :global(.foot-socials ul li a) {
+            width: 36px !important;
+            height: 36px !important;
+            border-radius: 50% !important;
+            background-color: rgba(255, 255, 255, 0.12) !important;
+            color: #ffffff !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-decoration: none !important;
+            transition: all 0.2s ease !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          }
+          :global(.foot-socials ul li a:hover) {
+            background-color: #5df0c2 !important;
+            color: #0e3b3c !important;
+            transform: translateY(-2px) !important;
           }
           :global(.footer-bottom) {
-            padding: 10px 0 0 !important;
+            padding: 16px 0 0 !important;
           }
           .footer-nav-grid {
             display: grid;
@@ -242,13 +288,17 @@ export default function Footer() {
         `}</style>
 
         {/* Bottom Footer */}
-        <div className="footer-bottom mt-3 border-top border-secondary border-opacity-25 pt-2">
+        <div className="footer-bottom mt-4 border-top border-white border-opacity-15 pt-3">
           <div className="container">
             <div className="row align-items-center justify-content-between gy-2">
-              <div className="col-xl-4 col-lg-5 col-md-5">
-                <p className="mb-0">
-                  &copy; {new Date().getFullYear()} JobStock. 
-                  All rights reserved.
+              <div className="col-xl-6 col-lg-6 col-md-6">
+                <p className="mb-0" style={{ color: "rgba(255, 255, 255, 0.85)", fontSize: "0.875rem" }}>
+                  &copy; {new Date().getFullYear()} <strong style={{ color: "#ffffff" }}>JobStock</strong>. All rights reserved.
+                </p>
+              </div>
+              <div className="col-xl-6 col-lg-6 col-md-6 text-md-end">
+                <p className="mb-0" style={{ color: "rgba(255, 255, 255, 0.85)", fontSize: "0.875rem" }}>
+                  Designed &amp; Built for Career Growth
                 </p>
               </div>
             </div>

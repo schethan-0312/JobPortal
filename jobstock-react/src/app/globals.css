@@ -3,3 +3,18 @@ body {
   padding: 0;
   margin: 0;
 }
+
+:root {
+  --headerdark: #145758;
+  --footerbg: #145758;
+}
+
+.header.header-dark,
+.header.header-dark.header-fixed {
+  background-color: #145758 !important;
+}
+
+footer.custom-theme-footer {
+  background-color: #145758 !important;
+}
+

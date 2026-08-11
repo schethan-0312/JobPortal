@@ -22,7 +22,15 @@ export default function AuthMenu() {
           </a>
         </li>
         <li className="list-buttons ms-2">
-          <Link href="/signup">
+          <Link
+            href="/signup"
+            style={{
+              backgroundColor: "#37a481",
+              color: "#0e3b3c",
+              borderColor: "rgb(93, 240, 194)",
+              fontWeight: 600,
+            }}
+          >
             <i className="bi bi-person-circle me-2"></i>Register Today
           </Link>
         </li>
