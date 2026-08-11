@@ -130,7 +130,15 @@ export default function HeroBanner() {
 
                   <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                     <div className="form-group">
-                      <button type="submit" className="btn btn-main full-width">
+                      <button
+                        type="submit"
+                        className="btn full-width fw-semibold"
+                        style={{
+                          backgroundColor: "#37a481",
+                          color: "#0e3b3c",
+                          borderColor: "rgb(93, 240, 194)",
+                        }}
+                      >
                         Search Result
                       </button>
                     </div>
