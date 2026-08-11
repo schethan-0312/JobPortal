@@ -1,49 +1,243 @@
-import Link from "next/link";
+"use client";
 
-const categories = [
-  { icon: "fa-solid fa-file-invoice", title: "Accounting & Finance" },
-  { icon: "fa-solid fa-caravan", title: "Automotive Jobs" },
-  { icon: "fa-solid fa-person-chalkboard", title: "Business & Tech" },
-  { icon: "fa-solid fa-user-graduate", title: "Education Training" },
-  { icon: "fa-solid fa-briefcase-medical", title: "Healthcare" },
-  { icon: "fa-solid fa-burger", title: "Restaurant & Food" },
-  { icon: "fa-solid fa-jet-fighter", title: "Transportation" },
-  { icon: "fa-solid fa-mobile-screen-button", title: "Telecommunications" },
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
+import RoleMismatchModal from "../RoleMismatchModal";
+
+const aiTools = [
+  {
+    id: "resume-builder",
+    icon: "fa-solid fa-file-pen",
+    title: "AI Resume Builder",
+    tag: "ATS Optimized",
+    badgeBg: "badge-theme-subtle",
+    description: "Create professional, ATS-friendly resumes in minutes with intelligent suggestions tailored to target roles.",
+    href: "/candidate-resume-builder",
+  },
+  {
+    id: "resume-scanner",
+    icon: "fa-solid fa-magnifying-glass-chart",
+    title: "Resume Health Scanner",
+    tag: "Instant Audit",
+    badgeBg: "badge-theme-subtle",
+    description: "Scan your resume against live job descriptions to uncover score gaps, missing keywords, and formatting tips.",
+    href: "/candidate-resume-scanner",
+  },
+  {
+    id: "smart-match",
+    icon: "fa-solid fa-wand-magic-sparkles",
+    title: "Smart Job Matches",
+    tag: "AI Recommendations",
+    badgeBg: "badge-theme-subtle",
+    description: "Get AI-curated job recommendations calculated based on your unique skills, preferences, and experience.",
+    href: "/candidate-smart-match",
+  },
+  {
+    id: "mock-interview",
+    icon: "fa-solid fa-video",
+    title: "Mock AI Interviews",
+    tag: "Real-time Prep",
+    badgeBg: "badge-theme-subtle",
+    description: "Practice real role-specific interview questions with instant AI-driven feedback on your voice and answers.",
+    href: "/candidate-mock-interview",
+  },
+  {
+    id: "skill-assessment",
+    icon: "fa-solid fa-award",
+    title: "Skill Assessments",
+    tag: "Verified Badges",
+    badgeBg: "badge-theme-subtle",
+    description: "Take AI-evaluated technical skill tests to earn verified candidate badges visible directly to top recruiters.",
+    href: "/candidate-skill-assessment",
+  },
+  {
+    id: "career-navigator",
+    icon: "fa-solid fa-route",
+    title: "Career Path Navigator",
+    tag: "Growth Roadmap",
+    badgeBg: "badge-theme-subtle",
+    description: "Explore clear career promotion paths, skill requirements, and salary growth trajectories for your target role.",
+    href: "/candidate-career-navigator",
+  },
 ];
 
 export default function Categories() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const [mismatchRole, setMismatchRole] = useState<"CANDIDATE" | "EMPLOYER" | null>(null);
+
+  const openLoginModal = () => {
+    const loginModalBtn = document.querySelector<HTMLElement>('[data-bs-target="#login"]');
+    if (loginModalBtn) {
+      loginModalBtn.click();
+    } else {
+      router.push("/signup");
+    }
+  };
+
+  const handleCardClick = (e: React.MouseEvent, href: string) => {
+    if (user?.role === "EMPLOYER") {
+      e.preventDefault();
+      setMismatchRole("CANDIDATE");
+      return;
+    }
+
+    if (!user) {
+      e.preventDefault();
+      openLoginModal();
+      return;
+    }
+  };
+
   return (
-    <section className="gray-simple">
-      <div className="container">
-        <div className="row justify-content-center">
-          <div className="col-xl-6 col-lg-7 col-md-10 text-center">
-            <div className="sec-heading center">
-              <h2>Explore Top Categories</h2>
-              <p>Browse open roles by category across every employer on JobStock.</p>
+    <>
+      <section className="gray-simple py-5 position-relative overflow-hidden">
+        <div className="container py-2">
+          {/* Section Heading */}
+          <div className="row justify-content-center">
+            <div className="col-xl-7 col-lg-8 col-md-10 text-center">
+              <div className="sec-heading center mb-5">
+                <span className="badge bg-main-light text-main fw-semibold px-3 py-2 rounded-pill fs-7 mb-2 d-inline-flex align-items-center gap-1">
+                  <i className="fa-solid fa-wand-magic-sparkles text-main"></i> Candidate AI Suite
+                </span>
+                <h2 className="fw-bold fs-2 text-dark mt-2 mb-3">
+                  Accelerate Your Job Search with <span className="text-main">AI Tools</span>
+                </h2>
+                <p className="text-muted fs-6 lh-base m-0">
+                  Supercharge your career with our intelligent candidate dashboard features — from AI resume building to real-time interview prep.
+                </p>
+              </div>
             </div>
+          </div>
+
+          {/* AI Tools Cards Grid */}
+          <div className="row justify-content-center g-4">
+            {aiTools.map((tool) => (
+              <div className="col-xl-4 col-lg-4 col-md-6" key={tool.id}>
+                <Link
+                  href={tool.href}
+                  onClick={(e) => handleCardClick(e, tool.href)}
+                  className="ai-suite-card d-flex flex-column justify-content-between text-decoration-none p-4 rounded-4 bg-white border position-relative transition-all"
+                  data-bs-toggle={!user ? "modal" : undefined}
+                  data-bs-target={!user ? "#login" : undefined}
+                >
+                  {/* Top Hover Gradient Bar */}
+                  <div className="card-hover-bar"></div>
+
+                  <div>
+                    {/* Header: Icon + Badge Tag */}
+                    <div className="d-flex align-items-center justify-content-between mb-3">
+                      <div className="ai-card-icon rounded-3 d-flex align-items-center justify-content-center">
+                        <i className={`${tool.icon} fs-4`}></i>
+                      </div>
+                      <span className={`badge rounded-pill px-3 py-2 fw-medium fs-8 ${tool.badgeBg}`}>
+                        {tool.tag}
+                      </span>
+                    </div>
+
+                    {/* Title & Description */}
+                    <h3 className="fs-5 fw-bold text-dark mb-2 ai-card-title">
+                      {tool.title}
+                    </h3>
+                    <p className="text-secondary fs-7 mb-4 lh-base">
+                      {tool.description}
+                    </p>
+                  </div>
+
+                  {/* Footer Action Link */}
+                  <div className="d-flex align-items-center justify-content-between pt-3 border-top border-light-subtle">
+                    <span className="fw-semibold text-main fs-7 d-flex align-items-center gap-2 ai-card-action">
+                      Launch Tool <i className="fa-solid fa-arrow-right fs-8 btn-arrow-icon"></i>
+                    </span>
+                    <span className="badge bg-light text-secondary border rounded-circle p-2 d-inline-flex align-items-center justify-content-center" style={{ width: 28, height: 28 }}>
+                      <i className="fa-solid fa-chevron-right fs-9"></i>
+                    </span>
+                  </div>
+                </Link>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="row justify-content-center gx-4 gy-4">
-          {categories.map((item) => (
-            <div className="col-xl-3 col-lg-3 col-md-4 col-sm-6" key={item.title}>
-              <Link href={`/jobs?category=${encodeURIComponent(item.title)}`} className="category-box d-block text-decoration-none">
-                <div className="category-desc">
-                  <div className="category-icon">
-                    <i className={`${item.icon} text-main`}></i>
-                    <i className={`${item.icon} abs-icon`}></i>
-                  </div>
-                  <div className="category-detail category-desc-text">
-                    <h4 className="fs-5 text-dark">
-                      {item.title}
-                    </h4>
-                  </div>
-                </div>
-              </Link>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
+        <style jsx>{`
+          .bg-main-light {
+            background-color: rgba(11, 130, 96, 0.08) !important;
+            color: #0b8260 !important;
+          }
+          .fs-7 {
+            font-size: 0.875rem !important;
+          }
+          .fs-8 {
+            font-size: 0.785rem !important;
+          }
+          .fs-9 {
+            font-size: 0.7rem !important;
+          }
+          .badge-theme-subtle {
+            background-color: rgba(11, 130, 96, 0.08);
+            color: #0b8260;
+            border: 1px solid rgba(11, 130, 96, 0.2);
+          }
+          .ai-suite-card {
+            border-color: rgba(0, 0, 0, 0.08) !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+            overflow: hidden;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+          }
+          .card-hover-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0b8260, #10b981);
+            border-radius: 1rem 1rem 0 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+          }
+          .ai-suite-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(11, 130, 96, 0.14) !important;
+            border-color: rgba(11, 130, 96, 0.35) !important;
+          }
+          .ai-suite-card:hover .card-hover-bar {
+            opacity: 1;
+          }
+          .ai-card-icon {
+            width: 48px;
+            height: 48px;
+            background-color: rgba(11, 130, 96, 0.08);
+            color: #0b8260;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+          }
+          .ai-suite-card:hover .ai-card-icon {
+            background-color: #0b8260;
+            color: #ffffff;
+            transform: scale(1.05);
+          }
+          .ai-card-title {
+            transition: color 0.2s ease;
+          }
+          .ai-suite-card:hover .ai-card-title {
+            color: #0b8260 !important;
+          }
+          .btn-arrow-icon {
+            transition: transform 0.3s ease;
+          }
+          .ai-suite-card:hover .btn-arrow-icon {
+            transform: translateX(4px);
+          }
+        `}</style>
+      </section>
+
+      <RoleMismatchModal
+        show={!!mismatchRole}
+        requiredRole={mismatchRole}
+        onClose={() => setMismatchRole(null)}
+        onOpenLogin={openLoginModal}
+      />
+    </>
   );
 }

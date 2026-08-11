@@ -102,17 +102,17 @@ export default function Footer() {
         <div>
           <div className="container">
             {/* Brand Header Row */}
-            <div className="row align-items-center justify-content-between pb-4 mb-4 border-bottom border-secondary border-opacity-25 gy-3">
+            <div className="row align-items-center justify-content-between pb-3 mb-3 border-bottom border-secondary border-opacity-25 gy-2">
               <div className="col-lg-5 col-md-6">
                 <Link href="/">
-                  <img src="/assets/img/logo-light.png" className="img-footer mb-2" alt="JobStock" />
+                  <img src="/assets/img/logo-light.png" className="img-footer mb-1" style={{ marginBottom: "0.5rem" }} alt="JobStock" />
                 </Link>
                 <p className="text-light opacity-75 m-0 text-sm">
                   Find the right opportunities, connect with top companies, and build your career with JobStock.
                 </p>
               </div>
               <div className="col-lg-5 col-md-6 text-md-end">
-                <p className="text-light opacity-75 small mb-2">
+                <p className="text-light opacity-75 small mb-1">
                   <i className="fa-solid fa-location-dot me-2 text-main"></i> #176 jp nagar, banglore
                   <span className="mx-2">|</span>
                   <i className="fa-solid fa-envelope me-2 text-main"></i> gtech@gmail.com
@@ -174,7 +174,17 @@ export default function Footer() {
               </div>
 
               {/* Column 3: AI & Career Tools */}
-             
+              <div className="footer-widget mb-0">
+                <h4 className="widget-title">AI & Career Tools</h4>
+                <ul className="footer-menu">
+                  <li><SmartFooterLink href="/candidate-resume-builder" label="AI Resume Builder" requiredRole="CANDIDATE" /></li>
+                  <li><SmartFooterLink href="/candidate-resume-scanner" label="AI Resume Scanner" requiredRole="CANDIDATE" /></li>
+                  <li><SmartFooterLink href="/candidate-smart-match" label="Smart Job Match" requiredRole="CANDIDATE" /></li>
+                  <li><SmartFooterLink href="/candidate-mock-interview" label="Mock AI Interview" requiredRole="CANDIDATE" /></li>
+                  <li><SmartFooterLink href="/candidate-skill-assessment" label="Skill Assessment" requiredRole="CANDIDATE" /></li>
+                  <li><SmartFooterLink href="/candidate-career-navigator" label="Career Navigator" requiredRole="CANDIDATE" /></li>
+                </ul>
+              </div>
 
               {/* Column 4: Company */}
               <div className="footer-widget mb-0">
@@ -193,38 +203,54 @@ export default function Footer() {
         </div>
 
         <style jsx>{`
+          footer.skin-dark-footer {
+            padding: 30px 0 15px !important;
+          }
+          :global(.footer-widget) {
+            padding: 0 !important;
+          }
+          :global(h4.widget-title) {
+            margin-bottom: 10px !important;
+          }
+          :global(.footer-widget ul li) {
+            margin-top: 6px !important;
+          }
+          :global(.foot-socials) {
+            margin-top: 0.4rem !important;
+          }
+          :global(.footer-bottom) {
+            padding: 10px 0 0 !important;
+          }
           .footer-nav-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 2.5rem;
+            gap: 2rem;
             width: 100%;
           }
           @media (max-width: 991px) {
             .footer-nav-grid {
               grid-template-columns: repeat(2, minmax(0, 1fr));
-              gap: 2rem;
+              gap: 1.5rem;
             }
           }
           @media (max-width: 575px) {
             .footer-nav-grid {
               grid-template-columns: repeat(1, minmax(0, 1fr));
-              gap: 1.5rem;
+              gap: 1.25rem;
             }
           }
         `}</style>
 
         {/* Bottom Footer */}
-        <div className="footer-bottom mt-4">
+        <div className="footer-bottom mt-3 border-top border-secondary border-opacity-25 pt-2">
           <div className="container">
-            <div className="row align-items-center justify-content-between gy-3">
+            <div className="row align-items-center justify-content-between gy-2">
               <div className="col-xl-4 col-lg-5 col-md-5">
                 <p className="mb-0">
                   &copy; {new Date().getFullYear()} JobStock. 
-                 All rights reserved.
+                  All rights reserved.
                 </p>
               </div>
-
-            
             </div>
           </div>
         </div>
