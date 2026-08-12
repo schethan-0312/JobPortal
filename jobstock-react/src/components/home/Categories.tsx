@@ -10,6 +10,7 @@ const aiTools = [
   {
     id: "resume-builder",
     icon: "fa-solid fa-file-pen",
+    image: "/img/ai-tools/resume-builder.jpg",
     title: "AI Resume Builder",
     tag: "ATS Optimized",
     badgeBg: "badge-theme-subtle",
@@ -19,6 +20,7 @@ const aiTools = [
   {
     id: "resume-scanner",
     icon: "fa-solid fa-magnifying-glass-chart",
+    image: "/img/ai-tools/resume-scanner.jpg",
     title: "Resume Health Scanner",
     tag: "Instant Audit",
     badgeBg: "badge-theme-subtle",
@@ -28,6 +30,7 @@ const aiTools = [
   {
     id: "smart-match",
     icon: "fa-solid fa-wand-magic-sparkles",
+    image: "/img/ai-tools/smart-match.jpg",
     title: "Smart Job Matches",
     tag: "AI Recommendations",
     badgeBg: "badge-theme-subtle",
@@ -37,6 +40,7 @@ const aiTools = [
   {
     id: "mock-interview",
     icon: "fa-solid fa-video",
+    image: "/img/ai-tools/mock-interview.jpg",
     title: "Mock AI Interviews",
     tag: "Real-time Prep",
     badgeBg: "badge-theme-subtle",
@@ -46,6 +50,7 @@ const aiTools = [
   {
     id: "skill-assessment",
     icon: "fa-solid fa-award",
+    image: "/img/ai-tools/skill-assessment.jpg",
     title: "Skill Assessments",
     tag: "Verified Badges",
     badgeBg: "badge-theme-subtle",
@@ -55,6 +60,7 @@ const aiTools = [
   {
     id: "career-navigator",
     icon: "fa-solid fa-route",
+    image: "/img/ai-tools/career-navigator.jpg",
     title: "Career Path Navigator",
     tag: "Growth Roadmap",
     badgeBg: "badge-theme-subtle",
@@ -119,17 +125,23 @@ export default function Categories() {
                 <Link
                   href={tool.href}
                   onClick={(e) => handleCardClick(e, tool.href)}
-                  className="ai-suite-card d-flex flex-column justify-content-between text-decoration-none p-4 rounded-4 bg-white border position-relative transition-all"
+                  className="ai-suite-card h-100 d-flex flex-column justify-content-between text-decoration-none rounded-4 bg-white border position-relative"
                   data-bs-toggle={!user ? "modal" : undefined}
                   data-bs-target={!user ? "#login" : undefined}
                 >
                   {/* Top Hover Gradient Bar */}
-                  <div className="card-hover-bar"></div>
+                  <div className="card-hover-bar" style={{ zIndex: 2 }}></div>
 
-                  <div>
+                  {/* Top Image */}
+                  <div className="w-100 position-relative" style={{ height: "180px", overflow: "hidden", borderTopLeftRadius: "1rem", borderTopRightRadius: "1rem" }}>
+                    <img src={tool.image} alt={tool.title} className="w-100 h-100 ai-card-image" style={{ objectFit: "cover", transition: "transform 0.4s ease" }} />
+                    <div className="position-absolute top-0 start-0 w-100 h-100" style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(255,255,255,1) 100%)" }}></div>
+                  </div>
+
+                  <div className="p-4 pt-2 d-flex flex-column flex-grow-1">
                     {/* Header: Icon + Badge Tag */}
-                    <div className="d-flex align-items-center justify-content-between mb-3">
-                      <div className="ai-card-icon rounded-3 d-flex align-items-center justify-content-center">
+                    <div className="d-flex align-items-center justify-content-between mb-3 position-relative" style={{ marginTop: "-24px", zIndex: 1 }}>
+                      <div className="ai-card-icon rounded-3 d-flex align-items-center justify-content-center border border-white border-2">
                         <i className={`${tool.icon} fs-4`}></i>
                       </div>
                       <span className={`badge rounded-pill px-3 py-2 fw-medium fs-8 ${tool.badgeBg}`}>
@@ -141,19 +153,19 @@ export default function Categories() {
                     <h3 className="fs-5 fw-bold text-dark mb-2 ai-card-title">
                       {tool.title}
                     </h3>
-                    <p className="text-secondary fs-7 mb-4 lh-base">
+                    <p className="text-secondary fs-7 mb-4 lh-base flex-grow-1">
                       {tool.description}
                     </p>
-                  </div>
 
-                  {/* Footer Action Link */}
-                  <div className="d-flex align-items-center justify-content-between pt-3 border-top border-light-subtle">
-                    <span className="fw-semibold text-main fs-7 d-flex align-items-center gap-2 ai-card-action">
-                      Launch Tool <i className="fa-solid fa-arrow-right fs-8 btn-arrow-icon"></i>
-                    </span>
-                    <span className="badge bg-light text-secondary border rounded-circle p-2 d-inline-flex align-items-center justify-content-center" style={{ width: 28, height: 28 }}>
-                      <i className="fa-solid fa-chevron-right fs-9"></i>
-                    </span>
+                    {/* Footer Action Link */}
+                    <div className="d-flex align-items-center justify-content-between pt-3 border-top border-light-subtle">
+                      <span className="fw-semibold text-main fs-7 d-flex align-items-center gap-2 ai-card-action">
+                        Launch Tool <i className="fa-solid fa-arrow-right fs-8 btn-arrow-icon"></i>
+                      </span>
+                      <span className="badge bg-light text-secondary border rounded-circle p-2 d-inline-flex align-items-center justify-content-center" style={{ width: 28, height: 28 }}>
+                        <i className="fa-solid fa-chevron-right fs-9"></i>
+                      </span>
+                    </div>
                   </div>
                 </Link>
               </div>
@@ -161,7 +173,7 @@ export default function Categories() {
           </div>
         </div>
 
-        <style jsx>{`
+        <style jsx global>{`
           .bg-main-light {
             background-color: rgba(11, 130, 96, 0.08) !important;
             color: #0b8260 !important;
@@ -225,6 +237,9 @@ export default function Categories() {
           }
           .btn-arrow-icon {
             transition: transform 0.3s ease;
+          }
+          .ai-suite-card:hover .ai-card-image {
+            transform: scale(1.08);
           }
           .ai-suite-card:hover .btn-arrow-icon {
             transform: translateX(4px);

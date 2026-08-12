@@ -63,7 +63,7 @@ export default function AiChatWidget() {
         >
           <div
             style={{
-              background: "var(--main-color, #5142fc)",
+              background: "#0b8260",
               color: "#fff",
               padding: "12px 16px",
               display: "flex",
@@ -98,7 +98,7 @@ export default function AiChatWidget() {
                     borderRadius: 10,
                     fontSize: 14,
                     lineHeight: 1.4,
-                    background: m.role === "user" ? "var(--main-color, #5142fc)" : "#e9e9f2",
+                    background: m.role === "user" ? "#0b8260" : "#e9e9f2",
                     color: m.role === "user" ? "#fff" : "#222",
                     whiteSpace: "pre-wrap",
                   }}
@@ -125,7 +125,7 @@ export default function AiChatWidget() {
               type="submit"
               disabled={sending || !input.trim()}
               style={{
-                background: "var(--main-color, #5142fc)",
+                background: "#0b8260",
                 color: "#fff",
                 border: "none",
                 padding: "0 16px",
@@ -145,7 +145,7 @@ export default function AiChatWidget() {
           width: 56,
           height: 56,
           borderRadius: "50%",
-          background: "var(--main-color, #5142fc)",
+          background: "#0b8260",
           color: "#fff",
           border: "none",
           boxShadow: "0 4px 14px rgba(0,0,0,0.25)",
