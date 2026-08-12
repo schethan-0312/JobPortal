@@ -1,0 +1,11 @@
+generator client {
+  provider = "prisma-client"
+}
+datasource db {
+  provider = "mysql"
+  url = env("DATABASE_URL")
+}
+model Test {
+  id Int @id
+  tags Json @default([])
+}
