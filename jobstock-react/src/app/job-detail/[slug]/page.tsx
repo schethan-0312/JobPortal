@@ -4,6 +4,7 @@ import LoginModal from "@/components/LoginModal";
 import ApplyBox from "@/components/jobs/ApplyBox";
 import { api, ApiError, assetUrl } from "@/lib/api";
 
+
 interface Employer {
   id: string;
   companyName: string;
