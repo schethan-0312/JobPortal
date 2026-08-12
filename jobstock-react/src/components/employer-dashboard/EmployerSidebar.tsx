@@ -96,13 +96,6 @@ export default function EmployerSidebar({ active }: EmployerSidebarProps) {
                 <h4 className="jbs-tiosk-title">
                   <Link href="/employer-profile">{profile?.companyName || "My Company"}</Link>
                 </h4>
-                {profile?.location && (
-                  <div className="jbs-tiosk-subtitle">
-                    <span>
-                      <i className="fa-solid fa-location-dot me-2"></i>{profile.location}
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
           </div>
