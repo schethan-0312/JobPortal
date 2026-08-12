@@ -243,7 +243,6 @@ export default function EmployerDashboardPage() {
               </div>
               {/* Header Wrap */}
             </div>
-          </div>
 
           {/* footer */}
           <div className="row">

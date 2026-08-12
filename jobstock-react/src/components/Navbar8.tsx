@@ -19,7 +19,7 @@ interface NotificationItem {
 }
 
 export default function Navbar8() {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const router = useRouter();
 
   const [profile, setProfile] = useState<EmployerProfile | null>(null);
