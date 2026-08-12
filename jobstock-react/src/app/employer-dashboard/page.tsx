@@ -116,7 +116,6 @@ export default function EmployerDashboardPage() {
           </div>
 
           <div className="dashboard-widg-bar d-block">
-            <div className="dashboard-widg-bar d-block">
 
               {error && <div className="alert alert-danger">{error}</div>}
 

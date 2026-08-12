@@ -175,6 +175,67 @@ export default function Navbar8() {
             </div>
             <div className="nav-menus-wrapper">
               <ul className="nav-menu">
+                <li>
+                  <Link href="/" className="sub-menu-item">
+                    Home
+                  </Link>
+                </li>
+
+                <li className="parent-parent-menu-item">
+                  <a href="#!" className="home-link">
+                    Candidates<span className="submenu-indicator"></span>
+                  </a>
+                  <ul className="nav-dropdown nav-submenu">
+                    <li>
+                      {user ? (
+                        <Link href="/jobs" className="sub-menu-item">View Jobs</Link>
+                      ) : (
+                        <a href="#!" className="sub-menu-item" data-bs-toggle="modal" data-bs-target="#login">View Jobs</a>
+                      )}
+                    </li>
+                    <li>
+                      {user ? (
+                        <Link href="/candidates" className="sub-menu-item">View Candidates</Link>
+                      ) : (
+                        <a href="#!" className="sub-menu-item" data-bs-toggle="modal" data-bs-target="#login">View Candidates</a>
+                      )}
+                    </li>
+                  </ul>
+                </li>
+
+                <li>
+                  {user ? (
+                    <Link href="/employers" className="sub-menu-item">Employers</Link>
+                  ) : (
+                    <a href="#!" className="sub-menu-item" data-bs-toggle="modal" data-bs-target="#login">Employers</a>
+                  )}
+                </li>
+
+                <li className="parent-parent-menu-item">
+                  <a href="#!" className="home-link">
+                    Pages<span className="submenu-indicator"></span>
+                  </a>
+                  <ul className="nav-dropdown nav-submenu">
+                    <li>
+                      <Link href="/about-us" className="sub-menu-item">About Us</Link>
+                    </li>
+                    <li>
+                      <Link href="/blog" className="sub-menu-item">Blogs Page</Link>
+                    </li>
+                    <li>
+                      <Link href="/privacy" className="sub-menu-item">Terms &amp; Privacy</Link>
+                    </li>
+                    <li>
+                      <Link href="/faq" className="sub-menu-item">FAQ&apos;s</Link>
+                    </li>
+                    <li>
+                      <Link href="/contact" className="sub-menu-item">Contacts</Link>
+                    </li>
+                    <li>
+                      <Link href="/help" className="sub-menu-item">Help</Link>
+                    </li>
+                  </ul>
+                </li>
               </ul>
 
               <ul className="nav-menu nav-menu-social align-to-right dhsbrd">
