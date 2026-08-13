@@ -17,16 +17,53 @@ export class BlogService {
   }
 
   create(authorId: string, dto: CreatePostDto) {
+    const isPublished = dto.status === 'published';
+    const publishedAt = isPublished ? new Date() : null;
+
     return this.prisma.blogPost.create({
       data: {
         authorId,
+        customAuthorName: dto.author,
         title: dto.title,
         slug: this.slugify(dto.title),
         excerpt: dto.excerpt,
         body: dto.body,
         coverImageUrl: dto.coverImageUrl,
-        publishedAt: new Date(),
+        category: dto.category,
+        servicePageLink: dto.servicePageLink,
+        readTimeMinutes: dto.readTimeMinutes,
+        seoTitle: dto.seoTitle,
+        seoKeywords: dto.seoKeywords,
+        seoDescription: dto.seoDescription,
+        images: dto.images || [],
+        publishedAt,
       },
+    });
+  }
+
+  async update(id: string, dto: any) {
+    let publishedAt: Date | null | undefined = undefined;
+    if (dto.status === 'published') {
+      publishedAt = new Date();
+    } else if (dto.status === 'draft') {
+      publishedAt = null;
+    }
+
+    const data: any = { ...dto };
+    delete data.status;
+    if (data.author !== undefined) {
+      data.customAuthorName = data.author;
+      delete data.author;
+    }
+    if (publishedAt !== undefined) {
+      data.publishedAt = publishedAt;
+    }
+
+    // slug could be updated if title changes, but to keep it simple we won't change slug on update unless specified.
+    
+    return this.prisma.blogPost.update({
+      where: { id },
+      data,
     });
   }
 

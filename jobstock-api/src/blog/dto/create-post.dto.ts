@@ -18,4 +18,38 @@ export class CreatePostDto {
   @IsOptional()
   @IsUrl()
   coverImageUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  category?: string;
+
+  @IsOptional()
+  @IsString()
+  servicePageLink?: string;
+
+  @IsOptional()
+  readTimeMinutes?: number;
+
+  @IsOptional()
+  @IsString()
+  seoTitle?: string;
+
+  @IsOptional()
+  @IsString()
+  seoKeywords?: string;
+
+  @IsOptional()
+  @IsString()
+  seoDescription?: string;
+
+  @IsOptional()
+  images?: string[];
+
+  @IsOptional()
+  @IsString()
+  status?: string; // 'draft' or 'published'
+
+  @IsOptional()
+  @IsString()
+  author?: string;
 }

@@ -30,6 +30,17 @@ export class AdminContentModerationService {
     return { items, total, page: params.page, pageSize: params.pageSize };
   }
 
+  async getBlogPost(postId: string) {
+    const post = await this.prisma.blogPost.findUnique({
+      where: { id: postId },
+      include: { author: { select: { email: true } } },
+    });
+    if (!post) {
+      throw new NotFoundException('Blog post not found');
+    }
+    return post;
+  }
+
   async setPostPublished(actorId: string, postId: string, published: boolean, ip?: string) {
     const post = await this.prisma.blogPost.findUnique({ where: { id: postId } });
     if (!post) {

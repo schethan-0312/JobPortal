@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import AdminNavbar from "@/components/AdminNavbar";
 import AdminSidebar from "@/components/AdminSidebar";
 import { useAuth } from "@/lib/auth-context";
@@ -50,7 +51,9 @@ export default function AdminContentModerationPage() {
   useEffect(() => {
     if (!user || user.role !== "ADMIN") return;
     loadData();
-  }, [user, search]);
+  }, [user]);
+
+
 
   async function handleTogglePublished(id: string, published: boolean) {
     setActing(id);
@@ -58,6 +61,7 @@ export default function AdminContentModerationPage() {
     try {
       await api.patch(`/admin/content-moderation/blog-posts/${id}/published`, { published });
       await loadData();
+      router.refresh();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to update post");
     } finally {
@@ -111,14 +115,26 @@ export default function AdminContentModerationPage() {
             <div className="card">
               <div className="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center">
                 <h6 className="mb-0">Blog Posts ({data?.total ?? 0})</h6>
-                <input
-                  type="text"
-                  className="form-control form-control-sm"
-                  style={{ maxWidth: 260 }}
-                  placeholder="Search title..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
+                <form 
+                  className="d-flex gap-2" 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    loadData();
+                  }}
+                >
+                  <input
+                    type="text"
+                    className="form-control"
+                    style={{ maxWidth: 260 }}
+                    placeholder="Search title..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                  <button type="submit" className="btn btn-secondary">Search</button>
+                  <Link href="/admin-content/add-blog" className="btn btn-main d-flex align-items-center">
+                    <i className="fa-solid fa-plus me-1"></i> Add Blog
+                  </Link>
+                </form>
               </div>
               <div className="card-body">
                 {!data && <p className="text-muted">Loading...</p>}
@@ -147,6 +163,9 @@ export default function AdminContentModerationPage() {
                             </td>
                             <td className="small text-muted">{new Date(p.createdAt).toLocaleDateString()}</td>
                             <td className="d-flex gap-2">
+                              <Link href={`/admin-content/edit-blog/${p.id}`} className="btn btn-sm btn-outline-secondary">
+                                Edit
+                              </Link>
                               <button
                                 type="button"
                                 className="btn btn-sm btn-outline-main"

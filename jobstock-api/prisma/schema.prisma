@@ -677,17 +677,25 @@ model Notification {
 // ---------- Content ----------
 
 model BlogPost {
-  id            String    @id @default(cuid())
-  authorId      String
-  author        User      @relation(fields: [authorId], references: [id])
-  title         String
-  slug          String    @unique
-  excerpt       String?
-  body          String
-  coverImageUrl String?
-  publishedAt   DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id              String    @id @default(cuid())
+  authorId        String
+  author          User      @relation(fields: [authorId], references: [id])
+  customAuthorName String?
+  title           String
+  slug            String    @unique
+  excerpt         String?
+  body            String
+  coverImageUrl   String?
+  category        String?
+  servicePageLink String?
+  readTimeMinutes Int?
+  seoTitle        String?
+  seoKeywords     String?
+  seoDescription  String?
+  images          String[]
+  publishedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
 
 // ---------- Payments ----------

@@ -2,6 +2,10 @@ import Navbar2 from "@/components/Navbar2";
 import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
 import { api, ApiError } from "@/lib/api";
+import ImageSlider from "@/components/ImageSlider";
+import TableOfContents from "@/components/TableOfContents";
+
+export const dynamic = "force-dynamic";
 
 interface BlogPostDetail {
   id: string;
@@ -11,7 +15,12 @@ interface BlogPostDetail {
   body: string;
   coverImageUrl: string | null;
   publishedAt: string | null;
+  category: string | null;
+  readTimeMinutes: number | null;
+  servicePageLink: string | null;
+  images: string[];
   author: { email: string };
+  customAuthorName?: string | null;
 }
 
 async function getPost(slug: string) {
@@ -49,152 +58,115 @@ export default async function BlogDetailPage({
   const article = {
     img: post.coverImageUrl ?? undefined,
     date: post.publishedAt
-      ? new Date(post.publishedAt).toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" })
-      : undefined,
+      ? new Date(post.publishedAt).toLocaleDateString("en-US", { day: "2-digit", month: "long", year: "numeric" })
+      : "Draft",
     title: post.title,
   };
 
   return (
-    <>
+    <div style={{ backgroundColor: '#F9F7F1', minHeight: '100vh' }}>
       <Navbar2 />
+      <style dangerouslySetInnerHTML={{ __html: `
+        .serif-font { font-family: 'Playfair Display', 'Merriweather', 'Georgia', 'Times New Roman', serif; color: #2E4A3D; }
+        .post-content h1, .post-content h2, .post-content h3, .post-content h4, .post-content h5, .post-content h6 {
+          font-family: 'Playfair Display', 'Merriweather', 'Georgia', 'Times New Roman', serif;
+          color: #2E4A3D;
+          margin-top: 2.5rem;
+          margin-bottom: 1.25rem;
+          font-weight: 500;
+        }
+        .post-content h2 { font-size: 2rem; }
+        .post-content h3 { font-size: 1.5rem; }
+        .post-content p { color: #5c5a53; font-size: 1.1rem; line-height: 1.9; margin-bottom: 1.5rem; font-weight: 300; }
+        .post-content ul, .post-content ol { color: #5c5a53; font-size: 1.1rem; line-height: 1.9; margin-bottom: 1.5rem; font-weight: 300; }
+        .post-content a { color: #2E4A3D; text-decoration: underline; font-weight: 500; }
+        .blog-breadcrumb a { color: #7a766c; text-decoration: none; }
+        .blog-breadcrumb a:hover { color: #2E4A3D; }
+      `}} />
 
-      {/* Page Title Start */}
-      <div className="page-bg">
-        <div className="blog-thumb d-lg-flex justify-content-lg-center">
-          <img
-            src={article.img ? `/${article.img}` : "/assets/img/slider-5.jpg"}
-            className="img-fluid"
-            alt=""
-          />
-        </div>
-      </div>
-      {/* Page Title End */}
-
-      {/* Agency List Start */}
-      <section className="gray-simple">
-        <div className="container">
-          <div className="row">
-            {/* Blog Detail */}
-            <div className="col-lg-8 col-md-12 col-sm-12 col-12">
-              <div className="blog-details single-post-item format-standard mb-4">
-                <div className="post-details">
-                  <div className="post-top-meta mb-2">
-                    <span className="pst-cats label text-success bg-success bg-opacity-05 me-2">Updates</span>
-                    <span className="pst-date label text-danger bg-danger bg-opacity-05">
-                      {article.date ? article.date : "17 Feb 2026"}
-                    </span>
-                  </div>
-                  <h3 className="post-title lh-base">{article.title}</h3>
-                  {post.excerpt && <p className="lead">{post.excerpt}</p>}
-                  <p style={{ whiteSpace: "pre-wrap" }}>{post.body}</p>
-                </div>
-
-                <div className="pst-foot-roiu">
-                  <div className="post-share">
-                    <ul className="list">
-                      <li>
-                        <i className="fa-solid fa-share-nodes"></i>
-                      </li>
-                      <li>
-                        <a href="#">
-                          <i className="fab fa-facebook-f"></i>
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#">
-                          <i className="fab fa-twitter"></i>
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#">
-                          <i className="fab fa-linkedin-in"></i>
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#">
-                          <i className="fab fa-vk"></i>
-                        </a>
-                      </li>
-                      <li>
-                        <a href="#">
-                          <i className="fab fa-tumblr"></i>
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
+      <section className="py-5" style={{ backgroundColor: '#F9F7F1' }}>
+        <div className="container" style={{ maxWidth: '1200px' }}>
+          
+          {/* Top Hero Section */}
+          <div className="row mb-5" style={{ paddingLeft: 'calc(25% + 15px)' }}>
+            <div className="col-lg-12">
+              {/* Breadcrumbs */}
+              <div className="blog-breadcrumb mb-4" style={{ fontSize: '0.9rem', color: '#7a766c' }}>
+                <a href="/">Home</a> / <a href="/blog">Blog</a> {post.category && <> / <span style={{ color: '#2E4A3D', fontWeight: '500' }}>{post.category}</span></>}
               </div>
-            </div>
 
-            {/* Contact Author */}
-            <div className="col-lg-4 col-md-12 col-sm-12 col-12">
-              <div className="pg-side-groups">
-                <div className="pg-side-block">
-                  <div className="pg-side-block-head">
-                    <div className="pg-side-left">
-                      <div className="pg-side-thumb">
-                        <img src="/assets/img/team-6.jpg" className="img-fluid circle" alt="" />
-                      </div>
-                    </div>
-                    <div className="pg-side-right">
-                      <div className="pg-side-right-caption">
-                        <h4>Author</h4>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="pg-side-block-body">
-                    <div className="pg-side-block-info">
-                      <div className="vl-elfo-group">
-                        <div className="vl-elfo-icon">
-                          <i className="fa-regular fa-envelope"></i>
-                        </div>
-                        <div className="vl-elfo-caption">
-                          <h6>Written by</h6>
-                          <p>{post.author.email}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+              {/* Meta Tags */}
+              <div className="d-flex align-items-center gap-3 mb-4 text-uppercase fw-bold" style={{ fontSize: '0.75rem', letterSpacing: '1px', color: '#7a766c' }}>
+                {post.category && <span className="badge bg-white text-dark px-3 py-2 rounded-pill" style={{ border: '1px solid #d4d1c9' }}>{post.category}</span>}
+                <span>{article.date}</span>
+                {post.readTimeMinutes && (
+                  <>
+                    <span style={{ fontSize: '4px' }}>&#9679;</span>
+                    <span>{post.readTimeMinutes} MIN READ</span>
+                  </>
+                )}
+              </div>
+
+              {/* Title & Excerpt */}
+              <h1 className="serif-font fw-bold mb-4" style={{ fontSize: '3.2rem', lineHeight: '1.2' }}>
+                {article.title}
+              </h1>
+              {post.excerpt && (
+                <p className="mb-4" style={{ color: '#5c5a53', fontSize: '1.25rem', lineHeight: '1.7', fontWeight: '300' }}>
+                  {post.excerpt}
+                </p>
+              )}
+
+              {/* Author Info */}
+              <div className="d-flex align-items-center gap-3 mt-4">
+                <div className="d-flex align-items-center justify-content-center text-white rounded-circle fs-5 fw-bold shadow-sm" style={{ width: '50px', height: '50px', backgroundColor: '#1a1f1a' }}>
+                  {(post.customAuthorName || post.author.email).charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h6 className="mb-0 fw-bold" style={{ color: '#2E4A3D', fontSize: '1rem' }}>{(post.customAuthorName || post.author.email.split('@')[0])}</h6>
+                  <p className="text-muted small mb-0" style={{ fontSize: '0.8rem' }}>{post.customAuthorName ? "Author" : "Writer & Contributor"}</p>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-      {/* Contact Author End */}
 
-      {/* Call To Action */}
-      <section className="bg-cover bg-main" style={{ background: "url(/assets/img/footer-bg-dark.png)no-repeat" }}>
-        <div className="container">
-          <div className="row justify-content-center">
-            <div className="col-xl-7 col-lg-10 col-md-12 col-sm-12">
-              <div className="call-action-wrap">
-                <div className="sec-heading center">
-                  <h2 className="lh-base mb-3 text-light">
-                    Find The Perfect Job
-                    <br />
-                    on JobStock That is Superb For You
-                  </h2>
-                  <p className="fs-6 text-light">
-                    Join thousands of job seekers and employers who trust JobStock to find the right fit, faster.
-                  </p>
-                </div>
-                <div className="call-action-buttons mt-3">
-                  <a href="/jobs" className="btn btn-lg btn-dark fw-medium px-xl-5 px-lg-4 me-2">
-                    Browse Jobs
-                  </a>
-                  <a href="/signup" className="btn btn-lg btn-whites fw-medium px-xl-5 px-lg-4 text-main">
-                    Get Started
-                  </a>
+          {/* Cover Image */}
+          {article.img && (
+            <div className="row justify-content-center mb-5">
+              <div className="col-lg-12">
+                <div style={{ height: '500px', width: '100%', borderRadius: '16px', overflow: 'hidden' }}>
+                  <img src={article.img} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
               </div>
             </div>
+          )}
+
+          {/* Two Column Layout for Content & TOC */}
+          <div className="row position-relative">
+            {/* Left Sidebar (Sticky TOC) */}
+            <div className="col-lg-3 d-none d-lg-block" style={{ position: 'sticky', top: '100px', alignSelf: 'flex-start', height: 'max-content' }}>
+              <TableOfContents selector=".post-content" />
+            </div>
+
+            {/* Right Column (Main Content) */}
+            <div className="col-lg-9 col-md-12 pe-lg-5">
+              {/* Gallery Moved Above Content */}
+              {post.images && post.images.length > 0 && (
+                <div className="post-images mb-5">
+                  <h3 className="serif-font fw-bold mb-4">Gallery</h3>
+                  <ImageSlider images={post.images} />
+                </div>
+              )}
+
+              <div className="post-content pe-lg-4" dangerouslySetInnerHTML={{ __html: post.body }} />
+            </div>
           </div>
+
         </div>
       </section>
 
       <LoginModal />
       <Footer />
-    </>
+    </div>
   );
 }

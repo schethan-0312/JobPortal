@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, HttpException, HttpStatus, BadRequestException } from '@nestjs/common';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 @Injectable()
@@ -82,5 +82,50 @@ export class AiService {
       const result = await chatSession.sendMessage(message);
       return result.response.text();
     });
+  }
+
+  async extractBlogFromDocument(file: Express.Multer.File): Promise<any> {
+    let extractedText = '';
+
+    try {
+      if (file.mimetype === 'application/pdf') {
+        const pdfParse = (await import('pdf-parse')).default;
+        const data = await pdfParse(file.buffer);
+        extractedText = data.text;
+      } else if (file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || file.mimetype === 'application/msword') {
+        const mammoth = (await import('mammoth')).default;
+        const result = await mammoth.extractRawText({ buffer: file.buffer });
+        extractedText = result.value;
+      } else if (file.mimetype === 'application/vnd.ms-powerpoint' || file.mimetype === 'application/vnd.openxmlformats-officedocument.presentationml.presentation') {
+        throw new BadRequestException('PowerPoint parsing is not natively supported. Please export it to PDF first.');
+      } else {
+        throw new BadRequestException('Unsupported file format. Please upload a PDF or Word document.');
+      }
+    } catch (err: any) {
+      throw new BadRequestException('Failed to extract text from the document. Please ensure it is a valid file. Details: ' + err.message);
+    }
+
+    if (!extractedText || extractedText.trim().length === 0) {
+      throw new BadRequestException('No text could be extracted from this document.');
+    }
+
+    const systemPrompt = `You are an expert copywriter and SEO specialist. Extract and format a professional blog post from the provided document text.
+You MUST return a JSON object with EXACTLY these keys:
+- title: (string) A catchy, relevant title for the blog post.
+- excerpt: (string) A brief, engaging 1-2 sentence summary.
+- body: (string) The full content, formatted beautifully in HTML. Use <h2> and <h3> for headings. Wrap paragraphs in <p>. Do NOT include <html> or <body> tags, just the inner HTML.
+- category: (string) Choose ONE category that fits best from: 'technology', 'career', 'news', 'health', 'general'.
+- seoTitle: (string) SEO optimized title (max 60 chars).
+- seoKeywords: (string) Comma separated keywords.
+- seoDescription: (string) Meta description (max 160 chars).
+- readTimeMinutes: (number) Estimated read time in minutes.`;
+
+    const prompt = `Here is the text extracted from the document:
+
+${extractedText.substring(0, 50000)}
+
+Generate the blog post JSON according to the system instructions.`;
+
+    return this.generateJson<any>(systemPrompt, prompt);
   }
 }

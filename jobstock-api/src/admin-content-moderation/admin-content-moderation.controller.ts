@@ -30,6 +30,11 @@ export class AdminContentModerationController {
     });
   }
 
+  @Get('blog-posts/:id')
+  getBlogPost(@Param('id') id: string) {
+    return this.contentService.getBlogPost(id);
+  }
+
   @Patch('blog-posts/:id/published')
   setPublished(
     @CurrentUser() user: AuthenticatedUser,

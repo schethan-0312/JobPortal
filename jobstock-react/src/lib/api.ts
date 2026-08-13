@@ -42,7 +42,11 @@ export async function apiFetch<T = unknown>(path: string, options: ApiOptions = 
     }
   }
 
-  const res = await fetch(`${API_URL}${path}`, { ...rest, headers: finalHeaders });
+  const res = await fetch(`${API_URL}${path}`, { 
+    ...rest, 
+    headers: finalHeaders,
+    cache: 'no-store' 
+  });
 
   let body: unknown = null;
   const text = await res.text();
