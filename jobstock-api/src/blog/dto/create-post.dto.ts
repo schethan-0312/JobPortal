@@ -1,4 +1,5 @@
-import { IsOptional, IsString, IsUrl, MaxLength, MinLength } from 'class-validator';
+import { IsOptional, IsString, IsUrl, MaxLength, MinLength, IsInt } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreatePostDto {
   @IsString()
@@ -28,6 +29,8 @@ export class CreatePostDto {
   servicePageLink?: string;
 
   @IsOptional()
+  @Type(() => Number)
+  @IsInt()
   readTimeMinutes?: number;
 
   @IsOptional()

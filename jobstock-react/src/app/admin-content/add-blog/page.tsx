@@ -60,7 +60,12 @@ export default function AddBlogPage() {
       if (formData.excerpt) payload.excerpt = formData.excerpt;
       if (formData.category) payload.category = formData.category;
       if (formData.servicePageLink) payload.servicePageLink = formData.servicePageLink;
-      if (formData.readTimeMinutes) payload.readTimeMinutes = parseInt(formData.readTimeMinutes, 10);
+      if (formData.readTimeMinutes) {
+        const parsedTime = parseInt(formData.readTimeMinutes.toString(), 10);
+        if (!isNaN(parsedTime)) {
+          payload.readTimeMinutes = parsedTime;
+        }
+      }
       if (formData.seoTitle) payload.seoTitle = formData.seoTitle;
       if (formData.seoKeywords) payload.seoKeywords = formData.seoKeywords;
       if (formData.seoDescription) payload.seoDescription = formData.seoDescription;
