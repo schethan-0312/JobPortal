@@ -23,6 +23,36 @@ interface Revision {
   createdAt: string;
 }
 
+const PRIVACY_FIELDS_META = [
+  { key: "introduction", label: "Introduction", type: "textarea" },
+  { key: "informationWeCollect", label: "Information We Collect", type: "textarea" },
+  { key: "candidateInformation", label: "Candidate Information", type: "textarea" },
+  { key: "employerInformation", label: "Employer Information", type: "textarea" },
+  { key: "accountInformation", label: "Account Information", type: "textarea" },
+  { key: "resumeProfileData", label: "Resume & Profile Data", type: "textarea" },
+  { key: "jobApplications", label: "Job Applications", type: "textarea" },
+  { key: "assessmentData", label: "Assessment Data", type: "textarea" },
+  { key: "aiPoweredFeatures", label: "AI-Powered Features", type: "textarea" },
+  { key: "howWeUsePersonalData", label: "How We Use Personal Data", type: "textarea" },
+  { key: "informationSharing", label: "Information Sharing", type: "textarea" },
+  { key: "cookiesTracking", label: "Cookies & Tracking", type: "textarea" },
+  { key: "dataStorage", label: "Data Storage", type: "textarea" },
+  { key: "dataSecurity", label: "Data Security", type: "textarea" },
+  { key: "dataRetention", label: "Data Retention", type: "textarea" },
+  { key: "userPrivacyRights", label: "User Privacy Rights", type: "textarea" },
+  { key: "consentManagement", label: "Consent Management", type: "textarea" },
+  { key: "accountDataDeletion", label: "Account & Data Deletion", type: "textarea" },
+  { key: "thirdPartyServices", label: "Third-Party Services", type: "textarea" },
+  { key: "thirdPartyLinks", label: "Third-Party Links", type: "textarea" },
+  { key: "childrensPrivacy", label: "Children’s Privacy", type: "textarea" },
+  { key: "dataBreachSecurityIncidents", label: "Data Breach & Security Incidents", type: "textarea" },
+  { key: "changesToPrivacyPolicy", label: "Changes to Privacy Policy", type: "textarea" },
+  { key: "contactInformation", label: "Contact Information", type: "textarea" },
+  { key: "grievanceRedressal", label: "Grievance Redressal", type: "textarea" },
+  { key: "privacyPolicyVersion", label: "Privacy Policy Version", type: "text" },
+  { key: "lastUpdatedDate", label: "Last Updated Date", type: "text" },
+];
+
 export default function AdminLegalEditPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -32,6 +62,35 @@ export default function AdminLegalEditPage() {
   const [doc, setDoc] = useState<LegalDocDetail | null>(null);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [policyFields, setPolicyFields] = useState<Record<string, string>>({
+    introduction: "",
+    informationWeCollect: "",
+    candidateInformation: "",
+    employerInformation: "",
+    accountInformation: "",
+    resumeProfileData: "",
+    jobApplications: "",
+    assessmentData: "",
+    aiPoweredFeatures: "",
+    howWeUsePersonalData: "",
+    informationSharing: "",
+    cookiesTracking: "",
+    dataStorage: "",
+    dataSecurity: "",
+    dataRetention: "",
+    userPrivacyRights: "",
+    consentManagement: "",
+    accountDataDeletion: "",
+    thirdPartyServices: "",
+    thirdPartyLinks: "",
+    childrensPrivacy: "",
+    dataBreachSecurityIncidents: "",
+    changesToPrivacyPolicy: "",
+    contactInformation: "",
+    grievanceRedressal: "",
+    privacyPolicyVersion: "",
+    lastUpdatedDate: "",
+  });
   const [revisions, setRevisions] = useState<Revision[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -52,6 +111,49 @@ export default function AdminLegalEditPage() {
       setBody(res.body);
       const rev = await api.get<Revision[]>(`/admin/legal/${slug}/revisions`);
       setRevisions(rev);
+
+      if (slug === "privacy-policy") {
+        try {
+          const parsed = JSON.parse(res.body);
+          if (parsed && typeof parsed === "object") {
+            setPolicyFields({
+              introduction: parsed.introduction || "",
+              informationWeCollect: parsed.informationWeCollect || "",
+              candidateInformation: parsed.candidateInformation || "",
+              employerInformation: parsed.employerInformation || "",
+              accountInformation: parsed.accountInformation || "",
+              resumeProfileData: parsed.resumeProfileData || "",
+              jobApplications: parsed.jobApplications || "",
+              assessmentData: parsed.assessmentData || "",
+              aiPoweredFeatures: parsed.aiPoweredFeatures || "",
+              howWeUsePersonalData: parsed.howWeUsePersonalData || "",
+              informationSharing: parsed.informationSharing || "",
+              cookiesTracking: parsed.cookiesTracking || "",
+              dataStorage: parsed.dataStorage || "",
+              dataSecurity: parsed.dataSecurity || "",
+              dataRetention: parsed.dataRetention || "",
+              userPrivacyRights: parsed.userPrivacyRights || "",
+              consentManagement: parsed.consentManagement || "",
+              accountDataDeletion: parsed.accountDataDeletion || "",
+              thirdPartyServices: parsed.thirdPartyServices || "",
+              thirdPartyLinks: parsed.thirdPartyLinks || "",
+              childrensPrivacy: parsed.childrensPrivacy || "",
+              dataBreachSecurityIncidents: parsed.dataBreachSecurityIncidents || "",
+              changesToPrivacyPolicy: parsed.changesToPrivacyPolicy || "",
+              contactInformation: parsed.contactInformation || "",
+              grievanceRedressal: parsed.grievanceRedressal || "",
+              privacyPolicyVersion: parsed.privacyPolicyVersion || "",
+              lastUpdatedDate: parsed.lastUpdatedDate || "",
+            });
+          }
+        } catch {
+          // If it fails to parse (e.g. legacy plain text), fallback to placing the text in introduction
+          setPolicyFields((prev) => ({
+            ...prev,
+            introduction: res.body,
+          }));
+        }
+      }
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) {
         setNotFound(true);
@@ -71,7 +173,8 @@ export default function AdminLegalEditPage() {
     setError(null);
     setSuccessMsg(null);
     try {
-      await api.put(`/admin/legal/${slug}`, { title, body });
+      const finalBody = slug === "privacy-policy" ? JSON.stringify(policyFields) : body;
+      await api.put(`/admin/legal/${slug}`, { title, body: finalBody });
       setSuccessMsg("Saved successfully. A new version was recorded.");
       setNotFound(false);
       await loadDoc();
@@ -126,15 +229,46 @@ export default function AdminLegalEditPage() {
                   <label className="form-label small">Title</label>
                   <input type="text" className="form-control" value={title} onChange={(e) => setTitle(e.target.value)} />
                 </div>
-                <div className="mb-0">
-                  <label className="form-label small">Body</label>
-                  <textarea
-                    className="form-control font-monospace"
-                    rows={20}
-                    value={body}
-                    onChange={(e) => setBody(e.target.value)}
-                  />
-                </div>
+                {slug === "privacy-policy" ? (
+                  <div className="row g-3">
+                    {PRIVACY_FIELDS_META.map((f) => (
+                      <div className={f.type === "text" ? "col-md-6" : "col-12"} key={f.key}>
+                        <label className="form-label small fw-semibold text-dark">{f.label}</label>
+                        {f.type === "textarea" ? (
+                          <textarea
+                            className="form-control font-monospace"
+                            rows={3}
+                            value={policyFields[f.key] || ""}
+                            onChange={(e) =>
+                              setPolicyFields((prev) => ({ ...prev, [f.key]: e.target.value }))
+                            }
+                            placeholder={`Enter content for ${f.label}...`}
+                          />
+                        ) : (
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={policyFields[f.key] || ""}
+                            onChange={(e) =>
+                              setPolicyFields((prev) => ({ ...prev, [f.key]: e.target.value }))
+                            }
+                            placeholder={`Enter ${f.label}`}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mb-0">
+                    <label className="form-label small">Body</label>
+                    <textarea
+                      className="form-control font-monospace"
+                      rows={20}
+                      value={body}
+                      onChange={(e) => setBody(e.target.value)}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
