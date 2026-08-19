@@ -322,7 +322,7 @@ function SignupForm() {
                           />
                           <label className="form-check-label text-muted text-md ms-1" htmlFor="agreeTerms">
                             I agree to the{" "}
-                            <a href="/privacy" className="text-main">
+                            <a href="/terms" className="text-main">
                               Terms and Conditions
                             </a>{" "}
                             &amp;{" "}

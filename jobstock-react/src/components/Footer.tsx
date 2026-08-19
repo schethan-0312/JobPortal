@@ -200,7 +200,9 @@ export default function Footer() {
                   <li><SmartFooterLink href="/faq" label="FAQs" /></li>
                   <li><SmartFooterLink href="/help" label="Help &amp; Support" /></li>
                   <li><SmartFooterLink href="/contact" label="Contact Us" /></li>
-                  <li><SmartFooterLink href="/privacy" label="Privacy &amp; Terms" /></li>
+                  <li><SmartFooterLink href="/privacy" label="Privacy Policy" /></li>
+                  <li><SmartFooterLink href="/terms" label="Terms of Service" /></li>
+                  <li><SmartFooterLink href="/cookie-policy" label="Cookie Policy" /></li>
                 </ul>
               </div>
             </div>

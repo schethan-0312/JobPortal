@@ -8,6 +8,6 @@ export class UpsertLegalDocumentDto {
 
   @IsString()
   @MinLength(10)
-  @MaxLength(50000)
+  @MaxLength(250000)
   body!: string;
 }
