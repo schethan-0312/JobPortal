@@ -110,6 +110,13 @@ export class JobsController {
     return this.jobsService.deleteAssessment(user.userId, assessmentId);
   }
 
+  @Delete('assessments/attempts/:attemptId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EMPLOYER)
+  deleteAssessmentAttempt(@CurrentUser() user: AuthenticatedUser, @Param('attemptId') attemptId: string) {
+    return this.jobsService.deleteAssessmentAttempt(user.userId, attemptId);
+  }
+
   // --- Candidate Endpoints ---
 
   @Get('assessments/matching')

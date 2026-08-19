@@ -252,6 +252,24 @@ export class JobsService {
     });
   }
 
+  async deleteAssessmentAttempt(userId: string, attemptId: string) {
+    const employer = await this.prisma.employer.findUnique({ where: { userId } });
+    if (!employer) throw new NotFoundException('Employer profile not found');
+
+    const attempt = await this.prisma.jobAssessmentAttempt.findUnique({
+      where: { id: attemptId },
+      include: { assessment: { include: { job: true } } },
+    });
+
+    if (!attempt || attempt.assessment.job.employerId !== employer.id) {
+      throw new NotFoundException('Attempt not found or access denied');
+    }
+
+    return this.prisma.jobAssessmentAttempt.delete({
+      where: { id: attemptId },
+    });
+  }
+
   // --- Candidate Assessment Methods ---
 
   async getMatchingAssessments(userId: string) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
@@ -218,30 +218,45 @@ export default function AssessmentAttemptPage() {
     };
   }, [user, loading, router, assessmentId]);
 
-  // Bind video element without flickering
-  useEffect(() => {
-    if (videoElementRef.current && mediaStream) {
-      if (videoElementRef.current.srcObject !== mediaStream) {
-        videoElementRef.current.srcObject = mediaStream;
-        videoElementRef.current.play().catch(e => console.error("Video play error:", e));
+  // Bind video element cleanly when mounted in DOM without flickering or black screen
+  const bindVideoRef = useCallback((node: HTMLVideoElement | null) => {
+    if (node && mediaStream) {
+      if (node.srcObject !== mediaStream) {
+        node.srcObject = mediaStream;
+        node.play().catch(e => console.error("Video play error:", e));
       }
     }
   }, [mediaStream]);
 
   const getProctoringVideoDataUrl = (): Promise<string | null> => {
     return new Promise((resolve) => {
-      if (!recordedChunksRef.current || recordedChunksRef.current.length === 0) {
-        resolve(null);
-        return;
-      }
-      try {
-        const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = () => resolve(null);
-        reader.readAsDataURL(blob);
-      } catch (e) {
-        resolve(null);
+      const finalizeBlob = () => {
+        if (!recordedChunksRef.current || recordedChunksRef.current.length === 0) {
+          resolve(null);
+          return;
+        }
+        try {
+          const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(blob);
+        } catch (e) {
+          resolve(null);
+        }
+      };
+
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+        mediaRecorderRef.current.onstop = () => {
+          finalizeBlob();
+        };
+        try {
+          mediaRecorderRef.current.stop();
+        } catch (e) {
+          finalizeBlob();
+        }
+      } else {
+        finalizeBlob();
       }
     });
   };
@@ -310,22 +325,26 @@ export default function AssessmentAttemptPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-        try { mediaRecorderRef.current.stop(); } catch (e) {}
-      }
-      
-      const videoBase64 = await getProctoringVideoDataUrl();
       const payloadAnswers: Record<string, any> = { ...answers };
-      if (videoBase64) {
-        payloadAnswers._proctoringVideo = videoBase64;
+
+      try {
+        const videoPromise = getProctoringVideoDataUrl();
+        const timeoutPromise = new Promise<null>((res) => setTimeout(() => res(null), 2500));
+        const videoBase64 = await Promise.race([videoPromise, timeoutPromise]);
+        if (videoBase64) {
+          payloadAnswers._proctoringVideo = videoBase64;
+        }
+      } catch (videoErr) {
+        console.warn("Video processing warning:", videoErr);
       }
 
       await api.post(`/jobs/assessments/${assessmentId}/submit`, payloadAnswers);
       alert("Assessment submitted successfully!");
       router.push("/candidate-competition");
     } catch (err: any) {
-      console.error(err);
-      alert("Failed to submit assessment.");
+      console.error("Submission error:", err);
+      const errMsg = err?.message || err?.response?.data?.message || "Failed to submit assessment.";
+      alert(`Submission Error: ${errMsg}`);
     } finally {
       setSubmitting(false);
     }
@@ -691,10 +710,11 @@ export default function AssessmentAttemptPage() {
           }}
         >
           <video 
-            ref={videoElementRef}
+            ref={bindVideoRef}
             autoPlay 
             muted 
             playsInline
+            onCanPlay={(e) => e.currentTarget.play().catch(() => {})}
             style={{ 
               width: "100%", 
               height: "100%", 

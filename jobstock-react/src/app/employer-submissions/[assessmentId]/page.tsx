@@ -143,6 +143,22 @@ export default function EmployerSubmissionDetailsPage() {
 
   const avgScore = calculateAvgScore();
 
+  const handleDeleteAttempt = async (attemptId: string, candidateName: string) => {
+    if (!confirm(`Are you sure you want to delete the submission result for ${candidateName}?`)) {
+      return;
+    }
+
+    try {
+      await api.delete(`/jobs/assessments/attempts/${attemptId}`);
+      setAttempts(prev => prev.filter(a => a.id !== attemptId));
+      if (selectedAttempt?.id === attemptId) {
+        setSelectedAttempt(null);
+      }
+    } catch (err: any) {
+      alert(err instanceof ApiError ? err.message : "Failed to delete submission result");
+    }
+  };
+
   // Render specific answer based on question type
   const renderAnswer = (sectionType: string, q: any, currentAnswer: any) => {
     if (!currentAnswer) return <p className="text-muted fst-italic">No answer provided.</p>;
@@ -457,13 +473,23 @@ export default function EmployerSubmissionDetailsPage() {
                                     </td>
                                   )}
                                   <td className="py-3 text-end px-4">
-                                    <button 
-                                      className="btn btn-sm btn-primary px-3"
-                                      onClick={() => setSelectedAttempt(attempt)}
-                                      disabled={attempt.status !== "COMPLETED"}
-                                    >
-                                      View Answers
-                                    </button>
+                                    <div className="d-flex justify-content-end gap-2">
+                                      <button 
+                                        className="btn btn-sm btn-primary px-3"
+                                        onClick={() => setSelectedAttempt(attempt)}
+                                        disabled={attempt.status !== "COMPLETED"}
+                                      >
+                                        View Answers
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className="btn btn-sm btn-outline-danger px-2"
+                                        title="Delete Candidate Result"
+                                        onClick={() => handleDeleteAttempt(attempt.id, attempt.candidate.fullName)}
+                                      >
+                                        <i className="fa-solid fa-trash me-1"></i> Delete
+                                      </button>
+                                    </div>
                                   </td>
                                 </tr>
                               );
