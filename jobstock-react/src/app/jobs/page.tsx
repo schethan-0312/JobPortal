@@ -153,6 +153,15 @@ export default async function JobsGridPage({
           <div className="row">
             {/* Search Sidebar */}
             <div className="col-xxl-3 col-xl-4 col-lg-4 col-md-12 col-sm-12">
+              <button
+                className="btn btn-main full-width d-lg-none mb-3 d-flex align-items-center justify-content-center gap-2"
+                data-bs-toggle="collapse"
+                data-bs-target="#search_open"
+                aria-expanded="true"
+                aria-controls="search_open"
+              >
+                <i className="fa-solid fa-filter"></i> Filter Search
+              </button>
               <div className="bg-white rounded mb-3">
                 <JobFilters variant="full" />
               </div>

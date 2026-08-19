@@ -133,9 +133,7 @@ export default function CandidateResumeScannerPage() {
       </div>
 
       <div className="dashboard-wrap bg-light">
-        <div className="no-print">
-          <CandidateSidebar active="resume-scanner" />
-        </div>
+        <CandidateSidebar active="resume-scanner" />
 
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4 no-print">

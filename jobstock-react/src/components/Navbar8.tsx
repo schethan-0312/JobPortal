@@ -143,6 +143,24 @@ export default function Navbar8() {
               <div className="nav-toggle"></div>
               <ul className="mobile_nav dhsbrd">
                 <li>
+                  <Link
+                    href="/employer-submit-job"
+                    className="btn btn-main btn-sm text-white px-2"
+                    style={{
+                      borderRadius: "4px",
+                      fontSize: "11px",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      height: "32px",
+                      marginRight: "6px",
+                      border: "none",
+                      verticalAlign: "middle"
+                    }}
+                  >
+                    <i className="bi bi-patch-check-fill me-1"></i>Post Job
+                  </Link>
+                </li>
+                <li>
                   <div className="btn-group account-drop">
                     <button
                       type="button"
@@ -235,6 +253,11 @@ export default function Navbar8() {
                       <Link href="/help" className="sub-menu-item">Help</Link>
                     </li>
                   </ul>
+                </li>
+                <li className="d-lg-none">
+                  <Link href="/employer-submit-job" className="sub-menu-item text-main fw-bold">
+                    <i className="bi bi-patch-check-fill me-2"></i>Post Your Job
+                  </Link>
                 </li>
               </ul>
 

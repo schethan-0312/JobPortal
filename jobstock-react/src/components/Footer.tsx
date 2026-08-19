@@ -19,6 +19,19 @@ export default function Footer() {
   const router = useRouter();
   const [stats, setStats] = useState<PublicStats | null>(null);
   const [mismatchRole, setMismatchRole] = useState<"CANDIDATE" | "EMPLOYER" | null>(null);
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    seekers: false,
+    employers: false,
+    tools: false,
+    company: false,
+  });
+
+  const toggleSection = (section: string) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
 
   useEffect(() => {
     (async () => {
@@ -153,57 +166,89 @@ export default function Footer() {
             <div className="footer-nav-grid">
               {/* Column 1: For Job Seekers */}
               <div className="footer-widget mb-0">
-                <h4 className="widget-title">For Job Seekers</h4>
-                <ul className="footer-menu">
-                  <li><SmartFooterLink href="/jobs" label="Find Jobs" candidateOnly={true} /></li>
-                  <li><SmartFooterLink href="/jobs" label="Quick Apply" candidateOnly={true} /></li>
-                  <li><SmartFooterLink href="/employers" label="Explore Employers" candidateOnly={true} /></li>
-                  <li><SmartFooterLink href="/candidate-saved-jobs" label="Saved Jobs" requiredRole="CANDIDATE" /></li>
-                  <li><SmartFooterLink href="/candidate-applied-jobs" label="Applied Jobs" requiredRole="CANDIDATE" /></li>
-                  <li><SmartFooterLink href="/candidate-profile" label="My Profile" requiredRole="CANDIDATE" /></li>
-                  <li><SmartFooterLink href="/candidate-alert-job" label="Job Alerts" requiredRole="CANDIDATE" /></li>
-                </ul>
+                <h4
+                  className={`widget-title d-flex justify-content-between align-items-center ${expandedSections.seekers ? 'active' : ''}`}
+                  onClick={() => toggleSection("seekers")}
+                >
+                  <span>For Job Seekers</span>
+                  <i className={`fa-solid fa-chevron-down chevron-icon ${expandedSections.seekers ? 'expanded' : ''}`}></i>
+                </h4>
+                <div className={`footer-menu-container ${expandedSections.seekers ? 'expanded' : ''}`}>
+                  <ul className="footer-menu">
+                    <li><SmartFooterLink href="/jobs" label="Find Jobs" candidateOnly={true} /></li>
+                    <li><SmartFooterLink href="/jobs" label="Quick Apply" candidateOnly={true} /></li>
+                    <li><SmartFooterLink href="/employers" label="Explore Employers" candidateOnly={true} /></li>
+                    <li><SmartFooterLink href="/candidate-saved-jobs" label="Saved Jobs" requiredRole="CANDIDATE" /></li>
+                    <li><SmartFooterLink href="/candidate-applied-jobs" label="Applied Jobs" requiredRole="CANDIDATE" /></li>
+                    <li><SmartFooterLink href="/candidate-profile" label="My Profile" requiredRole="CANDIDATE" /></li>
+                    <li><SmartFooterLink href="/candidate-alert-job" label="Job Alerts" requiredRole="CANDIDATE" /></li>
+                  </ul>
+                </div>
               </div>
 
               {/* Column 2: For Employers */}
               <div className="footer-widget mb-0">
-                <h4 className="widget-title">For Employers</h4>
-                <ul className="footer-menu">
-                  <li><SmartFooterLink href="/employer-submit-job" label="Post a Job" requiredRole="EMPLOYER" /></li>
-                  <li><SmartFooterLink href="/employer-jobs" label="Manage Jobs" requiredRole="EMPLOYER" /></li>
-                  <li><SmartFooterLink href="/employer-applicants-jobs" label="Manage Applications" requiredRole="EMPLOYER" /></li>
-                  <li><SmartFooterLink href="/employer-candidate-search" label="Find Candidates" requiredRole="EMPLOYER" /></li>
-                  <li><SmartFooterLink href="/employer-dashboard" label="Employer Dashboard" requiredRole="EMPLOYER" /></li>
-                  <li><SmartFooterLink href="/employer-profile" label="Company Profile" requiredRole="EMPLOYER" /></li>
-                </ul>
+                <h4
+                  className={`widget-title d-flex justify-content-between align-items-center ${expandedSections.employers ? 'active' : ''}`}
+                  onClick={() => toggleSection("employers")}
+                >
+                  <span>For Employers</span>
+                  <i className={`fa-solid fa-chevron-down chevron-icon ${expandedSections.employers ? 'expanded' : ''}`}></i>
+                </h4>
+                <div className={`footer-menu-container ${expandedSections.employers ? 'expanded' : ''}`}>
+                  <ul className="footer-menu">
+                    <li><SmartFooterLink href="/employer-submit-job" label="Post a Job" requiredRole="EMPLOYER" /></li>
+                    <li><SmartFooterLink href="/employer-jobs" label="Manage Jobs" requiredRole="EMPLOYER" /></li>
+                    <li><SmartFooterLink href="/employer-applicants-jobs" label="Manage Applications" requiredRole="EMPLOYER" /></li>
+                    <li><SmartFooterLink href="/employer-candidate-search" label="Find Candidates" requiredRole="EMPLOYER" /></li>
+                    <li><SmartFooterLink href="/employer-dashboard" label="Employer Dashboard" requiredRole="EMPLOYER" /></li>
+                    <li><SmartFooterLink href="/employer-profile" label="Company Profile" requiredRole="EMPLOYER" /></li>
+                  </ul>
+                </div>
               </div>
 
               {/* Column 3: AI & Career Tools */}
               <div className="footer-widget mb-0">
-                <h4 className="widget-title">AI &amp; Career Tools</h4>
-                <ul className="footer-menu">
-                  <li><SmartFooterLink href="/candidate-resume-builder" label="AI Resume Builder" requiredRole="CANDIDATE" /></li>
-                  <li><SmartFooterLink href="/candidate-resume-scanner" label="AI Resume Scanner" requiredRole="CANDIDATE" /></li>
-                  <li><SmartFooterLink href="/candidate-smart-match" label="Smart Job Match" requiredRole="CANDIDATE" /></li>
-                  <li><SmartFooterLink href="/candidate-mock-interview" label="Mock AI Interview" requiredRole="CANDIDATE" /></li>
-                  <li><SmartFooterLink href="/candidate-skill-assessment" label="Skill Assessment" requiredRole="CANDIDATE" /></li>
-                  <li><SmartFooterLink href="/candidate-career-navigator" label="Career Navigator" requiredRole="CANDIDATE" /></li>
-                </ul>
+                <h4
+                  className={`widget-title d-flex justify-content-between align-items-center ${expandedSections.tools ? 'active' : ''}`}
+                  onClick={() => toggleSection("tools")}
+                >
+                  <span>AI &amp; Career Tools</span>
+                  <i className={`fa-solid fa-chevron-down chevron-icon ${expandedSections.tools ? 'expanded' : ''}`}></i>
+                </h4>
+                <div className={`footer-menu-container ${expandedSections.tools ? 'expanded' : ''}`}>
+                  <ul className="footer-menu">
+                    <li><SmartFooterLink href="/candidate-resume-builder" label="AI Resume Builder" requiredRole="CANDIDATE" /></li>
+                    <li><SmartFooterLink href="/candidate-resume-scanner" label="AI Resume Scanner" requiredRole="CANDIDATE" /></li>
+                    <li><SmartFooterLink href="/candidate-smart-match" label="Smart Job Match" requiredRole="CANDIDATE" /></li>
+                    <li><SmartFooterLink href="/candidate-mock-interview" label="Mock AI Interview" requiredRole="CANDIDATE" /></li>
+                    <li><SmartFooterLink href="/candidate-skill-assessment" label="Skill Assessment" requiredRole="CANDIDATE" /></li>
+                    <li><SmartFooterLink href="/candidate-career-navigator" label="Career Navigator" requiredRole="CANDIDATE" /></li>
+                  </ul>
+                </div>
               </div>
 
               {/* Column 4: Company */}
               <div className="footer-widget mb-0">
-                <h4 className="widget-title">Company</h4>
-                <ul className="footer-menu">
-                  <li><SmartFooterLink href="/about-us" label="About Us" /></li>
-                  <li><SmartFooterLink href="/blog" label="Latest News &amp; Blog" /></li>
-                  <li><SmartFooterLink href="/faq" label="FAQs" /></li>
-                  <li><SmartFooterLink href="/help" label="Help &amp; Support" /></li>
-                  <li><SmartFooterLink href="/contact" label="Contact Us" /></li>
-                  <li><SmartFooterLink href="/privacy" label="Privacy Policy" /></li>
-                  <li><SmartFooterLink href="/terms" label="Terms of Service" /></li>
-                  <li><SmartFooterLink href="/cookie-policy" label="Cookie Policy" /></li>
-                </ul>
+                <h4
+                  className={`widget-title d-flex justify-content-between align-items-center ${expandedSections.company ? 'active' : ''}`}
+                  onClick={() => toggleSection("company")}
+                >
+                  <span>Company</span>
+                  <i className={`fa-solid fa-chevron-down chevron-icon ${expandedSections.company ? 'expanded' : ''}`}></i>
+                </h4>
+                <div className={`footer-menu-container ${expandedSections.company ? 'expanded' : ''}`}>
+                  <ul className="footer-menu">
+                    <li><SmartFooterLink href="/about-us" label="About Us" /></li>
+                    <li><SmartFooterLink href="/blog" label="Latest News &amp; Blog" /></li>
+                    <li><SmartFooterLink href="/faq" label="FAQs" /></li>
+                    <li><SmartFooterLink href="/help" label="Help &amp; Support" /></li>
+                    <li><SmartFooterLink href="/contact" label="Contact Us" /></li>
+                    <li><SmartFooterLink href="/privacy" label="Privacy Policy" /></li>
+                    <li><SmartFooterLink href="/terms" label="Terms of Service" /></li>
+                    <li><SmartFooterLink href="/cookie-policy" label="Cookie Policy" /></li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -275,16 +320,91 @@ export default function Footer() {
             gap: 2rem;
             width: 100%;
           }
+          .footer-menu-container {
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease-in-out;
+          }
           @media (max-width: 991px) {
             .footer-nav-grid {
               grid-template-columns: repeat(2, minmax(0, 1fr));
               gap: 1.5rem;
             }
           }
-          @media (max-width: 575px) {
+          @media (max-width: 767px) {
+            footer.custom-theme-footer {
+              padding: 30px 0 15px !important;
+            }
+            .footer-top-border {
+              padding-bottom: 1.5rem !important;
+              margin-bottom: 1.5rem !important;
+              text-align: center;
+            }
+            .footer-top-border .text-md-end {
+              text-align: center !important;
+              margin-top: 10px;
+            }
+            .footer-top-border .justify-content-md-end {
+              justify-content: center !important;
+            }
             .footer-nav-grid {
-              grid-template-columns: repeat(1, minmax(0, 1fr));
-              gap: 1.25rem;
+              grid-template-columns: 1fr !important;
+              gap: 0.5rem !important;
+            }
+            .footer-widget {
+              border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+              padding-bottom: 8px !important;
+              margin-bottom: 8px !important;
+            }
+            .footer-widget:last-child {
+              border-bottom: none !important;
+              padding-bottom: 0 !important;
+              margin-bottom: 0 !important;
+            }
+            :global(h4.widget-title) {
+              margin-bottom: 0 !important;
+              padding: 10px 0 !important;
+              cursor: pointer !important;
+              user-select: none;
+            }
+            :global(h4.widget-title.active) {
+              color: #5df0c2 !important;
+            }
+            .footer-menu-container {
+              max-height: 0;
+              opacity: 0;
+              overflow: hidden;
+            }
+            .footer-menu-container.expanded {
+              max-height: 400px;
+              opacity: 1;
+              padding-bottom: 10px;
+            }
+            :global(.chevron-icon) {
+              font-size: 0.9rem !important;
+              transition: transform 0.3s ease, color 0.3s ease !important;
+              color: rgba(255, 255, 255, 0.5) !important;
+              display: inline-block !important;
+            }
+            :global(.chevron-icon.expanded) {
+              transform: rotate(180deg) !important;
+              color: #5df0c2 !important;
+            }
+            :global(.footer-bottom) {
+              text-align: center;
+              margin-top: 1.5rem !important;
+            }
+            :global(.footer-bottom .text-md-end) {
+              text-align: center !important;
+              margin-top: 5px;
+            }
+          }
+          @media (min-width: 768px) {
+            :global(.chevron-icon) {
+              display: none !important;
+            }
+            .footer-menu-container {
+              max-height: none !important;
+              opacity: 1 !important;
+              overflow: visible !important;
             }
           }
         `}</style>

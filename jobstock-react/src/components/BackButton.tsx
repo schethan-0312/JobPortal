@@ -12,19 +12,7 @@ export default function BackButton() {
   return (
     <button
       onClick={() => router.back()}
-      className="btn btn-main btn-sm no-print"
-      style={{
-        position: "absolute",
-        top: "90px",
-        right: "30px",
-        zIndex: 99,
-        display: "inline-flex",
-        alignItems: "center",
-        gap: "0.5rem",
-        boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-        borderRadius: "50px",
-        padding: "10px 20px"
-      }}
+      className="btn btn-main btn-sm no-print back-button-floating"
       title="Go Back"
     >
       <i className="bi bi-arrow-left"></i> Back
