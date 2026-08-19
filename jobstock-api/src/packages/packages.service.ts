@@ -31,6 +31,43 @@ export class PackagesService {
     });
   }
 
+  listAll() {
+    return this.prisma.package.findMany({
+      orderBy: { priceInPaisa: 'asc' },
+    });
+  }
+
+  createPackage(data: {
+    name: string;
+    audience: 'CANDIDATE' | 'EMPLOYER' | 'RESUME';
+    priceInPaisa: number;
+    featuresJson?: any;
+    isActive?: boolean;
+  }) {
+    return this.prisma.package.create({
+      data: {
+        name: data.name,
+        audience: data.audience,
+        priceInPaisa: Number(data.priceInPaisa),
+        featuresJson: data.featuresJson ?? [],
+        isActive: data.isActive ?? true,
+      },
+    });
+  }
+
+  async deletePackage(id: string) {
+    try {
+      return await this.prisma.package.delete({
+        where: { id },
+      });
+    } catch {
+      return await this.prisma.package.update({
+        where: { id },
+        data: { isActive: false },
+      });
+    }
+  }
+
   async createOrder(userId: string, dto: CreateOrderDto) {
     const pkg = await this.prisma.package.findUnique({ where: { id: dto.packageId } });
     if (!pkg || !pkg.isActive) {

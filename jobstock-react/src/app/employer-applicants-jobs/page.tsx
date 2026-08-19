@@ -58,6 +58,7 @@ export default function EmployerApplicantsJobsPage() {
   const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [viewingAnswersFor, setViewingAnswersFor] = useState<JobAssessmentAttempt | null>(null);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "EMPLOYER")) {
@@ -104,7 +105,12 @@ export default function EmployerApplicantsJobsPage() {
       await api.patch(`/applications/${applicationId}/status`, { status });
       setApplicants((prev) => prev.map((a) => (a.id === applicationId ? { ...a, status } : a)));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to update applicant status");
+      const msg = err instanceof ApiError ? err.message : "Failed to update applicant status";
+      if (msg.includes("Subscription required") || msg.includes("limit of 20 hired candidates")) {
+        setShowSubscriptionModal(true);
+      } else {
+        setError(msg);
+      }
     } finally {
       setUpdatingId(null);
     }
@@ -234,6 +240,15 @@ export default function EmployerApplicantsJobsPage() {
                               <div className="jbs-list-head-last">
                                 <button
                                   type="button"
+                                  className="rounded btn-md btn-success px-3 me-2"
+                                  disabled={updatingId === item.id || item.status === "OFFERED"}
+                                  onClick={() => updateStatus(item.id, "OFFERED")}
+                                  title="Hire Candidate (Offer)"
+                                >
+                                  <i className="fa-solid fa-user-check me-1"></i> Hire
+                                </button>
+                                <button
+                                  type="button"
                                   className="rounded btn-md btn-main px-3 me-2"
                                   disabled={updatingId === item.id}
                                   onClick={() => updateStatus(item.id, "SHORTLISTED")}
@@ -346,6 +361,35 @@ export default function EmployerApplicantsJobsPage() {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSubscriptionModal && (
+        <div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.6)", zIndex: 1060 }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content text-center p-4">
+              <div className="modal-header border-0 pb-0 justify-content-end">
+                <button type="button" className="btn-close" onClick={() => setShowSubscriptionModal(false)}></button>
+              </div>
+              <div className="modal-body py-2">
+                <div className="mb-3 text-warning">
+                  <i className="fa-solid fa-crown fa-3x"></i>
+                </div>
+                <h4 className="fw-bold mb-2">Subscription Required</h4>
+                <p className="text-muted mb-4">
+                  You have reached the maximum limit of <strong>20 hired candidates</strong> on your free tier.
+                  Please upgrade your package to hire additional candidates.
+                </p>
+                <button
+                  type="button"
+                  className="btn btn-main btn-lg px-4 rounded"
+                  onClick={() => router.push("/employer-package")}
+                >
+                  Upgrade Subscription Package
+                </button>
               </div>
             </div>
           </div>

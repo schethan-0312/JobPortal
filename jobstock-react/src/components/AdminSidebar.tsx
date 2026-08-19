@@ -55,6 +55,9 @@ export default function AdminSidebar({ active }: AdminSidebarProps) {
               <li className={active === "dashboard" ? "active" : undefined}>
                 <Link href="/admin-dashboard"><i className="fa-solid fa-gauge-high me-2"></i>Dashboard</Link>
               </li>
+              <li className={active === "packages" ? "active" : undefined}>
+                <Link href="/admin-packages"><i className="fa-solid fa-box-archive me-2"></i>Package</Link>
+              </li>
               <li className={active === "employers" ? "active" : undefined}>
                 <Link href="/admin-employers"><i className="fa-solid fa-user-check me-2"></i>Verify Employers</Link>
               </li>

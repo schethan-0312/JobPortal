@@ -76,8 +76,11 @@ export default function EmployerPackagePage() {
     (async () => {
       setDataLoading(true);
       try {
-        const list = await api.get<Package[]>("/packages?audience=EMPLOYER");
-        setPackages(list);
+        let list = await api.get<Package[]>("/packages?audience=EMPLOYER");
+        if (!list || list.length === 0) {
+          list = await api.get<Package[]>("/packages");
+        }
+        setPackages(list || []);
       } catch (err) {
         setError(err instanceof ApiError ? err.message : "Failed to load packages");
       } finally {
@@ -85,6 +88,35 @@ export default function EmployerPackagePage() {
       }
     })();
   }, [user]);
+
+  function renderFeatures(featuresJson: unknown) {
+    if (!featuresJson) return <span className="text-muted small">—</span>;
+
+    let items: string[] = [];
+
+    if (Array.isArray(featuresJson)) {
+      items = featuresJson.map((f) => String(f));
+    } else if (typeof featuresJson === "object" && featuresJson !== null) {
+      items = Object.entries(featuresJson).map(([k, v]) =>
+        !isNaN(Number(k)) ? String(v) : `${k}: ${String(v)}`
+      );
+    } else if (typeof featuresJson === "string") {
+      items = [featuresJson];
+    }
+
+    if (items.length === 0) return <span className="text-muted small">—</span>;
+
+    return (
+      <div className="package-descr">
+        {items.map((feat, idx) => (
+          <p className="text-sm-muted mb-1 d-flex align-items-center gap-2" key={idx}>
+            <i className="fa-solid fa-check text-success small"></i>
+            <span>{feat}</span>
+          </p>
+        ))}
+      </div>
+    );
+  }
 
   async function handleBuy(pkg: Package) {
     setBuyingId(pkg.id);
@@ -189,44 +221,38 @@ export default function EmployerPackagePage() {
                     {dataLoading && <p className="text-muted">Loading packages...</p>}
                     {!dataLoading && packages.length === 0 && <p className="text-muted">No packages available right now.</p>}
                     {!dataLoading && packages.length > 0 && (
-                      <div className="table-responsive">
-                        <table className="table">
-                          <thead>
-                            <tr>
-                              <th scope="col">#</th>
-                              <th scope="col">Package Name</th>
-                              <th scope="col">Price</th>
-                              <th scope="col">Features</th>
-                              <th scope="col">Action</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {packages.map((item, i) => (
-                              <tr key={item.id}>
-                                <td>{String(i + 1).padStart(2, "0")}</td>
-                                <td>{item.name}</td>
-                                <td>{(item.priceInPaisa / 100).toLocaleString(undefined, { style: "currency", currency: "INR" })}</td>
-                                <td>
-                                  <div className="package-descr">
-                                    {Object.entries(item.featuresJson || {}).map(([k, v]) => (
-                                      <p className="text-sm-muted mb-1" key={k}>{k}: {String(v)}</p>
-                                    ))}
+                      <div className="row g-4">
+                        {packages.map((item) => (
+                          <div className="col-xl-4 col-lg-6 col-md-6" key={item.id}>
+                            <div className="card h-100 border shadow-sm rounded-3">
+                              <div className="card-body p-4 d-flex flex-column justify-content-between">
+                                <div>
+                                  <div className="d-flex justify-content-between align-items-center mb-3">
+                                    <span className="badge bg-main-light text-main px-2 py-1 fw-medium">{item.audience || "EMPLOYER"}</span>
+                                    <span className="badge bg-success px-2 py-1">Active</span>
                                   </div>
-                                </td>
-                                <td>
+                                  <h5 className="card-title fw-bold mb-2 text-dark">{item.name}</h5>
+                                  <div className="fs-3 fw-bold text-main mb-3">
+                                    {(item.priceInPaisa / 100).toLocaleString("en-IN", { style: "currency", currency: "INR" })}
+                                  </div>
+                                  <div className="mb-3">
+                                    {renderFeatures(item.featuresJson)}
+                                  </div>
+                                </div>
+                                <div className="pt-3 border-top mt-2">
                                   <button
                                     type="button"
-                                    className="btn btn-md btn-main px-3"
+                                    className="btn btn-main w-100 py-2 fw-medium"
                                     disabled={buyingId === item.id}
                                     onClick={() => handleBuy(item)}
                                   >
-                                    {buyingId === item.id ? "Processing..." : "Buy"}
+                                    {buyingId === item.id ? "Processing..." : "Buy Now"}
                                   </button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>

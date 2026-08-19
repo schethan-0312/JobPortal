@@ -135,6 +135,28 @@ export class ApplicationsService {
       throw new ForbiddenException('This application does not belong to one of your job postings');
     }
 
+    if (dto.status === 'OFFERED' && application.status !== 'OFFERED') {
+      const hiredCount = await this.prisma.application.count({
+        where: {
+          status: 'OFFERED',
+          job: { employerId: employer.id },
+        },
+      });
+
+      if (hiredCount >= 20) {
+        const activeSub = await this.prisma.employerPackageSubscription.findUnique({
+          where: { employerId: employer.id },
+        });
+
+        const isSubActive = activeSub && (!activeSub.expiresAt || new Date(activeSub.expiresAt) > new Date());
+        if (!isSubActive) {
+          throw new ForbiddenException(
+            'Subscription required: You have reached the limit of 20 hired candidates. Please upgrade your package to hire more candidates.',
+          );
+        }
+      }
+    }
+
     const updated = await this.prisma.application.update({
       where: { id: applicationId },
       data: { status: dto.status },

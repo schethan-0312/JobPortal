@@ -1,10 +1,13 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { PackagesService } from './packages.service.js';
 import { CreateOrderDto } from './dto/create-order.dto.js';
 import { VerifyRazorpayPaymentDto } from './dto/verify-razorpay-payment.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { RolesGuard } from '../auth/guards/roles.guard.js';
+import { Roles } from '../auth/decorators/roles.decorator.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import type { AuthenticatedUser } from '../auth/decorators/current-user.decorator.js';
+import { Role } from '../../generated/prisma/enums.js';
 
 @Controller('packages')
 export class PackagesController {
@@ -13,6 +16,34 @@ export class PackagesController {
   @Get()
   list(@Query('audience') audience?: 'CANDIDATE' | 'EMPLOYER' | 'RESUME') {
     return this.packagesService.listByAudience(audience);
+  }
+
+  @Get('all')
+  listAll() {
+    return this.packagesService.listAll();
+  }
+
+  @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  createPackage(
+    @Body()
+    body: {
+      name: string;
+      audience: 'CANDIDATE' | 'EMPLOYER' | 'RESUME';
+      priceInPaisa: number;
+      featuresJson?: any;
+      isActive?: boolean;
+    },
+  ) {
+    return this.packagesService.createPackage(body);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  deletePackage(@Param('id') id: string) {
+    return this.packagesService.deletePackage(id);
   }
 
   @Post('orders')
