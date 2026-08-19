@@ -31,18 +31,65 @@ export class JobsService {
     if (dto.salaryMin != null && dto.salaryMax != null && dto.salaryMin > dto.salaryMax) {
       throw new ForbiddenException('salaryMin cannot be greater than salaryMax');
     }
+    if (dto.minExperience != null && dto.maxExperience != null && dto.minExperience > dto.maxExperience) {
+      throw new ForbiddenException('minExperience cannot be greater than maxExperience');
+    }
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    if (dto.publishDate && new Date(dto.publishDate) < startOfToday) {
+      throw new ForbiddenException('Publish Date cannot be in the past');
+    }
+    if (dto.applicationDeadline && new Date(dto.applicationDeadline) < startOfToday) {
+      throw new ForbiddenException('Application Deadline cannot be in the past');
+    }
+    if (dto.expiryDate && new Date(dto.expiryDate) < startOfToday) {
+      throw new ForbiddenException('Expiry Date cannot be in the past');
+    }
+    if (dto.publishDate && dto.expiryDate && new Date(dto.publishDate) > new Date(dto.expiryDate)) {
+      throw new ForbiddenException('publishDate cannot be later than expiryDate');
+    }
+
+    const locationStr =
+      dto.location?.trim() ||
+      [dto.city, dto.state, dto.country].filter(Boolean).join(', ').trim() ||
+      'Not specified';
 
     const job = await this.prisma.job.create({
       data: {
         employerId: employer.id,
         title: dto.title,
         slug: this.slugify(dto.title),
-        description: dto.description,
+        summary: dto.summary,
         category: dto.category,
-        location: dto.location,
+        jobRole: dto.jobRole,
         jobType: dto.jobType,
+        description: dto.description,
+        responsibilities: dto.responsibilities,
+        skills: dto.skills || [],
+        minExperience: dto.minExperience,
+        maxExperience: dto.maxExperience,
+        minQualification: dto.minQualification,
+        specialization: dto.specialization,
         salaryMin: dto.salaryMin,
         salaryMax: dto.salaryMax,
+        currency: dto.currency || 'INR',
+        salaryPeriod: dto.salaryPeriod || 'MONTHLY',
+        location: locationStr,
+        country: dto.country,
+        state: dto.state,
+        city: dto.city,
+        workMode: dto.workMode || 'IN_OFFICE',
+        noticePeriod: dto.noticePeriod,
+        willingnessToRelocate: dto.willingnessToRelocate ?? false,
+        willingnessToTravel: dto.willingnessToTravel ?? false,
+        openings: dto.openings ?? 1,
+        applicationDeadline: dto.applicationDeadline ? new Date(dto.applicationDeadline) : undefined,
+        screeningQuestions: dto.screeningQuestions || [],
+        status: dto.status || 'OPEN',
+        publishDate: dto.publishDate ? new Date(dto.publishDate) : undefined,
+        expiryDate: dto.expiryDate ? new Date(dto.expiryDate) : undefined,
+        isFeatured: dto.isFeatured ?? false,
       },
     });
 
@@ -117,7 +164,20 @@ export class JobsService {
   async findBySlug(slug: string) {
     const job = await this.prisma.job.findUnique({
       where: { slug },
-      include: { employer: { select: { id: true, companyName: true, logoUrl: true, description: true, status: true } } },
+      include: {
+        employer: {
+          select: {
+            id: true,
+            companyName: true,
+            logoUrl: true,
+            description: true,
+            website: true,
+            location: true,
+            industry: true,
+            status: true,
+          },
+        },
+      },
     });
     if (!job || job.status !== 'OPEN') {
       throw new NotFoundException('Job not found');
@@ -147,6 +207,27 @@ export class JobsService {
       throw new NotFoundException('Job not found');
     }
     return this.prisma.job.update({ where: { id: jobId }, data: { status: dto.status } });
+  }
+
+  async remove(userId: string, jobId: string) {
+    const employer = await this.prisma.employer.findUnique({ where: { userId } });
+    if (!employer) {
+      throw new NotFoundException('Employer profile not found');
+    }
+    const job = await this.prisma.job.findUnique({ where: { id: jobId } });
+    if (!job || job.employerId !== employer.id) {
+      throw new NotFoundException('Job not found');
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.application.deleteMany({ where: { jobId } }),
+      this.prisma.savedJob.deleteMany({ where: { jobId } }),
+      this.prisma.report.deleteMany({ where: { jobId } }),
+      this.prisma.jobAssessment.deleteMany({ where: { jobId } }),
+      this.prisma.job.delete({ where: { id: jobId } }),
+    ]);
+
+    return { success: true, message: 'Job deleted successfully' };
   }
 
   async createAssessment(userId: string, jobId: string, dto: any) {
