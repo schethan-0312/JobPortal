@@ -71,6 +71,16 @@ export class JobsController {
     return this.jobsService.updateStatus(user.userId, id, dto);
   }
 
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EMPLOYER)
+  remove(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+  ) {
+    return this.jobsService.remove(user.userId, id);
+  }
+
   @Post(':id/assessment')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EMPLOYER)

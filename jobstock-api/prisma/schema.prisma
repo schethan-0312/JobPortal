@@ -588,15 +588,55 @@ model Job {
   employerId String
   employer   Employer @relation(fields: [employerId], references: [id], onDelete: Cascade)
 
+  // 1. Basic Job Details
   title       String
   slug        String    @unique
-  description String
+  summary     String?
   category    String
-  location    String
-  salaryMin   Int?
-  salaryMax   Int?
+  jobRole     String?
   jobType     JobType
+
+  // 2. Job Description
+  description      String
+  responsibilities String?
+
+  // 3. Skills & Experience
+  skills        String[] @default([])
+  minExperience Int?
+  maxExperience Int?
+
+  // 4. Education & Qualification
+  minQualification String?
+  specialization   String?
+
+  // 5. Salary & Location
+  salaryMin    Int?
+  salaryMax    Int?
+  currency     String?   @default("INR")
+  salaryPeriod String?   @default("MONTHLY")
+  location     String
+  country      String?
+  state        String?
+  city         String?
+  workMode     String?   @default("IN_OFFICE")
+
+  // 6. Candidate Preferences
+  noticePeriod          String?
+  willingnessToRelocate Boolean? @default(false)
+  willingnessToTravel   Boolean? @default(false)
+
+  // 7. Job Openings
+  openings            Int?      @default(1)
+  applicationDeadline DateTime?
+
+  // 8. Screening Questions
+  screeningQuestions String[] @default([])
+
+  // 10. Publishing
   status      JobStatus @default(OPEN)
+  publishDate DateTime?
+  expiryDate  DateTime?
+  isFeatured  Boolean   @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
