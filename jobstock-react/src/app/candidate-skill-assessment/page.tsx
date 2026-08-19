@@ -45,6 +45,7 @@ export default function CandidateSkillAssessmentPage() {
   const router = useRouter();
 
   const [skill, setSkill] = useState("");
+  const [recommendedSkills, setRecommendedSkills] = useState<string[] | null>(null);
   const [stage, setStage] = useState<Stage>("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [quiz, setQuiz] = useState<StartResponse | null>(null);
@@ -64,6 +65,11 @@ export default function CandidateSkillAssessmentPage() {
         .get<HistoryItem[]>("/skill-assessment/mine")
         .then(setHistory)
         .catch(() => setHistory([]));
+
+      api
+        .get<{ recommendedSkills: string[] }>("/skill-assessment/recommended")
+        .then((res) => setRecommendedSkills(res.recommendedSkills))
+        .catch(() => setRecommendedSkills([]));
     }
   }, [user]);
 
@@ -71,12 +77,12 @@ export default function CandidateSkillAssessmentPage() {
     return null;
   }
 
-  async function handleStart(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleStart(selectedSkill: string) {
+    setSkill(selectedSkill);
     setErrorMsg(null);
     setStage("starting");
     try {
-      const data = await api.post<StartResponse>("/skill-assessment/start", { skill });
+      const data = await api.post<StartResponse>("/skill-assessment/start", { skill: selectedSkill });
       setQuiz(data);
       setSelectedAnswers(new Array(data.questions.length).fill(null));
       setResult(null);
@@ -147,37 +153,30 @@ export default function CandidateSkillAssessmentPage() {
             {(stage === "idle" || stage === "starting") && (
               <div className="card mb-4">
                 <div className="card-header">
-                  <h4>Take a Skill Assessment</h4>
+                  <h4>Recommended Skill Assessments</h4>
                   <p className="text-muted mb-0 mt-1">
-                    Prove your proficiency in any skill with an AI-generated quiz. Score 70% or higher to earn a
-                    verified badge on your profile.
+                    Based on your profile, here are some AI-recommended skills you can assess to prove your proficiency.
                   </p>
                 </div>
                 <div className="card-body">
                   {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
-                  <form onSubmit={handleStart}>
-                    <div className="row mb-3">
-                      <label className="col-xl-2 col-md-12 col-form-label">Skill</label>
-                      <div className="col-xl-7 col-md-12">
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="e.g. React, Python, SQL, Digital Marketing"
-                          value={skill}
-                          onChange={(e) => setSkill(e.target.value)}
-                          required
-                          minLength={2}
-                        />
-                      </div>
-                    </div>
-                    <div className="row">
-                      <div className="col-xl-12 col-md-12">
-                        <button type="submit" className="btn btn-main" disabled={stage === "starting"}>
-                          {stage === "starting" ? "Generating Quiz..." : "Start Assessment"}
+                  {recommendedSkills === null ? (
+                    <p className="text-muted">Loading recommendations...</p>
+                  ) : (
+                    <div className="d-flex flex-wrap gap-2">
+                      {recommendedSkills.map((rs) => (
+                        <button
+                          key={rs}
+                          type="button"
+                          className="btn btn-outline-main"
+                          disabled={stage === "starting"}
+                          onClick={() => handleStart(rs)}
+                        >
+                          {stage === "starting" && skill === rs ? "Generating..." : rs}
                         </button>
-                      </div>
+                      ))}
                     </div>
-                  </form>
+                  )}
                 </div>
               </div>
             )}

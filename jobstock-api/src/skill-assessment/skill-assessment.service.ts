@@ -24,6 +24,12 @@ Respond with strict JSON matching this exact shape, no markdown, no extra text:
   ]
 }`;
 
+const RECOMMENDATION_SYSTEM_PROMPT = `You are an AI job portal assistant. Given a candidate's profile, recommend exactly 3 to 5 specific technical or professional skills they should take an assessment for to prove their proficiency.
+Respond with strict JSON matching this exact shape, no markdown, no extra text:
+{
+  "recommendedSkills": string[]
+}`;
+
 @Injectable()
 export class SkillAssessmentService {
   constructor(
@@ -127,5 +133,34 @@ export class SkillAssessmentService {
       },
     });
     return assessments;
+  }
+
+  async getRecommendedSkills(userId: string) {
+    const profile = await this.prisma.candidateProfile.findUnique({ where: { userId } });
+    if (!profile) {
+      throw new NotFoundException('Candidate profile not found');
+    }
+
+    if (!profile.headline && profile.skills.length === 0) {
+      // Default recommendations if profile is empty
+      return { recommendedSkills: ['Communication', 'Problem Solving', 'Time Management'] };
+    }
+
+    const userPrompt = `Candidate profile:
+- Headline: ${profile.headline || 'Not specified'}
+- Skills: ${profile.skills.length > 0 ? profile.skills.join(', ') : 'Not specified'}
+- Years of experience: ${profile.experienceYears ?? 'Not specified'}
+- Location: ${profile.location || 'Not specified'}
+- About: ${profile.about || 'Not specified'}`;
+
+    try {
+      const { recommendedSkills } = await this.ai.generateJson<{ recommendedSkills: string[] }>(
+        RECOMMENDATION_SYSTEM_PROMPT,
+        userPrompt,
+      );
+      return { recommendedSkills: recommendedSkills || ['Communication', 'Problem Solving', 'Time Management'] };
+    } catch (err) {
+      return { recommendedSkills: ['Communication', 'Problem Solving', 'Time Management'] };
+    }
   }
 }

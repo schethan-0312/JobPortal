@@ -273,7 +273,11 @@ export class JobsService {
       },
       include: {
         job: { select: { title: true } },
-        _count: { select: { attempts: true } }
+        _count: { select: { attempts: true } },
+        attempts: {
+          where: { status: 'COMPLETED' },
+          select: { answers: true }
+        }
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -308,6 +312,42 @@ export class JobsService {
         { score: 'desc' },
         { startedAt: 'desc' }
       ]
+    });
+  }
+
+  async deleteAssessment(userId: string, assessmentId: string) {
+    const employer = await this.prisma.employer.findUnique({ where: { userId } });
+    if (!employer) throw new NotFoundException('Employer profile not found');
+
+    const assessment = await this.prisma.jobAssessment.findUnique({
+      where: { id: assessmentId },
+      include: { job: true },
+    });
+
+    if (!assessment || assessment.job.employerId !== employer.id) {
+      throw new ForbiddenException('Assessment not found or access denied');
+    }
+
+    return this.prisma.jobAssessment.delete({
+      where: { id: assessmentId },
+    });
+  }
+
+  async deleteAssessmentAttempt(userId: string, attemptId: string) {
+    const employer = await this.prisma.employer.findUnique({ where: { userId } });
+    if (!employer) throw new NotFoundException('Employer profile not found');
+
+    const attempt = await this.prisma.jobAssessmentAttempt.findUnique({
+      where: { id: attemptId },
+      include: { assessment: { include: { job: true } } },
+    });
+
+    if (!attempt || attempt.assessment.job.employerId !== employer.id) {
+      throw new NotFoundException('Attempt not found or access denied');
+    }
+
+    return this.prisma.jobAssessmentAttempt.delete({
+      where: { id: attemptId },
     });
   }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
@@ -17,6 +17,12 @@ type QuestionType =
   | "whiteboard"
   | "personality";
 
+export interface TestCase {
+  id: string;
+  input: string;
+  expectedOutput: string;
+}
+
 interface BaseQuestion {
   id: string;
   prompt: string;
@@ -24,6 +30,7 @@ interface BaseQuestion {
   correctOptionIndex?: number;
   starterCode?: string;
   expectedOutput?: string;
+  testCases?: TestCase[];
   schemaDescription?: string;
   expectedSqlOutput?: string;
   expectedFormulas?: string;
@@ -31,6 +38,89 @@ interface BaseQuestion {
   behavioralTendencies?: string;
   workingStyle?: string;
 }
+
+interface TestExecutionResult {
+  testCaseId: string;
+  input: string;
+  expectedOutput: string;
+  actualOutput: string;
+  passed: boolean;
+  error?: string;
+  logs?: string[];
+}
+
+const executeCodeTestCases = (code: string, testCases?: TestCase[], fallbackExpectedOutput?: string): TestExecutionResult[] => {
+  const effectiveTestCases: TestCase[] = (testCases && testCases.length > 0)
+    ? testCases
+    : [{ id: "default", input: "", expectedOutput: fallbackExpectedOutput || "" }];
+
+  return effectiveTestCases.map((tc) => {
+    let logs: string[] = [];
+    let actualOutput = "";
+    let passed = false;
+    let error: string | undefined = undefined;
+
+    try {
+      const customConsole = {
+        log: (...args: any[]) => {
+          logs.push(args.map(a => typeof a === "object" ? JSON.stringify(a) : String(a)).join(" "));
+        },
+        error: (...args: any[]) => {
+          logs.push("ERROR: " + args.map(a => typeof a === "object" ? JSON.stringify(a) : String(a)).join(" "));
+        },
+        warn: (...args: any[]) => {
+          logs.push("WARN: " + args.map(a => typeof a === "object" ? JSON.stringify(a) : String(a)).join(" "));
+        }
+      };
+
+      let parsedInput: any = tc.input;
+      try {
+        if (tc.input && tc.input.trim() !== "") {
+          parsedInput = JSON.parse(tc.input);
+        }
+      } catch (e) {
+        parsedInput = tc.input;
+      }
+
+      const runnerFn = new Function("console", "input", `
+        "use strict";
+        ${code}
+        if (typeof solution === "function") {
+          return solution(input);
+        }
+      `);
+
+      const result = runnerFn(customConsole, parsedInput);
+
+      if (result !== undefined) {
+        actualOutput = typeof result === "object" ? JSON.stringify(result) : String(result);
+      } else if (logs.length > 0) {
+        actualOutput = logs.join("\n");
+      } else {
+        actualOutput = "undefined";
+      }
+
+      const normActual = actualOutput.trim();
+      const normExpected = (tc.expectedOutput || "").trim();
+
+      passed = (normActual === normExpected);
+    } catch (err: any) {
+      error = err.message || String(err);
+      actualOutput = `Runtime Error: ${error}`;
+      passed = false;
+    }
+
+    return {
+      testCaseId: tc.id,
+      input: tc.input,
+      expectedOutput: tc.expectedOutput || "",
+      actualOutput,
+      passed,
+      error,
+      logs
+    };
+  });
+};
 
 interface QuestionSection {
   id: string;
@@ -62,8 +152,10 @@ export default function AssessmentAttemptPage() {
   const [isLocked, setIsLocked] = useState(false);
   
   // Media Tracking State
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoElementRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [mediaPermissionDenied, setMediaPermissionDenied] = useState(false);
   const [requestingMedia, setRequestingMedia] = useState(true);
@@ -87,6 +179,25 @@ export default function AssessmentAttemptPage() {
           streamRef.current = stream;
           setMediaStream(stream);
           setRequestingMedia(false);
+
+          // Initialize MediaRecorder for employer proctoring view
+          try {
+            recordedChunksRef.current = [];
+            const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')
+              ? 'video/webm;codecs=vp8,opus'
+              : 'video/webm';
+            const recorder = new MediaRecorder(stream, { mimeType });
+            recorder.ondataavailable = (event) => {
+              if (event.data && event.data.size > 0) {
+                recordedChunksRef.current.push(event.data);
+              }
+            };
+            recorder.start(1000);
+            mediaRecorderRef.current = recorder;
+          } catch (recErr) {
+            console.warn("MediaRecorder initialization warning:", recErr);
+          }
+
           startAttempt();
         })
         .catch(err => {
@@ -97,6 +208,9 @@ export default function AssessmentAttemptPage() {
     }
 
     return () => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+        try { mediaRecorderRef.current.stop(); } catch (e) {}
+      }
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
         streamRef.current = null;
@@ -104,13 +218,47 @@ export default function AssessmentAttemptPage() {
     };
   }, [user, loading, router, assessmentId]);
 
-  const handleVideoRef = (node: HTMLVideoElement | null) => {
+  // Bind video element cleanly when mounted in DOM without flickering or black screen
+  const bindVideoRef = useCallback((node: HTMLVideoElement | null) => {
     if (node && mediaStream) {
-      node.srcObject = mediaStream;
-      node.onloadedmetadata = () => {
+      if (node.srcObject !== mediaStream) {
+        node.srcObject = mediaStream;
         node.play().catch(e => console.error("Video play error:", e));
-      };
+      }
     }
+  }, [mediaStream]);
+
+  const getProctoringVideoDataUrl = (): Promise<string | null> => {
+    return new Promise((resolve) => {
+      const finalizeBlob = () => {
+        if (!recordedChunksRef.current || recordedChunksRef.current.length === 0) {
+          resolve(null);
+          return;
+        }
+        try {
+          const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(blob);
+        } catch (e) {
+          resolve(null);
+        }
+      };
+
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+        mediaRecorderRef.current.onstop = () => {
+          finalizeBlob();
+        };
+        try {
+          mediaRecorderRef.current.stop();
+        } catch (e) {
+          finalizeBlob();
+        }
+      } else {
+        finalizeBlob();
+      }
+    });
   };
 
   useEffect(() => {
@@ -177,12 +325,26 @@ export default function AssessmentAttemptPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await api.post(`/jobs/assessments/${assessmentId}/submit`, answers);
+      const payloadAnswers: Record<string, any> = { ...answers };
+
+      try {
+        const videoPromise = getProctoringVideoDataUrl();
+        const timeoutPromise = new Promise<null>((res) => setTimeout(() => res(null), 2500));
+        const videoBase64 = await Promise.race([videoPromise, timeoutPromise]);
+        if (videoBase64) {
+          payloadAnswers._proctoringVideo = videoBase64;
+        }
+      } catch (videoErr) {
+        console.warn("Video processing warning:", videoErr);
+      }
+
+      await api.post(`/jobs/assessments/${assessmentId}/submit`, payloadAnswers);
       alert("Assessment submitted successfully!");
       router.push("/candidate-competition");
     } catch (err: any) {
-      console.error(err);
-      alert("Failed to submit assessment.");
+      console.error("Submission error:", err);
+      const errMsg = err?.message || err?.response?.data?.message || "Failed to submit assessment.";
+      alert(`Submission Error: ${errMsg}`);
     } finally {
       setSubmitting(false);
     }
@@ -323,20 +485,96 @@ export default function AssessmentAttemptPage() {
                             <div className="mt-3">
                               {q.starterCode && (
                                 <div className="mb-3">
-                                  <label className="form-label small text-muted">Starter Code</label>
-                                  <pre className="bg-dark text-light p-3 rounded">{q.starterCode}</pre>
+                                  <label className="form-label small text-muted fw-bold">
+                                    <i className="fa-solid fa-code me-1"></i>Starter Code
+                                  </label>
+                                  <pre className="bg-dark text-light p-3 rounded font-monospace">{q.starterCode}</pre>
                                 </div>
                               )}
-                              <label className="form-label fw-medium">Your Solution</label>
+                              <div className="d-flex justify-content-between align-items-center mb-2">
+                                <label className="form-label fw-bold mb-0">Your Solution (JavaScript)</label>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-success px-3"
+                                  disabled={isLocked}
+                                  onClick={() => {
+                                    const codeToRun = currentAnswer.code || q.starterCode || "";
+                                    const results = executeCodeTestCases(codeToRun, q.testCases, q.expectedOutput);
+                                    handleAnswerChange(section.id, q.id, "testResults", results);
+                                    if (!currentAnswer.code && q.starterCode) {
+                                      handleAnswerChange(section.id, q.id, "code", q.starterCode);
+                                    }
+                                  }}
+                                >
+                                  <i className="fa-solid fa-play me-1"></i> Run & Test Code
+                                </button>
+                              </div>
                               <textarea 
-                                className="form-control text-monospace bg-light" 
+                                className="form-control font-monospace bg-dark text-light p-3 mb-3" 
                                 rows={8} 
-                                style={{ fontFamily: "monospace" }}
-                                value={currentAnswer.code || ""}
+                                style={{ fontFamily: "monospace", tabSize: 2 }}
+                                placeholder={q.starterCode || "// Write your code solution here..."}
+                                value={currentAnswer.code !== undefined ? currentAnswer.code : (q.starterCode || "")}
                                 onChange={(e) => handleAnswerChange(section.id, q.id, "code", e.target.value)}
                                 disabled={isLocked}
                                 required
                               ></textarea>
+
+                              {/* Test Case Results Display */}
+                              {currentAnswer.testResults && Array.isArray(currentAnswer.testResults) && (
+                                <div className="p-3 bg-white border rounded shadow-sm">
+                                  <div className="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 className="fw-bold mb-0">
+                                      <i className="fa-solid fa-vials me-2 text-primary"></i>Test Case Results
+                                    </h6>
+                                    {(() => {
+                                      const total = currentAnswer.testResults.length;
+                                      const passedCount = currentAnswer.testResults.filter((r: any) => r.passed).length;
+                                      const allPassed = total > 0 && passedCount === total;
+                                      return (
+                                        <span className={`badge ${allPassed ? 'bg-success' : passedCount > 0 ? 'bg-warning text-dark' : 'bg-danger'} px-3 py-2 fs-6`}>
+                                          {passedCount} / {total} Test Cases Passed
+                                        </span>
+                                      );
+                                    })()}
+                                  </div>
+
+                                  <div className="table-responsive">
+                                    <table className="table table-bordered align-middle small mb-0">
+                                      <thead className="table-light">
+                                        <tr>
+                                          <th>#</th>
+                                          <th>Status</th>
+                                          <th>Input</th>
+                                          <th>Expected Output</th>
+                                          <th>Actual Output</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {currentAnswer.testResults.map((tr: any, trIdx: number) => (
+                                          <tr key={tr.testCaseId || trIdx} className={tr.passed ? 'table-success-subtle' : 'table-danger-subtle'}>
+                                            <td className="fw-bold">{trIdx + 1}</td>
+                                            <td>
+                                              {tr.passed ? (
+                                                <span className="badge bg-success"><i className="fa-solid fa-check me-1"></i>PASSED</span>
+                                              ) : (
+                                                <span className="badge bg-danger"><i className="fa-solid fa-xmark me-1"></i>FAILED</span>
+                                              )}
+                                            </td>
+                                            <td><code className="text-dark">{tr.input || "(None)"}</code></td>
+                                            <td><code className="text-dark">{tr.expectedOutput || "(None)"}</code></td>
+                                            <td>
+                                              <code className={tr.passed ? "text-success fw-bold" : "text-danger fw-bold"}>
+                                                {tr.actualOutput}
+                                              </code>
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )}
 
@@ -464,22 +702,30 @@ export default function AssessmentAttemptPage() {
           style={{ 
             bottom: "20px", 
             right: "20px", 
-            width: "200px", 
-            height: "150px", 
-            borderRadius: "10px",
+            width: "210px", 
+            height: "155px", 
+            borderRadius: "12px",
             overflow: "hidden",
             zIndex: 1050 
           }}
         >
           <video 
-            ref={handleVideoRef}
+            ref={bindVideoRef}
             autoPlay 
             muted 
             playsInline
-            style={{ width: "100%", height: "100%", objectFit: "cover", transform: "scaleX(-1)" }}
+            onCanPlay={(e) => e.currentTarget.play().catch(() => {})}
+            style={{ 
+              width: "100%", 
+              height: "100%", 
+              objectFit: "cover", 
+              transform: "scaleX(-1)", 
+              WebkitTransform: "scaleX(-1)",
+              backfaceVisibility: "hidden"
+            }}
           />
-          <div className="position-absolute bottom-0 start-0 w-100 bg-danger text-white text-center py-1" style={{ fontSize: "0.7rem", opacity: 0.8 }}>
-            <i className="fa-solid fa-record-vinyl me-1" style={{ animation: "pulse 2s infinite" }}></i> Recording
+          <div className="position-absolute bottom-0 start-0 w-100 bg-danger text-white text-center py-1" style={{ fontSize: "0.7rem", opacity: 0.9 }}>
+            <i className="fa-solid fa-record-vinyl me-1" style={{ animation: "pulse 2s infinite" }}></i> Recording Camera & Audio
           </div>
         </div>
       )}

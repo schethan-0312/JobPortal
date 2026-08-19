@@ -28,7 +28,6 @@ export class AdminLegalController {
   }
 
   @Put(':slug')
-  @AdminRoles(AdminRole.SUPER_ADMIN)
   upsert(
     @CurrentUser() user: AuthenticatedUser,
     @Param('slug') slug: string,

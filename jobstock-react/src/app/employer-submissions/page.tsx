@@ -20,6 +20,7 @@ interface AssessmentListResponse {
   _count: {
     attempts: number;
   };
+  questions?: Array<{ type: string }>;
 }
 
 export default function EmployerSubmissionsPage() {
@@ -50,6 +51,56 @@ export default function EmployerSubmissionsPage() {
         setDataLoading(false);
       });
   }, [user]);
+
+  const getParsedQuestions = (questions: any): any[] => {
+    if (!questions) return [];
+    if (typeof questions === "string") {
+      try {
+        return JSON.parse(questions);
+      } catch (e) {
+        return [];
+      }
+    }
+    if (Array.isArray(questions)) return questions;
+    return [];
+  };
+
+  const calculateAssessmentAvgScore = (assessment: any): number | null => {
+    const questions = getParsedQuestions(assessment.questions);
+    const hasMCQ = questions.some((sec: any) => sec.type?.toLowerCase() === "mcq" || (Array.isArray(sec.questions) && sec.questions.some((q: any) => q.type?.toLowerCase() === "mcq")));
+    if (!hasMCQ || !assessment.attempts || assessment.attempts.length === 0) return null;
+
+    let scores: number[] = [];
+
+    assessment.attempts.forEach((attempt: any) => {
+      if (!attempt.answers) return;
+      let totalMCQ = 0;
+      let correctMCQ = 0;
+
+      questions.forEach((section: any) => {
+        if (section.type?.toLowerCase() === "mcq" && Array.isArray(section.questions)) {
+          section.questions.forEach((q: any) => {
+            totalMCQ++;
+            const currentAnswer = attempt.answers?.[section.id]?.[q.id];
+            if (currentAnswer && currentAnswer.selectedOption !== undefined && currentAnswer.selectedOption !== null && currentAnswer.selectedOption !== "") {
+              const optIndex = parseInt(currentAnswer.selectedOption, 10);
+              if (!isNaN(optIndex) && optIndex === q.correctOptionIndex) {
+                correctMCQ++;
+              }
+            }
+          });
+        }
+      });
+
+      if (totalMCQ > 0) {
+        scores.push(Math.round((correctMCQ / totalMCQ) * 100));
+      }
+    });
+
+    if (scores.length === 0) return null;
+    const sum = scores.reduce((acc, curr) => acc + curr, 0);
+    return Math.round(sum / scores.length);
+  };
 
   if (loading || !user || user.role !== "EMPLOYER") {
     return null;
@@ -106,29 +157,51 @@ export default function EmployerSubmissionsPage() {
                         <tr>
                           <th className="py-3 px-4">Assessment Title</th>
                           <th className="py-3">Job Role</th>
+                          <th className="py-3">Method</th>
+                          <th className="py-3">Avg Score</th>
                           <th className="py-3">Total Submissions</th>
                           <th className="py-3">Created On</th>
                           <th className="py-3 text-end px-4">Action</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {assessments.map((a) => (
-                          <tr key={a.id}>
-                            <td className="py-3 px-4 fw-medium text-dark">{a.title}</td>
-                            <td className="py-3 text-muted">{a.job.title}</td>
-                            <td className="py-3">
-                              <span className={`badge ${a._count.attempts > 0 ? 'bg-success' : 'bg-secondary'}`}>
-                                {a._count.attempts} attempts
-                              </span>
-                            </td>
-                            <td className="py-3 text-muted">{new Date(a.createdAt).toLocaleDateString()}</td>
-                            <td className="py-3 text-end px-4">
-                              <Link href={`/employer-submissions/${a.id}`} className="btn btn-sm btn-outline-primary px-3">
-                                View Candidates
-                              </Link>
-                            </td>
-                          </tr>
-                        ))}
+                        {assessments.map((a) => {
+                          const parsedQ = getParsedQuestions(a.questions);
+                          const methodType = parsedQ?.[0]?.type || a.questions?.[0]?.type || 'Unknown';
+                          const avg = calculateAssessmentAvgScore(a);
+                          
+                          return (
+                            <tr key={a.id}>
+                              <td className="py-3 px-4 fw-medium text-dark">{a.title}</td>
+                              <td className="py-3 text-muted">{a.job.title}</td>
+                              <td className="py-3">
+                                <span className="badge bg-light text-dark border">
+                                  {methodType.toUpperCase()}
+                                </span>
+                              </td>
+                              <td className="py-3">
+                                {avg !== null ? (
+                                  <span className={`badge ${avg >= 70 ? 'bg-success' : avg >= 40 ? 'bg-warning text-dark' : 'bg-danger'} px-2 py-1 fs-6`}>
+                                    {avg}%
+                                  </span>
+                                ) : (
+                                  <span className="text-muted">-</span>
+                                )}
+                              </td>
+                              <td className="py-3">
+                                <span className={`badge ${a._count.attempts > 0 ? 'bg-primary' : 'bg-secondary'}`}>
+                                  {a._count.attempts} attempts
+                                </span>
+                              </td>
+                              <td className="py-3 text-muted">{new Date(a.createdAt).toLocaleDateString()}</td>
+                              <td className="py-3 text-end px-4">
+                                <Link href={`/employer-submissions/${a.id}`} className="btn btn-sm btn-outline-primary px-3">
+                                  View Candidates
+                                </Link>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>

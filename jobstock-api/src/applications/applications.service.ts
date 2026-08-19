@@ -61,7 +61,7 @@ export class ApplicationsService {
       throw new NotFoundException('Job not found');
     }
 
-    return this.prisma.application.findMany({
+    const applications = await this.prisma.application.findMany({
       where: { jobId },
       include: {
         candidate: {
@@ -80,12 +80,41 @@ export class ApplicationsService {
                 githubProfileUrl: true,
                 githubAvatarUrl: true,
                 experienceYears: true,
+                jobAssessmentAttempts: {
+                  where: {
+                    assessment: { jobId },
+                    status: 'COMPLETED'
+                  },
+                  include: {
+                    assessment: true
+                  }
+                }
               },
             },
           },
         },
       },
-      orderBy: { appliedAt: 'desc' },
+    });
+
+    // Rank applicants by their total job assessment score
+    const rankedApplications = applications.sort((a, b) => {
+      const scoreA = a.candidate.candidateProfile?.jobAssessmentAttempts.reduce((sum, attempt) => sum + (attempt.score || 0), 0) || 0;
+      const scoreB = b.candidate.candidateProfile?.jobAssessmentAttempts.reduce((sum, attempt) => sum + (attempt.score || 0), 0) || 0;
+      
+      // Secondary sort by appliedAt if scores are equal
+      if (scoreA === scoreB) {
+        return b.appliedAt.getTime() - a.appliedAt.getTime();
+      }
+      return scoreB - scoreA;
+    });
+
+    // Limit assessment data (scores/answers) to the top 10 candidates only
+    return rankedApplications.map((app, index) => {
+      if (index >= 10 && app.candidate.candidateProfile) {
+        // Strip out the assessment attempts to hide scores and answers
+        app.candidate.candidateProfile.jobAssessmentAttempts = [];
+      }
+      return app;
     });
   }
 
