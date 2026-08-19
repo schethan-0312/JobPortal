@@ -5,6 +5,7 @@ import { EmployersService } from '../employers/employers.service.js';
 import { JobMatchingService } from '../job-matching/job-matching.service.js';
 import { CreateJobDto } from './dto/create-job.dto.js';
 import { UpdateJobStatusDto } from './dto/update-job-status.dto.js';
+import { CreateJobAssessmentDto } from './dto/create-job-assessment.dto.js';
 
 @Injectable()
 export class JobsService {
@@ -146,5 +147,224 @@ export class JobsService {
       throw new NotFoundException('Job not found');
     }
     return this.prisma.job.update({ where: { id: jobId }, data: { status: dto.status } });
+  }
+
+  async createAssessment(userId: string, jobId: string, dto: any) {
+    const employer = await this.prisma.employer.findUnique({ where: { userId } });
+    if (!employer) throw new NotFoundException('Employer profile not found');
+    
+    const job = await this.prisma.job.findUnique({ where: { id: jobId } });
+    if (!job || job.employerId !== employer.id) throw new NotFoundException('Job not found');
+
+    return this.prisma.jobAssessment.create({
+      data: {
+        jobId,
+        title: dto.title,
+        skills: dto.skills,
+        questions: dto.questions as any,
+        timeLimitMinutes: dto.timeLimitMinutes,
+      },
+    });
+  }
+
+  async getAssessmentsForJob(userId: string, jobId: string) {
+    const employer = await this.prisma.employer.findUnique({ where: { userId } });
+    if (!employer) throw new NotFoundException('Employer profile not found');
+    
+    const job = await this.prisma.job.findUnique({ where: { id: jobId } });
+    if (!job || job.employerId !== employer.id) throw new NotFoundException('Job not found');
+
+    return this.prisma.jobAssessment.findMany({ 
+      where: { jobId },
+      orderBy: { createdAt: 'asc' }
+    });
+  }
+
+
+
+  async getEmployerAssessments(userId: string) {
+    const employer = await this.prisma.employer.findUnique({ where: { userId } });
+    if (!employer) throw new NotFoundException('Employer profile not found');
+
+    return this.prisma.jobAssessment.findMany({
+      where: {
+        job: { employerId: employer.id }
+      },
+      include: {
+        job: { select: { title: true } },
+        _count: { select: { attempts: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  }
+
+  async getAssessmentSubmissions(userId: string, assessmentId: string) {
+    const employer = await this.prisma.employer.findUnique({ where: { userId } });
+    if (!employer) throw new NotFoundException('Employer profile not found');
+
+    const assessment = await this.prisma.jobAssessment.findUnique({
+      where: { id: assessmentId },
+      include: { job: true }
+    });
+
+    if (!assessment || assessment.job.employerId !== employer.id) {
+      throw new NotFoundException('Assessment not found or access denied');
+    }
+
+    return this.prisma.jobAssessmentAttempt.findMany({
+      where: { 
+        assessmentId,
+        status: 'COMPLETED' 
+      },
+      take: 10,
+      include: {
+        candidate: {
+          include: { user: { select: { email: true } } }
+        },
+        assessment: { select: { title: true, questions: true } }
+      },
+      orderBy: [
+        { score: 'desc' },
+        { startedAt: 'desc' }
+      ]
+    });
+  }
+
+  // --- Candidate Assessment Methods ---
+
+  async getMatchingAssessments(userId: string) {
+    const candidate = await this.prisma.candidateProfile.findUnique({ where: { userId } });
+    if (!candidate) throw new NotFoundException('Candidate profile not found');
+
+    if (!candidate.skills || candidate.skills.length === 0) {
+      return [];
+    }
+
+    const candidateSkillsLower = candidate.skills.map(s => s.toLowerCase());
+
+    // Fetch all open assessments since Prisma hasSome is case-sensitive for string arrays
+    const allAssessments = await this.prisma.jobAssessment.findMany({
+      where: {
+        job: { status: 'OPEN' }
+      },
+      include: {
+        job: {
+          select: { title: true, slug: true, employer: { select: { companyName: true, logoUrl: true } } },
+        },
+        attempts: {
+          where: { candidateId: candidate.id },
+          select: { status: true, score: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const assessments = allAssessments.filter(a => 
+      a.skills.some(skill => candidateSkillsLower.includes(skill.toLowerCase()))
+    );
+
+    return assessments;
+  }
+
+  async getAssessmentDetailsForCandidate(userId: string, assessmentId: string) {
+    const candidate = await this.prisma.candidateProfile.findUnique({ where: { userId } });
+    if (!candidate) throw new NotFoundException('Candidate profile not found');
+
+    const assessment = await this.prisma.jobAssessment.findUnique({
+      where: { id: assessmentId },
+      include: {
+        job: { select: { title: true, employer: { select: { companyName: true } } } },
+        _count: { select: { attempts: true } }
+      }
+    });
+
+    if (!assessment) throw new NotFoundException('Assessment not found');
+
+    // Remove the questions payload for security before they start
+    const { questions, ...safeAssessment } = assessment as any;
+    
+    // Also fetch their attempt if it exists
+    const attempt = await this.prisma.jobAssessmentAttempt.findFirst({
+      where: { candidateId: candidate.id, assessmentId },
+      orderBy: { startedAt: 'desc' }
+    });
+
+    return { ...safeAssessment, attempt };
+  }
+
+  async startAssessmentAttempt(userId: string, assessmentId: string) {
+    const candidate = await this.prisma.candidateProfile.findUnique({ where: { userId } });
+    if (!candidate) throw new NotFoundException('Candidate profile not found');
+
+    const assessment = await this.prisma.jobAssessment.findUnique({ 
+      where: { id: assessmentId },
+      include: { job: true }
+    });
+    if (!assessment) throw new NotFoundException('Assessment not found');
+
+    // Upsert an attempt so if they refresh, they get the same IN_PROGRESS attempt
+    const attempt = await this.prisma.jobAssessmentAttempt.upsert({
+      where: {
+        assessmentId_candidateId: {
+          assessmentId: assessment.id,
+          candidateId: candidate.id,
+        },
+      },
+      update: {}, // don't change anything if it exists
+      create: {
+        assessmentId: assessment.id,
+        candidateId: candidate.id,
+        status: 'IN_PROGRESS',
+      },
+    });
+
+    if (attempt.status === 'COMPLETED') {
+      throw new ForbiddenException('You have already completed this assessment');
+    }
+
+    return {
+      attemptId: attempt.id,
+      startedAt: attempt.startedAt,
+      assessment,
+    };
+  }
+
+  async submitAssessmentAttempt(userId: string, assessmentId: string, answers: any) {
+    const candidate = await this.prisma.candidateProfile.findUnique({ where: { userId } });
+    if (!candidate) throw new NotFoundException('Candidate profile not found');
+
+    const assessment = await this.prisma.jobAssessment.findUnique({ where: { id: assessmentId } });
+    if (!assessment) throw new NotFoundException('Assessment not found');
+
+    const attempt = await this.prisma.jobAssessmentAttempt.findUnique({
+      where: {
+        assessmentId_candidateId: {
+          assessmentId: assessment.id,
+          candidateId: candidate.id,
+        },
+      },
+    });
+
+    if (!attempt) throw new NotFoundException('Attempt not found');
+    if (attempt.status === 'COMPLETED') throw new ForbiddenException('Assessment already completed');
+    
+    // Check if time expired
+    if (assessment.timeLimitMinutes) {
+      const elapsedMs = Date.now() - new Date(attempt.startedAt).getTime();
+      const timeLimitMs = assessment.timeLimitMinutes * 60000;
+      // Provide a 5 second grace period
+      if (elapsedMs > timeLimitMs + 5000) {
+        // Technically, we can still accept whatever they managed to submit, or mark it as auto-submitted
+      }
+    }
+
+    return this.prisma.jobAssessmentAttempt.update({
+      where: { id: attempt.id },
+      data: {
+        answers,
+        status: 'COMPLETED',
+        completedAt: new Date(),
+      },
+    });
   }
 }

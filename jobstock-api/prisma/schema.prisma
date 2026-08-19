@@ -376,6 +376,7 @@ model CandidateProfile {
 
   followedEmployers EmployerFollow[]
   skillAssessments  SkillAssessment[]
+  jobAssessmentAttempts JobAssessmentAttempt[]
   mockInterviews    MockInterview[]
   profileViews      ProfileView[]
   resume            CandidateResume?
@@ -603,10 +604,43 @@ model Job {
   applications Application[]
   savedBy      SavedJob[]
   reports      Report[]      @relation("ReportedJob")
+  assessments  JobAssessment[]
 
   @@index([status])
   @@index([category])
   @@index([location])
+}
+
+model JobAssessment {
+  id               String   @id @default(cuid())
+  jobId            String
+  job              Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  title            String
+  skills           String[]
+  questions        Json
+  timeLimitMinutes Int?
+  createdAt        DateTime @default(now())
+  
+  attempts  JobAssessmentAttempt[]
+}
+
+model JobAssessmentAttempt {
+  id            String           @id @default(cuid())
+  assessmentId  String
+  assessment    JobAssessment    @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  candidateId   String
+  candidate     CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  
+  answers       Json?
+  score         Int?
+  status        String           @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED
+  
+  startedAt     DateTime         @default(now())
+  completedAt   DateTime?
+
+  @@unique([assessmentId, candidateId])
+  @@index([assessmentId])
+  @@index([candidateId])
 }
 
 model Application {

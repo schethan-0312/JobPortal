@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { api, ApiError } from "@/lib/api";
 
 interface ChatMessage {
@@ -16,12 +17,17 @@ export default function AiChatWidget() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (bodyRef.current) {
       bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
     }
   }, [messages, open]);
+
+  if (pathname && pathname.includes("/exam")) {
+    return null;
+  }
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();

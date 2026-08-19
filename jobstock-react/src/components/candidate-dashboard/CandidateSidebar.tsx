@@ -20,6 +20,7 @@ export type CandidateSidebarActive =
   | "alert-job"
   | "saved-jobs"
   | "follow-employers"
+  | "competition"
   | "messages"
   | "change-password"
   | "delete-account";
@@ -167,6 +168,11 @@ export default function CandidateSidebar({ active }: CandidateSidebarProps) {
               <li className={active === "follow-employers" ? "active" : undefined}>
                 <Link href="/candidate-follow-employers">
                   <i className="fa-solid fa-user-clock me-2"></i>Following Employers
+                </Link>
+              </li>
+              <li className={active === "competition" ? "active" : undefined}>
+                <Link href="/candidate-competition">
+                  <i className="fa-solid fa-trophy me-2"></i>Competition
                 </Link>
               </li>
               <li className={active === "messages" ? "active" : undefined}>

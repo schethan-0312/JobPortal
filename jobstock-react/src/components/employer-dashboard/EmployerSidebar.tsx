@@ -17,6 +17,8 @@ export type EmployerSidebarActive =
   | "auto-shortlist"
   | "package"
   | "messages"
+  | "competition"
+  | "submissions"
   | "change-password"
   | "delete-account";
 
@@ -139,6 +141,16 @@ export default function EmployerSidebar({ active }: EmployerSidebarProps) {
               <li className={active === "auto-shortlist" ? "active" : undefined}>
                 <Link href="/employer-auto-shortlist">
                   <i className="fa-solid fa-wand-magic-sparkles me-2"></i>AI Auto-Shortlist
+                </Link>
+              </li>
+              <li className={active === "competition" ? "active" : undefined}>
+                <Link href="/employer-competition">
+                  <i className="fa-solid fa-trophy me-2"></i>Competition
+                </Link>
+              </li>
+              <li className={active === "submissions" ? "active" : undefined}>
+                <Link href="/employer-submissions">
+                  <i className="fa-solid fa-clipboard-list me-2"></i>Submissions
                 </Link>
               </li>
               <li className={active === "package" ? "active" : undefined}>
