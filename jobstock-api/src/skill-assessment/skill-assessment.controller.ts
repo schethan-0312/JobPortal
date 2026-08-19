@@ -31,4 +31,9 @@ export class SkillAssessmentController {
   listMine(@CurrentUser() user: AuthenticatedUser) {
     return this.skillAssessmentService.listMine(user.userId);
   }
+
+  @Get('recommended')
+  getRecommended(@CurrentUser() user: AuthenticatedUser) {
+    return this.skillAssessmentService.getRecommendedSkills(user.userId);
+  }
 }

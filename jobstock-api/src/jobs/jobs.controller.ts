@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { JobsService } from './jobs.service.js';
 import { CreateJobDto } from './dto/create-job.dto.js';
 import { UpdateJobStatusDto } from './dto/update-job-status.dto.js';
@@ -101,6 +101,13 @@ export class JobsController {
   @Roles(Role.EMPLOYER)
   getAssessmentSubmissions(@CurrentUser() user: AuthenticatedUser, @Param('assessmentId') assessmentId: string) {
     return this.jobsService.getAssessmentSubmissions(user.userId, assessmentId);
+  }
+
+  @Delete('assessments/:assessmentId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EMPLOYER)
+  deleteAssessment(@CurrentUser() user: AuthenticatedUser, @Param('assessmentId') assessmentId: string) {
+    return this.jobsService.deleteAssessment(user.userId, assessmentId);
   }
 
   // --- Candidate Endpoints ---

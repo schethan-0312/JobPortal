@@ -24,6 +24,12 @@ type QuestionType =
   | "whiteboard"
   | "personality";
 
+export interface TestCase {
+  id: string;
+  input: string;
+  expectedOutput: string;
+}
+
 interface BaseQuestion {
   id: string;
   prompt: string;
@@ -31,6 +37,7 @@ interface BaseQuestion {
   correctOptionIndex?: number;
   starterCode?: string;
   expectedOutput?: string;
+  testCases?: TestCase[];
   schemaDescription?: string;
   expectedSqlOutput?: string;
   expectedFormulas?: string;
@@ -104,6 +111,13 @@ export default function EmployerCompetitionPage() {
     if (type === "mcq") {
       newQuestion.options = ["", ""];
       newQuestion.correctOptionIndex = 0;
+    } else if (type === "coding" || type === "debugging") {
+      newQuestion.starterCode = "function solution(input) {\n  // Write your code here\n  return input;\n}";
+      newQuestion.testCases = [
+        { id: crypto.randomUUID(), input: "5", expectedOutput: "5" },
+        { id: crypto.randomUUID(), input: "10", expectedOutput: "10" },
+        { id: crypto.randomUUID(), input: "15", expectedOutput: "15" },
+      ];
     }
     return newQuestion;
   };
@@ -137,6 +151,19 @@ export default function EmployerCompetitionPage() {
       }
       return s;
     }).filter(s => s.questions.length > 0)); // Also remove section if empty
+  };
+
+  const handleDeleteAssessment = async (assessmentId: string) => {
+    if (!confirm("Are you sure you want to delete this assessment?")) return;
+    
+    try {
+      await api.delete(`/jobs/assessments/${assessmentId}`);
+      setExistingAssessments(prev => prev.filter(a => a.id !== assessmentId));
+      setSuccessMsg("Assessment deleted successfully.");
+      setTimeout(() => setSuccessMsg(""), 3000);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to delete assessment");
+    }
   };
 
   const handleUpdateQuestion = (sectionId: string, questionId: string, updates: Partial<BaseQuestion>) => {
@@ -274,9 +301,19 @@ export default function EmployerCompetitionPage() {
                                   {a.skills?.join(", ")} | {a.timeLimitMinutes ? `${a.timeLimitMinutes} minutes` : "No time limit"}
                                 </div>
                               </div>
-                              <span className="badge bg-light text-dark border">
-                                {a.questions?.[0]?.type || 'Unknown'} section
-                              </span>
+                              <div className="d-flex align-items-center gap-2">
+                                <span className="badge bg-light text-dark border">
+                                  {a.questions?.[0]?.type || 'Unknown'} section
+                                </span>
+                                <button 
+                                  type="button"
+                                  className="btn btn-sm btn-outline-danger border-0"
+                                  onClick={() => handleDeleteAssessment(a.id)}
+                                  title="Delete Assessment"
+                                >
+                                  <i className="fa-solid fa-trash"></i>
+                                </button>
+                              </div>
                             </li>
                           ))}
                         </ul>
@@ -482,27 +519,114 @@ export default function EmployerCompetitionPage() {
                                   </div>
                                 )}
 
-                                {(section.type === "coding" || section.type === "debugging") && (
+                                 {(section.type === "coding" || section.type === "debugging") && (
                                   <>
                                     <div className="mb-3">
                                       <label className="form-label fw-medium">Starter / Buggy Code (Optional)</label>
                                       <textarea
                                         className="form-control font-monospace bg-dark text-light"
                                         rows={4}
-                                        placeholder="function solution() {\n  // your code here\n}"
+                                        placeholder="function solution(input) {\n  // your code here\n  return input;\n}"
                                         value={q.starterCode || ""}
                                         onChange={(e) => handleUpdateQuestion(section.id, q.id, { starterCode: e.target.value })}
                                       ></textarea>
+                                      <small className="text-muted">Define the starting template code for the candidate.</small>
                                     </div>
-                                    <div className="mb-3">
-                                      <label className="form-label fw-medium">Expected Output (Optional)</label>
-                                      <textarea
-                                        className="form-control font-monospace"
-                                        rows={2}
-                                        placeholder="e.g. Hello World"
-                                        value={q.expectedOutput || ""}
-                                        onChange={(e) => handleUpdateQuestion(section.id, q.id, { expectedOutput: e.target.value })}
-                                      ></textarea>
+
+                                    <div className="mb-4 p-3 bg-white border rounded shadow-sm">
+                                      <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                                        <h6 className="fw-bold mb-0 text-primary">
+                                          <i className="fa-solid fa-vial-circle-check me-2"></i>Test Cases (Automated Evaluation)
+                                        </h6>
+                                        <div className="d-flex gap-2">
+                                          {(q.testCases || []).length < 3 && (
+                                            <button
+                                              type="button"
+                                              className="btn btn-sm btn-outline-info"
+                                              onClick={() => {
+                                                const currentTC = [...(q.testCases || [])];
+                                                while (currentTC.length < 3) {
+                                                  currentTC.push({ id: crypto.randomUUID(), input: `${(currentTC.length + 1) * 5}`, expectedOutput: `${(currentTC.length + 1) * 5}` });
+                                                }
+                                                handleUpdateQuestion(section.id, q.id, { testCases: currentTC });
+                                              }}
+                                            >
+                                              + Populate 3 Test Cases
+                                            </button>
+                                          )}
+                                          <button
+                                            type="button"
+                                            className="btn btn-sm btn-outline-primary"
+                                            onClick={() => {
+                                              const currentTC = q.testCases || [];
+                                              handleUpdateQuestion(section.id, q.id, {
+                                                testCases: [
+                                                  ...currentTC,
+                                                  { id: crypto.randomUUID(), input: "", expectedOutput: "" }
+                                                ]
+                                              });
+                                            }}
+                                          >
+                                            + Add Test Case
+                                          </button>
+                                        </div>
+                                      </div>
+                                      
+                                      {(q.testCases || []).map((tc, tcIdx) => (
+                                        <div key={tc.id || tcIdx} className="p-3 bg-light border rounded mb-3 position-relative">
+                                          <div className="d-flex justify-content-between align-items-center mb-2">
+                                            <span className="badge bg-secondary">Test Case #{tcIdx + 1}</span>
+                                            {(q.testCases || []).length > 1 && (
+                                              <button
+                                                type="button"
+                                                className="btn btn-sm btn-outline-danger border-0 py-0 px-1"
+                                                onClick={() => {
+                                                  const newTC = (q.testCases || []).filter((_, idx) => idx !== tcIdx);
+                                                  handleUpdateQuestion(section.id, q.id, { testCases: newTC });
+                                                }}
+                                                title="Remove Test Case"
+                                              >
+                                                <i className="fa-solid fa-trash"></i>
+                                              </button>
+                                            )}
+                                          </div>
+                                          <div className="row g-2">
+                                            <div className="col-md-6">
+                                              <label className="form-label small fw-medium mb-1">Input / Arguments</label>
+                                              <textarea
+                                                className="form-control form-control-sm font-monospace"
+                                                rows={2}
+                                                placeholder="e.g. 5 or [1, 2, 3] or Hello"
+                                                value={tc.input}
+                                                onChange={(e) => {
+                                                  const updatedTC = [...(q.testCases || [])];
+                                                  updatedTC[tcIdx] = { ...updatedTC[tcIdx], input: e.target.value };
+                                                  handleUpdateQuestion(section.id, q.id, { testCases: updatedTC });
+                                                }}
+                                              ></textarea>
+                                            </div>
+                                            <div className="col-md-6">
+                                              <label className="form-label small fw-medium mb-1">Expected Output</label>
+                                              <textarea
+                                                className="form-control form-control-sm font-monospace"
+                                                rows={2}
+                                                placeholder="e.g. 10 or [2, 4, 6] or Hello World"
+                                                value={tc.expectedOutput}
+                                                onChange={(e) => {
+                                                  const updatedTC = [...(q.testCases || [])];
+                                                  updatedTC[tcIdx] = { ...updatedTC[tcIdx], expectedOutput: e.target.value };
+                                                  handleUpdateQuestion(section.id, q.id, { testCases: updatedTC });
+                                                }}
+                                                required
+                                              ></textarea>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+
+                                      {(!q.testCases || q.testCases.length === 0) && (
+                                        <p className="text-muted small mb-0 fst-italic">No test cases added. Click "+ Add Test Case" to create one.</p>
+                                      )}
                                     </div>
                                   </>
                                 )}

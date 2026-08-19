@@ -12,6 +12,22 @@ interface EmployerJob {
   title: string;
 }
 
+interface QuizQuestion {
+  question: string;
+  options: string[];
+  correctIndex?: number;
+}
+
+interface JobAssessmentAttempt {
+  score: number | null;
+  answers: number[] | null;
+  assessment: {
+    title: string;
+    totalQuestions: number;
+    questions: QuizQuestion[];
+  };
+}
+
 interface Applicant {
   id: string;
   status: string;
@@ -25,6 +41,7 @@ interface Applicant {
       resumeUrl: string | null;
       skills: string[];
       location: string | null;
+      jobAssessmentAttempts?: JobAssessmentAttempt[];
     } | null;
   };
 }
@@ -40,6 +57,7 @@ export default function EmployerApplicantsJobsPage() {
   const [applicantsLoading, setApplicantsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [viewingAnswersFor, setViewingAnswersFor] = useState<JobAssessmentAttempt | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "EMPLOYER")) {
@@ -205,6 +223,11 @@ export default function EmployerApplicantsJobsPage() {
                                   </div>
                                   <div className="mt-1">
                                     <span className="label text-light bg-secondary">{item.status}</span>
+                                    {item.candidate.candidateProfile?.jobAssessmentAttempts && item.candidate.candidateProfile.jobAssessmentAttempts.length > 0 && (
+                                      <span className="label text-light bg-success ms-2">
+                                        Assessment Score: {item.candidate.candidateProfile.jobAssessmentAttempts[0].score} / {item.candidate.candidateProfile.jobAssessmentAttempts[0].assessment.totalQuestions}
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -218,16 +241,26 @@ export default function EmployerApplicantsJobsPage() {
                                 >
                                   <i className="fa-solid fa-check-double"></i>
                                 </button>
-                                <button
-                                  type="button"
-                                  className="rounded btn-md btn-dark px-3 me-2"
-                                  disabled={updatingId === item.id}
-                                  onClick={() => updateStatus(item.id, "REVIEWED")}
-                                  title="Mark Reviewed"
-                                >
-                                  <i className="fa-solid fa-eye"></i>
-                                </button>
-                                {item.candidate.candidateProfile?.resumeUrl && (
+                                  <button
+                                    type="button"
+                                    className="rounded btn-md btn-dark px-3 me-2"
+                                    disabled={updatingId === item.id}
+                                    onClick={() => updateStatus(item.id, "REVIEWED")}
+                                    title="Mark Reviewed"
+                                  >
+                                    <i className="fa-solid fa-eye"></i>
+                                  </button>
+                                  {item.candidate.candidateProfile?.jobAssessmentAttempts && item.candidate.candidateProfile.jobAssessmentAttempts.length > 0 && (
+                                    <button
+                                      type="button"
+                                      className="rounded btn-md btn-info px-3 me-2"
+                                      title="View Answers"
+                                      onClick={() => setViewingAnswersFor(item.candidate.candidateProfile!.jobAssessmentAttempts![0])}
+                                    >
+                                      <i className="fa-solid fa-list-check"></i>
+                                    </button>
+                                  )}
+                                  {item.candidate.candidateProfile?.resumeUrl && (
                                   <a
                                     href={item.candidate.candidateProfile.resumeUrl}
                                     target="_blank"
@@ -271,6 +304,53 @@ export default function EmployerApplicantsJobsPage() {
           </div>
         </div>
       </div>
+
+      {viewingAnswersFor && (
+        <div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 1050 }}>
+          <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Assessment Answers: {viewingAnswersFor.assessment.title}</h5>
+                <button type="button" className="btn-close" onClick={() => setViewingAnswersFor(null)}></button>
+              </div>
+              <div className="modal-body">
+                <h4 className="mb-4 text-center">Score: {viewingAnswersFor.score} / {viewingAnswersFor.assessment.totalQuestions}</h4>
+                {viewingAnswersFor.assessment.questions.map((q, i) => {
+                  const candidateAnswer = viewingAnswersFor.answers ? viewingAnswersFor.answers[i] : null;
+                  return (
+                    <div key={i} className="mb-4 pb-3 border-bottom">
+                      <p className="fw-medium mb-2">{i + 1}. {q.question}</p>
+                      {q.options.map((opt, oi) => {
+                        const isCandidateChoice = candidateAnswer === oi;
+                        const isCorrect = q.correctIndex === oi;
+                        
+                        let bgClass = "bg-light";
+                        let textClass = "text-dark";
+                        if (isCandidateChoice && isCorrect) {
+                          bgClass = "bg-success";
+                          textClass = "text-white";
+                        } else if (isCandidateChoice && !isCorrect) {
+                          bgClass = "bg-danger";
+                          textClass = "text-white";
+                        } else if (isCorrect) {
+                          bgClass = "bg-success";
+                          textClass = "text-white opacity-75";
+                        }
+
+                        return (
+                          <div key={oi} className={`p-2 mb-1 rounded ${bgClass} ${textClass}`}>
+                            {opt} {isCandidateChoice && <strong>(Candidate's Answer)</strong>} {isCorrect && !isCandidateChoice && <em>(Correct Answer)</em>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
