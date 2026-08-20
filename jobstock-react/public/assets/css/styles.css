@@ -10965,3 +10965,13 @@ a.cadmium-theme{background:#5F8D4E!important;}
   box-shadow: 0 .5em 0 0 #ffffff, 0 1em 0 0 #ffffff !important;
 }
 
+/* Force body and html background scroll lock on mobile when modal is active */
+@media (max-width: 991px) {
+  body.modal-open,
+  html:has(body.modal-open) {
+    overflow: hidden !important;
+    height: 100% !important;
+  }
+}
+
+

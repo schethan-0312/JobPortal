@@ -111,7 +111,7 @@ export default function AdminJobsPage() {
                 {data && data.items.length === 0 && <p className="text-muted">No jobs match these filters.</p>}
                 {data && data.items.length > 0 && (
                   <div className="table-responsive" style={{ overflowX: "auto", width: "100%", display: "block" }}>
-                    <table className="table align-middle" style={{ whiteSpace: "nowrap", width: "100%" }}>
+                    <table className="table align-middle" style={{ whiteSpace: "nowrap", width: "auto", minWidth: "100%" }}>
                       <thead>
                         <tr>
                           <th>Title</th>

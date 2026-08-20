@@ -110,11 +110,17 @@ body .table-responsive table {
     overflow: visible !important;
   }
   
-  html:not(.modal-open),
+  html:not(:has(body.modal-open)),
   body:not(.modal-open) {
     overflow-y: auto !important;
     height: auto !important;
     min-height: 100% !important;
+  }
+  
+  body.modal-open,
+  html:has(body.modal-open) {
+    overflow: hidden !important;
+    height: 100% !important;
   }
   
   #main-wrapper {
