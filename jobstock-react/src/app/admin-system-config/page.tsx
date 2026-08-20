@@ -12,7 +12,6 @@ interface SystemConfigValues {
   maintenanceMessage: string;
   registrationEnabled: boolean;
   supportEmail: string;
-  maxJobPostsPerEmployer: number;
   platformAnnouncement: string;
 }
 
@@ -135,22 +134,13 @@ export default function AdminSystemConfigPage() {
                   </div>
 
                   <div className="row g-3 mb-3">
-                    <div className="col-md-6">
+                    <div className="col-md-12">
                       <label className="form-label small">Support Email</label>
                       <input
                         type="email"
                         className="form-control"
                         value={config.supportEmail}
                         onChange={(e) => setConfig({ ...config, supportEmail: e.target.value })}
-                      />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label small">Max Job Posts Per Employer</label>
-                      <input
-                        type="number"
-                        className="form-control"
-                        value={config.maxJobPostsPerEmployer}
-                        onChange={(e) => setConfig({ ...config, maxJobPostsPerEmployer: parseInt(e.target.value, 10) || 0 })}
                       />
                     </div>
                   </div>

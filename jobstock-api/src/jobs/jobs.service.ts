@@ -28,6 +28,32 @@ export class JobsService {
   async create(userId: string, dto: CreateJobDto) {
     const employer = await this.employersService.assertVerified(userId);
 
+    // Fetch subscription
+    const sub = await this.prisma.employerPackageSubscription.findUnique({
+      where: { employerId: employer.id },
+      include: { package: true },
+    });
+
+    let maxJobs = 0;
+    if (sub && sub.package) {
+      if (sub.package.name.includes('Enterprise')) {
+        maxJobs = Infinity;
+      } else if (sub.package.name.includes('Growth')) {
+        maxJobs = 15;
+      } else if (sub.package.name.includes('Starter')) {
+        maxJobs = 5;
+      }
+    }
+
+    if (maxJobs < Infinity) {
+      const activeJobsCount = await this.prisma.job.count({
+        where: { employerId: employer.id, status: 'OPEN' },
+      });
+      if (activeJobsCount >= maxJobs) {
+        throw new ForbiddenException(`You have reached the maximum of ${maxJobs} active job postings for your package. Please upgrade your package or close an existing job.`);
+      }
+    }
+
     if (dto.salaryMin != null && dto.salaryMax != null && dto.salaryMin > dto.salaryMax) {
       throw new ForbiddenException('salaryMin cannot be greater than salaryMax');
     }
@@ -206,6 +232,34 @@ export class JobsService {
     if (!job || job.employerId !== employer.id) {
       throw new NotFoundException('Job not found');
     }
+
+    if (dto.status === 'OPEN' && job.status !== 'OPEN') {
+      const sub = await this.prisma.employerPackageSubscription.findUnique({
+        where: { employerId: employer.id },
+        include: { package: true },
+      });
+
+      let maxJobs = 0;
+      if (sub && sub.package) {
+        if (sub.package.name.includes('Enterprise')) {
+          maxJobs = Infinity;
+        } else if (sub.package.name.includes('Growth')) {
+          maxJobs = 15;
+        } else if (sub.package.name.includes('Starter')) {
+          maxJobs = 5;
+        }
+      }
+
+      if (maxJobs < Infinity) {
+        const activeJobsCount = await this.prisma.job.count({
+          where: { employerId: employer.id, status: 'OPEN' },
+        });
+        if (activeJobsCount >= maxJobs) {
+          throw new ForbiddenException(`You have reached the maximum of ${maxJobs} active job postings for your package. Please upgrade your package or close another existing job first.`);
+        }
+      }
+    }
+
     return this.prisma.job.update({ where: { id: jobId }, data: { status: dto.status } });
   }
 

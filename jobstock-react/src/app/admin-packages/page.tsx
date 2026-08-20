@@ -27,6 +27,31 @@ export default function AdminPackagesPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  function renderFeatures(featuresJson: unknown) {
+    if (!featuresJson) return <span className="text-muted small">—</span>;
+    let items: string[] = [];
+    if (Array.isArray(featuresJson)) {
+      items = featuresJson.map((f) => String(f));
+    } else if (typeof featuresJson === "object" && featuresJson !== null) {
+      items = Object.entries(featuresJson).map(([k, v]) =>
+        !isNaN(Number(k)) ? String(v) : `${k}: ${String(v)}`
+      );
+    } else if (typeof featuresJson === "string") {
+      items = [featuresJson];
+    }
+    if (items.length === 0) return <span className="text-muted small">—</span>;
+    return (
+      <div className="mt-3">
+        {items.map((feat, idx) => (
+          <p className="text-muted small mb-1 d-flex align-items-center gap-2" key={idx}>
+            <i className="fa-solid fa-check text-success small"></i>
+            <span>{feat}</span>
+          </p>
+        ))}
+      </div>
+    );
+  }
+
   // Form fields
   const [name, setName] = useState("");
   const [priceInRupees, setPriceInRupees] = useState<string>("");
@@ -156,86 +181,7 @@ export default function AdminPackagesPage() {
             {error && <div className="alert alert-danger mb-4">{error}</div>}
             {successMsg && <div className="alert alert-success mb-4">{successMsg}</div>}
 
-            {/* Create Package Form Card */}
-            <div className="card mb-4 border-0 shadow-sm">
-              <div className="card-header bg-white py-3">
-                <h5 className="mb-0 fw-semibold">
-                  <i className="fa-solid fa-plus-circle text-primary me-2"></i>Add New Package
-                </h5>
-              </div>
-              <div className="card-body p-4">
-                <form onSubmit={handleCreatePackage}>
-                  <div className="row g-3">
-                    {/* Package Name */}
-                    <div className="col-md-4">
-                      <label className="form-label fw-medium">
-                        Package Name <span className="text-danger">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="e.g. Starter Plan, Premium Employer"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                      />
-                    </div>
 
-                    {/* Target Audience (Fixed to Employer) */}
-                    <div className="col-md-4">
-                      <label className="form-label fw-medium">Target Audience</label>
-                      <input
-                        type="text"
-                        className="form-control bg-light"
-                        value="Employer"
-                        disabled
-                        readOnly
-                      />
-                    </div>
-
-                    {/* Price in Rupees */}
-                    <div className="col-md-4">
-                      <label className="form-label fw-medium">
-                        Price (₹) <span className="text-danger">*</span>
-                      </label>
-                      <div className="input-group">
-                        <span className="input-group-text">₹</span>
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          className="form-control"
-                          placeholder="e.g. 999.00"
-                          value={priceInRupees}
-                          onChange={(e) => setPriceInRupees(e.target.value)}
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    {/* Submit Button */}
-                    <div className="col-md-12 mt-4">
-                      <button type="submit" className="btn btn-primary px-4 py-2" disabled={submitting}>
-                        {submitting ? (
-                          <>
-                            <span
-                              className="spinner-border spinner-border-sm me-2"
-                              role="status"
-                              aria-hidden="true"
-                            ></span>
-                            Creating Package...
-                          </>
-                        ) : (
-                          <>
-                            <i className="fa-solid fa-check me-2"></i>Create Package
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </form>
-              </div>
-            </div>
 
             {/* List of Existing Packages */}
             <div className="card border-0 shadow-sm">
@@ -267,7 +213,10 @@ export default function AdminPackagesPage() {
                               </div>
                               <h5 className="card-title fw-bold mb-2 text-dark">{pkg.name}</h5>
                               <div className="fs-3 fw-bold text-primary mb-3">
-                                ₹{(pkg.priceInPaisa / 100).toLocaleString("en-IN")}
+                                {(pkg.priceInPaisa / 100).toLocaleString("en-IN", { style: "currency", currency: "INR" })}
+                              </div>
+                              <div className="mb-3">
+                                {renderFeatures(pkg.featuresJson)}
                               </div>
                             </div>
                             <div className="pt-3 border-top d-flex justify-content-between align-items-center">

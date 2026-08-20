@@ -102,12 +102,28 @@ body .table-responsive table {
     height: auto !important;
     min-height: auto !important;
     overflow: visible !important;
+    margin-left: 0 !important;
+    padding: 20px 15px !important;
+    width: 100% !important;
   }
   
   body .dashboard-wrap {
     height: auto !important;
     min-height: calc(100vh - 75px) !important;
     overflow: visible !important;
+    flex-direction: column !important;
+  }
+
+  body .dashboard-nav {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+  }
+
+  body div#MobNav:not(.show) {
+    display: none !important;
   }
   
   html:not(:has(body.modal-open)),

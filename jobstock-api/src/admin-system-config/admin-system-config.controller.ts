@@ -23,7 +23,6 @@ export class AdminSystemConfigController {
   }
 
   @Patch()
-  @AdminRoles(AdminRole.SUPER_ADMIN)
   update(@CurrentUser() user: AuthenticatedUser, @Body() dto: UpdateSystemConfigDto, @Req() req: Request) {
     return this.configService.update(user.userId, dto, req.ip);
   }

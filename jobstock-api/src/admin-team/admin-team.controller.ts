@@ -24,13 +24,11 @@ export class AdminTeamController {
   }
 
   @Post('invite')
-  @AdminRoles(AdminRole.SUPER_ADMIN)
   invite(@CurrentUser() user: AuthenticatedUser, @Body() dto: InviteAdminDto, @Req() req: Request) {
     return this.teamService.invite(user.userId, dto, req.ip);
   }
 
   @Patch(':id/role')
-  @AdminRoles(AdminRole.SUPER_ADMIN)
   updateRole(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
@@ -41,13 +39,11 @@ export class AdminTeamController {
   }
 
   @Post(':id/force-logout')
-  @AdminRoles(AdminRole.SUPER_ADMIN)
   forceLogout(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string, @Req() req: Request) {
     return this.teamService.forceLogout(user.userId, id, req.ip);
   }
 
   @Get(':id/sessions')
-  @AdminRoles(AdminRole.SUPER_ADMIN)
   listSessions(@Param('id') id: string) {
     return this.teamService.listSessions(id);
   }
