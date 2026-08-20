@@ -10183,6 +10183,9 @@ footer.skin-dark-footer .foot-socials ul li a:hover, footer.skin-dark-footer .fo
 		padding:0rem;
 		margin: 0;
 		flex: auto;
+		height: auto !important;
+		min-height: auto !important;
+		overflow: visible !important;
 	}
 	.dashboard-wrap a.mobNavigation {
 		width: 100%;
@@ -10796,8 +10799,13 @@ footer.skin-dark-footer .foot-socials ul li a:hover, footer.skin-dark-footer .fo
 		margin-bottom: 1.5rem;
 	}
 	.table-responsive {
-		max-width: 300px;
-		overflow-x: scroll;
+		width: 100% !important;
+		max-width: 100% !important;
+		overflow-x: auto !important;
+		-webkit-overflow-scrolling: touch !important;
+	}
+	.table-responsive table {
+		white-space: nowrap !important;
 	}
 	.hero-header .position-absolute img {
 		max-width: 100% !important;
@@ -10950,3 +10958,10 @@ a.cadmium-theme{background:#5F8D4E!important;}
 #success_page p {
   margin-bottom: 0 !important;
 }
+
+/* Fix invisible hamburger toggle menu on dark headers */
+.header-dark .nav-toggle:before {
+  background-color: #ffffff !important;
+  box-shadow: 0 .5em 0 0 #ffffff, 0 1em 0 0 #ffffff !important;
+}
+

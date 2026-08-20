@@ -22,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="stylesheet" href="/assets/css/styles.css" />
+        <link rel="stylesheet" href="/assets/css/styles.css?v=1.1" />
         <link rel="stylesheet" href="/assets/css/colors.css" />
         <link
           href="https://cdn.jsdelivr.net/npm/@mdi/font/css/materialdesignicons.min.css"

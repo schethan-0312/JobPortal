@@ -151,8 +151,8 @@ export default function EmployerSubmissionsPage() {
                     <p>You haven't created any assessments yet. Go to <Link href="/employer-competition" className="text-primary">Competition</Link> to create one.</p>
                   </div>
                 ) : (
-                  <div className="table-responsive">
-                    <table className="table table-hover align-middle mb-0">
+                  <div className="table-responsive" style={{ overflowX: "auto", width: "100%", display: "block" }}>
+                    <table className="table table-hover align-middle mb-0" style={{ whiteSpace: "nowrap", width: "100%" }}>
                       <thead className="table-light">
                         <tr>
                           <th className="py-3 px-4">Assessment Title</th>

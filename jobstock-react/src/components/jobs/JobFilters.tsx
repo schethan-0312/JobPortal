@@ -53,7 +53,7 @@ function JobFiltersInner({ variant = "simple" }: { variant?: "full" | "simple" }
   }
 
   return (
-    <div className="sidebar-widgets collapse miz_show" id="search_open" data-bs-parent="#search_open">
+    <div className="sidebar-widgets collapse show miz_show" id="search_open" data-bs-parent="#search_open">
       <div className="sidebar_header d-flex align-items-center justify-content-between px-4 py-3 br-bottom">
         <h4 className="fs-bold fs-5 mb-0">Search Filter</h4>
         <div className="ssh-header">

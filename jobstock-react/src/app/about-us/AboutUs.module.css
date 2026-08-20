@@ -208,3 +208,36 @@
   position: relative;
   z-index: 2;
 }
+
+/* Mobile responsive adjustments */
+@media (max-width: 767px) {
+  .carouselContainer {
+    height: 480px !important;
+  }
+  .heroTitle {
+    font-size: 2.25rem !important;
+    margin-bottom: 16px !important;
+  }
+  .heroSubtitle {
+    font-size: 1rem !important;
+    margin-bottom: 24px !important;
+  }
+  .storySection {
+    padding: 50px 0 !important;
+  }
+  .featuresSection {
+    padding: 60px 0 !important;
+  }
+  .featureCard {
+    padding: 30px 20px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .carouselContainer {
+    height: 420px !important;
+  }
+  .heroTitle {
+    font-size: 1.85rem !important;
+  }
+}
