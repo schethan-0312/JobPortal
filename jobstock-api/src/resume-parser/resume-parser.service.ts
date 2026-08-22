@@ -66,7 +66,8 @@ export class ResumeParserService {
   constructor(private readonly ai: AiService) {}
 
   async parseResume(resumeUrl: string): Promise<ParseResult> {
-    const filePath = path.join(process.cwd(), resumeUrl);
+    const cleanUrl = resumeUrl.startsWith('/') ? resumeUrl.slice(1) : resumeUrl;
+    const filePath = path.join(process.cwd(), 'public', cleanUrl);
     
     if (!fs.existsSync(filePath)) {
       throw new BadRequestException('Uploaded file not found.');

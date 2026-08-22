@@ -1,11 +1,19 @@
-import { IsString, MaxLength, MinLength } from 'class-validator';
+import { IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class SendMessageDto {
   @IsString()
   receiverId!: string;
 
+  @IsOptional()
   @IsString()
-  @MinLength(1)
   @MaxLength(5000)
-  body!: string;
+  body?: string;
+
+  @IsOptional()
+  @IsString()
+  mediaUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  mediaType?: string;
 }

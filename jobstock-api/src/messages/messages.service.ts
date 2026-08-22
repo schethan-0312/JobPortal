@@ -20,7 +20,13 @@ export class MessagesService {
     }
 
     const message = await this.prisma.message.create({
-      data: { senderId, receiverId: dto.receiverId, body: dto.body },
+      data: {
+        senderId,
+        receiverId: dto.receiverId,
+        body: dto.body ?? '',
+        mediaUrl: dto.mediaUrl,
+        mediaType: dto.mediaType,
+      },
       include: {
         sender: {
           select: {
@@ -51,7 +57,12 @@ export class MessagesService {
   /** List all conversations for a user: one row per counterpart, with the last message */
   async listConversations(userId: string) {
     const messages = await this.prisma.message.findMany({
-      where: { OR: [{ senderId: userId }, { receiverId: userId }] },
+      where: {
+        OR: [
+          { senderId: userId, deletedForSender: false },
+          { receiverId: userId, deletedForReceiver: false }
+        ]
+      },
       orderBy: { createdAt: 'desc' },
       include: {
         sender: {
@@ -86,15 +97,15 @@ export class MessagesService {
   }
 
   countUnread(userId: string) {
-    return this.prisma.message.count({ where: { receiverId: userId, readAt: null } });
+    return this.prisma.message.count({ where: { receiverId: userId, readAt: null, deletedForReceiver: false } });
   }
 
   async getConversation(userId: string, counterpartId: string) {
     const messages = await this.prisma.message.findMany({
       where: {
         OR: [
-          { senderId: userId, receiverId: counterpartId },
-          { senderId: counterpartId, receiverId: userId },
+          { senderId: userId, receiverId: counterpartId, deletedForSender: false },
+          { senderId: counterpartId, receiverId: userId, deletedForReceiver: false },
         ],
       },
       orderBy: { createdAt: 'asc' },
@@ -121,10 +132,34 @@ export class MessagesService {
     });
 
     await this.prisma.message.updateMany({
-      where: { senderId: counterpartId, receiverId: userId, readAt: null },
+      where: { senderId: counterpartId, receiverId: userId, readAt: null, deletedForReceiver: false },
       data: { readAt: new Date() },
     });
 
     return messages;
+  }
+
+  async deleteMessage(userId: string, messageId: string, type: 'me' | 'everyone') {
+    const msg = await this.prisma.message.findUnique({ where: { id: messageId } });
+    if (!msg) throw new NotFoundException('Message not found');
+
+    const isSender = msg.senderId === userId;
+    const isReceiver = msg.receiverId === userId;
+
+    if (!isSender && !isReceiver) throw new BadRequestException('Not authorized');
+
+    if (type === 'everyone') {
+      if (!isSender) throw new BadRequestException('Only sender can delete for everyone');
+      return this.prisma.message.update({
+        where: { id: messageId },
+        data: { deletedForEveryone: true, body: '🚫 This message was deleted', mediaUrl: null, mediaType: null },
+      });
+    } else {
+      if (isSender) {
+        return this.prisma.message.update({ where: { id: messageId }, data: { deletedForSender: true } });
+      } else {
+        return this.prisma.message.update({ where: { id: messageId }, data: { deletedForReceiver: true } });
+      }
+    }
   }
 }

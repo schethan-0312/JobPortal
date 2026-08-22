@@ -211,7 +211,9 @@ export default function AdminLegalEditPage() {
           errs[f.key] = "Contact Information cannot exceed 2000 characters.";
         }
       } else {
-        if (value.length > 10000) {
+        if (!value.trim()) {
+          errs[f.key] = `${f.label} is required.`;
+        } else if (value.length > 10000) {
           errs[f.key] = `${f.label} cannot exceed 10,000 characters.`;
         }
       }
@@ -248,7 +250,9 @@ export default function AdminLegalEditPage() {
           errs[f.key] = "Contact Information cannot exceed 2000 characters.";
         }
       } else {
-        if (value.length > 10000) {
+        if (!value.trim()) {
+          errs[f.key] = `${f.label} is required.`;
+        } else if (value.length > 10000) {
           errs[f.key] = `${f.label} cannot exceed 10,000 characters.`;
         }
       }
@@ -293,7 +297,9 @@ export default function AdminLegalEditPage() {
           errs[f.key] = "Contact Information cannot exceed 2000 characters.";
         }
       } else {
-        if (value.length > 10000) {
+        if (!value.trim()) {
+          errs[f.key] = `${f.label} is required.`;
+        } else if (value.length > 10000) {
           errs[f.key] = `${f.label} cannot exceed 10,000 characters.`;
         }
       }

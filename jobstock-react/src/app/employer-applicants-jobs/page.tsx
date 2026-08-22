@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
 import { useAuth } from "@/lib/auth-context";
-import { api, ApiError } from "@/lib/api";
+import { api, ApiError, assetUrl } from "@/lib/api";
 
 interface EmployerJob {
   id: string;
@@ -39,6 +39,7 @@ interface Applicant {
       fullName: string;
       headline: string | null;
       resumeUrl: string | null;
+      profilePhotoUrl: string | null;
       skills: string[];
       location: string | null;
       jobAssessmentAttempts?: JobAssessmentAttempt[];
@@ -58,6 +59,7 @@ export default function EmployerApplicantsJobsPage() {
   const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [viewingAnswersFor, setViewingAnswersFor] = useState<JobAssessmentAttempt | null>(null);
+  const [viewingCandidate, setViewingCandidate] = useState<Applicant | null>(null);
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
 
   useEffect(() => {
@@ -210,7 +212,12 @@ export default function EmployerApplicantsJobsPage() {
                               <div className="jbs-list-head-thunner center">
                                 <div className="jbs-list-usrs-thumb jbs-verified">
                                   <figure>
-                                    <img src="/assets/img/team-5.jpg" className="img-fluid circle" alt="" />
+                                    <img 
+                                      src={item.candidate.candidateProfile?.profilePhotoUrl ? assetUrl(item.candidate.candidateProfile.profilePhotoUrl) : "/assets/img/team-5.jpg"} 
+                                      className="img-fluid circle" 
+                                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                      alt="" 
+                                    />
                                   </figure>
                                 </div>
                                 <div className="jbs-list-job-caption">
@@ -240,12 +247,13 @@ export default function EmployerApplicantsJobsPage() {
                               <div className="jbs-list-head-last">
                                 <button
                                   type="button"
-                                  className="rounded btn-md btn-success px-3 me-2"
-                                  disabled={updatingId === item.id || item.status === "OFFERED"}
-                                  onClick={() => updateStatus(item.id, "OFFERED")}
-                                  title="Hire Candidate (Offer)"
+                                  className={`rounded btn-md px-3 me-2 ${item.status === 'OFFERED' ? 'btn-outline-success bg-white' : 'btn-success'}`}
+                                  disabled={updatingId === item.id}
+                                  onClick={() => updateStatus(item.id, item.status === "OFFERED" ? "REVIEWED" : "OFFERED")}
+                                  title={item.status === "OFFERED" ? "Revoke Hire" : "Hire Candidate (Offer)"}
                                 >
-                                  <i className="fa-solid fa-user-check me-1"></i> Hire
+                                  <i className={`fa-solid ${item.status === 'OFFERED' ? 'fa-user-times' : 'fa-user-check'} me-1`}></i> 
+                                  {item.status === "OFFERED" ? "Hired" : "Hire"}
                                 </button>
                                 <button
                                   type="button"
@@ -260,8 +268,13 @@ export default function EmployerApplicantsJobsPage() {
                                     type="button"
                                     className="rounded btn-md btn-dark px-3 me-2"
                                     disabled={updatingId === item.id}
-                                    onClick={() => updateStatus(item.id, "REVIEWED")}
-                                    title="Mark Reviewed"
+                                    onClick={() => {
+                                      setViewingCandidate(item);
+                                      if (item.status === "APPLIED") {
+                                        updateStatus(item.id, "REVIEWED");
+                                      }
+                                    }}
+                                    title="View Profile"
                                   >
                                     <i className="fa-solid fa-eye"></i>
                                   </button>
@@ -319,6 +332,75 @@ export default function EmployerApplicantsJobsPage() {
           </div>
         </div>
       </div>
+
+      {viewingCandidate && (
+        <div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 1050 }}>
+          <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Candidate Details</h5>
+                <button type="button" className="btn-close" onClick={() => setViewingCandidate(null)}></button>
+              </div>
+              <div className="modal-body p-4">
+                <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
+                  <div style={{ width: "80px", height: "80px" }} className="me-3">
+                    <img
+                      src={viewingCandidate.candidate.candidateProfile?.profilePhotoUrl ? assetUrl(viewingCandidate.candidate.candidateProfile.profilePhotoUrl) : "/assets/img/team-5.jpg"}
+                      className="img-fluid rounded-circle"
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      alt=""
+                    />
+                  </div>
+                  <div>
+                    <h4 className="mb-1">{viewingCandidate.candidate.candidateProfile?.fullName || viewingCandidate.candidate.email}</h4>
+                    <p className="mb-0 text-muted">{viewingCandidate.candidate.candidateProfile?.headline || "No headline"}</p>
+                    <p className="mb-0 small text-muted"><i className="fa-solid fa-location-dot me-1"></i>{viewingCandidate.candidate.candidateProfile?.location || "Unknown location"}</p>
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <h6 className="fw-bold">Contact Info</h6>
+                  <p className="mb-1"><strong>Email:</strong> {viewingCandidate.candidate.email}</p>
+                </div>
+
+                <div className="mb-4">
+                  <h6 className="fw-bold">Application Details</h6>
+                  <p className="mb-1"><strong>Status:</strong> <span className="badge bg-secondary">{viewingCandidate.status}</span></p>
+                  <p className="mb-1"><strong>Applied On:</strong> {new Date(viewingCandidate.appliedAt).toLocaleString()}</p>
+                </div>
+
+                {viewingCandidate.coverNote && (
+                  <div className="mb-4">
+                    <h6 className="fw-bold">Cover Note</h6>
+                    <div className="p-3 bg-light rounded">
+                      <p className="mb-0 text-dark" style={{ whiteSpace: "pre-wrap" }}>{viewingCandidate.coverNote}</p>
+                    </div>
+                  </div>
+                )}
+
+                {viewingCandidate.candidate.candidateProfile?.skills && viewingCandidate.candidate.candidateProfile.skills.length > 0 && (
+                  <div className="mb-4">
+                    <h6 className="fw-bold">Skills</h6>
+                    <div className="d-flex flex-wrap gap-2">
+                      {viewingCandidate.candidate.candidateProfile.skills.map((skill) => (
+                        <span key={skill} className="badge bg-primary px-3 py-2">{skill}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {viewingCandidate.candidate.candidateProfile?.resumeUrl && (
+                  <div className="mt-2">
+                    <a href={viewingCandidate.candidate.candidateProfile.resumeUrl} target="_blank" rel="noreferrer" className="btn btn-outline-dark">
+                      <i className="fa-solid fa-download me-2"></i> Download Resume
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {viewingAnswersFor && (
         <div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 1050 }}>

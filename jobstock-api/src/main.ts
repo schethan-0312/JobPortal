@@ -29,8 +29,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.useStaticAssets(join(process.cwd(), 'uploads'), {
-    prefix: '/uploads/',
+  app.useStaticAssets(join(process.cwd(), 'public'), {
     setHeaders: (res) => {
       // Uploaded files are user-controlled content served same-origin — never let the
       // browser guess a different content-type (defends against MIME-sniff based XSS)

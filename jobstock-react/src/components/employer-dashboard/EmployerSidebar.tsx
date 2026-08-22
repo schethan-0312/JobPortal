@@ -19,7 +19,7 @@ export type EmployerSidebarActive =
   | "messages"
   | "competition"
   | "submissions"
-  | "change-password"
+ 
   | "delete-account";
 
 interface EmployerSidebarProps {
@@ -45,10 +45,16 @@ export default function EmployerSidebar({ active }: EmployerSidebarProps) {
   const [unreadMessages, setUnreadMessages] = useState(0);
 
   useEffect(() => {
-    api
-      .get<EmployerProfile>("/employers/me")
-      .then(setProfile)
-      .catch(() => setProfile(null));
+    const loadProfile = () => {
+      api
+        .get<EmployerProfile>("/employers/me")
+        .then(setProfile)
+        .catch(() => setProfile(null));
+    };
+    
+    loadProfile();
+    window.addEventListener('profile-updated', loadProfile);
+
     api
       .get<EmployerJob[]>("/jobs/mine")
       .then((jobs) => setOpeningsCount(jobs.filter((j) => j.status === "OPEN").length))
@@ -57,6 +63,10 @@ export default function EmployerSidebar({ active }: EmployerSidebarProps) {
       .get<number>("/messages/unread-count")
       .then(setUnreadMessages)
       .catch(() => setUnreadMessages(0));
+
+    return () => {
+      window.removeEventListener('profile-updated', loadProfile);
+    };
   }, []);
 
   function handleLogout() {
@@ -83,7 +93,13 @@ export default function EmployerSidebar({ active }: EmployerSidebarProps) {
               <div className="jbs-grid-yuo">
                 <Link href="/employer-profile">
                   <figure>
-                    <img src={assetUrl(profile?.logoUrl) || "/assets/img/l-12.png"} className="img-fluid circle" alt="" />
+                    {profile?.logoUrl ? (
+                      <img src={assetUrl(profile.logoUrl!)} className="img-fluid circle" alt="" />
+                    ) : (
+                      <div className="img-fluid circle d-flex align-items-center justify-content-center bg-light text-muted fw-semibold" style={{ aspectRatio: '1/1' }}>
+                        <span className="small text-center px-1" style={{ fontSize: '0.8rem' }}>Upload Photo</span>
+                      </div>
+                    )}
                   </figure>
                 </Link>
               </div>
@@ -162,11 +178,6 @@ export default function EmployerSidebar({ active }: EmployerSidebarProps) {
                 <Link href="/employer-messages">
                   <i className="fa-solid fa-comments me-2"></i>Messages
                   {unreadMessages > 0 && <span className="count-tag">{unreadMessages}</span>}
-                </Link>
-              </li>
-              <li className={active === "change-password" ? "active" : undefined}>
-                <Link href="/employer-change-password">
-                  <i className="fa-solid fa-unlock-keyhole me-2"></i>Change Password
                 </Link>
               </li>
               <li className={active === "delete-account" ? "active" : undefined}>

@@ -22,7 +22,7 @@ export type CandidateSidebarActive =
   | "follow-employers"
   | "competition"
   | "messages"
-  | "change-password"
+ 
   | "delete-account";
 
 interface CandidateSidebarProps {
@@ -44,10 +44,16 @@ export default function CandidateSidebar({ active }: CandidateSidebarProps) {
   const [unreadMessages, setUnreadMessages] = useState(0);
 
   useEffect(() => {
-    api
-      .get<CandidateProfile>("/candidates/me")
-      .then(setProfile)
-      .catch(() => setProfile(null));
+    const loadProfile = () => {
+      api
+        .get<CandidateProfile>("/candidates/me")
+        .then(setProfile)
+        .catch(() => setProfile(null));
+    };
+    
+    loadProfile();
+    window.addEventListener('profile-updated', loadProfile);
+
     api
       .get<unknown[]>("/candidates/job-alerts")
       .then((data) => setAlertCount(data.length))
@@ -56,6 +62,10 @@ export default function CandidateSidebar({ active }: CandidateSidebarProps) {
       .get<number>("/messages/unread-count")
       .then(setUnreadMessages)
       .catch(() => setUnreadMessages(0));
+
+    return () => {
+      window.removeEventListener('profile-updated', loadProfile);
+    };
   }, []);
 
   function handleLogout() {
@@ -82,11 +92,17 @@ export default function CandidateSidebar({ active }: CandidateSidebarProps) {
               <div className="jbs-grid-yuo">
                 <Link href="/candidate-profile">
                   <figure>
-                    <img
-                      src={assetUrl(profile?.profilePhotoUrl) || "/assets/img/user-5.png"}
-                      className="img-fluid circle"
-                      alt=""
-                    />
+                    {profile?.profilePhotoUrl ? (
+                      <img
+                        src={assetUrl(profile.profilePhotoUrl!)}
+                        className="img-fluid circle"
+                        alt=""
+                      />
+                    ) : (
+                      <div className="img-fluid circle d-flex align-items-center justify-content-center bg-light text-muted fw-semibold" style={{ aspectRatio: '1/1' }}>
+                        <span className="small text-center px-1" style={{ fontSize: '0.8rem' }}>Upload Photo</span>
+                      </div>
+                    )}
                   </figure>
                 </Link>
               </div>
@@ -179,11 +195,6 @@ export default function CandidateSidebar({ active }: CandidateSidebarProps) {
                 <Link href="/candidate-messages">
                   <i className="fa-solid fa-comments me-2"></i>Messages
                   {unreadMessages > 0 && <span className="count-tag">{unreadMessages}</span>}
-                </Link>
-              </li>
-              <li className={active === "change-password" ? "active" : undefined}>
-                <Link href="/candidate-change-password">
-                  <i className="fa-solid fa-unlock-keyhole me-2"></i>Change Password
                 </Link>
               </li>
               <li className={active === "delete-account" ? "active" : undefined}>

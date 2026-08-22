@@ -107,7 +107,8 @@ Experience: ${candidateResume.experiences.map((exp) => `${exp.title} at ${exp.co
       if (!dto.sourceText) {
         throw new BadRequestException('Source file URL (sourceText) is required for upload analysis.');
       }
-      const filePath = path.join(process.cwd(), dto.sourceText);
+      const cleanUrl = dto.sourceText.startsWith('/') ? dto.sourceText.slice(1) : dto.sourceText;
+      const filePath = path.join(process.cwd(), 'public', cleanUrl);
       if (!fs.existsSync(filePath)) throw new BadRequestException('Uploaded file not found.');
       const extractedText = await extractResumeText(filePath);
       candidateContext = `Resume Context: ${extractedText.substring(0, 3000)}`;

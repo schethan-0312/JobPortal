@@ -98,6 +98,7 @@ export default function EmployerProfilePage() {
       setProfile(updated);
       setSuccess("Profile saved successfully.");
       scrollToTop();
+      window.dispatchEvent(new CustomEvent('profile-updated'));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to save profile");
       scrollToTop();
@@ -117,6 +118,7 @@ export default function EmployerProfilePage() {
       setProfile(updated);
       setSuccess("Logo updated.");
       scrollToTop();
+      window.dispatchEvent(new CustomEvent('profile-updated'));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to upload logo");
       scrollToTop();
@@ -172,7 +174,13 @@ export default function EmployerProfilePage() {
             <div className="dashboard-profle-wrapper mb-4">
               <div className="dash-prf-start">
                 <div className="profile-avatar position-ralative mb-3">
-                  <img className="avatar" src={assetUrl(profile?.logoUrl) || "/assets/img/l-12.png"} alt="Avatar" />
+                  {profile?.logoUrl ? (
+                    <img className="avatar" src={assetUrl(profile.logoUrl!)} alt="Avatar" />
+                  ) : (
+                    <div className="avatar d-flex align-items-center justify-content-center bg-light text-muted fw-semibold">
+                      <span className="small text-center px-2">Upload Photo</span>
+                    </div>
+                  )}
                   <div className="position-absolute bottom-0 start-50 translate-middle-x">
                     <span className={`badge badge-md bg-white rounded-pill fw-medium shadow-sm px-3 py-2 ${profile?.status === "VERIFIED" ? "text-success" : "text-warning"}`}>{profile?.status || "PENDING"}</span>
                   </div>

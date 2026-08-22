@@ -7,12 +7,20 @@ import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
 import { VerifyOtpDto } from './dto/verify-otp.dto.js';
 import { ResetPasswordDto } from './dto/reset-password.dto.js';
+import { DeleteAccountDto } from './dto/delete-account.dto.js';
+import { Delete } from '@nestjs/common';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 import { CurrentUser } from './decorators/current-user.decorator.js';
 import type { AuthenticatedUser } from './decorators/current-user.decorator.js';
 
 @Controller('auth')
 export class AuthController {
+
+  @Post('me/delete')
+  @UseGuards(JwtAuthGuard)
+  deleteAccount(@CurrentUser() user: AuthenticatedUser, @Body() dto: DeleteAccountDto) {
+    return this.authService.deleteAccount(user.userId, dto);
+  }
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')

@@ -280,11 +280,7 @@ export default function EmployerSubmitJobPage() {
       setIsFeatured(false);
       scrollToTop();
     } catch (err) {
-      if (err instanceof ApiError && err.status === 403) {
-        setError("Your employer account is not verified yet. Only verified employers can post jobs.");
-      } else {
-        setError(err instanceof ApiError ? err.message : "Failed to post job.");
-      }
+      setError(err instanceof ApiError ? err.message : "Failed to post job.");
       scrollToTop();
     } finally {
       setSubmitting(false);

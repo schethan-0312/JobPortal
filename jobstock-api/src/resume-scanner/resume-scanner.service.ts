@@ -100,7 +100,8 @@ export class ResumeScannerService {
         if (!dto.resumeUrl) {
           return { success: false, message: 'No file URL provided for uploaded resume.' };
         }
-        const filePath = path.join(process.cwd(), dto.resumeUrl);
+        const cleanUrl = dto.resumeUrl.startsWith('/') ? dto.resumeUrl.slice(1) : dto.resumeUrl;
+        const filePath = path.join(process.cwd(), 'public', cleanUrl);
         const ext = path.extname(filePath).toLowerCase();
 
         if (!['.pdf', '.doc', '.docx'].includes(ext)) {

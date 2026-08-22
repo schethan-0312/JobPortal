@@ -114,6 +114,7 @@ export default function CandidateProfilePage() {
       setProfile(updated);
       setSuccess("Profile saved successfully.");
       window.scrollTo({ top: 0, behavior: "smooth" });
+      window.dispatchEvent(new CustomEvent('profile-updated'));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to save profile");
     } finally {
@@ -131,6 +132,7 @@ export default function CandidateProfilePage() {
       const updated = await api.patch<CandidateProfile>("/candidates/me", { profilePhotoUrl: url });
       setProfile(updated);
       setSuccess("Profile photo updated.");
+      window.dispatchEvent(new CustomEvent('profile-updated'));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to upload photo");
     } finally {
@@ -179,7 +181,13 @@ export default function CandidateProfilePage() {
                     <circle className="bg" cx={70} cy={70} r={60}></circle>
                     <circle className="progress" cx={70} cy={70} r={60} strokeDasharray="326.72" strokeDashoffset="326.72"></circle>
                   </svg>
-                  <img className="avatar" src={assetUrl(profile?.profilePhotoUrl) || "/assets/img/avatar.jpg"} alt="Avatar" />
+                  {profile?.profilePhotoUrl ? (
+                    <img className="avatar" src={assetUrl(profile.profilePhotoUrl!)} alt="Avatar" />
+                  ) : (
+                    <div className="avatar d-flex align-items-center justify-content-center bg-light text-muted fw-semibold">
+                      <span className="small text-center px-2">Upload Photo</span>
+                    </div>
+                  )}
                   <div className="position-absolute bottom-0 start-50 translate-middle-x">
                     <span className="badge badge-md bg-white text-main rounded-pill fw-medium shadow-sm px-3 py-2">{profile?.isVerified ? "Verified" : "Unverified"}</span>
                   </div>

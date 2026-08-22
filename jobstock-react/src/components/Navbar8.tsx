@@ -27,10 +27,16 @@ export default function Navbar8() {
   const [unreadMessages, setUnreadMessages] = useState(0);
 
   useEffect(() => {
-    api
-      .get<EmployerProfile>("/employers/me")
-      .then(setProfile)
-      .catch(() => setProfile(null));
+    const loadProfile = () => {
+      api
+        .get<EmployerProfile>("/employers/me")
+        .then(setProfile)
+        .catch(() => setProfile(null));
+    };
+    
+    loadProfile();
+    window.addEventListener('profile-updated', loadProfile);
+
     api
       .get<NotificationItem[]>("/notifications")
       .then((data) => setNotifications(data.slice(0, 5)))
@@ -39,6 +45,10 @@ export default function Navbar8() {
       .get<number>("/messages/unread-count")
       .then(setUnreadMessages)
       .catch(() => setUnreadMessages(0));
+
+    return () => {
+      window.removeEventListener('profile-updated', loadProfile);
+    };
   }, []);
 
   function handleLogout() {
@@ -169,8 +179,12 @@ export default function Navbar8() {
                       aria-haspopup="true"
                       aria-expanded="false"
                     >
-                      <i className="fa-regular fa-comments"></i>
-                      <span className="noti-status"></span>
+                      <i className="fa-regular fa-bell"></i>
+                      {notifications.filter((n) => !n.isRead).length > 0 && (
+                        <span className="noti-status" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'white' }}>
+                          {notifications.filter((n) => !n.isRead).length}
+                        </span>
+                      )}
                     </button>
                     {notificationList}
                   </div>
@@ -184,7 +198,13 @@ export default function Navbar8() {
                       aria-haspopup="true"
                       aria-expanded="false"
                     >
-                      <img src={assetUrl(profile?.logoUrl) || "/assets/img/l-12.png"} className="img-fluid circle" alt="" />
+                      {profile?.logoUrl ? (
+                        <img src={assetUrl(profile.logoUrl!)} className="img-fluid circle" alt="" />
+                      ) : (
+                        <div className="img-fluid circle d-flex align-items-center justify-content-center bg-light text-muted fw-semibold" style={{ width: '35px', height: '35px', borderRadius: '50%' }}>
+                          <span style={{ fontSize: '9px' }}>Upload</span>
+                        </div>
+                      )}
                     </button>
                     {accountMenu}
                   </div>
@@ -271,8 +291,12 @@ export default function Navbar8() {
                       aria-haspopup="true"
                       aria-expanded="false"
                     >
-                      <i className="fa-regular fa-comments"></i>
-                      <span className="noti-status"></span>
+                      <i className="fa-regular fa-bell"></i>
+                      {notifications.filter((n) => !n.isRead).length > 0 && (
+                        <span className="noti-status" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'white' }}>
+                          {notifications.filter((n) => !n.isRead).length}
+                        </span>
+                      )}
                     </button>
                     {notificationList}
                   </div>
@@ -286,7 +310,13 @@ export default function Navbar8() {
                       aria-haspopup="true"
                       aria-expanded="false"
                     >
-                      <img src={assetUrl(profile?.logoUrl) || "/assets/img/l-12.png"} className="img-fluid circle" alt="" />
+                      {profile?.logoUrl ? (
+                        <img src={assetUrl(profile.logoUrl!)} className="img-fluid circle" alt="" />
+                      ) : (
+                        <div className="img-fluid circle d-flex align-items-center justify-content-center bg-light text-muted fw-semibold" style={{ width: '35px', height: '35px', borderRadius: '50%' }}>
+                          <span style={{ fontSize: '9px' }}>Upload</span>
+                        </div>
+                      )}
                     </button>
                     {accountMenu}
                   </div>

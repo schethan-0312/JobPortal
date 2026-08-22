@@ -17,6 +17,7 @@ interface Applicant {
   status: string;
   appliedAt: string;
   candidate: {
+    id: string;
     email: string;
     candidateProfile: {
       fullName: string;
@@ -187,10 +188,10 @@ export default function EmployerShortlistCandidatesPage() {
                                   type="button"
                                   className="rounded btn-md btn-green px-3 me-2"
                                   disabled={updatingId === item.id}
-                                  onClick={() => updateStatus(item.id, "OFFERED")}
-                                  title="Mark Offered"
+                                  onClick={() => router.push(`/employer-messages?newChat=${item.candidate.id}`)}
+                                  title="Message Candidate"
                                 >
-                                  <i className="fa-solid fa-envelope-circle-check"></i>
+                                  <i className="fa-solid fa-envelope"></i>
                                 </button>
                                 <button
                                   type="button"

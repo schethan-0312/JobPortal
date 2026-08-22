@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'node:crypto';
@@ -87,6 +87,15 @@ export class AuthService {
       user: safeUser,
       ...this.issueTokens(user.id, user.email, user.role),
     };
+  }
+
+  async deleteAccount(userId: string, dto: import('./dto/delete-account.dto.js').DeleteAccountDto) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+    const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
+    if (!isPasswordValid) throw new BadRequestException('Invalid password');
+    await this.prisma.user.delete({ where: { id: userId } });
+    return { message: 'Account deleted successfully' };
   }
 
   async changePassword(userId: string, dto: ChangePasswordDto) {
