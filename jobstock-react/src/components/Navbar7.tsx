@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { api, assetUrl } from "@/lib/api";
 
@@ -21,6 +21,7 @@ interface NotificationItem {
 export default function Navbar7() {
   const { logout, user } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   const [profile, setProfile] = useState<CandidateProfile | null>(null);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -135,11 +136,13 @@ export default function Navbar7() {
             {unreadMessages > 0 && <span className="notti_coun style-3">{unreadMessages}</span>}
           </Link>
         </li>
-        <li>
-          <Link href="/candidate-change-password">
-            <i className="fa fa-unlock-alt"></i>Change Password
-          </Link>
-        </li>
+        {pathname !== "/candidate-dashboard" && (
+          <li>
+            <Link href="/candidate-change-password">
+              <i className="fa fa-unlock-alt"></i>Change Password
+            </Link>
+          </li>
+        )}
         <li>
           <Link href="/candidate-delete-account">
             <i className="fa-solid fa-trash-can"></i>Delete Account

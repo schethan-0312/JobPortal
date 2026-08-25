@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { PackagesService } from './packages.service.js';
 import { CreateOrderDto } from './dto/create-order.dto.js';
 import { VerifyRazorpayPaymentDto } from './dto/verify-razorpay-payment.dto.js';
@@ -44,6 +44,23 @@ export class PackagesController {
   @Roles(Role.ADMIN)
   deletePackage(@Param('id') id: string) {
     return this.packagesService.deletePackage(id);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  updatePackage(
+    @Param('id') id: string,
+    @Body()
+    body: {
+      name?: string;
+      audience?: 'CANDIDATE' | 'EMPLOYER' | 'RESUME';
+      priceInPaisa?: number;
+      featuresJson?: any;
+      isActive?: boolean;
+    },
+  ) {
+    return this.packagesService.updatePackage(id, body);
   }
 
   @Post('orders')

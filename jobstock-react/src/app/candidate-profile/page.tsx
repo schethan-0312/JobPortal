@@ -115,6 +115,15 @@ export default function CandidateProfilePage() {
       return;
     }
 
+    if (experienceYears !== "") {
+      const expNum = Number(experienceYears);
+      if (isNaN(expNum) || expNum < 0 || experienceYears.length > 2) {
+        setError("Experience must be a positive number and cannot be more than 2 digits.");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+    }
+
     setSaving(true);
     try {
       const skills = skillsInput.split(",").map((s) => s.trim()).filter(Boolean);
@@ -356,7 +365,23 @@ export default function CandidateProfilePage() {
                     <div className="col-xl-6 col-lg-6 col-md-12">
                       <div className="form-group">
                         <label>Experience (years)</label>
-                        <input type="number" className="form-control" value={experienceYears} onChange={(e) => setExperienceYears(e.target.value)} />
+                        <input
+                          type="number"
+                          className="form-control"
+                          min="0"
+                          max="99"
+                          value={experienceYears}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === "") {
+                              setExperienceYears("");
+                              return;
+                            }
+                            const clean = val.replace(/\D/g, "");
+                            if (clean.length > 2) return;
+                            setExperienceYears(clean);
+                          }}
+                        />
                       </div>
                     </div>
 

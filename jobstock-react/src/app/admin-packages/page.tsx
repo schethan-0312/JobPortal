@@ -55,6 +55,24 @@ export default function AdminPackagesPage() {
   // Form fields
   const [name, setName] = useState("");
   const [priceInRupees, setPriceInRupees] = useState<string>("");
+  const [audience, setAudience] = useState<"CANDIDATE" | "EMPLOYER" | "RESUME">("EMPLOYER");
+  const [featuresInput, setFeaturesInput] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const handleEditClick = (pkg: PackageItem) => {
+    setEditingId(pkg.id);
+    setName(pkg.name);
+    setPriceInRupees(String(pkg.priceInPaisa / 100));
+    setAudience(pkg.audience);
+    if (Array.isArray(pkg.featuresJson)) {
+      setFeaturesInput(pkg.featuresJson.join(", "));
+    } else if (typeof pkg.featuresJson === "object" && pkg.featuresJson !== null) {
+      setFeaturesInput(Object.values(pkg.featuresJson).join(", "));
+    } else {
+      setFeaturesInput("");
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const handleDeletePackage = async (id: string, packageName: string) => {
     if (!confirm(`Are you sure you want to delete "${packageName}"?`)) {
@@ -103,7 +121,7 @@ export default function AdminPackagesPage() {
     loadPackages();
   }, [user]);
 
-  const handleCreatePackage = async (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccessMsg(null);
@@ -119,26 +137,40 @@ export default function AdminPackagesPage() {
     }
 
     const priceInPaisa = Math.round(Number(priceInRupees) * 100);
+    const featuresJson = featuresInput.split(",").map((f) => f.trim()).filter(Boolean);
 
     setSubmitting(true);
     try {
-      await api.post<PackageItem>("/packages", {
-        name: name.trim(),
-        audience: "EMPLOYER",
-        priceInPaisa,
-        featuresJson: [],
-        isActive: true,
-      });
+      if (editingId) {
+        await api.patch(`/packages/${editingId}`, {
+          name: name.trim(),
+          audience,
+          priceInPaisa,
+          featuresJson,
+        });
+        setSuccessMsg(`Package "${name.trim()}" updated successfully!`);
+      } else {
+        await api.post<PackageItem>("/packages", {
+          name: name.trim(),
+          audience,
+          priceInPaisa,
+          featuresJson,
+          isActive: true,
+        });
+        setSuccessMsg(`Package "${name.trim()}" created successfully!`);
+      }
 
-      setSuccessMsg(`Package "${name.trim()}" created successfully!`);
       // Reset form
       setName("");
       setPriceInRupees("");
+      setFeaturesInput("");
+      setAudience("EMPLOYER");
+      setEditingId(null);
 
       // Reload packages
       await loadPackages();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to create package.");
+      setError(err instanceof ApiError ? err.message : `Failed to ${editingId ? "update" : "create"} package.`);
     } finally {
       setSubmitting(false);
     }
@@ -181,12 +213,105 @@ export default function AdminPackagesPage() {
             {error && <div className="alert alert-danger mb-4">{error}</div>}
             {successMsg && <div className="alert alert-success mb-4">{successMsg}</div>}
 
-
+            {/* Create/Edit Package Form */}
+            <div className="card border-0 shadow-sm mb-4">
+              <div className="card-header bg-white py-3">
+                <h5 className="mb-0 fw-semibold text-dark">
+                  <i className="fa-solid fa-circle-plus text-primary me-2"></i>
+                  {editingId ? "Edit Package" : "Create New Package"}
+                </h5>
+              </div>
+              <div className="card-body p-4">
+                <form onSubmit={handleFormSubmit}>
+                  <div className="row g-3">
+                    <div className="col-md-4 col-sm-12">
+                      <div className="form-group mb-0">
+                        <label className="form-label small fw-medium">Package Name</label>
+                        <input
+                          type="text"
+                          className="form-control form-control-sm"
+                          placeholder="e.g. Premium HR Booster"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-2 col-sm-6">
+                      <div className="form-group mb-0">
+                        <label className="form-label small fw-medium">Price (INR)</label>
+                        <input
+                          type="number"
+                          className="form-control form-control-sm"
+                          placeholder="e.g. 499"
+                          value={priceInRupees}
+                          onChange={(e) => setPriceInRupees(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-2 col-sm-6">
+                      <div className="form-group mb-0">
+                        <label className="form-label small fw-medium">Audience</label>
+                        <select
+                          className="form-select form-select-sm"
+                          value={audience}
+                          onChange={(e) => setAudience(e.target.value as any)}
+                        >
+                          <option value="EMPLOYER">Employer</option>
+                          <option value="CANDIDATE">Candidate</option>
+                          <option value="RESUME">Resume</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="col-md-4 col-sm-12">
+                      <div className="form-group mb-0">
+                        <label className="form-label small fw-medium">Features (comma separated)</label>
+                        <input
+                          type="text"
+                          className="form-control form-control-sm"
+                          placeholder="e.g. 50 Job Posts, Resume Search, AI Matching"
+                          value={featuresInput}
+                          onChange={(e) => setFeaturesInput(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="d-flex gap-2 mt-4">
+                    <button type="submit" className="btn btn-sm btn-main px-4" disabled={submitting}>
+                      {submitting ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                          Saving...
+                        </>
+                      ) : editingId ? (
+                        "Update Package"
+                      ) : (
+                        "Create Package"
+                      )}
+                    </button>
+                    {editingId && (
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary px-4"
+                        onClick={() => {
+                          setEditingId(null);
+                          setName("");
+                          setPriceInRupees("");
+                          setFeaturesInput("");
+                          setAudience("EMPLOYER");
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                </form>
+              </div>
+            </div>
 
             {/* List of Existing Packages */}
             <div className="card border-0 shadow-sm">
               <div className="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                <h5 className="mb-0 fw-semibold">
+                <h5 className="mb-0 fw-semibold text-dark">
                   <i className="fa-solid fa-list text-primary me-2"></i>Existing Packages
                 </h5>
                 <button className="btn btn-sm btn-outline-secondary" onClick={loadPackages} disabled={dataLoading}>
@@ -221,23 +346,32 @@ export default function AdminPackagesPage() {
                             </div>
                             <div className="pt-3 border-top d-flex justify-content-between align-items-center">
                               <span className="small text-muted">Status: <span className="fw-medium text-success">Ready</span></span>
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-outline-danger px-3"
-                                disabled={deletingId === pkg.id}
-                                onClick={() => handleDeletePackage(pkg.id, pkg.name)}
-                              >
-                                {deletingId === pkg.id ? (
-                                  <>
-                                    <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                                    Deleting...
-                                  </>
-                                ) : (
-                                  <>
-                                    <i className="fa-solid fa-trash-can me-1"></i>Delete
-                                  </>
-                                )}
-                              </button>
+                              <div className="d-flex gap-2">
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline-primary px-3"
+                                  onClick={() => handleEditClick(pkg)}
+                                >
+                                  <i className="fa-solid fa-pen-to-square me-1"></i>Edit
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline-danger px-3"
+                                  disabled={deletingId === pkg.id}
+                                  onClick={() => handleDeletePackage(pkg.id, pkg.name)}
+                                >
+                                  {deletingId === pkg.id ? (
+                                    <>
+                                      <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                      Deleting...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <i className="fa-solid fa-trash-can me-1"></i>Delete
+                                    </>
+                                  )}
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>

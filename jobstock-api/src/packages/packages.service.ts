@@ -68,6 +68,28 @@ export class PackagesService {
     }
   }
 
+  updatePackage(
+    id: string,
+    data: {
+      name?: string;
+      audience?: 'CANDIDATE' | 'EMPLOYER' | 'RESUME';
+      priceInPaisa?: number;
+      featuresJson?: any;
+      isActive?: boolean;
+    },
+  ) {
+    return this.prisma.package.update({
+      where: { id },
+      data: {
+        name: data.name,
+        audience: data.audience,
+        priceInPaisa: data.priceInPaisa !== undefined ? Number(data.priceInPaisa) : undefined,
+        featuresJson: data.featuresJson,
+        isActive: data.isActive,
+      },
+    });
+  }
+
   async createOrder(userId: string, dto: CreateOrderDto) {
     const pkg = await this.prisma.package.findUnique({ where: { id: dto.packageId } });
     if (!pkg || !pkg.isActive) {

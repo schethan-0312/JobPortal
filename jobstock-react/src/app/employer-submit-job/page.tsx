@@ -64,6 +64,158 @@ const workModeOptions = [
   { value: "HYBRID", label: "Hybrid" },
 ];
 
+interface SearchableSelectProps {
+  label: string;
+  value: string;
+  onChange: (val: string) => void;
+  options: string[];
+  placeholder: string;
+  disabledPlaceholder?: string;
+  disabled?: boolean;
+  loading?: boolean;
+  searchPlaceholder?: string;
+  onRetry?: () => void;
+  errorMsg?: string | null;
+}
+
+function SearchableSelect({
+  label,
+  value,
+  onChange,
+  options,
+  placeholder,
+  disabledPlaceholder,
+  disabled,
+  loading,
+  searchPlaceholder = "Search...",
+  onRetry,
+  errorMsg
+}: SearchableSelectProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const filteredOptions = options.filter(option =>
+    option.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <div className="form-group position-relative" ref={containerRef}>
+      <label className="form-label fw-medium d-flex justify-content-between">
+        <span>{label}</span>
+        {errorMsg && (
+          <button
+            type="button"
+            className="btn btn-link p-0 text-danger border-0 small font-weight-medium"
+            style={{ fontSize: "11px", textDecoration: "none" }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onRetry?.();
+            }}
+          >
+            <i className="fa-solid fa-arrows-rotate me-1"></i>Retry
+          </button>
+        )}
+      </label>
+      
+      <div
+        className="form-control d-flex align-items-center justify-content-between"
+        style={{
+          cursor: disabled ? "not-allowed" : "pointer",
+          backgroundColor: disabled ? "#f8f9fa" : "#fff",
+          opacity: disabled ? 0.7 : 1,
+          userSelect: "none"
+        }}
+        onClick={() => {
+          if (!disabled && !loading) {
+            setIsOpen(!isOpen);
+            setSearchQuery("");
+          }
+        }}
+      >
+        <span className="text-truncate d-flex align-items-center gap-2">
+          {loading && (
+            <span
+              className="spinner-border spinner-border-sm text-primary"
+              style={{ width: "14px", height: "14px" }}
+              role="status"
+              aria-hidden="true"
+            ></span>
+          )}
+          <span style={{ color: !value && !loading ? "#9ea8b6" : "inherit" }}>
+            {loading
+              ? "Loading..."
+              : value || (disabled ? disabledPlaceholder : placeholder)}
+          </span>
+        </span>
+        <i className="fa-solid fa-chevron-down text-muted" style={{ fontSize: "10px" }}></i>
+      </div>
+
+      {isOpen && !disabled && (
+        <div
+          className="position-absolute w-100 bg-white border rounded shadow mt-1"
+          style={{
+            maxHeight: "260px",
+            overflowY: "auto",
+            zIndex: 1050,
+            left: 0,
+            top: "100%"
+          }}
+        >
+          <div className="p-2 border-bottom sticky-top bg-white">
+            <input
+              type="text"
+              className="form-control form-control-sm w-100"
+              style={{
+                height: "36px !important",
+                minHeight: "36px !important",
+                padding: "4px 8px !important",
+                fontSize: "13px !important"
+              }}
+              placeholder={searchPlaceholder}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              autoFocus
+            />
+          </div>
+          <div className="list-group list-group-flush" style={{ maxHeight: "200px", overflowY: "auto" }}>
+            {filteredOptions.length === 0 ? (
+              <div className="p-3 text-muted text-center small">No matches found</div>
+            ) : (
+              filteredOptions.map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  className={`list-group-item list-group-item-action text-start border-0 py-2 px-3 small ${
+                    opt.toLowerCase() === value.toLowerCase() ? "active bg-primary text-white" : ""
+                  }`}
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    onChange(opt);
+                    setIsOpen(false);
+                  }}
+                >
+                  {opt}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function EmployerSubmitJobPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -117,6 +269,154 @@ export default function EmployerSubmitJobPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // Location selection states (CountriesNow API)
+  const [countries, setCountries] = useState<string[]>([]);
+  const [states, setStates] = useState<string[]>([]);
+  const [cities, setCities] = useState<string[]>([]);
+
+  const [countriesLoading, setCountriesLoading] = useState(false);
+  const [statesLoading, setStatesLoading] = useState(false);
+  const [citiesLoading, setCitiesLoading] = useState(false);
+
+  const [countriesError, setCountriesError] = useState<string | null>(null);
+  const [statesError, setStatesError] = useState<string | null>(null);
+  const [citiesError, setCitiesError] = useState<string | null>(null);
+
+  const [stateCache, setStateCache] = useState<Record<string, string[]>>({});
+  const [cityCache, setCityCache] = useState<Record<string, string[]>>({});
+
+  const fetchCountries = async () => {
+    setCountriesLoading(true);
+    setCountriesError(null);
+    try {
+      const response = await fetch("https://countriesnow.space/api/v0.1/countries/iso");
+      if (!response.ok) {
+        throw new Error("Failed to fetch countries");
+      }
+      const json = await response.json();
+      if (json.error) {
+        throw new Error(json.msg || "Failed to load countries");
+      }
+      const countryNames = json.data.map((c: any) => c.name).sort();
+      setCountries(countryNames);
+    } catch (err: any) {
+      setCountriesError(err.message || "Failed to load countries");
+    } finally {
+      setCountriesLoading(false);
+    }
+  };
+
+  const fetchStates = async (countryName: string) => {
+    if (!countryName) {
+      setStates([]);
+      return;
+    }
+    if (stateCache[countryName]) {
+      setStates(stateCache[countryName]);
+      return;
+    }
+
+    setStatesLoading(true);
+    setStatesError(null);
+    try {
+      const response = await fetch("https://countriesnow.space/api/v0.1/countries/states", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ country: countryName }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch states");
+      }
+      const json = await response.json();
+      if (json.error) {
+        throw new Error(json.msg || "Failed to load states");
+      }
+      const stateNames = json.data.states.map((s: any) => s.name).sort();
+      setStateCache((prev) => ({ ...prev, [countryName]: stateNames }));
+      setStates(stateNames);
+    } catch (err: any) {
+      setStatesError(err.message || "Failed to load states");
+      setStates([]);
+    } finally {
+      setStatesLoading(false);
+    }
+  };
+
+  const fetchCities = async (countryName: string, stateName: string) => {
+    if (!countryName || !stateName) {
+      setCities([]);
+      return;
+    }
+    const cacheKey = `${countryName}_${stateName}`;
+    if (cityCache[cacheKey]) {
+      setCities(cityCache[cacheKey]);
+      return;
+    }
+
+    setCitiesLoading(true);
+    setCitiesError(null);
+    try {
+      const response = await fetch("https://countriesnow.space/api/v0.1/countries/state/cities", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ country: countryName, state: stateName }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch cities");
+      }
+      const json = await response.json();
+      if (json.error) {
+        throw new Error(json.msg || "Failed to load cities");
+      }
+      const cityNames = json.data.sort();
+      setCityCache((prev) => ({ ...prev, [cacheKey]: cityNames }));
+      setCities(cityNames);
+    } catch (err: any) {
+      setCitiesError(err.message || "Failed to load cities");
+      setCities([]);
+    } finally {
+      setCitiesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCountries();
+  }, []);
+
+  useEffect(() => {
+    if (country) {
+      fetchStates(country);
+    } else {
+      setStates([]);
+    }
+  }, [country]);
+
+  useEffect(() => {
+    if (country && state) {
+      fetchCities(country, state);
+    } else {
+      setCities([]);
+    }
+  }, [country, state]);
+
+  const handleCountryChange = (newCountry: string) => {
+    setCountry(newCountry);
+    setState("");
+    setCity("");
+    setStates([]);
+    setCities([]);
+  };
+
+  const handleStateChange = (newState: string) => {
+    setState(newState);
+    setCity("");
+    setCities([]);
+  };
 
   const scrollToTop = () => {
     if (alertRef.current) {
@@ -730,42 +1030,75 @@ export default function EmployerSubmitJobPage() {
                     </div>
 
                     <div className="col-xl-4 col-lg-4 col-md-12">
-                      <div className="form-group">
-                        <label className="form-label fw-medium">Country</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="e.g. India"
-                          value={country}
-                          onChange={(e) => setCountry(e.target.value)}
-                        />
-                      </div>
+                      <SearchableSelect
+                        label="Country"
+                        value={country}
+                        onChange={handleCountryChange}
+                        options={countries}
+                        placeholder="Select Country"
+                        loading={countriesLoading}
+                        errorMsg={countriesError}
+                        onRetry={fetchCountries}
+                        searchPlaceholder="Search country..."
+                      />
                     </div>
 
                     <div className="col-xl-4 col-lg-4 col-md-12">
-                      <div className="form-group">
-                        <label className="form-label fw-medium">State</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="e.g. Maharashtra"
+                      {!statesLoading && country && states.length === 0 ? (
+                        <div className="form-group">
+                          <label className="form-label fw-medium">State</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Enter State"
+                            value={state}
+                            onChange={(e) => setState(e.target.value)}
+                          />
+                        </div>
+                      ) : (
+                        <SearchableSelect
+                          label="State"
                           value={state}
-                          onChange={(e) => setState(e.target.value)}
+                          onChange={handleStateChange}
+                          options={states}
+                          placeholder="Select State"
+                          disabledPlaceholder="Select Country First"
+                          disabled={!country}
+                          loading={statesLoading}
+                          errorMsg={statesError}
+                          onRetry={() => fetchStates(country)}
+                          searchPlaceholder="Search state..."
                         />
-                      </div>
+                      )}
                     </div>
 
                     <div className="col-xl-4 col-lg-4 col-md-12">
-                      <div className="form-group">
-                        <label className="form-label fw-medium">City</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="e.g. Mumbai"
+                      {!citiesLoading && ((state && cities.length === 0) || (country && states.length === 0 && !statesLoading && cities.length === 0)) ? (
+                        <div className="form-group">
+                          <label className="form-label fw-medium">City</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Enter City"
+                            value={city}
+                            onChange={(e) => setCity(e.target.value)}
+                          />
+                        </div>
+                      ) : (
+                        <SearchableSelect
+                          label="City"
                           value={city}
-                          onChange={(e) => setCity(e.target.value)}
+                          onChange={setCity}
+                          options={cities}
+                          placeholder="Select City"
+                          disabledPlaceholder="Select State First"
+                          disabled={!state && !(country && states.length === 0 && !statesLoading)}
+                          loading={citiesLoading}
+                          errorMsg={citiesError}
+                          onRetry={() => fetchCities(country, state)}
+                          searchPlaceholder="Search city..."
                         />
-                      </div>
+                      )}
                     </div>
 
                     <div className="col-xl-12 col-lg-12 col-md-12">
