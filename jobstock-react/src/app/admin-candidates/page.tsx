@@ -33,6 +33,7 @@ export default function AdminCandidatesPage() {
   const [data, setData] = useState<CandidateListResponse | null>(null);
   const [search, setSearch] = useState("");
   const [suspendedFilter, setSuspendedFilter] = useState("");
+  const [page, setPage] = useState(1);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -49,13 +50,15 @@ export default function AdminCandidatesPage() {
         const params = new URLSearchParams();
         if (search) params.set("search", search);
         if (suspendedFilter) params.set("suspended", suspendedFilter);
+        params.set("page", String(page));
+        params.set("pageSize", "15");
         const res = await api.get<CandidateListResponse>(`/admin/candidate-management?${params.toString()}`);
         setData(res);
       } catch (err) {
         setError(err instanceof ApiError ? err.message : "Failed to load candidates");
       }
     })();
-  }, [user, search, suspendedFilter]);
+  }, [user, search, suspendedFilter, page]);
 
   if (loading || !user || user.role !== "ADMIN") {
     return null;
@@ -95,9 +98,19 @@ export default function AdminCandidatesPage() {
                     className="form-control form-control-sm"
                     placeholder="Search name or email..."
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                      setPage(1);
+                    }}
                   />
-                  <select className="form-control form-control-sm" value={suspendedFilter} onChange={(e) => setSuspendedFilter(e.target.value)}>
+                  <select
+                    className="form-control form-control-sm"
+                    value={suspendedFilter}
+                    onChange={(e) => {
+                      setSuspendedFilter(e.target.value);
+                      setPage(1);
+                    }}
+                  >
                     <option value="">All</option>
                     <option value="false">Active</option>
                     <option value="true">Suspended</option>
@@ -119,6 +132,7 @@ export default function AdminCandidatesPage() {
                           <th>Assessments</th>
                           <th>Interviews</th>
                           <th>Status</th>
+                          <th>Action</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -138,10 +152,32 @@ export default function AdminCandidatesPage() {
                                 {c.isSuspended ? "Suspended" : "Active"}
                               </span>
                             </td>
+                            <td>
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-outline-main py-1 px-3"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  router.push(`/admin-candidates/${c.id}`);
+                                }}
+                              >
+                                View
+                              </button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
+                  </div>
+                )}
+
+                {data && data.total > 15 && (
+                  <div className="d-flex justify-content-between align-items-center p-3 border-top small text-muted">
+                    <span>Showing {(page - 1) * 15 + 1} - {Math.min(page * 15, data.total)} of {data.total} candidates</span>
+                    <div className="d-flex gap-2">
+                      <button type="button" className="btn btn-sm btn-outline-secondary" disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</button>
+                      <button type="button" className="btn btn-sm btn-outline-secondary" disabled={page * 15 >= data.total} onClick={() => setPage(page + 1)}>Next</button>
+                    </div>
                   </div>
                 )}
               </div>

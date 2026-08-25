@@ -56,6 +56,14 @@ export default function Navbar7() {
     router.push("/");
   }
 
+  function handleBellClick() {
+    api.patch("/notifications/read-all")
+      .then(() => {
+        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      })
+      .catch((err) => console.error("Failed to mark notifications as read:", err));
+  }
+
   const notificationList = (
     <div className="dropdown-menu pull-right animated flipInX">
       <div className="drp_menu_headr bg-main">
@@ -160,10 +168,11 @@ export default function Navbar7() {
                       data-bs-toggle="dropdown"
                       aria-haspopup="true"
                       aria-expanded="false"
+                      onClick={handleBellClick}
                     >
                       <i className="fa-regular fa-bell"></i>
                       {notifications.filter((n) => !n.isRead).length > 0 && (
-                        <span className="noti-status" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'white' }}>
+                        <span className="noti-status" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: 'white', width: '16px', height: '16px', top: '4px', right: '4px', fontWeight: 'bold', borderRadius: '50%', backgroundColor: '#f32b2b' }}>
                           {notifications.filter((n) => !n.isRead).length}
                         </span>
                       )}
@@ -282,10 +291,11 @@ export default function Navbar7() {
                       data-bs-toggle="dropdown"
                       aria-haspopup="true"
                       aria-expanded="false"
+                      onClick={handleBellClick}
                     >
                       <i className="fa-regular fa-bell"></i>
                       {notifications.filter((n) => !n.isRead).length > 0 && (
-                        <span className="noti-status" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'white' }}>
+                        <span className="noti-status" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: 'white', width: '16px', height: '16px', top: '4px', right: '4px', fontWeight: 'bold', borderRadius: '50%', backgroundColor: '#f32b2b' }}>
                           {notifications.filter((n) => !n.isRead).length}
                         </span>
                       )}

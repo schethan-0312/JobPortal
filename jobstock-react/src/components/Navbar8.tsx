@@ -56,6 +56,14 @@ export default function Navbar8() {
     router.push("/");
   }
 
+  function handleBellClick() {
+    api.patch("/notifications/read-all")
+      .then(() => {
+        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      })
+      .catch((err) => console.error("Failed to mark notifications as read:", err));
+  }
+
   const notificationList = (
     <div className="dropdown-menu pull-right animated flipInX">
       <div className="drp_menu_headr bg-main">
@@ -108,12 +116,12 @@ export default function Navbar8() {
         </li>
         <li>
           <Link href="/employer-profile">
-            <i className="fa fa-user-tie"></i>My Profile
+            <i className="fa fa-user-tie"></i>Company Profile
           </Link>
         </li>
         <li>
-          <Link href="/employer-jobs">
-            <i className="fa fa-file"></i>My Jobs
+          <Link href="/employer-manage-jobs">
+            <i className="fa-solid fa-briefcase"></i>Manage Jobs
           </Link>
         </li>
         <li>
@@ -143,25 +151,22 @@ export default function Navbar8() {
 
   return (
     <>
-      <div className="header header-light head-fixed">
+      <div className="header header-dark head-fixed">
         <div className="container-fluid">
           <nav id="navigation" className="navigation navigation-landscape">
             <div className="nav-header">
               <Link className="nav-brand" href="/">
-                <img src="/assets/img/logo.png" className="logo" alt="JobStock" />
+                <img src="/assets/img/logo-light.png" className="logo" alt="JobStock" />
               </Link>
               <div className="nav-toggle"></div>
               <ul className="mobile_nav dhsbrd">
-                <li>
+                <li className="d-none d-md-inline-block">
                   <Link
                     href="/employer-submit-job"
-                    className="btn btn-main btn-sm text-white px-2"
+                    className="btn btn-order-by-filt bg-main text-white"
                     style={{
-                      borderRadius: "4px",
-                      fontSize: "11px",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      height: "32px",
+                      padding: "0.5rem 1rem",
+                      borderRadius: "6px",
                       marginRight: "6px",
                       border: "none",
                       verticalAlign: "middle"
@@ -178,10 +183,11 @@ export default function Navbar8() {
                       data-bs-toggle="dropdown"
                       aria-haspopup="true"
                       aria-expanded="false"
+                      onClick={handleBellClick}
                     >
                       <i className="fa-regular fa-bell"></i>
                       {notifications.filter((n) => !n.isRead).length > 0 && (
-                        <span className="noti-status" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'white' }}>
+                        <span className="noti-status" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: 'white', width: '16px', height: '16px', top: '4px', right: '4px', fontWeight: 'bold', borderRadius: '50%', backgroundColor: '#f32b2b' }}>
                           {notifications.filter((n) => !n.isRead).length}
                         </span>
                       )}
@@ -290,10 +296,11 @@ export default function Navbar8() {
                       data-bs-toggle="dropdown"
                       aria-haspopup="true"
                       aria-expanded="false"
+                      onClick={handleBellClick}
                     >
                       <i className="fa-regular fa-bell"></i>
                       {notifications.filter((n) => !n.isRead).length > 0 && (
-                        <span className="noti-status" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'white' }}>
+                        <span className="noti-status" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: 'white', width: '16px', height: '16px', top: '4px', right: '4px', fontWeight: 'bold', borderRadius: '50%', backgroundColor: '#f32b2b' }}>
                           {notifications.filter((n) => !n.isRead).length}
                         </span>
                       )}

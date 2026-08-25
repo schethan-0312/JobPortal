@@ -46,6 +46,22 @@ export default function CandidateProfilePage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  const completedFields = [
+    fullName.trim() !== "",
+    headline.trim() !== "",
+    location.trim() !== "",
+    phone.trim() !== "",
+    about.trim() !== "",
+    skillsInput.trim() !== "",
+    experienceYears.trim() !== "",
+    !!profile?.profilePhotoUrl,
+  ].filter(Boolean).length;
+
+  const totalFields = 8;
+  const completionPercentage = (completedFields / totalFields) * 100;
+  const circleCircumference = 376.99;
+  const strokeDashoffset = circleCircumference - (completionPercentage / 100) * circleCircumference;
+
   const referralLink = user
     ? typeof window !== "undefined"
       ? `${window.location.origin}/signup?ref=${user.userId}`
@@ -179,7 +195,7 @@ export default function CandidateProfilePage() {
                 <div className="profile-avatar position-ralative mb-3">
                   <svg>
                     <circle className="bg" cx={70} cy={70} r={60}></circle>
-                    <circle className="progress" cx={70} cy={70} r={60} strokeDasharray="326.72" strokeDashoffset="326.72"></circle>
+                    <circle className="progress" cx={70} cy={70} r={60} strokeDasharray="376.99" strokeDashoffset={strokeDashoffset}></circle>
                   </svg>
                   {profile?.profilePhotoUrl ? (
                     <img className="avatar" src={assetUrl(profile.profilePhotoUrl!)} alt="Avatar" />
@@ -209,7 +225,6 @@ export default function CandidateProfilePage() {
                     <div className="dash-prfs-caption mb-4">
                       <div className="dash-prfs-title d-flex align-items-center justify-content-between">
                         <div className="avatar-title"><h4>{profile?.fullName || user.email}</h4></div>
-                        <div className="update-status"><span className="text-sm opacity-75">Referral points: {profile?.referralPoints ?? 0}</span></div>
                       </div>
                       <div className="dash-prfs-subtitle">
                         <div className="jbs-job-mrch-lists mb-2">
@@ -236,7 +251,15 @@ export default function CandidateProfilePage() {
                       <div className="completion-group d-flex flex-column gap-3 mb-3">
                         <div className="d-flex align-items-center justify-content-between gap-2">
                           <div className="task-title"><span>Email</span></div>
-                          <div className="complete-status"><span className="badge badge-md bg-white text-dark fw-medium rounded-pill">{user.email}</span></div>
+                          <div className="complete-status" style={{ minWidth: 0 }}>
+                            <span
+                              className="badge badge-md bg-white text-dark fw-medium rounded-pill text-truncate d-inline-block"
+                              style={{ maxWidth: "150px", verticalAlign: "bottom" }}
+                              title={user.email}
+                            >
+                              {user.email}
+                            </span>
+                          </div>
                         </div>
                         <div className="d-flex align-items-center justify-content-between gap-2">
                           <div className="task-title"><span>Phone</span></div>
@@ -346,8 +369,16 @@ export default function CandidateProfilePage() {
 
                     <div className="col-xl-12 col-lg-12 col-md-12">
                       <div className="form-group">
-                        <label>About Info</label>
-                        <textarea className="form-control ht-80" value={about} onChange={(e) => setAbout(e.target.value)}></textarea>
+                        <label className="d-flex justify-content-between w-100">
+                          <span>About Info</span>
+                          <span className="text-muted small">{about.length}/300</span>
+                        </label>
+                        <textarea
+                          className="form-control ht-80"
+                          value={about}
+                          maxLength={300}
+                          onChange={(e) => setAbout(e.target.value)}
+                        ></textarea>
                       </div>
                     </div>
 
