@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { AiService } from '../ai/ai.service.js';
 import { StartInterviewDto } from './dto/start-interview.dto.js';
 import { SubmitInterviewDto } from './dto/submit-interview.dto.js';
+import { AiFeature } from '../../generated/prisma/enums.js';
 
 const QUESTION_COUNT = 6;
 
@@ -51,6 +52,8 @@ export class MockInterviewService {
     const { questions } = await this.ai.generateJson<{ questions: string[] }>(
       QUESTIONS_SYSTEM_PROMPT,
       `Job role: ${dto.jobRole}`,
+      AiFeature.MOCK_INTERVIEW,
+      userId,
     );
 
     if (!Array.isArray(questions) || questions.length === 0) {
@@ -98,7 +101,7 @@ export class MockInterviewService {
       perQuestion: QuestionFeedback[];
       overallRating: number;
       overallSummary: string;
-    }>(FEEDBACK_SYSTEM_PROMPT, userPrompt);
+    }>(FEEDBACK_SYSTEM_PROMPT, userPrompt, AiFeature.MOCK_INTERVIEW, userId);
 
     const feedback = { perQuestion, overallSummary };
 

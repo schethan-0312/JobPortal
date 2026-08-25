@@ -3,6 +3,7 @@ import { AiService } from '../ai/ai.service.js';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { extractResumeText } from '../resume-scanner/resume-scanner.service.js';
+import { AiFeature } from '../../generated/prisma/enums.js';
 
 const SYSTEM_PROMPT = `You are an expert AI resume parser. Your job is to extract structured information from the provided raw resume text.
 Always respond with strict JSON matching this exact shape, no markdown, no extra text:
@@ -65,7 +66,7 @@ export interface ParseResult {
 export class ResumeParserService {
   constructor(private readonly ai: AiService) {}
 
-  async parseResume(resumeUrl: string): Promise<ParseResult> {
+  async parseResume(userId: string, resumeUrl: string): Promise<ParseResult> {
     const cleanUrl = resumeUrl.startsWith('/') ? resumeUrl.slice(1) : resumeUrl;
     const filePath = path.join(process.cwd(), 'public', cleanUrl);
     
@@ -89,6 +90,6 @@ export class ResumeParserService {
 ${extractedText}
 """`;
 
-    return await this.ai.generateJson<ParseResult>(SYSTEM_PROMPT, userPrompt);
+    return await this.ai.generateJson<ParseResult>(SYSTEM_PROMPT, userPrompt, AiFeature.RESUME_BUILDER, userId);
   }
 }

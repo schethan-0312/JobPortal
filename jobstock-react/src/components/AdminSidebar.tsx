@@ -88,6 +88,9 @@ export default function AdminSidebar({ active }: AdminSidebarProps) {
               <li className={active === "ai" ? "active" : undefined}>
                 <Link href="/admin-ai"><i className="fa-solid fa-robot me-2"></i>AI Config</Link>
               </li>
+              <li className={active === "tokens" ? "active" : undefined}>
+                <Link href="/admin-tokens"><i className="fa-solid fa-calculator me-2"></i>Token Usage</Link>
+              </li>
               <li className={active === "proctoring" ? "active" : undefined}>
                 <Link href="/admin-proctoring"><i className="fa-solid fa-video me-2"></i>Proctoring</Link>
               </li>

@@ -1,9 +1,13 @@
 import { Injectable, InternalServerErrorException, HttpException, HttpStatus, BadRequestException } from '@nestjs/common';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { AiFeature } from '../../generated/prisma/enums.js';
 
 @Injectable()
 export class AiService {
   private client: GoogleGenerativeAI | null = null;
+
+  constructor(private readonly prisma: PrismaService) {}
 
   private getClient(): GoogleGenerativeAI {
     if (this.client) return this.client;
@@ -26,65 +30,153 @@ export class AiService {
     }
   }
 
+  private async logUsage(
+    feature: AiFeature | undefined,
+    userId: string | undefined,
+    success: boolean,
+    latencyMs: number,
+    promptTokens?: number,
+    responseTokens?: number,
+    errorMessage?: string,
+    modelName?: string,
+  ) {
+    try {
+      await this.prisma.aiUsageLog.create({
+        data: {
+          feature: feature || 'CHATBOT',
+          userId: userId || null,
+          success,
+          latencyMs,
+          promptTokens: promptTokens || null,
+          responseTokens: responseTokens || null,
+          totalTokens: (promptTokens || 0) + (responseTokens || 0) || null,
+          errorMessage: errorMessage || null,
+          model: modelName || null,
+        },
+      });
+    } catch (err) {
+      console.error('Failed to log AI usage:', err);
+    }
+  }
+
   /**
    * Sends a prompt to Gemini and parses the response as JSON. Gemini is asked
    * to return only JSON, but we strip markdown code fences defensively since
    * LLMs sometimes include them anyway.
    */
-  async generateJson<T>(systemInstruction: string, prompt: string): Promise<T> {
-    return this.withErrorHandling(async () => {
-      const model = this.getClient().getGenerativeModel({
-        model: 'gemini-3.6-flash',
-        systemInstruction,
-        generationConfig: {
-          temperature: 0.2, // Low temperature for more deterministic JSON
-          responseMimeType: 'application/json',
-        },
+  async generateJson<T>(
+    systemInstruction: string,
+    prompt: string,
+    feature?: AiFeature,
+    userId?: string,
+  ): Promise<T> {
+    const startTime = Date.now();
+    try {
+      const result = await this.withErrorHandling(async () => {
+        const model = this.getClient().getGenerativeModel({
+          model: 'gemini-3.6-flash',
+          systemInstruction,
+          generationConfig: {
+            temperature: 0.2, // Low temperature for more deterministic JSON
+            responseMimeType: 'application/json',
+          },
+        });
+
+        return await model.generateContent(prompt);
       });
 
-      const result = await model.generateContent(prompt);
       const text = result.response.text();
+      const latencyMs = Date.now() - startTime;
+      const promptTokens = result.response.usageMetadata?.promptTokenCount ?? 0;
+      const responseTokens = result.response.usageMetadata?.candidatesTokenCount ?? 0;
+
+      await this.logUsage(feature, userId, true, latencyMs, promptTokens, responseTokens, undefined, 'gemini-3.6-flash');
 
       // Clean up markdown fences if present
       const cleanedText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       return JSON.parse(cleanedText) as T;
-    });
+    } catch (err: any) {
+      const latencyMs = Date.now() - startTime;
+      await this.logUsage(feature, userId, false, latencyMs, 0, 0, err.message || String(err), 'gemini-3.6-flash');
+      throw err;
+    }
   }
 
   /**
    * Basic text generation without JSON constraints.
    */
-  async generateText(systemInstruction: string, prompt: string): Promise<string> {
-    return this.withErrorHandling(async () => {
-      const model = this.getClient().getGenerativeModel({
-        model: 'gemini-3.6-flash',
-        systemInstruction,
+  async generateText(
+    systemInstruction: string,
+    prompt: string,
+    feature?: AiFeature,
+    userId?: string,
+  ): Promise<string> {
+    const startTime = Date.now();
+    try {
+      const result = await this.withErrorHandling(async () => {
+        const model = this.getClient().getGenerativeModel({
+          model: 'gemini-3.6-flash',
+          systemInstruction,
+        });
+
+        return await model.generateContent(prompt);
       });
 
-      const result = await model.generateContent(prompt);
-      return result.response.text().trim();
-    });
+      const text = result.response.text().trim();
+      const latencyMs = Date.now() - startTime;
+      const promptTokens = result.response.usageMetadata?.promptTokenCount ?? 0;
+      const responseTokens = result.response.usageMetadata?.candidatesTokenCount ?? 0;
+
+      await this.logUsage(feature, userId, true, latencyMs, promptTokens, responseTokens, undefined, 'gemini-3.6-flash');
+
+      return text;
+    } catch (err: any) {
+      const latencyMs = Date.now() - startTime;
+      await this.logUsage(feature, userId, false, latencyMs, 0, 0, err.message || String(err), 'gemini-3.6-flash');
+      throw err;
+    }
   }
 
-  async chat(systemPrompt: string, history: { role: 'user' | 'model'; text: string }[], message: string) {
-    return this.withErrorHandling(async () => {
-      const model = this.getClient().getGenerativeModel({
-        model: 'gemini-flash-latest',
-        systemInstruction: systemPrompt,
+  async chat(
+    systemPrompt: string,
+    history: { role: 'user' | 'model'; text: string }[],
+    message: string,
+    feature?: AiFeature,
+    userId?: string,
+  ) {
+    const startTime = Date.now();
+    try {
+      const result = await this.withErrorHandling(async () => {
+        const model = this.getClient().getGenerativeModel({
+          model: 'gemini-flash-latest',
+          systemInstruction: systemPrompt,
+        });
+        // Gemini requires chat history to start with a 'user' turn — drop any leading
+        // 'model' turns (e.g. a UI's seeded greeting message) before sending it along.
+        const firstUserIndex = history.findIndex((h) => h.role === 'user');
+        const validHistory = firstUserIndex === -1 ? [] : history.slice(firstUserIndex);
+        const chatSession = model.startChat({
+          history: validHistory.map((h) => ({ role: h.role, parts: [{ text: h.text }] })),
+        });
+        return await chatSession.sendMessage(message);
       });
-      // Gemini requires chat history to start with a 'user' turn — drop any leading
-      // 'model' turns (e.g. a UI's seeded greeting message) before sending it along.
-      const firstUserIndex = history.findIndex((h) => h.role === 'user');
-      const validHistory = firstUserIndex === -1 ? [] : history.slice(firstUserIndex);
-      const chatSession = model.startChat({
-        history: validHistory.map((h) => ({ role: h.role, parts: [{ text: h.text }] })),
-      });
-      const result = await chatSession.sendMessage(message);
-      return result.response.text();
-    });
+
+      const text = result.response.text();
+      const latencyMs = Date.now() - startTime;
+      const promptTokens = result.response.usageMetadata?.promptTokenCount ?? 0;
+      const responseTokens = result.response.usageMetadata?.candidatesTokenCount ?? 0;
+
+      await this.logUsage(feature, userId, true, latencyMs, promptTokens, responseTokens, undefined, 'gemini-flash-latest');
+
+      return text;
+    } catch (err: any) {
+      const latencyMs = Date.now() - startTime;
+      await this.logUsage(feature, userId, false, latencyMs, 0, 0, err.message || String(err), 'gemini-flash-latest');
+      throw err;
+    }
   }
 
-  async extractBlogFromDocument(file: Express.Multer.File): Promise<any> {
+  async extractBlogFromDocument(file: Express.Multer.File, userId?: string): Promise<any> {
     let extractedText = '';
 
     try {
@@ -126,6 +218,6 @@ ${extractedText.substring(0, 50000)}
 
 Generate the blog post JSON according to the system instructions.`;
 
-    return this.generateJson<any>(systemPrompt, prompt);
+    return this.generateJson<any>(systemPrompt, prompt, AiFeature.CHATBOT, userId);
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AiService } from '../ai/ai.service.js';
 import { SendMessageDto } from './dto/send-message.dto.js';
+import { AiFeature } from '../../generated/prisma/enums.js';
 
 const SYSTEM_PROMPT = `You are the JobStock Career Assistant, a helpful chatbot embedded in the JobStock job portal
 (jobstock.com equivalent — a real production platform, not a demo).
@@ -28,8 +29,8 @@ Never claim capabilities the platform doesn't have (e.g. don't claim to submit a
 export class ChatbotService {
   constructor(private readonly ai: AiService) {}
 
-  async sendMessage(dto: SendMessageDto): Promise<{ reply: string }> {
-    const reply = await this.ai.chat(SYSTEM_PROMPT, dto.history ?? [], dto.message);
+  async sendMessage(userId: string | undefined, dto: SendMessageDto): Promise<{ reply: string }> {
+    const reply = await this.ai.chat(SYSTEM_PROMPT, dto.history ?? [], dto.message, AiFeature.CHATBOT, userId);
     return { reply };
   }
 }

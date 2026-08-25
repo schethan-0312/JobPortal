@@ -5,6 +5,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { createRequire } from 'node:module';
 import { ScanResumeDto, ScanSourceType } from './dto/scan-resume.dto.js';
+import { AiFeature } from '../../generated/prisma/enums.js';
 
 const require = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
@@ -163,7 +164,7 @@ Resume text:
 ${extractedText}
 """`;
 
-      return await this.ai.generateJson<ResumeScanResult>(SYSTEM_PROMPT, userPrompt);
+      return await this.ai.generateJson<ResumeScanResult>(SYSTEM_PROMPT, userPrompt, AiFeature.RESUME_SCANNER, userId);
     } catch (error) {
       console.error('Resume Scan Error:', error);
       return {

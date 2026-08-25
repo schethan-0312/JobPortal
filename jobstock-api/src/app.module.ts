@@ -63,6 +63,7 @@ import { SeoModule } from './seo/seo.module.js';
 import { AdminSeoModule } from './admin-seo/admin-seo.module.js';
 import { NewsletterModule } from './newsletter/newsletter.module.js';
 import { FollowModule } from './follow/follow.module.js';
+import { AdminTokensModule } from './admin-tokens/admin-tokens.module.js';
 
 @Module({
   imports: [
@@ -131,6 +132,7 @@ import { FollowModule } from './follow/follow.module.js';
     AdminSeoModule,
     NewsletterModule,
     FollowModule,
+    AdminTokensModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],

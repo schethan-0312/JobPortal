@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { AiService } from '../ai/ai.service.js';
 import { StartAssessmentDto } from './dto/start-assessment.dto.js';
 import { SubmitAssessmentDto } from './dto/submit-assessment.dto.js';
+import { AiFeature } from '../../generated/prisma/enums.js';
 
 interface GeneratedQuestion {
   question: string;
@@ -51,6 +52,8 @@ export class SkillAssessmentService {
     const { questions } = await this.ai.generateJson<{ questions: GeneratedQuestion[] }>(
       QUESTION_SYSTEM_PROMPT,
       `Skill: ${dto.skill}`,
+      AiFeature.SKILL_ASSESSMENT,
+      userId,
     );
 
     if (!Array.isArray(questions) || questions.length === 0) {
@@ -157,6 +160,8 @@ export class SkillAssessmentService {
       const { recommendedSkills } = await this.ai.generateJson<{ recommendedSkills: string[] }>(
         RECOMMENDATION_SYSTEM_PROMPT,
         userPrompt,
+        AiFeature.SKILL_ASSESSMENT,
+        userId,
       );
       return { recommendedSkills: recommendedSkills || ['Communication', 'Problem Solving', 'Time Management'] };
     } catch (err) {

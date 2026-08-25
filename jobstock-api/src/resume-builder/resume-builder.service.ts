@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { AiService } from '../ai/ai.service.js';
 import { GenerateResumeDto } from './dto/generate-resume.dto.js';
 import { SuggestImprovementDto } from './dto/suggest-improvement.dto.js';
+import { AiFeature } from '../../generated/prisma/enums.js';
 
 export interface ExperienceEntry {
   title: string;
@@ -97,7 +98,7 @@ ${dto.rawBackground}
       education: EducationEntry[];
       projects: ProjectEntry[];
       certifications: CertificationEntry[];
-    }>(SYSTEM_PROMPT, userPrompt);
+    }>(SYSTEM_PROMPT, userPrompt, AiFeature.RESUME_BUILDER, userId);
 
     return {
       fullName: profileWithUser.fullName,
@@ -125,7 +126,7 @@ If it is a bullet point or paragraph, rewrite it using strong action verbs, quan
 If it is a list of skills, suggest a more professional grouping or formatting, or add obviously missing foundational keywords.
 Return only the improved text, no extra conversational text.`;
 
-    const result = await this.ai.generateText(PROMPT, `Text to improve:\n"""\n${dto.text}\n"""`);
+    const result = await this.ai.generateText(PROMPT, `Text to improve:\n"""\n${dto.text}\n"""`, AiFeature.RESUME_BUILDER, userId);
     return { suggestion: result.trim() };
   }
 }

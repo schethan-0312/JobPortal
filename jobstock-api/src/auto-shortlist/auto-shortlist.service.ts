@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AiService } from '../ai/ai.service.js';
+import { AiFeature } from '../../generated/prisma/enums.js';
 
 interface CandidateRanking {
   applicationId: string;
@@ -75,7 +76,7 @@ Job description: ${job.description}
 Applicants (JSON):
 ${JSON.stringify(applicantsForPrompt)}`;
 
-    const { rankings } = await this.ai.generateJson<{ rankings: CandidateRanking[] }>(SYSTEM_PROMPT, userPrompt);
+    const { rankings } = await this.ai.generateJson<{ rankings: CandidateRanking[] }>(SYSTEM_PROMPT, userPrompt, AiFeature.AUTO_SHORTLIST, employerUserId);
 
     const appById = new Map(applications.map((a) => [a.id, a]));
     return rankings

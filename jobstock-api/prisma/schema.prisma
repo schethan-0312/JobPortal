@@ -76,6 +76,7 @@ model AiUsageLog {
   promptTokens   Int?
   responseTokens Int?
   totalTokens    Int?
+  model          String?
   createdAt      DateTime  @default(now())
 
   @@index([feature, createdAt])

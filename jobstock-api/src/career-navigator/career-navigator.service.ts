@@ -4,6 +4,7 @@ import { AiService } from '../ai/ai.service.js';
 import { GeneratePathDto } from './dto/generate-path.dto.js';
 import { CareerKnowledgeService } from './career-knowledge.service.js';
 import { extractResumeText } from '../resume-scanner/resume-scanner.service.js';
+import { AiFeature } from '../../generated/prisma/enums.js';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -142,6 +143,6 @@ ${candidateContext}
 ${retrievedRolesContext}
     `;
 
-    return this.ai.generateJson<CareerPathResult>(SYSTEM_PROMPT, finalPrompt);
+    return this.ai.generateJson<CareerPathResult>(SYSTEM_PROMPT, finalPrompt, AiFeature.CAREER_NAVIGATOR, userId);
   }
 }
