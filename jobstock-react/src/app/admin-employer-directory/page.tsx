@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -26,7 +26,7 @@ interface DirectoryResponse {
 }
 
 function formatMoney(paisa: number) {
-  return `₹${(paisa / 100).toLocaleString("en-IN")}`;
+  return `â‚¹${(paisa / 100).toLocaleString("en-IN")}`;
 }
 
 export default function AdminEmployerDirectoryPage() {
@@ -74,7 +74,7 @@ export default function AdminEmployerDirectoryPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Employer Directory</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -92,7 +92,7 @@ export default function AdminEmployerDirectoryPage() {
             <div className="card">
               <div className="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center">
                 <h6 className="mb-0">All Employers ({data?.total ?? 0})</h6>
-                <div className="d-flex gap-2">
+                <div className="d-flex gap-2 flex-wrap">
                   <input
                     type="text"
                     className="form-control form-control-sm"
@@ -150,7 +150,7 @@ export default function AdminEmployerDirectoryPage() {
                               </span>
                             </td>
                             <td className="small">{e.jobsPostedCount}</td>
-                            <td className="small">{e.activeSubscription ?? "—"}</td>
+                            <td className="small">{e.activeSubscription ?? "â€”"}</td>
                             <td className="small">{formatMoney(e.totalSpendPaisa)}</td>
                             <td className="small text-muted">{new Date(e.signupDate).toLocaleDateString()}</td>
                           </tr>
@@ -175,3 +175,4 @@ export default function AdminEmployerDirectoryPage() {
     </>
   );
 }
+

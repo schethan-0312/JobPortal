@@ -298,7 +298,7 @@ export default async function CandidateDetailPage({
       <section className="bg-cover bg-main" >
         <div className="container">
           <div className="row justify-content-center">
-            <div className="col-xl-7 col-lg-10 col-md-12 col-sm-12">
+            <div className="col-12 col-xl-7 col-lg-10 col-md-12 col-sm-12">
               <div className="call-action-wrap">
                 <div className="sec-heading center">
                   <h2 className="lh-base mb-3 text-light">

@@ -106,7 +106,7 @@ export default function EmployerShortlistCandidatesPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Shortlisted Candidates</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">

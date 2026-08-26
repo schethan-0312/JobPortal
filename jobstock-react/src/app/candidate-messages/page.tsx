@@ -340,7 +340,7 @@ function CandidateMessagesContent() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Message Inbox</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -411,7 +411,7 @@ function CandidateMessagesContent() {
                                     <img src={avatarSrc} alt="" style={{ width: "40px", height: "40px", borderRadius: "50%", objectFit: "cover" }} />
                                   </div>
                                   <div className="dash-msg-text" style={{ position: 'relative', overflow: 'visible', minWidth: '120px' }}>
-                                    <div className="d-flex justify-content-between align-items-start gap-3">
+                                    <div className="d-flex justify-content-between align-items-start gap-3 flex-wrap">
                                       <div style={{ flex: 1, minWidth: 0, wordBreak: 'break-word', paddingRight: '25px' }}>
                                         {m.mediaType === "image" && mediaFullUrl && (
                                           <a href={mediaFullUrl} target="_blank" rel="noreferrer"><img src={mediaFullUrl} alt="image" style={{ maxWidth: "200px", borderRadius: "8px", marginBottom: "6px", display: "block" }} /></a>
@@ -420,7 +420,7 @@ function CandidateMessagesContent() {
                                           <audio controls src={mediaFullUrl} style={{ width: "200px", height: "45px", marginBottom: "6px" }} />
                                         )}
                                         {m.mediaType === "file" && mediaFullUrl && (
-                                          <a href={mediaFullUrl} target="_blank" rel="noreferrer" className="d-flex align-items-center gap-2 mb-1" style={{ color: "inherit" }}><i className="fa-solid fa-file" style={{ fontSize: "1.2rem" }}></i><span className="small text-truncate" style={{ maxWidth: "180px" }}>{m.body || "File"}</span></a>
+                                          <a href={mediaFullUrl} target="_blank" rel="noreferrer" className="d-flex align-items-center gap-2 mb-1 flex-wrap" style={{ color: "inherit" }}><i className="fa-solid fa-file" style={{ fontSize: "1.2rem" }}></i><span className="small text-truncate" style={{ maxWidth: "180px" }}>{m.body || "File"}</span></a>
                                         )}
                                         {(!m.mediaType || m.mediaType === "file" ? false : !!m.body) && (<p className="mb-1" style={{ fontStyle: m.deletedForEveryone ? 'italic' : 'normal', color: m.deletedForEveryone ? '#888' : 'inherit' }}>{m.body}</p>)}
                                         {!m.mediaType && m.body && <p className="mb-1" style={{ fontStyle: m.deletedForEveryone ? 'italic' : 'normal', color: m.deletedForEveryone ? '#888' : 'inherit' }}>{m.body}</p>}
@@ -449,8 +449,8 @@ function CandidateMessagesContent() {
                           </div>
                         )}
                         <input ref={fileInputRef} type="file" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAndSend(f); e.target.value = ""; }} />
-                        <div className="p-3 bg-white border-top d-flex align-items-end gap-2" style={{ flexShrink: 0 }}>
-                          <div className="d-flex gap-1" style={{ flexShrink: 0, paddingBottom: "4px" }}>
+                        <div className="p-3 bg-white border-top d-flex align-items-end gap-2 flex-wrap" style={{ flexShrink: 0 }}>
+                          <div className="d-flex gap-1 flex-wrap" style={{ flexShrink: 0, paddingBottom: "4px" }}>
                             <button type="button" title="Take Photo" className="btn btn-light btn-sm rounded-circle" style={{ width: "36px", height: "36px", padding: 0 }} onClick={openCamera} disabled={uploadingMedia}><i className="fa-solid fa-camera" style={{ fontSize: "14px" }}></i></button>
                             <button type="button" title="Attach File" className="btn btn-light btn-sm rounded-circle" style={{ width: "36px", height: "36px", padding: 0 }} onClick={() => fileInputRef.current?.click()} disabled={uploadingMedia}><i className="fa-solid fa-paperclip" style={{ fontSize: "14px" }}></i></button>
                             <button type="button" title={isRecording ? "Stop Recording" : "Voice Note"} className={`btn btn-sm rounded-circle ${isRecording ? "btn-danger" : "btn-light"}`} style={{ width: "36px", height: "36px", padding: 0 }} onClick={handleVoiceToggle} disabled={uploadingMedia}><i className={`fa-solid ${isRecording ? "fa-stop" : "fa-microphone"}`} style={{ fontSize: "14px" }}></i></button>

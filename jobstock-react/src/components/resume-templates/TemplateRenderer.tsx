@@ -65,6 +65,46 @@ export default function TemplateRenderer({
   
   const isAts = templateId.includes("ats");
 
+  // Auto-resize textareas so content is never cut off
+  React.useEffect(() => {
+    const resizeTextareas = () => {
+      const textareas = document.querySelectorAll(".editable-textarea") as NodeListOf<HTMLTextAreaElement>;
+      const scrollPos = window.scrollY;
+      textareas.forEach(t => {
+        t.style.height = 'auto';
+        t.style.height = (t.scrollHeight + 5) + 'px'; // +5px buffer to prevent clipping
+      });
+      window.scrollTo(0, scrollPos);
+    };
+
+    resizeTextareas();
+    // Run again slightly later to account for fonts loading
+    const timer1 = setTimeout(resizeTextareas, 100);
+    const timer2 = setTimeout(resizeTextareas, 500);
+    const timer3 = setTimeout(resizeTextareas, 1500);
+
+    const handleInput = (e: Event) => {
+      const t = e.target as HTMLTextAreaElement;
+      if (t.classList.contains("editable-textarea")) {
+        const scrollPos = window.scrollY;
+        t.style.height = 'auto';
+        t.style.height = (t.scrollHeight + 5) + 'px';
+        window.scrollTo(0, scrollPos);
+      }
+    };
+    
+    document.addEventListener("input", handleInput);
+    window.addEventListener("resize", resizeTextareas);
+    
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+      document.removeEventListener("input", handleInput);
+      window.removeEventListener("resize", resizeTextareas);
+    };
+  }, [resume, templateId, sectionOrder]);
+
   // Renderers for each section
   const renderSummary = () => (
     <div className="resume-section section-summary mb-3" key="Summary">
@@ -117,9 +157,9 @@ export default function TemplateRenderer({
       <h5 className="section-title">Experience</h5>
       {resume.experience.map((exp, i) => (
         <div className="mb-3 experience-item" key={i}>
-          <div className="d-flex justify-content-between align-items-center">
-            <input
-              className="editable-input fw-bold exp-title"
+          <div className="d-flex justify-content-between align-items-start">
+            <textarea rows={1}
+              className="editable-textarea fw-bold exp-title"
               style={{ width: "65%" }}
               value={exp.title}
               onChange={(e) => {
@@ -128,8 +168,8 @@ export default function TemplateRenderer({
                 setResume({ ...resume, experience: newExp });
               }}
             />
-            <input
-              className="editable-input text-end text-muted small exp-date"
+            <textarea rows={1}
+              className="editable-textarea text-end text-muted small exp-date"
               style={{ width: "30%" }}
               value={exp.duration}
               onChange={(e) => {
@@ -139,8 +179,8 @@ export default function TemplateRenderer({
               }}
             />
           </div>
-          <input
-            className="editable-input text-muted mb-1 exp-company"
+          <textarea rows={1}
+            className="editable-textarea text-muted mb-1 exp-company"
             value={exp.company}
             onChange={(e) => {
               const newExp = [...resume.experience];
@@ -183,9 +223,9 @@ export default function TemplateRenderer({
       <h5 className="section-title">Education</h5>
       {resume.education.map((ed, i) => (
         <div className="mb-2 education-item" key={i}>
-          <div className="d-flex justify-content-between align-items-center">
-            <input
-              className="editable-input fw-bold edu-degree"
+          <div className="d-flex justify-content-between align-items-start">
+            <textarea rows={1}
+              className="editable-textarea fw-bold edu-degree"
               style={{ width: "70%" }}
               value={ed.degree}
               onChange={(e) => {
@@ -194,8 +234,8 @@ export default function TemplateRenderer({
                 setResume({ ...resume, education: newEd });
               }}
             />
-            <input
-              className="editable-input text-end text-muted small edu-year"
+            <textarea rows={1}
+              className="editable-textarea text-end text-muted small edu-year"
               style={{ width: "25%" }}
               value={ed.year}
               onChange={(e) => {
@@ -205,8 +245,8 @@ export default function TemplateRenderer({
               }}
             />
           </div>
-          <input
-            className="editable-input text-muted edu-institution"
+          <textarea rows={1}
+            className="editable-textarea text-muted edu-institution"
             value={ed.institution}
             onChange={(e) => {
               const newEd = [...resume.education];
@@ -226,8 +266,8 @@ export default function TemplateRenderer({
         <h5 className="section-title">Projects</h5>
         {resume.projects.map((proj, i) => (
           <div className="mb-2 project-item" key={i}>
-            <input
-              className="editable-input fw-bold proj-title"
+            <textarea rows={1}
+              className="editable-textarea fw-bold proj-title"
               value={proj.title}
               onChange={(e) => {
                 const newProj = [...resume.projects];
@@ -258,9 +298,9 @@ export default function TemplateRenderer({
         <h5 className="section-title">Certifications</h5>
         {resume.certifications.map((cert, i) => (
           <div className="mb-2 cert-item" key={i}>
-            <div className="d-flex justify-content-between align-items-center">
-              <input
-                className="editable-input fw-bold cert-title"
+            <div className="d-flex justify-content-between align-items-start">
+              <textarea rows={1}
+                className="editable-textarea fw-bold cert-title"
                 style={{ width: "70%" }}
                 value={cert.title}
                 onChange={(e) => {
@@ -269,8 +309,8 @@ export default function TemplateRenderer({
                   setResume({ ...resume, certifications: newCert });
                 }}
               />
-              <input
-                className="editable-input text-end text-muted small cert-year"
+              <textarea rows={1}
+                className="editable-textarea text-end text-muted small cert-year"
                 style={{ width: "25%" }}
                 value={cert.year}
                 onChange={(e) => {
@@ -280,8 +320,8 @@ export default function TemplateRenderer({
                 }}
               />
             </div>
-            <input
-              className="editable-input text-muted cert-desc"
+            <textarea rows={1}
+              className="editable-textarea text-muted cert-desc"
               value={cert.description || ""}
               onChange={(e) => {
                 const newCert = [...resume.certifications];
@@ -484,22 +524,22 @@ export default function TemplateRenderer({
         {profilePhoto && (
           <img src={assetUrl(profilePhoto) || ""} alt="Profile" className="header-photo" />
         )}
-        <input 
-          className="editable-input header-name w-100" 
+        <textarea rows={1} 
+          className="editable-textarea header-name w-100" 
           value={resume.fullName} 
           onChange={(e) => setResume({...resume, fullName: e.target.value})} 
           style={{ textAlign: 'inherit' }}
         />
-        <input 
-          className="editable-input header-headline w-100" 
+        <textarea rows={1} 
+          className="editable-textarea header-headline w-100" 
           value={resume.headline} 
           onChange={(e) => setResume({...resume, headline: e.target.value})} 
           style={{ textAlign: 'inherit' }}
         />
         <div className="header-contact" style={{ justifyContent: photoAlignment === "left" ? "flex-start" : photoAlignment === "right" ? "flex-end" : "center" }}>
-          <input className="editable-input" style={{ width: 'auto' }} value={resume.contact?.email || ''} onChange={(e) => setResume({...resume, contact: {...resume.contact, email: e.target.value}})} placeholder="Email" />
-          <input className="editable-input" style={{ width: 'auto' }} value={resume.contact?.phone || ''} onChange={(e) => setResume({...resume, contact: {...resume.contact, phone: e.target.value}})} placeholder="Phone" />
-          <input className="editable-input" style={{ width: 'auto' }} value={resume.contact?.location || ''} onChange={(e) => setResume({...resume, contact: {...resume.contact, location: e.target.value}})} placeholder="Location" />
+          <textarea rows={1} className="editable-textarea" style={{ width: 'auto' }} value={resume.contact?.email || ''} onChange={(e) => setResume({...resume, contact: {...resume.contact, email: e.target.value}})} placeholder="Email" />
+          <textarea rows={1} className="editable-textarea" style={{ width: 'auto' }} value={resume.contact?.phone || ''} onChange={(e) => setResume({...resume, contact: {...resume.contact, phone: e.target.value}})} placeholder="Phone" />
+          <textarea rows={1} className="editable-textarea" style={{ width: 'auto' }} value={resume.contact?.location || ''} onChange={(e) => setResume({...resume, contact: {...resume.contact, location: e.target.value}})} placeholder="Location" />
         </div>
       </div>
 
@@ -513,3 +553,4 @@ export default function TemplateRenderer({
     </div>
   );
 }
+

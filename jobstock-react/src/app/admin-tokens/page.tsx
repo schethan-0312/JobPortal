@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -73,9 +73,9 @@ interface TrendPoint {
 }
 
 function formatCost(rs: number) {
-  if (rs === 0) return "₹0.00";
-  if (rs < 0.1) return `₹${rs.toFixed(4)}`;
-  return `₹${rs.toFixed(2)}`;
+  if (rs === 0) return "â‚¹0.00";
+  if (rs < 0.1) return `â‚¹${rs.toFixed(4)}`;
+  return `â‚¹${rs.toFixed(2)}`;
 }
 
 function featureLabel(feature: string) {
@@ -242,7 +242,7 @@ export default function AdminTokenUsagePage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Token Usage Dashboard</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -401,7 +401,7 @@ export default function AdminTokenUsagePage() {
                       </select>
                     </div>
                   )}
-                  <div className="col-md-2 col-sm-6 d-flex gap-2">
+                  <div className="col-md-2 col-sm-6 d-flex gap-2 flex-wrap">
                     <button type="button" className="btn btn-sm btn-outline-secondary w-100" onClick={() => {
                       setFromDate("");
                       setToDate("");
@@ -445,7 +445,7 @@ export default function AdminTokenUsagePage() {
                         ) : trendData.length === 0 ? (
                           <p className="text-muted text-center py-5 small">No trends data available for current selection.</p>
                         ) : (
-                          <div className="d-flex align-items-end gap-1 w-100" style={{ height: 180 }}>
+                          <div className="d-flex align-items-end gap-1 w-100 flex-wrap" style={{ height: 180 }}>
                             {(() => {
                               const maxVal = Math.max(1, ...trendData.map((d) => d.total));
                               return trendData.slice(-30).map((t, idx) => {
@@ -467,9 +467,9 @@ export default function AdminTokenUsagePage() {
                             })()}
                           </div>
                         )}
-                        <div className="d-flex justify-content-center gap-4 mt-3 small">
-                          <div className="d-flex align-items-center gap-1"><div className="bg-primary rounded-circle" style={{ width: 10, height: 10 }} /> Input Tokens</div>
-                          <div className="d-flex align-items-center gap-1"><div className="bg-success rounded-circle" style={{ width: 10, height: 10 }} /> Output Tokens</div>
+                        <div className="d-flex justify-content-center gap-4 mt-3 small flex-wrap">
+                          <div className="d-flex align-items-center gap-1 flex-wrap"><div className="bg-primary rounded-circle" style={{ width: 10, height: 10 }} /> Input Tokens</div>
+                          <div className="d-flex align-items-center gap-1 flex-wrap"><div className="bg-success rounded-circle" style={{ width: 10, height: 10 }} /> Output Tokens</div>
                         </div>
                       </div>
                     </div>
@@ -487,7 +487,7 @@ export default function AdminTokenUsagePage() {
                         ) : trendData.length === 0 ? (
                           <p className="text-muted text-center py-5 small">No requests data available.</p>
                         ) : (
-                          <div className="d-flex align-items-end gap-1 w-100" style={{ height: 180 }}>
+                          <div className="d-flex align-items-end gap-1 w-100 flex-wrap" style={{ height: 180 }}>
                             {(() => {
                               const maxReq = Math.max(1, ...trendData.map((d) => d.requests));
                               return trendData.slice(-30).map((t, idx) => {
@@ -582,7 +582,7 @@ export default function AdminTokenUsagePage() {
                         {usersList.total > 10 && (
                           <div className="d-flex justify-content-between align-items-center p-3 border-top small text-muted">
                             <span>Showing {(userPage - 1) * 10 + 1} - {Math.min(userPage * 10, usersList.total)} of {usersList.total} users</span>
-                            <div className="d-flex gap-2">
+                            <div className="d-flex gap-2 flex-wrap">
                               <button type="button" className="btn btn-sm btn-outline-secondary" disabled={userPage === 1} onClick={() => setUserPage(userPage - 1)}>Prev</button>
                               <button type="button" className="btn btn-sm btn-outline-secondary" disabled={userPage * 10 >= usersList.total} onClick={() => setUserPage(userPage + 1)}>Next</button>
                             </div>
@@ -655,7 +655,7 @@ export default function AdminTokenUsagePage() {
                         {historyList.total > 15 && (
                           <div className="d-flex justify-content-between align-items-center p-3 border-top small text-muted">
                             <span>Showing {(historyPage - 1) * 15 + 1} - {Math.min(historyPage * 15, historyList.total)} of {historyList.total} logs</span>
-                            <div className="d-flex gap-2">
+                            <div className="d-flex gap-2 flex-wrap">
                               <button type="button" className="btn btn-sm btn-outline-secondary" disabled={historyPage === 1} onClick={() => setHistoryPage(historyPage - 1)}>Prev</button>
                               <button type="button" className="btn btn-sm btn-outline-secondary" disabled={historyPage * 15 >= historyList.total} onClick={() => setHistoryPage(historyPage + 1)}>Next</button>
                             </div>
@@ -834,3 +834,4 @@ export default function AdminTokenUsagePage() {
     </>
   );
 }
+

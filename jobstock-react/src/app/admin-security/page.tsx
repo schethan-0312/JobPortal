@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -141,7 +141,7 @@ export default function AdminSecurityPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Security &amp; Access</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -188,7 +188,7 @@ export default function AdminSecurityPage() {
                             <td className="small">{s.email}</td>
                             <td><span className="badge bg-secondary">{s.role}</span></td>
                             <td className="small">{new Date(s.lastLoginAt).toLocaleString()}</td>
-                            <td className="small text-muted">{s.ipAddress ?? "—"}</td>
+                            <td className="small text-muted">{s.ipAddress ?? "â€”"}</td>
                             <td>
                               <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => revokeSession(s.userId, s.email)}>
                                 Force logout
@@ -225,7 +225,7 @@ export default function AdminSecurityPage() {
                           <tr key={f.id}>
                             <td className="small">{new Date(f.createdAt).toLocaleString()}</td>
                             <td className="small">{f.email}</td>
-                            <td className="small text-muted">{f.ipAddress ?? "—"}</td>
+                            <td className="small text-muted">{f.ipAddress ?? "â€”"}</td>
                             <td className="small text-muted">{f.reason}</td>
                           </tr>
                         ))}
@@ -254,7 +254,7 @@ export default function AdminSecurityPage() {
                             {rateLimitHits.items.slice(0, 10).map((r) => (
                               <tr key={r.id}>
                                 <td className="small">{new Date(r.createdAt).toLocaleTimeString()}</td>
-                                <td className="small">{r.ipAddress ?? "—"}</td>
+                                <td className="small">{r.ipAddress ?? "â€”"}</td>
                                 <td className="small text-muted">{r.path}</td>
                               </tr>
                             ))}
@@ -272,7 +272,7 @@ export default function AdminSecurityPage() {
                     <h6 className="mb-0">IP Blocklist</h6>
                   </div>
                   <div className="card-body">
-                    <form onSubmit={blockIp} className="d-flex gap-2 mb-3">
+                    <form onSubmit={blockIp} className="d-flex gap-2 mb-3 flex-wrap">
                       <input
                         type="text"
                         className="form-control form-control-sm"
@@ -320,3 +320,4 @@ export default function AdminSecurityPage() {
     </>
   );
 }
+

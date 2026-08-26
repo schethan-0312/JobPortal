@@ -180,7 +180,7 @@ export default function CandidateProfilePage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Candidate Profile</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -258,7 +258,7 @@ export default function CandidateProfilePage() {
                   <div className="col-xl-4 col-lg-4">
                     <div className="card rpunded-3 p-4" style={{ background: "#fff5ee" }}>
                       <div className="completion-group d-flex flex-column gap-3 mb-3">
-                        <div className="d-flex align-items-center justify-content-between gap-2">
+                        <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap">
                           <div className="task-title"><span>Email</span></div>
                           <div className="complete-status" style={{ minWidth: 0 }}>
                             <span
@@ -270,11 +270,11 @@ export default function CandidateProfilePage() {
                             </span>
                           </div>
                         </div>
-                        <div className="d-flex align-items-center justify-content-between gap-2">
+                        <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap">
                           <div className="task-title"><span>Phone</span></div>
                           <div className="complete-status"><span className="badge badge-md bg-white text-dark fw-medium rounded-pill">{profile?.phone || "-"}</span></div>
                         </div>
-                        <div className="d-flex align-items-center justify-content-between gap-2">
+                        <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap">
                           <div className="task-title"><span>Location</span></div>
                           <div className="complete-status"><span className="badge badge-md bg-white text-dark fw-medium rounded-pill">{profile?.location || "-"}</span></div>
                         </div>

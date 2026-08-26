@@ -73,24 +73,62 @@ export default function CandidateSidebar({ active }: CandidateSidebarProps) {
     router.push("/");
   }
 
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <>
+      <style jsx global>{`
+        @media (max-width: 992px) {
+          #MobNav {
+            position: fixed !important;
+            top: 0 !important;
+            left: -280px !important;
+            width: 280px !important;
+            height: 100vh !important;
+            z-index: 1050 !important;
+            background: #ffffff !important;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+            transition: left 0.3s ease !important;
+            overflow-y: auto !important;
+            display: block !important;
+            visibility: hidden !important;
+          }
+          #MobNav.show {
+            left: 0 !important;
+            visibility: visible !important;
+          }
+        }
+      `}</style>
+
       <a
         className="mobNavigation"
-        data-bs-toggle="collapse"
-        href="#MobNav"
         role="button"
-        aria-expanded="false"
-        aria-controls="MobNav"
-      >
+        onClick={() => setIsOpen(!isOpen)}
+        style={{ cursor: "pointer" }}>
         <i className="fas fa-bars mr-2"></i>Dashboard Navigation
       </a>
-      <div className="collapse" id="MobNav">
+      {isOpen && (
+        <div 
+          className="sidebar-backdrop d-lg-none" 
+          onClick={() => setIsOpen(false)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            zIndex: 1040,
+            cursor: "pointer"
+          }}
+        />
+      )}
+      <div className={`collapse ${isOpen ? "show" : ""}`} id="MobNav">
         <div className="dashboard-nav">
           <div className="dash-user-blocks pt-5">
             <div className="jbs-grid-usrs-thumb">
               <div className="jbs-grid-yuo">
-                <Link href="/candidate-profile">
+                <Link href="/candidate-profile" onClick={() => setIsOpen(false)}>
                   <figure>
                     {profile?.profilePhotoUrl ? (
                       <img
@@ -110,7 +148,7 @@ export default function CandidateSidebar({ active }: CandidateSidebarProps) {
             <div className="jbs-grid-usrs-caption mb-3">
               <div className="jbs-tiosk">
                 <h4 className="jbs-tiosk-title">
-                  <Link href="/candidate-profile">{profile?.fullName || "My Profile"}</Link>
+                  <Link href="/candidate-profile" onClick={() => setIsOpen(false)}>{profile?.fullName || "My Profile"}</Link>
                 </h4>
                 <div className="jbs-tiosk-subtitle">
                   <span>{profile?.headline || "Add a headline to your profile"}</span>
@@ -121,89 +159,89 @@ export default function CandidateSidebar({ active }: CandidateSidebarProps) {
           <div className="dashboard-inner">
             <ul data-submenu-title="Main Navigation">
               <li className={active === "dashboard" ? "active" : undefined}>
-                <Link href="/candidate-dashboard">
+                <Link href="/candidate-dashboard" onClick={() => setIsOpen(false)}>
                   <i className="fa-solid fa-gauge-high me-2"></i>User Dashboard
                 </Link>
               </li>
               <li className={active === "profile" ? "active" : undefined}>
-                <Link href="/candidate-profile">
+                <Link href="/candidate-profile" onClick={() => setIsOpen(false)}>
                   <i className="fa-regular fa-user me-2"></i>My Profile
                 </Link>
               </li>
               <li className={active === "resume" ? "active" : undefined}>
-                <Link href="/candidate-resume">
+                <Link href="/candidate-resume" onClick={() => setIsOpen(false)}>
                   <i className="fa-solid fa-file-pdf me-2"></i>My Resumes
                 </Link>
               </li>
               <li className={active === "resume-builder" ? "active" : undefined}>
-                <Link href="/candidate-resume-builder">
+                <Link href="/candidate-resume-builder" onClick={() => setIsOpen(false)}>
                   <i className="fa-solid fa-file-pen me-2"></i>AI Resume Builder
                 </Link>
               </li>
               <li className={active === "resume-scanner" ? "active" : undefined}>
-                <Link href="/candidate-resume-scanner">
+                <Link href="/candidate-resume-scanner" onClick={() => setIsOpen(false)}>
                   <i className="fa-solid fa-magnifying-glass-chart me-2"></i>Resume Health Scanner
                 </Link>
               </li>
               <li className={active === "skill-assessment" ? "active" : undefined}>
-                <Link href="/candidate-skill-assessment">
+                <Link href="/candidate-skill-assessment" onClick={() => setIsOpen(false)}>
                   <i className="fa-solid fa-award me-2"></i>Skill Assessments
                 </Link>
               </li>
               <li className={active === "mock-interview" ? "active" : undefined}>
-                <Link href="/candidate-mock-interview">
+                <Link href="/candidate-mock-interview" onClick={() => setIsOpen(false)}>
                   <i className="fa-solid fa-video me-2"></i>Mock Interviews
                 </Link>
               </li>
               <li className={active === "career-navigator" ? "active" : undefined}>
-                <Link href="/candidate-career-navigator">
+                <Link href="/candidate-career-navigator" onClick={() => setIsOpen(false)}>
                   <i className="fa-solid fa-route me-2"></i>Career Path Navigator
                 </Link>
               </li>
               <li className={active === "smart-match" ? "active" : undefined}>
-                <Link href="/candidate-smart-match">
+                <Link href="/candidate-smart-match" onClick={() => setIsOpen(false)}>
                   <i className="fa-solid fa-wand-magic-sparkles me-2"></i>Smart Job Matches
                 </Link>
               </li>
               <li className={active === "applied-jobs" ? "active" : undefined}>
-                <Link href="/candidate-applied-jobs">
+                <Link href="/candidate-applied-jobs" onClick={() => setIsOpen(false)}>
                   <i className="fa-regular fa-paper-plane me-2"></i>Applied jobs
                 </Link>
               </li>
               <li className={active === "alert-job" ? "active" : undefined}>
-                <Link href="/candidate-alert-job">
+                <Link href="/candidate-alert-job" onClick={() => setIsOpen(false)}>
                   <i className="fa-solid fa-bell me-2"></i>Alert Jobs
                   {alertCount > 0 && <span className="count-tag bg-warning">{alertCount}</span>}
                 </Link>
               </li>
               <li className={active === "saved-jobs" ? "active" : undefined}>
-                <Link href="/candidate-saved-jobs">
+                <Link href="/candidate-saved-jobs" onClick={() => setIsOpen(false)}>
                   <i className="fa-solid fa-bookmark me-2"></i>Saved Jobs
                 </Link>
               </li>
               <li className={active === "follow-employers" ? "active" : undefined}>
-                <Link href="/candidate-follow-employers">
+                <Link href="/candidate-follow-employers" onClick={() => setIsOpen(false)}>
                   <i className="fa-solid fa-user-clock me-2"></i>Following Employers
                 </Link>
               </li>
               <li className={active === "competition" ? "active" : undefined}>
-                <Link href="/candidate-competition">
+                <Link href="/candidate-competition" onClick={() => setIsOpen(false)}>
                   <i className="fa-solid fa-trophy me-2"></i>Competition
                 </Link>
               </li>
               <li className={active === "messages" ? "active" : undefined}>
-                <Link href="/candidate-messages">
+                <Link href="/candidate-messages" onClick={() => setIsOpen(false)}>
                   <i className="fa-solid fa-comments me-2"></i>Messages
                   {unreadMessages > 0 && <span className="count-tag">{unreadMessages}</span>}
                 </Link>
               </li>
               <li className={active === "delete-account" ? "active" : undefined}>
-                <Link href="/candidate-delete-account">
+                <Link href="/candidate-delete-account" onClick={() => setIsOpen(false)}>
                   <i className="fa-solid fa-trash-can me-2"></i>Delete Account
                 </Link>
               </li>
               <li>
-                <a href="#" onClick={(e) => { e.preventDefault(); handleLogout(); }}>
+                <a href="#" onClick={(e) => { e.preventDefault(); setIsOpen(false); handleLogout(); }}>
                   <i className="fa-solid fa-power-off me-2"></i>Log Out
                 </a>
               </li>

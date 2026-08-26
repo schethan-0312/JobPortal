@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -82,7 +82,7 @@ export default function AdminAuditLogPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Audit Log</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -153,8 +153,8 @@ export default function AdminAuditLogPage() {
                             <td className="small">
                               {entry.targetType} <span className="text-muted">#{entry.targetId.slice(0, 8)}</span>
                             </td>
-                            <td className="small text-muted">{entry.reason ?? "—"}</td>
-                            <td className="small text-muted">{entry.ipAddress ?? "—"}</td>
+                            <td className="small text-muted">{entry.reason ?? "â€”"}</td>
+                            <td className="small text-muted">{entry.ipAddress ?? "â€”"}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -167,7 +167,7 @@ export default function AdminAuditLogPage() {
                     <span className="small text-muted">
                       Page {data.page} of {totalPages} ({data.total} entries)
                     </span>
-                    <div className="d-flex gap-2">
+                    <div className="d-flex gap-2 flex-wrap">
                       <button type="button" className="btn btn-sm btn-outline-main" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
                         Previous
                       </button>
@@ -193,3 +193,4 @@ export default function AdminAuditLogPage() {
     </>
   );
 }
+

@@ -161,7 +161,7 @@ export default function EditBlogPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Edit Blog Post</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -282,7 +282,7 @@ export default function EditBlogPage() {
                       <textarea name="seoDescription" className="form-control" rows={2} placeholder="Meta description for search engines..." value={formData.seoDescription} onChange={handleInputChange}></textarea>
                     </div>
 
-                    <div className="col-md-12 mt-4 d-flex justify-content-end gap-2">
+                    <div className="col-md-12 mt-4 d-flex justify-content-end gap-2 flex-wrap">
                       <Link href="/admin-content" className="btn btn-secondary">Cancel</Link>
                       <button type="button" className="btn btn-outline-main" disabled={isSubmitting} onClick={(e) => handleSubmit(e, 'draft')}>
                         Save Draft

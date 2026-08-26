@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -117,7 +117,7 @@ export default function AdminSeoPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">SEO &amp; Content Control</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -208,7 +208,7 @@ export default function AdminSeoPage() {
             <div className="card">
               <div className="card-header"><h6 className="mb-0">Per-Page Overrides ({overrides.length})</h6></div>
               <div className="card-body">
-                {overrides.length === 0 && <p className="text-muted small mb-0">No overrides — all pages use site-wide defaults.</p>}
+                {overrides.length === 0 && <p className="text-muted small mb-0">No overrides â€” all pages use site-wide defaults.</p>}
                 {overrides.length > 0 && (
                   <table className="table table-sm align-middle mb-0">
                     <thead><tr><th>Path</th><th>Title</th><th>Description</th><th></th></tr></thead>
@@ -216,8 +216,8 @@ export default function AdminSeoPage() {
                       {overrides.map((o) => (
                         <tr key={o.path}>
                           <td className="small font-monospace">{o.path}</td>
-                          <td className="small">{o.metaTitle ?? "—"}</td>
-                          <td className="small">{o.metaDescription ?? "—"}</td>
+                          <td className="small">{o.metaTitle ?? "â€”"}</td>
+                          <td className="small">{o.metaDescription ?? "â€”"}</td>
                           <td>
                             <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => handleDeleteOverride(o.path)}>
                               Delete
@@ -244,3 +244,4 @@ export default function AdminSeoPage() {
     </>
   );
 }
+

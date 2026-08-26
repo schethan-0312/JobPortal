@@ -108,14 +108,7 @@ export class ApplicationsService {
       return scoreB - scoreA;
     });
 
-    // Limit assessment data (scores/answers) to the top 10 candidates only
-    return rankedApplications.map((app, index) => {
-      if (index >= 10 && app.candidate.candidateProfile) {
-        // Strip out the assessment attempts to hide scores and answers
-        app.candidate.candidateProfile.jobAssessmentAttempts = [];
-      }
-      return app;
-    });
+    return rankedApplications;
   }
 
   async updateStatus(employerUserId: string, applicationId: string, dto: UpdateApplicationStatusDto) {
@@ -179,6 +172,28 @@ export class ApplicationsService {
     return this.prisma.application.update({
       where: { id: applicationId },
       data: { status: 'WITHDRAWN' },
+    });
+  }
+
+  async deleteApplication(employerUserId: string, applicationId: string) {
+    const employer = await this.prisma.employer.findUnique({ where: { userId: employerUserId } });
+    if (!employer) {
+      throw new NotFoundException('Employer profile not found');
+    }
+
+    const application = await this.prisma.application.findUnique({
+      where: { id: applicationId },
+      include: { job: true },
+    });
+    if (!application) {
+      throw new NotFoundException('Application not found');
+    }
+    if (application.job.employerId !== employer.id) {
+      throw new ForbiddenException('This application does not belong to one of your job postings');
+    }
+
+    return this.prisma.application.delete({
+      where: { id: applicationId },
     });
   }
 }

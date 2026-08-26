@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -66,7 +66,7 @@ export default function AdminLegalPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Legal &amp; Compliance</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -92,7 +92,7 @@ export default function AdminLegalPage() {
                     {rows.map((r) => (
                       <tr key={r.slug}>
                         <td className="small fw-medium">{r.label}</td>
-                        <td className="small">{r.doc ? `v${r.doc.version}` : "—"}</td>
+                        <td className="small">{r.doc ? `v${r.doc.version}` : "â€”"}</td>
                         <td className="small text-muted">{r.doc ? new Date(r.doc.updatedAt).toLocaleString() : "Not created yet"}</td>
                         <td>
                           <button
@@ -139,3 +139,4 @@ export default function AdminLegalPage() {
     </>
   );
 }
+

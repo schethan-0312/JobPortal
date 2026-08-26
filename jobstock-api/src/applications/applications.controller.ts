@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, UseGuards, Delete } from '@nestjs/common';
 import { ApplicationsService } from './applications.service.js';
 import { CreateApplicationDto } from './dto/create-application.dto.js';
 import { UpdateApplicationStatusDto } from './dto/update-application-status.dto.js';
@@ -40,6 +40,15 @@ export class ApplicationsController {
     @Body() dto: UpdateApplicationStatusDto,
   ) {
     return this.applicationsService.updateStatus(user.userId, id, dto);
+  }
+
+  @Delete(':id')
+  @Roles(Role.EMPLOYER)
+  deleteApplication(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+  ) {
+    return this.applicationsService.deleteApplication(user.userId, id);
   }
 
   @Patch(':id/withdraw')

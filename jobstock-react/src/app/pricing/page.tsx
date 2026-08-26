@@ -12,7 +12,7 @@ interface Package {
   audience: string;
   name: string;
   priceInPaisa: number;
-  featuresJson: string[];
+  featuresJson: string[] | Record<string, unknown> | unknown;
   isActive: boolean;
 }
 
@@ -21,6 +21,19 @@ function formatPrice(paisa: number) {
 }
 
 function PlanCard({ pkg, featured, ctaHref, ctaLabel }: { pkg: Package; featured: boolean; ctaHref: string; ctaLabel: string }) {
+  let features: string[] = [];
+  if (Array.isArray(pkg.featuresJson)) {
+    features = pkg.featuresJson;
+  } else if (typeof pkg.featuresJson === "object" && pkg.featuresJson !== null) {
+    if ("features" in pkg.featuresJson && Array.isArray((pkg.featuresJson as any).features)) {
+      features = (pkg.featuresJson as any).features.map((f: any) => String(f));
+    } else {
+      features = Object.entries(pkg.featuresJson).map(([k, v]) => `${k}: ${String(v)}`);
+    }
+  } else if (typeof pkg.featuresJson === "string") {
+    features = [pkg.featuresJson];
+  }
+
   return (
     <div className="col-lg-4 col-md-6 col-sm-12">
       <div className={`pricing-table-box h-100 ${featured ? "border border-main shadow-sm" : "border"}`} style={{ borderRadius: 12, padding: "2rem", position: "relative" }}>
@@ -35,8 +48,8 @@ function PlanCard({ pkg, featured, ctaHref, ctaLabel }: { pkg: Package; featured
           <span className="fs-6 text-muted">/mo</span>
         </h2>
         <ul className="list-unstyled mb-4">
-          {pkg.featuresJson.map((feature) => (
-            <li key={feature} className="mb-2">
+          {features.map((feature, idx) => (
+            <li key={idx} className="mb-2">
               <i className="fa-solid fa-circle-check text-main me-2"></i>
               {feature}
             </li>

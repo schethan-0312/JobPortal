@@ -81,6 +81,7 @@ function EmployerMessagesContent() {
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [deleteMenuOpenId, setDeleteMenuOpenId] = useState<string | null>(null);
   const [isCounterpartTyping, setIsCounterpartTyping] = useState(false);
+  const [mobileShowChat, setMobileShowChat] = useState(false);
 
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -185,6 +186,7 @@ function EmployerMessagesContent() {
 
   async function handleSelectConversation(counterpart: MessageUser) {
     setSelectedCounterpart(counterpart);
+    setMobileShowChat(true);
     shouldScrollRef.current = true;
     setThreadLoading(true);
     setError(null);
@@ -340,7 +342,7 @@ function EmployerMessagesContent() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Message Inbox</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -358,7 +360,7 @@ function EmployerMessagesContent() {
                 {error && <div className="alert alert-danger">{error}</div>}
                 <div className="d-flex bg-white rounded-3 overflow-hidden shadow-sm border mx-auto" style={{ height: "calc(100vh - 280px)", minHeight: "450px", maxWidth: "1050px" }}>
                   {/* Sidebar */}
-                  <div className="border-end d-flex flex-column" style={{ width: "320px", flexShrink: 0 }}>
+                  <div className={`border-end d-flex flex-column ${mobileShowChat ? "d-none d-md-flex" : "d-flex w-100"}`} style={{ width: mobileShowChat ? "320px" : "100%", flexShrink: 0 }}>
                     <div className="p-3 border-bottom bg-light">
                       <h6 className="m-0 fw-semibold">Recent Chats</h6>
                     </div>
@@ -387,10 +389,18 @@ function EmployerMessagesContent() {
                     </div>
                   </div>
                   {/* Chat Area */}
-                  <div className="d-flex flex-column bg-light" style={{ flex: 1, minWidth: 0 }}>
+                  <div className={`flex-column bg-light ${mobileShowChat ? "d-flex w-100" : "d-none d-md-flex"}`} style={{ flex: 1, minWidth: 0 }}>
                     {selectedCounterpart ? (
                       <>
                         <div className="p-3 bg-white border-bottom d-flex align-items-center shadow-sm" style={{ flexShrink: 0, zIndex: 10 }}>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-light d-md-none me-2 px-2"
+                            onClick={() => setMobileShowChat(false)}
+                            style={{ border: "1px solid #dee2e6" }}
+                          >
+                            <i className="fa-solid fa-arrow-left"></i>
+                          </button>
                           <img src={getUserAvatar(selectedCounterpart, false, null, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")} alt="" style={{ width: "42px", height: "42px", borderRadius: "50%", objectFit: "cover" }} className="me-3" />
                           <h5 className="m-0 fw-semibold">{getUserDisplayName(selectedCounterpart)}</h5>
                         </div>

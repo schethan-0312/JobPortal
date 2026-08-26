@@ -120,7 +120,7 @@ export default function CandidateDashboardPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-5">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Candidate Dashboard</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -140,7 +140,7 @@ export default function CandidateDashboardPage() {
             {/* Row Start */}
             <div className="row align-items-center gx-4 gy-4 mb-4">
               {ctrs.map((item, i) => (
-                <div className="col-xl-3 col-lg-6 col-md-6 col-sm-6" key={i}>
+                <div className="col-12 col-xl-3 col-lg-6 col-md-6 col-sm-6" key={i}>
                   <div className="dash-wrap-bloud">
                     <div className="dash-wrap-bloud-icon">
                       <div className={`bloud-icon text-${item.class} bg-${item.class} bg-opacity-05`}>
@@ -161,7 +161,7 @@ export default function CandidateDashboardPage() {
 
             {/* Row Start */}
             <div className="row gx-4 gy-4 mb-4">
-              <div className="col-xl-8 col-lg-12 col-md-12 col-sm-12">
+              <div className="col-12 col-xl-8 col-lg-12 col-md-12 col-sm-12">
                 <div className="card">
                   <div className="card-header d-flex justify-content-between align-items-center">
                     <h4 className="mb-0">Recommended For You</h4>
@@ -200,7 +200,7 @@ export default function CandidateDashboardPage() {
                 </div>
               </div>
 
-              <div className="col-xl-4 col-lg-12 col-md-12 col-sm-12">
+              <div className="col-12 col-xl-4 col-lg-12 col-md-12 col-sm-12">
                 <div className="card">
                   <div className="card-header">
                     <h4>Notifications</h4>
@@ -228,7 +228,7 @@ export default function CandidateDashboardPage() {
 
             {/* Row Start */}
             <div className="row">
-              <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
+              <div className="col-12 col-xl-12 col-lg-12 col-md-12 col-sm-12">
                 <div className="card">
                   <div className="card-header">
                     <h4 className="mb-0">Applied Jobs</h4>

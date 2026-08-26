@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -99,7 +99,7 @@ export default function AdminBackgroundJobsPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Background Jobs</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -121,7 +121,7 @@ export default function AdminBackgroundJobsPage() {
                     <h6 className="mb-0">{job.name}</h6>
                     <span className="small text-muted">{job.description}</span>
                   </div>
-                  <div className="d-flex align-items-center gap-2">
+                  <div className="d-flex align-items-center gap-2 flex-wrap">
                     <span className="badge bg-secondary">{job.cronLabel}</span>
                     {job.lastRun && (
                       <span className={`badge ${
@@ -173,7 +173,7 @@ export default function AdminBackgroundJobsPage() {
                               <td className="small">
                                 {r.completedAt
                                   ? `${Math.round((new Date(r.completedAt).getTime() - new Date(r.startedAt).getTime()) / 1000)}s`
-                                  : "—"}
+                                  : "â€”"}
                               </td>
                               <td className="small text-danger">{r.detail ?? ""}</td>
                             </tr>
@@ -199,3 +199,4 @@ export default function AdminBackgroundJobsPage() {
     </>
   );
 }
+

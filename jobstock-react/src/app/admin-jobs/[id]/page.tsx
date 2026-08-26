@@ -89,7 +89,7 @@ export default function AdminJobDetailPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">{detail?.title ?? "Job"}</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -113,7 +113,7 @@ export default function AdminJobDetailPage() {
                     <h6 className="mb-0">
                       Status: <span className="badge bg-secondary">{detail.status}</span>
                     </h6>
-                    <div className="d-flex gap-2">
+                    <div className="d-flex gap-2 flex-wrap">
                       {detail.status !== "FLAGGED" && (
                         <button type="button" className="btn btn-sm btn-outline-danger" disabled={acting} onClick={() => handleSetStatus("FLAGGED")}>
                           Flag
