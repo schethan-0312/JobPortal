@@ -55,11 +55,20 @@ function loadRazorpayScript(): Promise<boolean> {
   });
 }
 
+interface ActiveSubscription {
+  id: string;
+  packageId: string;
+  status: string;
+  startedAt: string;
+  expiresAt: string;
+}
+
 export default function EmployerPackagePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
   const [packages, setPackages] = useState<Package[]>([]);
+  const [activeSub, setActiveSub] = useState<ActiveSubscription | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -76,6 +85,9 @@ export default function EmployerPackagePage() {
     (async () => {
       setDataLoading(true);
       try {
+        const sub = await api.get<ActiveSubscription | null>("/packages/active-subscription").catch(() => null);
+        setActiveSub(sub);
+
         let list = await api.get<Package[]>("/packages?audience=EMPLOYER");
         if (!list || list.length === 0) {
           list = await api.get<Package[]>("/packages");
@@ -119,6 +131,10 @@ export default function EmployerPackagePage() {
   }
 
   async function handleBuy(pkg: Package) {
+    if (activeSub && activeSub.status === 'ACTIVE') {
+      setError("You already have an active package. You can purchase another package after your current package expires.");
+      return;
+    }
     setBuyingId(pkg.id);
     setError(null);
     setSuccess(null);
@@ -149,6 +165,9 @@ export default function EmployerPackagePage() {
               razorpaySignature: response.razorpay_signature,
             });
             setSuccess(`Payment successful — "${pkg.name}" package activated.`);
+            setTimeout(() => {
+              router.push('/employer-active-package');
+            }, 1000);
           } catch (err) {
             setError(err instanceof ApiError ? err.message : "Payment verification failed");
           } finally {
@@ -207,6 +226,11 @@ export default function EmployerPackagePage() {
             <div className="alert alert-info">
               Secure payments powered by Razorpay. Clicking &quot;Buy&quot; opens Razorpay&apos;s checkout — your package activates automatically once payment is verified.
             </div>
+            {activeSub?.status === 'ACTIVE' && (
+              <div className="alert alert-warning">
+                You already have an active package. You can purchase another package after your current package expires.
+              </div>
+            )}
             {error && <div className="alert alert-danger">{error}</div>}
             {success && <div className="alert alert-success">{success}</div>}
 
@@ -229,7 +253,9 @@ export default function EmployerPackagePage() {
                                 <div>
                                   <div className="d-flex justify-content-between align-items-center mb-3">
                                     <span className="badge bg-main-light text-main px-2 py-1 fw-medium">{item.audience || "EMPLOYER"}</span>
-                                    <span className="badge bg-success px-2 py-1">Active</span>
+                                    {activeSub?.packageId === item.id && activeSub?.status === 'ACTIVE' && (
+                                      <span className="badge bg-success px-2 py-1">Current</span>
+                                    )}
                                   </div>
                                   <h5 className="card-title fw-bold mb-2 text-dark">{item.name}</h5>
                                   <div className="fs-3 fw-bold text-main mb-3">
@@ -243,10 +269,14 @@ export default function EmployerPackagePage() {
                                   <button
                                     type="button"
                                     className="btn btn-main w-100 py-2 fw-medium"
-                                    disabled={buyingId === item.id}
+                                    disabled={buyingId === item.id || activeSub?.status === 'ACTIVE'}
                                     onClick={() => handleBuy(item)}
                                   >
-                                    {buyingId === item.id ? "Processing..." : "Buy Now"}
+                                    {activeSub?.packageId === item.id && activeSub?.status === 'ACTIVE'
+                                      ? "Active Package"
+                                      : buyingId === item.id
+                                      ? "Processing..."
+                                      : "Buy Now"}
                                   </button>
                                 </div>
                               </div>

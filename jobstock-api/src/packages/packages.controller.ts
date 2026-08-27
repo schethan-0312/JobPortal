@@ -100,4 +100,10 @@ export class PackagesController {
   listMyOrders(@CurrentUser() user: AuthenticatedUser) {
     return this.packagesService.listMyOrders(user.userId);
   }
+
+  @Get('active-subscription')
+  @UseGuards(JwtAuthGuard)
+  getActiveSubscription(@CurrentUser() user: AuthenticatedUser) {
+    return this.packagesService.getActiveSubscription(user.userId);
+  }
 }
