@@ -228,14 +228,23 @@ export default function EmployerCandidateSearchPage() {
                     <div className="col-xl-6 col-md-12 mb-4" key={c.id}>
                       <div className="border rounded p-3 h-100 d-flex flex-column">
                         <div className="d-flex gap-3 mb-2 flex-wrap">
-                          <img
-                            src={assetUrl(c.profilePhotoUrl) || "/assets/img/avatar.jpg"}
-                            className="rounded-circle"
-                            width={56}
-                            height={56}
-                            style={{ objectFit: "cover" }}
-                            alt=""
-                          />
+                          {c.profilePhotoUrl ? (
+                            <img
+                              src={assetUrl(c.profilePhotoUrl)!}
+                              className="rounded-circle flex-shrink-0"
+                              width={56}
+                              height={56}
+                              style={{ objectFit: "cover" }}
+                              alt=""
+                            />
+                          ) : (
+                            <div 
+                              className="rounded-circle bg-light d-flex align-items-center justify-content-center text-muted fw-semibold flex-shrink-0" 
+                              style={{ width: "56px", height: "56px" }}
+                            >
+                              <span className="small text-center px-1" style={{ fontSize: "10px", lineHeight: "1.2" }}>No Photo</span>
+                            </div>
+                          )}
                           <div>
                             <h5 className="mb-0">
                               <a href={`/candidate-detail/${c.id}`}>{c.fullName}</a>

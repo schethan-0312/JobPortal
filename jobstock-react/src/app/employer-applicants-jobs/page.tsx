@@ -263,13 +263,19 @@ export default function EmployerApplicantsJobsPage() {
                             <div className="jbs-list-head m-0">
                               <div className="jbs-list-head-thunner center">
                                 <div className="jbs-list-usrs-thumb jbs-verified">
-                                  <figure>
-                                    <img 
-                                      src={item.candidate.candidateProfile?.profilePhotoUrl ? assetUrl(item.candidate.candidateProfile.profilePhotoUrl) : "/assets/img/team-5.jpg"} 
-                                      className="img-fluid circle" 
-                                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                                      alt="" 
-                                    />
+                                  <figure style={{ display: "flex", width: "100%", height: "100%", margin: 0 }}>
+                                    {item.candidate.candidateProfile?.profilePhotoUrl ? (
+                                      <img 
+                                        src={assetUrl(item.candidate.candidateProfile.profilePhotoUrl)} 
+                                        className="img-fluid circle" 
+                                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                        alt="" 
+                                      />
+                                    ) : (
+                                      <div className="img-fluid circle d-flex align-items-center justify-content-center bg-light text-muted fw-semibold" style={{ width: "100%", height: "100%", borderRadius: "50%" }}>
+                                        <span className="small text-center px-1" style={{ fontSize: "11px", lineHeight: "1.2" }}>No Photo</span>
+                                      </div>
+                                    )}
                                   </figure>
                                 </div>
                                 <div className="jbs-list-job-caption">
@@ -391,12 +397,18 @@ export default function EmployerApplicantsJobsPage() {
               <div className="modal-body p-4">
                 <div className="d-flex align-items-center mb-4 pb-3 border-bottom">
                   <div style={{ width: "80px", height: "80px" }} className="me-3">
-                    <img
-                      src={viewingCandidate.candidate.candidateProfile?.profilePhotoUrl ? assetUrl(viewingCandidate.candidate.candidateProfile.profilePhotoUrl) : "/assets/img/team-5.jpg"}
-                      className="img-fluid rounded-circle"
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                      alt=""
-                    />
+                    {viewingCandidate.candidate.candidateProfile?.profilePhotoUrl ? (
+                      <img
+                        src={assetUrl(viewingCandidate.candidate.candidateProfile.profilePhotoUrl)}
+                        className="img-fluid rounded-circle"
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        alt=""
+                      />
+                    ) : (
+                      <div className="img-fluid rounded-circle d-flex align-items-center justify-content-center bg-light text-muted fw-semibold" style={{ width: "100%", height: "100%" }}>
+                        <span className="small text-center px-1" style={{ fontSize: "11px", lineHeight: "1.2" }}>No Photo</span>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <h4 className="mb-1">{viewingCandidate.candidate.candidateProfile?.fullName || viewingCandidate.candidate.email}</h4>
