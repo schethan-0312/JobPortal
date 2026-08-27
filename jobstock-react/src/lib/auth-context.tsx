@@ -23,7 +23,8 @@ interface RegisterInput {
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<AuthUser>;
+  login: (email: string, password: string, role?: Role) => Promise<AuthUser>;
+  googleLogin: (credential: string, role?: Role, isLogin?: boolean) => Promise<AuthUser>;
   register: (input: RegisterInput) => Promise<AuthUser>;
   logout: () => void;
 }
@@ -58,10 +59,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loadMe();
   }, [loadMe]);
 
-  const login = useCallback(async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string, role?: Role) => {
     const res = await api.post<{ accessToken: string; user: { id: string; email: string; role: Role } }>(
       "/auth/login",
-      { email, password },
+      { email, password, role },
+      { auth: false },
+    );
+    setToken(res.accessToken);
+    const authUser: AuthUser = { userId: res.user.id, email: res.user.email, role: res.user.role };
+    setUser(authUser);
+    return authUser;
+  }, []);
+
+  const googleLogin = useCallback(async (credential: string, role?: Role, isLogin?: boolean) => {
+    const res = await api.post<{ accessToken: string; user: { id: string; email: string; role: Role } }>(
+      "/auth/google",
+      { credential, role, isLogin },
       { auth: false },
     );
     setToken(res.accessToken);
@@ -88,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, loading, login, googleLogin, register, logout }}>{children}</AuthContext.Provider>
   );
 }
 
