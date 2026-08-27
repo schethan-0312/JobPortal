@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import AiChatWidget from "@/components/AiChatWidget";
 import BackButton from "@/components/BackButton";
 import NavigationInitializer from "@/components/NavigationInitializer";
@@ -30,14 +31,16 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <AuthProvider>
-          <div id="main-wrapper">
-            {children}
-            <AiChatWidget />
-            <BackButton />
-            <NavigationInitializer />
-          </div>
-        </AuthProvider>
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
+          <AuthProvider>
+            <div id="main-wrapper">
+              {children}
+              <AiChatWidget />
+              <BackButton />
+              <NavigationInitializer />
+            </div>
+          </AuthProvider>
+        </GoogleOAuthProvider>
 
         <Script
           src="/assets/js/jquery.min.js"
