@@ -33,13 +33,13 @@ interface Breakdowns {
 }
 
 function formatMoney(paisa: number) {
-  return `₹${(paisa / 100).toLocaleString("en-IN")}`;
+  return `â‚¹${(paisa / 100).toLocaleString("en-IN")}`;
 }
 
 function MiniBarChart({ data, color }: { data: TrendPoint[]; color: string }) {
   const max = Math.max(1, ...data.map((d) => d.count));
   return (
-    <div className="d-flex align-items-end gap-1" style={{ height: 80 }}>
+    <div className="d-flex align-items-end gap-1 flex-wrap" style={{ height: 80 }}>
       {data.map((d) => (
         <div
           key={d.date}
@@ -116,7 +116,7 @@ export default function AdminAnalyticsPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Analytics &amp; Reports</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -131,7 +131,7 @@ export default function AdminAnalyticsPage() {
           <div className="dashboard-widg-bar d-block">
             {error && <div className="alert alert-danger">{error}</div>}
 
-            <div className="d-flex gap-2 mb-4">
+            <div className="d-flex flex-wrap gap-2 mb-4">
               {[7, 30, 90].map((d) => (
                 <button
                   key={d}
@@ -179,7 +179,7 @@ export default function AdminAnalyticsPage() {
 
                 <div className="card mb-4">
                   <div className="card-header"><h6 className="mb-0">Export Reports (CSV)</h6></div>
-                  <div className="card-body d-flex gap-2">
+                  <div className="card-body d-flex flex-wrap gap-2">
                     <button type="button" className="btn btn-sm btn-outline-main" onClick={() => handleExport("signups")}>
                       Export Signups
                     </button>
@@ -251,3 +251,4 @@ export default function AdminAnalyticsPage() {
     </>
   );
 }
+

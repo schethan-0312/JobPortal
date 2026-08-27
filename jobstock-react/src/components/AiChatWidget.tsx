@@ -77,7 +77,10 @@ export default function AiChatWidget() {
               alignItems: "center",
             }}
           >
-            <strong>JobStock Career Assistant</strong>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span className="ai-robot-icon-wiggle" style={{ fontSize: "20px" }}>🤖</span>
+              <strong>JobStock Career Assistant</strong>
+            </div>
             <button
               onClick={() => setOpen(false)}
               aria-label="Close chat"
@@ -114,7 +117,10 @@ export default function AiChatWidget() {
               </div>
             ))}
             {sending && (
-              <div style={{ fontSize: 13, color: "#888", padding: "4px 12px" }}>Typing...</div>
+              <div style={{ fontSize: 13, color: "#888", padding: "4px 12px", display: "flex", alignItems: "center", gap: "6px" }}>
+                <span className="ai-robot-icon-wiggle">🤖</span>
+                <span>Typing...</span>
+              </div>
             )}
           </div>
 
@@ -144,26 +150,57 @@ export default function AiChatWidget() {
         </div>
       )}
 
+      <style>{`
+        @keyframes chatFloat {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-8px); }
+        }
+        @keyframes robotWiggle {
+          0%, 100% { transform: rotate(0deg) scale(1); }
+          25% { transform: rotate(-10deg) scale(1.1); }
+          75% { transform: rotate(10deg) scale(1.1); }
+        }
+        .ai-chat-btn-float {
+          animation: chatFloat 3s ease-in-out infinite;
+        }
+        .ai-chat-btn-float:hover {
+          animation-play-state: paused;
+          transform: scale(1.05);
+        }
+        .ai-robot-icon-wiggle {
+          display: inline-block;
+          animation: robotWiggle 2.5s ease-in-out infinite;
+        }
+      `}</style>
+
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="Open career assistant chat"
+        className="ai-chat-btn-float"
         style={{
-          width: 56,
-          height: 56,
+          width: 60,
+          height: 60,
           borderRadius: "50%",
           background: "#0b8260",
           color: "#fff",
           border: "none",
-          boxShadow: "0 4px 14px rgba(0,0,0,0.25)",
-          fontSize: 22,
+          boxShadow: "0 6px 20px rgba(11, 130, 96, 0.4)",
+          fontSize: 26,
           cursor: "pointer",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           marginLeft: "auto",
+          transition: "all 0.3s ease",
         }}
       >
-        <i className={open ? "fa-solid fa-xmark" : "fa-solid fa-comment-dots"}></i>
+        {open ? (
+          <i className="fa-solid fa-xmark"></i>
+        ) : (
+          <span className="ai-robot-icon-wiggle" style={{ fontSize: "32px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            🤖
+          </span>
+        )}
       </button>
     </div>
   );

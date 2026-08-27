@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -124,7 +124,7 @@ export default function AdminDatabasePage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Database &amp; Backups</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -188,7 +188,7 @@ export default function AdminDatabasePage() {
                                 <div className="small text-danger mt-1">{b.errorMessage}</div>
                               )}
                             </td>
-                            <td className="small">{b.sizeBytes ? formatBytes(b.sizeBytes) : "—"}</td>
+                            <td className="small">{b.sizeBytes ? formatBytes(b.sizeBytes) : "â€”"}</td>
                             <td className="small text-muted">{new Date(b.createdAt).toLocaleString()}</td>
                           </tr>
                         ))}
@@ -246,3 +246,4 @@ export default function AdminDatabasePage() {
     </>
   );
 }
+

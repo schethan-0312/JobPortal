@@ -139,7 +139,7 @@ export default function EmployerCandidateSearchPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Find Candidates</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -194,7 +194,8 @@ export default function EmployerCandidateSearchPage() {
                       />
                     </div>
                     <div className="col-md-3">
-                      <div className="d-flex gap-2 w-100">
+                      <label className="form-label d-none d-md-block" style={{ visibility: "hidden" }}>Actions</label>
+                      <div className="d-flex gap-2 w-100 flex-wrap">
                         <button type="submit" className="btn btn-main w-50" disabled={status === "loading"}>
                           {status === "loading" ? "Searching..." : "Search"}
                         </button>
@@ -226,15 +227,24 @@ export default function EmployerCandidateSearchPage() {
                   {results.map((c) => (
                     <div className="col-xl-6 col-md-12 mb-4" key={c.id}>
                       <div className="border rounded p-3 h-100 d-flex flex-column">
-                        <div className="d-flex gap-3 mb-2">
-                          <img
-                            src={assetUrl(c.profilePhotoUrl) || "/assets/img/avatar.jpg"}
-                            className="rounded-circle"
-                            width={56}
-                            height={56}
-                            style={{ objectFit: "cover" }}
-                            alt=""
-                          />
+                        <div className="d-flex gap-3 mb-2 flex-wrap">
+                          {c.profilePhotoUrl ? (
+                            <img
+                              src={assetUrl(c.profilePhotoUrl)!}
+                              className="rounded-circle flex-shrink-0"
+                              width={56}
+                              height={56}
+                              style={{ objectFit: "cover" }}
+                              alt=""
+                            />
+                          ) : (
+                            <div 
+                              className="rounded-circle bg-light d-flex align-items-center justify-content-center text-muted fw-semibold flex-shrink-0" 
+                              style={{ width: "56px", height: "56px" }}
+                            >
+                              <span className="small text-center px-1" style={{ fontSize: "10px", lineHeight: "1.2" }}>No Photo</span>
+                            </div>
+                          )}
                           <div>
                             <h5 className="mb-0">
                               <a href={`/candidate-detail/${c.id}`}>{c.fullName}</a>
@@ -262,7 +272,7 @@ export default function EmployerCandidateSearchPage() {
                               <i className="fa-solid fa-check me-1"></i>Message Sent
                             </span>
                           ) : openMessageFor === c.id ? (
-                            <div className="d-flex gap-2">
+                            <div className="d-flex gap-2 flex-wrap">
                               <input
                                 type="text"
                                 className="form-control form-control-sm"
@@ -288,7 +298,7 @@ export default function EmployerCandidateSearchPage() {
                               </button>
                             </div>
                           ) : (
-                            <div className="d-flex gap-2">
+                            <div className="d-flex gap-2 flex-wrap">
                               <button
                                 type="button"
                                 className="btn btn-sm btn-gray"

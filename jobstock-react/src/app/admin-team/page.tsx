@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -27,7 +27,7 @@ const ROLE_OPTIONS: { value: AdminRoleValue; label: string }[] = [
 ];
 
 function roleLabel(role: string | null) {
-  return ROLE_OPTIONS.find((r) => r.value === role)?.label ?? role ?? "—";
+  return ROLE_OPTIONS.find((r) => r.value === role)?.label ?? role ?? "â€”";
 }
 
 export default function AdminTeamPage() {
@@ -135,7 +135,7 @@ export default function AdminTeamPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Admin Team &amp; Permissions</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -242,7 +242,7 @@ export default function AdminTeamPage() {
                                 </span>
                               )}
                             </td>
-                            <td className="small text-muted">{m.invitedByEmail ?? "—"}</td>
+                            <td className="small text-muted">{m.invitedByEmail ?? "â€”"}</td>
                             <td className="small text-muted">
                               {m.lastLoginAt ? new Date(m.lastLoginAt).toLocaleString() : "Never"}
                             </td>
@@ -283,3 +283,4 @@ export default function AdminTeamPage() {
     </>
   );
 }
+

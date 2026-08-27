@@ -84,7 +84,7 @@ export default function CandidateFollowEmployersPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">
                   {user.role === "EMPLOYER" ? "Following Candidates" : "Following Employers"}
                 </h1>
@@ -109,7 +109,7 @@ export default function CandidateFollowEmployersPage() {
 
             {/* Header Wrap */}
             <div className="row">
-              <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
+              <div className="col-12 col-xl-12 col-lg-12 col-md-12 col-sm-12">
                 <div className="card">
                   <div className="card-header">
                     <h6 className="mb-0">
@@ -174,7 +174,7 @@ export default function CandidateFollowEmployersPage() {
                                     </div>
                                   </div>
                                 </div>
-                                <div className="emplors-list-head-last d-flex gap-2">
+                                <div className="emplors-list-head-last d-flex gap-2 flex-wrap">
                                   <a href={detailUrl} className="btn btn-md btn-light-main px-3">{viewText}</a>
                                   <button
                                     type="button"

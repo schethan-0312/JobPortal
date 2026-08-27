@@ -533,10 +533,21 @@ export class JobsService {
       }
     }
 
+    const questions = assessment.questions as any[];
+    let score = 0;
+    if (Array.isArray(answers) && Array.isArray(questions)) {
+      questions.forEach((q, i) => {
+        if (answers[i] === q.correctIndex) {
+          score++;
+        }
+      });
+    }
+
     return this.prisma.jobAssessmentAttempt.update({
       where: { id: attempt.id },
       data: {
         answers,
+        score,
         status: 'COMPLETED',
         completedAt: new Date(),
       },

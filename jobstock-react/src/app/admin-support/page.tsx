@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -77,7 +77,7 @@ export default function AdminSupportPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Support Tickets</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -130,7 +130,7 @@ export default function AdminSupportPage() {
             <div className="card">
               <div className="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center">
                 <h6 className="mb-0">All Tickets ({tickets.length})</h6>
-                <div className="d-flex gap-2">
+                <div className="d-flex gap-2 flex-wrap">
                   <select className="form-control form-control-sm" value={status} onChange={(e) => setStatus(e.target.value)}>
                     <option value="">All statuses</option>
                     <option value="OPEN">Open</option>
@@ -182,7 +182,7 @@ export default function AdminSupportPage() {
                                 {t.status}
                               </span>
                             </td>
-                            <td className="small">{t.assignedAdmin?.email ?? "—"}</td>
+                            <td className="small">{t.assignedAdmin?.email ?? "â€”"}</td>
                             <td className="small">{t._count.messages}</td>
                             <td className="small text-muted">{new Date(t.updatedAt).toLocaleString()}</td>
                           </tr>
@@ -207,3 +207,4 @@ export default function AdminSupportPage() {
     </>
   );
 }
+

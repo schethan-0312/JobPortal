@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -76,7 +76,7 @@ export default function AdminIntegrationsPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
                   <div>
                     <h1 className="mb-1 fs-3 fw-medium">Integration Health</h1>
@@ -106,7 +106,7 @@ export default function AdminIntegrationsPage() {
                 style={{ fontSize: "1.1rem" }}
               >
                 <i className="fa-solid fa-triangle-exclamation"></i>
-                Razorpay: {razorpay.detail.startsWith("LIVE") ? "LIVE MODE — real money" : "TEST MODE"}
+                Razorpay: {razorpay.detail.startsWith("LIVE") ? "LIVE MODE â€” real money" : "TEST MODE"}
               </div>
             )}
 
@@ -144,3 +144,4 @@ export default function AdminIntegrationsPage() {
     </>
   );
 }
+

@@ -78,7 +78,7 @@ export default function CandidateSavedJobsPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Saved jobs</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -97,7 +97,7 @@ export default function CandidateSavedJobsPage() {
 
             {/* Header Wrap */}
             <div className="row">
-              <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
+              <div className="col-12 col-xl-12 col-lg-12 col-md-12 col-sm-12">
                 <div className="card">
                   <div className="card-header">
                     <h6 className="mb-0">{savedJobs.length} saved job{savedJobs.length !== 1 ? "s" : ""}</h6>

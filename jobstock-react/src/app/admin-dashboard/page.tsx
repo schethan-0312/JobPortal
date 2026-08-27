@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -68,7 +68,7 @@ export default function AdminDashboardPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-lg-12 col-md-12 col-12">
                 <h1 className="mb-1 fs-3 fw-medium">Admin Dashboard</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -96,7 +96,7 @@ export default function AdminDashboardPage() {
             {/* Row Start */}
             <div className="row align-items-center gx-4 gy-4 mb-4">
               {ctrs.map((item) => (
-                <div className="col-xl-4 col-lg-6 col-md-6 col-sm-6" key={item.title}>
+                <div className="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-4" key={item.title}>
                   <div className="dash-wrap-bloud">
                     <div className="dash-wrap-bloud-icon">
                       <div className={`bloud-icon text-${item.class} bg-${item.class} bg-opacity-05`}>
@@ -129,3 +129,4 @@ export default function AdminDashboardPage() {
     </>
   );
 }
+

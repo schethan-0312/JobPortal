@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -74,7 +74,7 @@ export default function AdminSystemConfigPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">System Configuration</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -104,7 +104,7 @@ export default function AdminSystemConfigPage() {
                       onChange={(e) => setConfig({ ...config, maintenanceMode: e.target.checked })}
                     />
                     <label className="form-check-label" htmlFor="maintenanceMode">
-                      <strong>Maintenance Mode</strong> — when on, all non-admin API requests are blocked
+                      <strong>Maintenance Mode</strong> â€” when on, all non-admin API requests are blocked
                     </label>
                   </div>
 
@@ -129,7 +129,7 @@ export default function AdminSystemConfigPage() {
                       onChange={(e) => setConfig({ ...config, registrationEnabled: e.target.checked })}
                     />
                     <label className="form-check-label" htmlFor="registrationEnabled">
-                      <strong>Registration Enabled</strong> — turn off to temporarily block new signups
+                      <strong>Registration Enabled</strong> â€” turn off to temporarily block new signups
                     </label>
                   </div>
 
@@ -175,3 +175,4 @@ export default function AdminSystemConfigPage() {
     </>
   );
 }
+

@@ -141,7 +141,7 @@ export default function AdminCandidateDetailPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">{detail?.candidateProfile?.fullName ?? "Candidate"}</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -163,7 +163,7 @@ export default function AdminCandidateDetailPage() {
                 <div className="card mb-4">
                   <div className="card-header d-flex justify-content-between align-items-center">
                     <h6 className="mb-0">Account</h6>
-                    <div className="d-flex gap-2">
+                    <div className="d-flex gap-2 flex-wrap">
                       <button type="button" className="btn btn-sm btn-outline-main" disabled={acting} onClick={handleToggleVerified}>
                         {detail.candidateProfile?.isVerified ? "Unverify" : "Mark Verified"}
                       </button>

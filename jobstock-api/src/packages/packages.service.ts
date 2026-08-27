@@ -57,6 +57,12 @@ export class PackagesService {
 
   async deletePackage(id: string) {
     try {
+      await this.prisma.order.deleteMany({
+        where: { packageId: id },
+      });
+      await this.prisma.employerPackageSubscription.deleteMany({
+        where: { packageId: id },
+      });
       return await this.prisma.package.delete({
         where: { id },
       });
@@ -66,6 +72,28 @@ export class PackagesService {
         data: { isActive: false },
       });
     }
+  }
+
+  updatePackage(
+    id: string,
+    data: {
+      name?: string;
+      audience?: 'CANDIDATE' | 'EMPLOYER' | 'RESUME';
+      priceInPaisa?: number;
+      featuresJson?: any;
+      isActive?: boolean;
+    },
+  ) {
+    return this.prisma.package.update({
+      where: { id },
+      data: {
+        name: data.name,
+        audience: data.audience,
+        priceInPaisa: data.priceInPaisa !== undefined ? Number(data.priceInPaisa) : undefined,
+        featuresJson: data.featuresJson,
+        isActive: data.isActive,
+      },
+    });
   }
 
   async createOrder(userId: string, dto: CreateOrderDto) {
@@ -167,7 +195,7 @@ export class PackagesService {
   }
 
   private async activatePackage(
-    order: { id: string; userId: string; packageId: string; package: { audience: string } },
+    order: { id: string; userId: string; packageId: string; package: { audience: string; featuresJson?: any } },
     gatewayRef: string,
   ) {
     const updatedOrder = await this.prisma.order.update({
@@ -178,10 +206,36 @@ export class PackagesService {
     if (order.package.audience === 'EMPLOYER') {
       const employer = await this.prisma.employer.findUnique({ where: { userId: order.userId } });
       if (employer) {
+        let expiresAt: Date | null = null;
+        const pkg = order.package;
+        if (pkg && pkg.featuresJson) {
+          let meta: any = null;
+          if (typeof pkg.featuresJson === 'object' && pkg.featuresJson !== null && !Array.isArray(pkg.featuresJson)) {
+            meta = pkg.featuresJson;
+          } else if (typeof pkg.featuresJson === 'string') {
+            try {
+              meta = JSON.parse(pkg.featuresJson);
+            } catch {}
+          }
+
+          if (meta && meta.duration && meta.durationType) {
+            const duration = Number(meta.duration);
+            const startedAt = new Date();
+            expiresAt = new Date(startedAt);
+            if (meta.durationType === 'Days') {
+              expiresAt.setDate(expiresAt.getDate() + duration);
+            } else if (meta.durationType === 'Months') {
+              expiresAt.setMonth(expiresAt.getMonth() + duration);
+            } else if (meta.durationType === 'Years') {
+              expiresAt.setFullYear(expiresAt.getFullYear() + duration);
+            }
+          }
+        }
+
         await this.prisma.employerPackageSubscription.upsert({
           where: { employerId: employer.id },
-          create: { employerId: employer.id, packageId: order.packageId, jobPostsUsed: 0 },
-          update: { packageId: order.packageId, jobPostsUsed: 0, startedAt: new Date() },
+          create: { employerId: employer.id, packageId: order.packageId, jobPostsUsed: 0, startedAt: new Date(), expiresAt },
+          update: { packageId: order.packageId, jobPostsUsed: 0, startedAt: new Date(), expiresAt },
         });
       }
     }

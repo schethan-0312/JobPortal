@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -74,7 +74,7 @@ export default function AdminCandidatesPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Candidate Management</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -92,7 +92,7 @@ export default function AdminCandidatesPage() {
             <div className="card">
               <div className="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center">
                 <h6 className="mb-0">All Candidates ({data?.total ?? 0})</h6>
-                <div className="d-flex gap-2">
+                <div className="d-flex gap-2 flex-wrap">
                   <input
                     type="text"
                     className="form-control form-control-sm"
@@ -143,7 +143,7 @@ export default function AdminCandidatesPage() {
                               {c.isVerified && <i className="fa-solid fa-circle-check text-success ms-1" title="Verified"></i>}
                             </td>
                             <td className="small">{c.email}</td>
-                            <td className="small">{c.location ?? "—"}</td>
+                            <td className="small">{c.location ?? "â€”"}</td>
                             <td className="small">{c.applicationsCount}</td>
                             <td className="small">{c.assessmentsCount}</td>
                             <td className="small">{c.interviewsCount}</td>
@@ -174,7 +174,7 @@ export default function AdminCandidatesPage() {
                 {data && data.total > 15 && (
                   <div className="d-flex justify-content-between align-items-center p-3 border-top small text-muted">
                     <span>Showing {(page - 1) * 15 + 1} - {Math.min(page * 15, data.total)} of {data.total} candidates</span>
-                    <div className="d-flex gap-2">
+                    <div className="d-flex gap-2 flex-wrap">
                       <button type="button" className="btn btn-sm btn-outline-secondary" disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</button>
                       <button type="button" className="btn btn-sm btn-outline-secondary" disabled={page * 15 >= data.total} onClick={() => setPage(page + 1)}>Next</button>
                     </div>
@@ -196,3 +196,4 @@ export default function AdminCandidatesPage() {
     </>
   );
 }
+

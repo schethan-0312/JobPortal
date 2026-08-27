@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -53,7 +53,7 @@ interface Subscription {
 }
 
 function formatMoney(paisa: number) {
-  return `₹${(paisa / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
+  return `â‚¹${(paisa / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 }
 
 export default function AdminFinancialsPage() {
@@ -140,7 +140,7 @@ export default function AdminFinancialsPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Financials</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -167,10 +167,10 @@ export default function AdminFinancialsPage() {
                 {mode.configured ? (
                   <span>
                     Razorpay is in <strong>{mode.mode} MODE</strong> ({mode.keyIdPrefix})
-                    {mode.mode === "LIVE" ? " — real money moves through this panel." : " — no real money moves here."}
+                    {mode.mode === "LIVE" ? " â€” real money moves through this panel." : " â€” no real money moves here."}
                   </span>
                 ) : (
-                  <span>Razorpay is not configured yet — no keys set.</span>
+                  <span>Razorpay is not configured yet â€” no keys set.</span>
                 )}
               </div>
             )}
@@ -180,7 +180,7 @@ export default function AdminFinancialsPage() {
                 <div className="card h-100">
                   <div className="card-body">
                     <div className="text-muted small mb-1">Total revenue (paid)</div>
-                    <div className="fs-3 fw-bold">{revenue ? formatMoney(revenue.totalPaisa) : "—"}</div>
+                    <div className="fs-3 fw-bold">{revenue ? formatMoney(revenue.totalPaisa) : "â€”"}</div>
                     <div className="small text-muted">{revenue?.transactionCount ?? 0} transactions</div>
                   </div>
                 </div>
@@ -190,7 +190,7 @@ export default function AdminFinancialsPage() {
                   <div className="card-body">
                     <div className="text-muted small mb-1">Refund rate</div>
                     <div className="fs-3 fw-bold">
-                      {refundRate ? `${(refundRate.refundRate * 100).toFixed(1)}%` : "—"}
+                      {refundRate ? `${(refundRate.refundRate * 100).toFixed(1)}%` : "â€”"}
                     </div>
                     <div className="small text-muted">
                       {refundRate?.refunded ?? 0} of {refundRate?.total ?? 0} orders
@@ -311,7 +311,7 @@ export default function AdminFinancialsPage() {
                             <td className="small">{s.package.name}</td>
                             <td className="small">{s.jobPostsUsed}</td>
                             <td className="small">{new Date(s.startedAt).toLocaleDateString()}</td>
-                            <td className="small">{s.expiresAt ? new Date(s.expiresAt).toLocaleDateString() : "—"}</td>
+                            <td className="small">{s.expiresAt ? new Date(s.expiresAt).toLocaleDateString() : "â€”"}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -386,3 +386,4 @@ export default function AdminFinancialsPage() {
     </>
   );
 }
+

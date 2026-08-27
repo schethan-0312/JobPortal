@@ -148,7 +148,7 @@ export default function CandidateResumePage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">My Resume</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -237,7 +237,7 @@ export default function CandidateResumePage() {
                 {profile?.educations?.map((edu, idx) => (
                   <div className="single-edc-wrap" key={idx}>
                     <div className="single-edc-box">
-                      <div className="single-edc-remove-box d-flex gap-2">
+                      <div className="single-edc-remove-box d-flex gap-2 flex-wrap">
                         <button
                           type="button"
                           className="btn btn-sm btn-light px-2 py-1"
@@ -309,7 +309,7 @@ export default function CandidateResumePage() {
                 {profile?.experiences?.map((exp, idx) => (
                   <div className="single-edc-wrap" key={idx}>
                     <div className="single-edc-box">
-                      <div className="single-edc-remove-box d-flex gap-2">
+                      <div className="single-edc-remove-box d-flex gap-2 flex-wrap">
                         <button
                           type="button"
                           className="btn btn-sm btn-light px-2 py-1"
@@ -381,7 +381,7 @@ export default function CandidateResumePage() {
                 {profile?.certifications?.map((cert, idx) => (
                   <div className="single-edc-wrap" key={idx}>
                     <div className="single-edc-box">
-                      <div className="single-edc-remove-box d-flex gap-2">
+                      <div className="single-edc-remove-box d-flex gap-2 flex-wrap">
                         <button
                           type="button"
                           className="btn btn-sm btn-light px-2 py-1"
@@ -448,7 +448,7 @@ export default function CandidateResumePage() {
                 {profile?.projects?.map((proj, idx) => (
                   <div className="single-edc-wrap" key={idx}>
                     <div className="single-edc-box">
-                      <div className="single-edc-remove-box d-flex gap-2">
+                      <div className="single-edc-remove-box d-flex gap-2 flex-wrap">
                         <button
                           type="button"
                           className="btn btn-sm btn-light px-2 py-1"

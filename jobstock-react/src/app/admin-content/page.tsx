@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -97,7 +97,7 @@ export default function AdminContentModerationPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Content Moderation</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -116,7 +116,7 @@ export default function AdminContentModerationPage() {
               <div className="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center">
                 <h6 className="mb-0">Blog Posts ({data?.total ?? 0})</h6>
                 <form 
-                  className="d-flex gap-2" 
+                  className="d-flex gap-2 flex-wrap" 
                   onSubmit={(e) => {
                     e.preventDefault();
                     loadData();
@@ -162,7 +162,7 @@ export default function AdminContentModerationPage() {
                               </span>
                             </td>
                             <td className="small text-muted">{new Date(p.createdAt).toLocaleDateString()}</td>
-                            <td className="d-flex gap-2">
+                            <td className="d-flex gap-2 flex-wrap">
                               <Link href={`/admin-content/edit-blog/${p.id}`} className="btn btn-sm btn-outline-secondary">
                                 Edit
                               </Link>
@@ -205,3 +205,4 @@ export default function AdminContentModerationPage() {
     </>
   );
 }
+

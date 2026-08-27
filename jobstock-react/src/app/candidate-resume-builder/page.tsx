@@ -277,7 +277,7 @@ Education: ${(parsedData.educations || []).map((ed: any) => `${ed.title} at ${ed
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4 no-print">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">AI Resume Builder</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -330,7 +330,7 @@ Education: ${(parsedData.educations || []).map((ed: any) => `${ed.title} at ${ed
                     </div>
                   </div>
                   <div className="row">
-                    <div className="col-xl-12 col-md-12 offset-xl-2 d-flex gap-3 align-items-center">
+                    <div className="col-xl-12 col-md-12 offset-xl-2 d-flex gap-3 align-items-center flex-wrap">
                       <button type="submit" className="btn btn-main" disabled={status === "generating"}>
                         {status === "generating" ? (
                           <><i className="fa-solid fa-spinner fa-spin me-2"></i>Building Resume...</>
@@ -401,7 +401,7 @@ Education: ${(parsedData.educations || []).map((ed: any) => `${ed.title} at ${ed
                     <div className="mb-4">
                       <label className="fw-bold mb-2">Profile Photo</label>
                       <input type="file" className="d-none" ref={photoInputRef} accept="image/*" onChange={handlePhotoUpload} />
-                      <div className="d-flex gap-2">
+                      <div className="d-flex gap-2 flex-wrap">
                         <button className="btn btn-sm btn-outline-primary w-100" onClick={() => photoInputRef.current?.click()} disabled={uploadingPhoto}>
                           {uploadingPhoto ? "Uploading..." : profilePhoto ? "Replace Photo" : "Upload Photo"}
                         </button>
@@ -428,7 +428,7 @@ Education: ${(parsedData.educations || []).map((ed: any) => `${ed.title} at ${ed
                         {sectionOrder.map((section) => (
                           <div
                             key={section}
-                            className="draggable-section d-flex align-items-center gap-2"
+                            className="draggable-section d-flex align-items-center gap-2 flex-wrap"
                             draggable
                             onDragStart={(e) => onDragStart(e, section)}
                             onDragOver={onDragOver}

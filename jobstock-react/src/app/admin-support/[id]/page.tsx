@@ -112,7 +112,7 @@ export default function AdminSupportDetailPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="colxl-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">{detail?.subject ?? "Ticket"}</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -133,11 +133,11 @@ export default function AdminSupportDetailPage() {
               <>
                 <div className="card mb-4">
                   <div className="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-                    <div className="d-flex gap-2 align-items-center">
+                    <div className="d-flex gap-2 align-items-center flex-wrap">
                       <span className="badge bg-secondary">{detail.priority}</span>
                       <span className="badge bg-info">{detail.status}</span>
                     </div>
-                    <div className="d-flex gap-2">
+                    <div className="d-flex gap-2 flex-wrap">
                       {!detail.assignedAdmin && (
                         <button type="button" className="btn btn-sm btn-outline-main" disabled={acting} onClick={handleAssignToMe}>
                           Assign to Me
