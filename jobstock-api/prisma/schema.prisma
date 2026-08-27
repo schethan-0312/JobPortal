@@ -267,6 +267,7 @@ enum PackageAudience {
   CANDIDATE
   EMPLOYER
   RESUME
+  JOB_BOOST
 }
 
 enum OrderStatus {
