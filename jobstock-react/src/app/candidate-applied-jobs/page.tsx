@@ -7,6 +7,7 @@ import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar"
 import UploadResumeModal from "@/components/candidate-dashboard/UploadResumeModal";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError, assetUrl } from "@/lib/api";
+import { Toaster, toast } from "react-hot-toast";
 
 interface Application {
   id: string;
@@ -39,8 +40,7 @@ export default function CandidateAppliedJobsPage() {
 
   const [applications, setApplications] = useState<Application[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [withdrawingId, setWithdrawingId] = useState<string | null>(null);
+    const [withdrawingId, setWithdrawingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "CANDIDATE")) {
@@ -55,12 +55,11 @@ export default function CandidateAppliedJobsPage() {
 
   async function loadApplications() {
     setDataLoading(true);
-    setError(null);
-    try {
+        try {
       const apps = await api.get<Application[]>("/applications/mine");
       setApplications(apps);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to load applications");
+      toast.error(err instanceof ApiError ? err.message : "Failed to load applications");
     } finally {
       setDataLoading(false);
     }
@@ -68,12 +67,11 @@ export default function CandidateAppliedJobsPage() {
 
   async function handleWithdraw(id: string) {
     setWithdrawingId(id);
-    setError(null);
-    try {
+        try {
       await api.patch(`/applications/${id}/withdraw`);
       setApplications((prev) => prev.map((a) => (a.id === id ? { ...a, status: "WITHDRAWN" } : a)));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to withdraw application");
+      toast.error(err instanceof ApiError ? err.message : "Failed to withdraw application");
     } finally {
       setWithdrawingId(null);
     }
@@ -86,6 +84,22 @@ export default function CandidateAppliedJobsPage() {
   return (
     <>
       <Navbar7 />
+      <Toaster 
+        position="top-center" 
+        containerStyle={{
+          top: '100px',
+        }}
+        toastOptions={{
+          style: {
+            padding: '16px 24px',
+            fontSize: '1.1rem',
+            fontWeight: '500',
+            maxWidth: '600px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+          },
+        }}
+      />
 
       <div className="dashboard-wrap bg-light">
         <CandidateSidebar active="applied-jobs" />
@@ -108,8 +122,7 @@ export default function CandidateAppliedJobsPage() {
 
           <div className="dashboard-widg-bar d-block">
 
-            {error && <div className="alert alert-danger">{error}</div>}
-
+            
             {/* Header Wrap */}
             <div className="row">
               <div className="col-12 col-xl-12 col-lg-12 col-md-12 col-sm-12">
@@ -174,14 +187,7 @@ export default function CandidateAppliedJobsPage() {
 
           </div>
 
-          {/* footer */}
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
+          {/* footer removed */}
 
         </div>
 

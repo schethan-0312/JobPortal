@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth-context";
 import { api, assetUrl } from "@/lib/api";
 import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar";
 import Navbar7 from "@/components/Navbar7";
+import { Toaster, toast } from "react-hot-toast";
 
 interface Job {
   title: string;
@@ -38,8 +39,7 @@ export default function CandidateCompetitionPage() {
   const router = useRouter();
   const [assessments, setAssessments] = useState<MatchingAssessment[]>([]);
   const [fetching, setFetching] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
+  
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
@@ -62,7 +62,7 @@ export default function CandidateCompetitionPage() {
       setAssessments(data);
     } catch (err: any) {
       console.error(err);
-      setError("Failed to load assessments.");
+      toast.error("Failed to load assessments.");
     } finally {
       setFetching(false);
     }
@@ -81,6 +81,22 @@ export default function CandidateCompetitionPage() {
   return (
     <>
       <Navbar7 />
+      <Toaster 
+        position="top-center" 
+        containerStyle={{
+          top: '100px',
+        }}
+        toastOptions={{
+          style: {
+            padding: '16px 24px',
+            fontSize: '1.1rem',
+            fontWeight: '500',
+            maxWidth: '600px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+          },
+        }}
+      />
 
       <div className="dashboard-wrap bg-light">
         <CandidateSidebar active="competition" />
@@ -106,11 +122,6 @@ export default function CandidateCompetitionPage() {
                 <h4><i className="fa-solid fa-trophy me-2"></i>Available Competitions</h4>
               </div>
               <div className="card-body px-4 py-4">
-                {error && (
-                  <div className="alert alert-danger">
-                    {error}
-                  </div>
-                )}
 
                 {assessments.length === 0 ? (
                   <div className="text-center py-5">
@@ -201,13 +212,7 @@ export default function CandidateCompetitionPage() {
             </div>
           </div>
 
-          <div className="row mt-5">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
+          {/* footer removed */}
         </div>
       </div>
     </>

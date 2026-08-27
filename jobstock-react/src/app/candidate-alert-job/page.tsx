@@ -7,6 +7,7 @@ import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar"
 import UploadResumeModal from "@/components/candidate-dashboard/UploadResumeModal";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError } from "@/lib/api";
+import { Toaster, toast } from "react-hot-toast";
 
 interface JobAlert {
   id: string;
@@ -22,8 +23,7 @@ export default function CandidateAlertJobPage() {
 
   const [alerts, setAlerts] = useState<JobAlert[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [removingId, setRemovingId] = useState<string | null>(null);
+    const [removingId, setRemovingId] = useState<string | null>(null);
 
   const [keyword, setKeyword] = useState("");
   const [category, setCategory] = useState("");
@@ -43,12 +43,11 @@ export default function CandidateAlertJobPage() {
 
   async function loadAlerts() {
     setDataLoading(true);
-    setError(null);
-    try {
+        try {
       const list = await api.get<JobAlert[]>("/candidates/job-alerts");
       setAlerts(list);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to load job alerts");
+      toast.error(err instanceof ApiError ? err.message : "Failed to load job alerts");
     } finally {
       setDataLoading(false);
     }
@@ -58,8 +57,7 @@ export default function CandidateAlertJobPage() {
     e.preventDefault();
     if (!keyword.trim() && !category.trim() && !location.trim()) return;
     setCreating(true);
-    setError(null);
-    try {
+        try {
       const created = await api.post<JobAlert>("/candidates/job-alerts", {
         keyword: keyword.trim() || undefined,
         category: category.trim() || undefined,
@@ -70,7 +68,7 @@ export default function CandidateAlertJobPage() {
       setCategory("");
       setLocation("");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to create job alert");
+      toast.error(err instanceof ApiError ? err.message : "Failed to create job alert");
     } finally {
       setCreating(false);
     }
@@ -78,12 +76,11 @@ export default function CandidateAlertJobPage() {
 
   async function handleDelete(id: string) {
     setRemovingId(id);
-    setError(null);
-    try {
+        try {
       await api.delete(`/candidates/job-alerts/${id}`);
       setAlerts((prev) => prev.filter((a) => a.id !== id));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to remove job alert");
+      toast.error(err instanceof ApiError ? err.message : "Failed to remove job alert");
     } finally {
       setRemovingId(null);
     }
@@ -96,6 +93,22 @@ export default function CandidateAlertJobPage() {
   return (
     <>
       <Navbar7 />
+      <Toaster 
+        position="top-center" 
+        containerStyle={{
+          top: '100px',
+        }}
+        toastOptions={{
+          style: {
+            padding: '16px 24px',
+            fontSize: '1.1rem',
+            fontWeight: '500',
+            maxWidth: '600px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+          },
+        }}
+      />
 
       <div className="dashboard-wrap bg-light">
         <CandidateSidebar active="alert-job" />
@@ -118,8 +131,7 @@ export default function CandidateAlertJobPage() {
 
           <div className="dashboard-widg-bar d-block">
 
-            {error && <div className="alert alert-danger">{error}</div>}
-
+            
             {/* Header Wrap */}
             <div className="row">
               <div className="col-12 col-xl-12 col-lg-12 col-md-12 col-sm-12">
@@ -180,14 +192,7 @@ export default function CandidateAlertJobPage() {
 
           </div>
 
-          {/* footer */}
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
+          {/* footer removed */}
 
         </div>
 

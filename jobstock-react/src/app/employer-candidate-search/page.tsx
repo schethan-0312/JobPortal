@@ -6,6 +6,7 @@ import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError, assetUrl } from "@/lib/api";
+import { Toaster, toast } from "react-hot-toast";
 
 interface CandidateResult {
   id: string;
@@ -41,8 +42,7 @@ export default function EmployerCandidateSearchPage() {
   const [results, setResults] = useState<CandidateResult[]>([]);
   const [total, setTotal] = useState(0);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("loading");
-  const [error, setError] = useState<string | null>(null);
-
+  
   const [openMessageFor, setOpenMessageFor] = useState<string | null>(null);
   const [messageText, setMessageText] = useState("");
   const [sendingTo, setSendingTo] = useState<string | null>(null);
@@ -72,8 +72,7 @@ export default function EmployerCandidateSearchPage() {
   ) {
     e?.preventDefault();
     setStatus("loading");
-    setError(null);
-    try {
+        try {
       const searchLocation = overrides ? overrides.location : location;
       const searchSkill = overrides ? overrides.skill : skill;
       const searchMinExperience = overrides ? overrides.minExperience : minExperience;
@@ -93,7 +92,7 @@ export default function EmployerCandidateSearchPage() {
       setStatus("idle");
     } catch (err) {
       setStatus("error");
-      setError(err instanceof ApiError ? err.message : "Could not load candidates. Try again.");
+      toast.error(err instanceof ApiError ? err.message : "Could not load candidates. Try again.");
     }
   }
 
@@ -119,7 +118,7 @@ export default function EmployerCandidateSearchPage() {
       setOpenMessageFor(null);
       setMessageText("");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not send message.");
+      toast.error(err instanceof ApiError ? err.message : "Could not send message.");
     } finally {
       setSendingTo(null);
     }
@@ -132,6 +131,22 @@ export default function EmployerCandidateSearchPage() {
   return (
     <>
       <Navbar8 />
+      <Toaster 
+        position="top-center" 
+        containerStyle={{
+          top: '100px',
+        }}
+        toastOptions={{
+          style: {
+            padding: '16px 24px',
+            fontSize: '1.1rem',
+            fontWeight: '500',
+            maxWidth: '600px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+          },
+        }}
+      />
 
       <div className="dashboard-wrap bg-light">
         <EmployerSidebar active="candidate-search" />
@@ -218,8 +233,7 @@ export default function EmployerCandidateSearchPage() {
                 <h4>{status === "loading" ? "Searching..." : `${total} Candidate${total !== 1 ? "s" : ""} Found`}</h4>
               </div>
               <div className="card-body">
-                {error && <div className="alert alert-danger">{error}</div>}
-                {status === "idle" && results.length === 0 && (
+                                {status === "idle" && results.length === 0 && (
                   <p className="text-muted mb-0">No candidates match these filters. Try broadening your search.</p>
                 )}
 
@@ -320,13 +334,7 @@ export default function EmployerCandidateSearchPage() {
             </div>
           </div>
 
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
+          {/* footer removed */}
         </div>
       </div>
     </>
