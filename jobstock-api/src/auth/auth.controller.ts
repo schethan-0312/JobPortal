@@ -56,6 +56,20 @@ export class AuthController {
     return this.authService.forgotPassword(dto.email);
   }
 
+  @Post('signup-otp/send')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { ttl: 60_000, limit: 3 } })
+  sendSignupOtp(@Body() dto: ForgotPasswordDto) {
+    return this.authService.sendSignupOtp(dto.email);
+  }
+
+  @Post('signup-otp/verify')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { ttl: 60_000, limit: 5 } })
+  verifySignupOtp(@Body() dto: VerifyOtpDto) {
+    return this.authService.verifySignupOtp(dto.email, dto.otp);
+  }
+
   @Post('verify-otp')
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { ttl: 60_000, limit: 5 } })

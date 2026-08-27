@@ -16,6 +16,7 @@ interface RegisterInput {
   password: string;
   role: "CANDIDATE" | "EMPLOYER";
   fullName: string;
+  location?: string;
   referralCode?: string;
 }
 
