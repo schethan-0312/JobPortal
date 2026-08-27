@@ -21,6 +21,31 @@ export class AuthService {
     private readonly emailService: EmailService,
   ) {}
 
+  private readonly signupOtps = new Map<string, { otp: string; expires: number }>();
+  private readonly verifiedSignupEmails = new Set<string>();
+
+  async sendSignupOtp(email: string) {
+    const existing = await this.prisma.user.findUnique({ where: { email } });
+    if (existing) {
+      throw new ConflictException('An account with this email already exists');
+    }
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = Date.now() + 5 * 60 * 1000; // 5 minutes
+    this.signupOtps.set(email, { otp, expires });
+    await this.emailService.sendSignupOtp(email, otp);
+    return { success: true };
+  }
+
+  async verifySignupOtp(email: string, otp: string) {
+    const record = this.signupOtps.get(email);
+    if (!record || record.expires < Date.now() || record.otp !== otp) {
+      throw new UnauthorizedException('OTP is invalid or has expired');
+    }
+    this.signupOtps.delete(email);
+    this.verifiedSignupEmails.add(email);
+    return { success: true };
+  }
+
   async register(dto: RegisterDto) {
     if (dto.role === Role.ADMIN) {
       throw new ForbiddenException('Admin accounts cannot be self-registered');
@@ -33,6 +58,7 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
     const emailVerifyToken = crypto.randomBytes(32).toString('hex');
+    const isEmailVerified = this.verifiedSignupEmails.has(dto.email);
 
     const user = await this.prisma.user.create({
       data: {
@@ -40,9 +66,10 @@ export class AuthService {
         passwordHash,
         role: dto.role,
         emailVerifyToken,
+        isEmailVerified,
         ...(dto.role === Role.CANDIDATE
           ? { candidateProfile: { create: { fullName: dto.fullName } } }
-          : { employer: { create: { companyName: dto.fullName } } }),
+          : { employer: { create: { companyName: dto.fullName, location: dto.location } } }),
       },
       include: { candidateProfile: true, employer: true },
     });
@@ -61,7 +88,13 @@ export class AuthService {
       }
     }
 
-    // TODO (email delivery): send verification email containing emailVerifyToken
+    if (isEmailVerified) {
+      this.verifiedSignupEmails.delete(dto.email);
+    }
+    
+    // Always send the welcome email upon successful registration
+    await this.emailService.sendWelcomeEmail(dto.email, dto.fullName);
+
     const { passwordHash: _omit, emailVerifyToken: _omitToken, ...safeUser } = user;
 
     return {
