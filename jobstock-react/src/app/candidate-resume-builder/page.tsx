@@ -473,13 +473,7 @@ Education: ${(parsedData.educations || []).map((ed: any) => `${ed.title} at ${ed
             )}
           </div>
 
-          <div className="row no-print">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
+          {/* footer removed */}
         </div>
       </div>
 

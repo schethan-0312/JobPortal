@@ -6,6 +6,7 @@ import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError, assetUrl, uploadFile } from "@/lib/api";
+import { Toaster, toast } from "react-hot-toast";
 
 interface EmployerProfile {
   id: string;
@@ -33,9 +34,7 @@ export default function EmployerProfilePage() {
   const [industry, setIndustry] = useState("");
 
   const [dataLoading, setDataLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
+      const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const scrollToTop = () => {
@@ -47,14 +46,6 @@ export default function EmployerProfilePage() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
-
-  useEffect(() => {
-    if (success || error) {
-      scrollToTop();
-      const timer = setTimeout(scrollToTop, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [success, error]);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "EMPLOYER")) {
@@ -75,7 +66,7 @@ export default function EmployerProfilePage() {
         setLocation(p.location || "");
         setIndustry(p.industry || "");
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Failed to load profile");
+        toast.error(err instanceof ApiError ? err.message : "Failed to load profile");
       } finally {
         setDataLoading(false);
       }
@@ -85,9 +76,7 @@ export default function EmployerProfilePage() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
-    setError(null);
-    setSuccess(null);
-    try {
+            try {
       const updated = await api.patch<EmployerProfile>("/employers/me", {
         companyName,
         description,
@@ -96,11 +85,11 @@ export default function EmployerProfilePage() {
         industry,
       });
       setProfile(updated);
-      setSuccess("Profile saved successfully.");
+      toast.success("Profile saved successfully.");
       scrollToTop();
       window.dispatchEvent(new CustomEvent('profile-updated'));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to save profile");
+      toast.error(err instanceof ApiError ? err.message : "Failed to save profile");
       scrollToTop();
     } finally {
       setSaving(false);
@@ -111,16 +100,15 @@ export default function EmployerProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadingPhoto(true);
-    setError(null);
-    try {
+        try {
       const { url } = await uploadFile<{ url: string }>("/uploads/image", file);
       const updated = await api.patch<EmployerProfile>("/employers/me", { logoUrl: url });
       setProfile(updated);
-      setSuccess("Logo updated.");
+      toast.success("Logo updated.");
       scrollToTop();
       window.dispatchEvent(new CustomEvent('profile-updated'));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to upload logo");
+      toast.error(err instanceof ApiError ? err.message : "Failed to upload logo");
       scrollToTop();
     } finally {
       setUploadingPhoto(false);
@@ -135,6 +123,22 @@ export default function EmployerProfilePage() {
   return (
     <>
       <Navbar8 />
+      <Toaster 
+        position="top-center" 
+        containerStyle={{
+          top: '100px',
+        }}
+        toastOptions={{
+          style: {
+            padding: '16px 24px',
+            fontSize: '1.1rem',
+            fontWeight: '500',
+            maxWidth: '600px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+          },
+        }}
+      />
 
       <div className="dashboard-wrap bg-light">
         <EmployerSidebar active="profile" />
@@ -166,9 +170,7 @@ export default function EmployerProfilePage() {
           <div className="dashboard-widg-bar d-block">
 
             <div ref={alertRef} style={{ scrollMarginTop: "110px" }}>
-              {error && <div className="alert alert-danger">{error}</div>}
-              {success && <div className="alert alert-success">{success}</div>}
-            </div>
+                                        </div>
             {dataLoading && <p className="text-muted">Loading profile...</p>}
 
             <div className="dashboard-profle-wrapper mb-4">
@@ -298,13 +300,7 @@ export default function EmployerProfilePage() {
           </div>
 
           {/* footer */}
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
+          {/* footer removed */}
         </div>
       </div>
     </>

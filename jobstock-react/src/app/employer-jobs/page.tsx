@@ -6,6 +6,7 @@ import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError } from "@/lib/api";
+import { Toaster, toast } from "react-hot-toast";
 
 interface EmployerJob {
   id: string;
@@ -23,8 +24,7 @@ export default function EmployerJobsPage() {
 
   const [jobs, setJobs] = useState<EmployerJob[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
+    const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -40,12 +40,11 @@ export default function EmployerJobsPage() {
 
   async function loadJobs() {
     setDataLoading(true);
-    setError(null);
-    try {
+        try {
       const list = await api.get<EmployerJob[]>("/jobs/mine");
       setJobs(list);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to load jobs");
+      toast.error(err instanceof ApiError ? err.message : "Failed to load jobs");
     } finally {
       setDataLoading(false);
     }
@@ -54,12 +53,11 @@ export default function EmployerJobsPage() {
   async function toggleStatus(job: EmployerJob) {
     const newStatus = job.status === "OPEN" ? "CLOSED" : "OPEN";
     setUpdatingId(job.id);
-    setError(null);
-    try {
+        try {
       await api.patch(`/jobs/${job.id}/status`, { status: newStatus });
       setJobs((prev) => prev.map((j) => (j.id === job.id ? { ...j, status: newStatus } : j)));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to update job status");
+      toast.error(err instanceof ApiError ? err.message : "Failed to update job status");
     } finally {
       setUpdatingId(null);
     }
@@ -70,12 +68,11 @@ export default function EmployerJobsPage() {
       return;
     }
     setDeletingId(id);
-    setError(null);
-    try {
+        try {
       await api.delete(`/jobs/${id}`);
       setJobs((prev) => prev.filter((j) => j.id !== id));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to delete job");
+      toast.error(err instanceof ApiError ? err.message : "Failed to delete job");
     } finally {
       setDeletingId(null);
     }
@@ -91,6 +88,22 @@ export default function EmployerJobsPage() {
   return (
     <>
       <Navbar8 />
+      <Toaster 
+        position="top-center" 
+        containerStyle={{
+          top: '100px',
+        }}
+        toastOptions={{
+          style: {
+            padding: '16px 24px',
+            fontSize: '1.1rem',
+            fontWeight: '500',
+            maxWidth: '600px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+          },
+        }}
+      />
 
       <div className="dashboard-wrap bg-light">
         <EmployerSidebar active="jobs" />
@@ -120,8 +133,7 @@ export default function EmployerJobsPage() {
           </div>
 
           <div className="dashboard-widg-bar d-block">
-            {error && <div className="alert alert-danger mb-3">{error}</div>}
-
+            
             {/* Main Job List Card */}
             <div className="row">
               <div className="col-xl-12 col-lg-12 col-md-12">
@@ -240,14 +252,7 @@ export default function EmployerJobsPage() {
             </div>
           </div>
 
-          {/* footer */}
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center text-muted">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
+          {/* footer removed */}
         </div>
       </div>
     </>

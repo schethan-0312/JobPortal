@@ -6,6 +6,7 @@ import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError } from "@/lib/api";
+import { Toaster, toast } from "react-hot-toast";
 
 interface EmployerJob {
   id: string;
@@ -39,8 +40,7 @@ export default function EmployerShortlistCandidatesPage() {
 
   const [rows, setRows] = useState<ShortlistedRow[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
+    const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "EMPLOYER")) {
@@ -55,8 +55,7 @@ export default function EmployerShortlistCandidatesPage() {
 
   async function loadShortlisted() {
     setDataLoading(true);
-    setError(null);
-    try {
+        try {
       const jobs = await api.get<EmployerJob[]>("/jobs/mine");
       const results: ShortlistedRow[] = [];
       for (const job of jobs) {
@@ -73,7 +72,7 @@ export default function EmployerShortlistCandidatesPage() {
       }
       setRows(results);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to load shortlisted candidates");
+      toast.error(err instanceof ApiError ? err.message : "Failed to load shortlisted candidates");
     } finally {
       setDataLoading(false);
     }
@@ -81,12 +80,11 @@ export default function EmployerShortlistCandidatesPage() {
 
   async function updateStatus(applicationId: string, status: string) {
     setUpdatingId(applicationId);
-    setError(null);
-    try {
+        try {
       await api.patch(`/applications/${applicationId}/status`, { status });
       setRows((prev) => prev.filter((r) => r.id !== applicationId));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to update status");
+      toast.error(err instanceof ApiError ? err.message : "Failed to update status");
     } finally {
       setUpdatingId(null);
     }
@@ -99,6 +97,22 @@ export default function EmployerShortlistCandidatesPage() {
   return (
     <>
       <Navbar8 />
+      <Toaster 
+        position="top-center" 
+        containerStyle={{
+          top: '100px',
+        }}
+        toastOptions={{
+          style: {
+            padding: '16px 24px',
+            fontSize: '1.1rem',
+            fontWeight: '500',
+            maxWidth: '600px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+          },
+        }}
+      />
 
       <div className="dashboard-wrap bg-light">
         <EmployerSidebar active="shortlist-candidates" />
@@ -129,8 +143,7 @@ export default function EmployerShortlistCandidatesPage() {
 
           <div className="dashboard-widg-bar d-block">
 
-            {error && <div className="alert alert-danger">{error}</div>}
-
+            
             {/* Header Wrap */}
             <div className="row">
               <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
@@ -216,14 +229,7 @@ export default function EmployerShortlistCandidatesPage() {
             {/* Header Wrap */}
           </div>
 
-          {/* footer */}
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
+          {/* footer removed */}
         </div>
       </div>
     </>

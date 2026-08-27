@@ -7,6 +7,7 @@ import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
 import UploadResumeModal from "@/components/candidate-dashboard/UploadResumeModal";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError, assetUrl, uploadFile } from "@/lib/api";
+import { Toaster, toast } from "react-hot-toast";
 
 interface MessageUser {
   id: string;
@@ -75,8 +76,7 @@ function EmployerMessagesContent() {
   const [dataLoading, setDataLoading] = useState(true);
   const [threadLoading, setThreadLoading] = useState(false);
   const [sending, setSending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [deleteMenuOpenId, setDeleteMenuOpenId] = useState<string | null>(null);
@@ -123,8 +123,7 @@ function EmployerMessagesContent() {
     api.get<{ logoUrl?: string | null }>("/employers/me").then((data) => setMyLogoUrl(data.logoUrl ?? null)).catch(() => setMyLogoUrl(null));
     (async () => {
       setDataLoading(true);
-      setError(null);
-      try {
+            try {
         const convs = await api.get<ConversationMessage[]>("/messages/conversations");
         setConversations(convs);
         const newChatId = searchParams.get("newChat");
@@ -149,7 +148,7 @@ function EmployerMessagesContent() {
                 };
                 handleSelectConversation(dummyCp);
               } catch {
-                setError("Could not load the requested candidate chat.");
+                toast.error("Could not load the requested candidate chat.");
               }
             }
           }
@@ -159,7 +158,7 @@ function EmployerMessagesContent() {
           if (cp) handleSelectConversation(cp);
         }
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Failed to load messages");
+        toast.error(err instanceof ApiError ? err.message : "Failed to load messages");
       } finally {
         setDataLoading(false);
       }
@@ -189,12 +188,11 @@ function EmployerMessagesContent() {
     setMobileShowChat(true);
     shouldScrollRef.current = true;
     setThreadLoading(true);
-    setError(null);
-    try {
+        try {
       const msgs = await api.get<ConversationMessage[]>(`/messages/conversations/${counterpart.id}`);
       setThread(msgs);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to load thread");
+      toast.error(err instanceof ApiError ? err.message : "Failed to load thread");
     } finally {
       setThreadLoading(false);
     }
@@ -203,8 +201,7 @@ function EmployerMessagesContent() {
   async function handleSend() {
     if (!replyText.trim() || !selectedCounterpart) return;
     setSending(true);
-    setError(null);
-    shouldScrollRef.current = true;
+        shouldScrollRef.current = true;
     try {
       const newMsg = await api.post<ConversationMessage>("/messages", { receiverId: selectedCounterpart.id, body: replyText.trim() });
       setThread((prev) => [...prev, newMsg]);
@@ -212,7 +209,7 @@ function EmployerMessagesContent() {
       const convs = await api.get<ConversationMessage[]>("/messages/conversations");
       setConversations(convs);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to send message");
+      toast.error(err instanceof ApiError ? err.message : "Failed to send message");
     } finally {
       setSending(false);
     }
@@ -233,8 +230,7 @@ function EmployerMessagesContent() {
   async function uploadAndSend(file: File, forcedMediaType?: string) {
     if (!selectedCounterpart) return;
     setUploadingMedia(true);
-    setError(null);
-    shouldScrollRef.current = true;
+        shouldScrollRef.current = true;
     try {
       const { url, mediaType: detectedType, originalName } = await uploadFile<{ url: string; mediaType: string; originalName: string }>("/messages/upload", file);
       const msg = await api.post<ConversationMessage>("/messages", {
@@ -247,7 +243,7 @@ function EmployerMessagesContent() {
       const convs = await api.get<ConversationMessage[]>("/messages/conversations");
       setConversations(convs);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to upload file");
+      toast.error(err instanceof ApiError ? err.message : "Failed to upload file");
     } finally {
       setUploadingMedia(false);
     }
@@ -272,7 +268,7 @@ function EmployerMessagesContent() {
         mediaRecorderRef.current = recorder;
         setIsRecording(true);
       } catch {
-        setError("Microphone access denied");
+        toast.error("Microphone access denied");
       }
     }
   }
@@ -284,7 +280,7 @@ function EmployerMessagesContent() {
       streamRef.current = stream;
       if (videoRef.current) videoRef.current.srcObject = stream;
     } catch (err) {
-      setError("Camera access denied or unavailable.");
+      toast.error("Camera access denied or unavailable.");
       setShowCameraModal(false);
     }
   }
@@ -337,6 +333,22 @@ function EmployerMessagesContent() {
   return (
     <>
       <Navbar8 />
+      <Toaster 
+        position="top-center" 
+        containerStyle={{
+          top: '100px',
+        }}
+        toastOptions={{
+          style: {
+            padding: '16px 24px',
+            fontSize: '1.1rem',
+            fontWeight: '500',
+            maxWidth: '600px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+          },
+        }}
+      />
       <div className="dashboard-wrap bg-light">
         <EmployerSidebar active="messages" />
         <div className="dashboard-content">
@@ -357,8 +369,7 @@ function EmployerMessagesContent() {
           <div className="dashboard-widg-bar d-block">
             <div className="row justify-content-center">
               <div className="col-xl-11 col-lg-12 col-md-12" style={{}}>
-                {error && <div className="alert alert-danger">{error}</div>}
-                <div className="d-flex bg-white rounded-3 overflow-hidden shadow-sm border mx-auto" style={{ height: "calc(100vh - 280px)", minHeight: "450px", maxWidth: "1050px" }}>
+                                <div className="d-flex bg-white rounded-3 overflow-hidden shadow-sm border mx-auto" style={{ height: "calc(100vh - 200px)", minHeight: "550px", maxWidth: "1150px" }}>
                   {/* Sidebar */}
                   <div className={`border-end d-flex flex-column ${mobileShowChat ? "d-none d-md-flex" : "d-flex w-100"}`} style={{ width: mobileShowChat ? "320px" : "100%", flexShrink: 0 }}>
                     <div className="p-3 border-bottom bg-light">
@@ -459,14 +470,14 @@ function EmployerMessagesContent() {
                           </div>
                         )}
                         <input ref={fileInputRef} type="file" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAndSend(f); e.target.value = ""; }} />
-                        <div className="p-3 bg-white border-top d-flex align-items-end gap-2" style={{ flexShrink: 0 }}>
-                          <div className="d-flex gap-1" style={{ flexShrink: 0, paddingBottom: "4px" }}>
-                            <button type="button" title="Take Photo" className="btn btn-light btn-sm rounded-circle" style={{ width: "36px", height: "36px", padding: 0 }} onClick={openCamera} disabled={uploadingMedia}><i className="fa-solid fa-camera" style={{ fontSize: "14px" }}></i></button>
-                            <button type="button" title="Attach File" className="btn btn-light btn-sm rounded-circle" style={{ width: "36px", height: "36px", padding: 0 }} onClick={() => fileInputRef.current?.click()} disabled={uploadingMedia}><i className="fa-solid fa-paperclip" style={{ fontSize: "14px" }}></i></button>
-                            <button type="button" title={isRecording ? "Stop Recording" : "Voice Note"} className={`btn btn-sm rounded-circle ${isRecording ? "btn-danger" : "btn-light"}`} style={{ width: "36px", height: "36px", padding: 0 }} onClick={handleVoiceToggle} disabled={uploadingMedia}><i className={`fa-solid ${isRecording ? "fa-stop" : "fa-microphone"}`} style={{ fontSize: "14px" }}></i></button>
+                        <div className="p-2 bg-white border-top d-flex align-items-center gap-2" style={{ flexShrink: 0 }}>
+                          <div className="d-flex gap-1" style={{ flexShrink: 0 }}>
+                            <button type="button" title="Take Photo" className="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center text-muted" style={{ width: "40px", height: "40px", padding: 0 }} onClick={openCamera} disabled={uploadingMedia}><i className="fa-solid fa-camera" style={{ fontSize: "16px" }}></i></button>
+                            <button type="button" title="Attach File" className="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center text-muted" style={{ width: "40px", height: "40px", padding: 0 }} onClick={() => fileInputRef.current?.click()} disabled={uploadingMedia}><i className="fa-solid fa-paperclip" style={{ fontSize: "16px" }}></i></button>
+                            <button type="button" title={isRecording ? "Stop Recording" : "Voice Note"} className={`btn btn-sm rounded-circle d-flex align-items-center justify-content-center ${isRecording ? "btn-danger text-white" : "btn-light text-muted"}`} style={{ width: "40px", height: "40px", padding: 0 }} onClick={handleVoiceToggle} disabled={uploadingMedia}><i className={`fa-solid ${isRecording ? "fa-stop" : "fa-microphone"}`} style={{ fontSize: "16px" }}></i></button>
                           </div>
-                          <textarea cols={40} rows={2} className="form-control bg-light" placeholder={isRecording ? "🔴 Recording... tap stop to send" : uploadingMedia ? "Uploading..." : "Type a message..."} value={replyText} onChange={(e) => handleTyping(e.target.value)} disabled={isRecording || uploadingMedia} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }} style={{ resize: "none", border: 'none' }}></textarea>
-                          <button type="button" className="btn btn-primary rounded-circle d-flex align-items-center justify-content-center" style={{ flexShrink: 0, width: '48px', height: '48px' }} disabled={sending || uploadingMedia || isRecording || !replyText.trim()} onClick={handleSend}><i className="fa-solid fa-paper-plane"></i></button>
+                          <input type="text" className="form-control bg-light px-4 mx-1" placeholder={isRecording ? "🔴 Recording... tap stop to send" : uploadingMedia ? "Uploading..." : "Type a message..."} value={replyText} onChange={(e) => handleTyping(e.target.value)} disabled={isRecording || uploadingMedia} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSend(); } }} style={{ height: "48px", borderRadius: "24px", border: 'none', flex: 1, minWidth: 0, boxShadow: 'none' }} />
+                          <button type="button" className="btn btn-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{ flexShrink: 0, width: '48px', height: '48px' }} disabled={sending || uploadingMedia || isRecording || !replyText.trim()} onClick={handleSend}><i className="fa-solid fa-paper-plane" style={{ fontSize: "18px" }}></i></button>
                         </div>
                       </>
                     ) : (
@@ -481,11 +492,7 @@ function EmployerMessagesContent() {
               </div>
             </div>
           </div>
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center text-muted small">&copy; {new Date().getFullYear()} JobStock. All rights reserved.</div>
-            </div>
-          </div>
+          {/* footer removed */}
         </div>
       </div>
       <UploadResumeModal />
@@ -498,8 +505,7 @@ function EmployerMessagesContent() {
                 <button type="button" className="btn-close" onClick={closeCamera}></button>
               </div>
               <div className="modal-body text-center">
-                {error && <div className="alert alert-danger">{error}</div>}
-                <div className="bg-dark rounded overflow-hidden" style={{ width: "100%", aspectRatio: "4/3" }}>
+                                <div className="bg-dark rounded overflow-hidden" style={{ width: "100%", aspectRatio: "4/3" }}>
                   <video ref={videoRef} autoPlay playsInline style={{ width: "100%", height: "100%", objectFit: "cover" }}></video>
                 </div>
               </div>

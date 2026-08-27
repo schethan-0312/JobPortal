@@ -72,9 +72,7 @@ export default function EmployerPackagePage() {
   const [packages, setPackages] = useState<Package[]>([]);
   const [activeSub, setActiveSub] = useState<ActiveSubscription | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [buyingId, setBuyingId] = useState<string | null>(null);
+      const [buyingId, setBuyingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "EMPLOYER")) {
@@ -96,7 +94,7 @@ export default function EmployerPackagePage() {
         }
         setPackages(list || []);
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Failed to load packages");
+        toast.error(err instanceof ApiError ? err.message : "Failed to load packages");
       } finally {
         setDataLoading(false);
       }
@@ -149,19 +147,17 @@ export default function EmployerPackagePage() {
     if (activeSub && activeSub.status === 'ACTIVE') {
       const currentPackage = packages.find(p => p.id === activeSub.packageId);
       if (currentPackage && pkg.priceInPaisa <= currentPackage.priceInPaisa) {
-        setError("You can only upgrade to a higher tier package.");
+        toast.error("You can only upgrade to a higher tier package.");
         return;
       }
     }
     setBuyingId(pkg.id);
-    setError(null);
-    setSuccess(null);
-    try {
+            try {
       const order = await api.post<Order>("/packages/orders", { packageId: pkg.id });
 
       const scriptLoaded = await loadRazorpayScript();
       if (!scriptLoaded) {
-        setError("Could not load the payment widget. Please check your connection and try again.");
+        toast.error("Could not load the payment widget. Please check your connection and try again.");
         setBuyingId(null);
         return;
       }
@@ -182,7 +178,7 @@ export default function EmployerPackagePage() {
               razorpayPaymentId: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,
             });
-            setSuccess(null); // Clear static success message
+            // Clear static success message
             confetti({
               particleCount: 150,
               spread: 70,
@@ -193,7 +189,7 @@ export default function EmployerPackagePage() {
               router.push('/employer-active-package');
             }, 3000);
           } catch (err) {
-            setError(err instanceof ApiError ? err.message : "Payment verification failed");
+            toast.error(err instanceof ApiError ? err.message : "Payment verification failed");
           } finally {
             setBuyingId(null);
           }
@@ -205,7 +201,7 @@ export default function EmployerPackagePage() {
       });
       razorpay.open();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to start checkout");
+      toast.error(err instanceof ApiError ? err.message : "Failed to start checkout");
       setBuyingId(null);
     }
   }
@@ -273,8 +269,7 @@ export default function EmployerPackagePage() {
 
           <div className="dashboard-widg-bar d-block">
 
-            {error && <div className="alert alert-danger">{error}</div>}
-
+            
             {/* Header Wrap */}
             <div className="row">
               <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">

@@ -6,6 +6,7 @@ import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError } from "@/lib/api";
+import { Toaster, toast } from "react-hot-toast";
 
 interface Notification {
   id: string;
@@ -43,8 +44,7 @@ export default function EmployerDashboardPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [jobs, setJobs] = useState<EmployerJob[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
+  
   useEffect(() => {
     if (!loading && (!user || user.role !== "EMPLOYER")) {
       router.push("/");
@@ -63,7 +63,7 @@ export default function EmployerDashboardPage() {
         setNotifications(notifs.slice(0, 5));
         setJobs(myJobs.slice(0, 10));
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Failed to load dashboard data");
+        toast.error(err instanceof ApiError ? err.message : "Failed to load dashboard data");
       } finally {
         setDataLoading(false);
       }
@@ -87,6 +87,22 @@ export default function EmployerDashboardPage() {
   return (
     <>
       <Navbar8 />
+      <Toaster 
+        position="top-center" 
+        containerStyle={{
+          top: '100px',
+        }}
+        toastOptions={{
+          style: {
+            padding: '16px 24px',
+            fontSize: '1.1rem',
+            fontWeight: '500',
+            maxWidth: '600px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+          },
+        }}
+      />
 
       <div className="dashboard-wrap bg-light">
         <EmployerSidebar active="dashboard" />
@@ -117,8 +133,7 @@ export default function EmployerDashboardPage() {
 
           <div className="dashboard-widg-bar d-block">
 
-              {error && <div className="alert alert-danger">{error}</div>}
-
+              
               {/* Row Start */}
               <div className="row align-items-center gx-4 gy-4 mb-4">
                 {ctrs.map((item) => (
@@ -244,14 +259,7 @@ export default function EmployerDashboardPage() {
               {/* Header Wrap */}
             </div>
 
-          {/* footer */}
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
+          {/* footer removed */}
         </div>
       </div>
     </>
