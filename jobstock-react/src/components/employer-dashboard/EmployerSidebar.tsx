@@ -16,6 +16,7 @@ export type EmployerSidebarActive =
   | "shortlist-candidates"
   | "auto-shortlist"
   | "package"
+  | "active-package"
   | "messages"
   | "competition"
   | "submissions"
@@ -213,6 +214,11 @@ export default function EmployerSidebar({ active }: EmployerSidebarProps) {
               <li className={active === "package" ? "active" : undefined}>
                 <Link href="/employer-package" onClick={() => setIsOpen(false)}>
                   <i className="fa-solid fa-wallet me-2"></i>Package
+                </Link>
+              </li>
+              <li className={active === "active-package" ? "active" : undefined}>
+                <Link href="/employer-active-package" onClick={() => setIsOpen(false)}>
+                  <i className="fa-solid fa-box-open me-2"></i>Active Package
                 </Link>
               </li>
               <li className={active === "messages" ? "active" : undefined}>
