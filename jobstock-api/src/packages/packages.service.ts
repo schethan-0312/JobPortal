@@ -105,9 +105,14 @@ export class PackagesService {
     if (pkg.audience === 'EMPLOYER') {
       const employer = await this.prisma.employer.findUnique({ where: { userId } });
       if (employer) {
-        const sub = await this.prisma.employerPackageSubscription.findUnique({ where: { employerId: employer.id } });
+        const sub = await this.prisma.employerPackageSubscription.findUnique({ 
+          where: { employerId: employer.id },
+          include: { package: true }
+        });
         if (sub && sub.status === 'ACTIVE' && sub.expiresAt && sub.expiresAt > new Date()) {
-          throw new BadRequestException('You already have an active package. You can purchase another package after your current package expires.');
+          if (sub.package && pkg.priceInPaisa <= sub.package.priceInPaisa) {
+            throw new BadRequestException('You can only upgrade to a higher tier package.');
+          }
         }
       }
     }
