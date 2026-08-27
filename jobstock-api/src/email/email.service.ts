@@ -11,10 +11,11 @@ export class EmailService {
   }
 
   private initTransporter() {
-    const host = process.env.EMAIL_HOST;
-    const port = process.env.EMAIL_PORT;
-    const user = process.env.EMAIL_USERNAME;
-    const pass = process.env.EMAIL_PASSWORD;
+    const host = process.env.EMAIL_HOST || process.env.SMTP_HOST;
+    const port = process.env.EMAIL_PORT || process.env.SMTP_PORT;
+    const user = process.env.EMAIL_USERNAME || process.env.SMTP_USER;
+    const pass = process.env.EMAIL_PASSWORD || process.env.SMTP_PASS;
+    const fromEnv = process.env.EMAIL_FROM || process.env.SMTP_FROM;
 
     if (!host || !user || !pass) {
       this.logger.warn('Email configuration missing in .env. EmailService is disabled.');
@@ -38,7 +39,7 @@ export class EmailService {
       return;
     }
 
-    const from = process.env.EMAIL_FROM || process.env.EMAIL_USERNAME;
+    const from = process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER;
     const mailOptions = {
       from: `"JobStock" <${from}>`,
       to: email,
@@ -61,8 +62,8 @@ export class EmailService {
       return;
     }
 
-    const adminEmail = process.env.EMAIL_USERNAME; // Sending the notification to the sender's own email inbox by default
-    const from = process.env.EMAIL_FROM || process.env.EMAIL_USERNAME;
+    const adminEmail = process.env.EMAIL_USERNAME || process.env.SMTP_USER; // Sending the notification to the sender's own email inbox by default
+    const from = process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER;
 
     if (!adminEmail) return;
 
@@ -88,7 +89,7 @@ export class EmailService {
       return;
     }
 
-    const from = process.env.EMAIL_FROM || process.env.EMAIL_USERNAME;
+    const from = process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER;
     const mailOptions = {
       from: `"JobStock Security" <${from}>`,
       to: email,
@@ -103,6 +104,52 @@ export class EmailService {
     } catch (error) {
       this.logger.error(`Failed to send password reset OTP to ${email}`, error);
       this.logger.warn(`Fallback: Password reset OTP for ${email} is: ${otp}`);
+    }
+  }
+  async sendSignupOtp(email: string, otp: string) {
+    if (!this.transporter) {
+      this.logger.warn(`EmailService is not configured. Signup OTP for ${email} is: ${otp}`);
+      return;
+    }
+
+    const from = process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER;
+    const mailOptions = {
+      from: `"JobStock Verification" <${from}>`,
+      to: email,
+      subject: 'Verify Your Email',
+      text: `Hello,\n\nYour 6-digit One-Time Password (OTP) for JobStock registration is:\n\n${otp}\n\nThis OTP is valid for 5 minutes.\n\nBest regards,\nThe JobStock Team`,
+      html: `<p>Hello,</p><p>Your 6-digit One-Time Password (OTP) for JobStock registration is:</p><h2 style="font-size:32px;letter-spacing:5px;text-align:center;color:#28a745;margin:20px 0;">${otp}</h2><p>This OTP is valid for 5 minutes.</p><br><p>Best regards,<br>The JobStock Team</p>`,
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      this.logger.log(`Signup OTP sent to ${email}`);
+    } catch (error) {
+      this.logger.error(`Failed to send signup OTP to ${email}`, error);
+      this.logger.warn(`Fallback: Signup OTP for ${email} is: ${otp}`);
+    }
+  }
+
+  async sendWelcomeEmail(email: string, name: string) {
+    if (!this.transporter) {
+      this.logger.warn(`EmailService is not configured. Could not send welcome email to ${email}`);
+      return;
+    }
+
+    const from = process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER;
+    const mailOptions = {
+      from: `"JobStock" <${from}>`,
+      to: email,
+      subject: 'Welcome to JobStock!',
+      text: `Hello ${name},\n\nRegistration successful! Welcome to JobStock. We are thrilled to have you on board.\n\nBest regards,\nThe JobStock Team`,
+      html: `<p>Hello <strong>${name}</strong>,</p><p>Registration successful! Welcome to JobStock. We are thrilled to have you on board.</p><br><p>Best regards,<br>The JobStock Team</p>`,
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      this.logger.log(`Welcome email sent to ${email}`);
+    } catch (error) {
+      this.logger.error(`Failed to send welcome email to ${email}`, error);
     }
   }
 }

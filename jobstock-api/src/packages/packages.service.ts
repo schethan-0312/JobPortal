@@ -101,6 +101,22 @@ export class PackagesService {
     if (!pkg || !pkg.isActive) {
       throw new NotFoundException('Package not found');
     }
+
+    if (pkg.audience === 'EMPLOYER') {
+      const employer = await this.prisma.employer.findUnique({ where: { userId } });
+      if (employer) {
+        const sub = await this.prisma.employerPackageSubscription.findUnique({ 
+          where: { employerId: employer.id },
+          include: { package: true }
+        });
+        if (sub && sub.status === 'ACTIVE' && sub.expiresAt && sub.expiresAt > new Date()) {
+          if (sub.package && pkg.priceInPaisa <= sub.package.priceInPaisa) {
+            throw new BadRequestException('You can only upgrade to a higher tier package.');
+          }
+        }
+      }
+    }
+
     return this.prisma.order.create({
       data: {
         userId,
@@ -234,8 +250,8 @@ export class PackagesService {
 
         await this.prisma.employerPackageSubscription.upsert({
           where: { employerId: employer.id },
-          create: { employerId: employer.id, packageId: order.packageId, jobPostsUsed: 0, startedAt: new Date(), expiresAt },
-          update: { packageId: order.packageId, jobPostsUsed: 0, startedAt: new Date(), expiresAt },
+          create: { employerId: employer.id, packageId: order.packageId, jobPostsUsed: 0, startedAt: new Date(), expiresAt, status: 'ACTIVE' },
+          update: { packageId: order.packageId, jobPostsUsed: 0, startedAt: new Date(), expiresAt, status: 'ACTIVE' },
         });
       }
     }
@@ -249,5 +265,28 @@ export class PackagesService {
       include: { package: true },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  async getActiveSubscription(userId: string) {
+    const employer = await this.prisma.employer.findUnique({ where: { userId } });
+    if (!employer) return null;
+
+    let sub = await this.prisma.employerPackageSubscription.findUnique({
+      where: { employerId: employer.id },
+      include: { package: true },
+    });
+
+    if (!sub) return null;
+
+    const now = new Date();
+    if (sub.status === 'ACTIVE' && sub.expiresAt && sub.expiresAt <= now) {
+      sub = await this.prisma.employerPackageSubscription.update({
+        where: { id: sub.id },
+        data: { status: 'EXPIRED' },
+        include: { package: true },
+      });
+    }
+
+    return sub;
   }
 }

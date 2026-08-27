@@ -6,6 +6,8 @@ import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError } from "@/lib/api";
+import { Toaster, toast } from "react-hot-toast";
+import confetti from "canvas-confetti";
 
 interface Package {
   id: string;
@@ -55,11 +57,20 @@ function loadRazorpayScript(): Promise<boolean> {
   });
 }
 
+interface ActiveSubscription {
+  id: string;
+  packageId: string;
+  status: string;
+  startedAt: string;
+  expiresAt: string;
+}
+
 export default function EmployerPackagePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
   const [packages, setPackages] = useState<Package[]>([]);
+  const [activeSub, setActiveSub] = useState<ActiveSubscription | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -76,6 +87,9 @@ export default function EmployerPackagePage() {
     (async () => {
       setDataLoading(true);
       try {
+        const sub = await api.get<ActiveSubscription | null>("/packages/active-subscription").catch(() => null);
+        setActiveSub(sub);
+
         let list = await api.get<Package[]>("/packages?audience=EMPLOYER");
         if (!list || list.length === 0) {
           list = await api.get<Package[]>("/packages");
@@ -88,6 +102,19 @@ export default function EmployerPackagePage() {
       }
     })();
   }, [user]);
+
+  useEffect(() => {
+    if (activeSub?.status === 'ACTIVE') {
+      const hasShown = sessionStorage.getItem('activePackageToastShown');
+      if (!hasShown) {
+        toast("You have an active package. You can upgrade to a higher tier plan at any time.", {
+          duration: 10000,
+          icon: 'ℹ️',
+        });
+        sessionStorage.setItem('activePackageToastShown', 'true');
+      }
+    }
+  }, [activeSub]);
 
   function renderFeatures(featuresJson: unknown) {
     if (!featuresJson) return <span className="text-muted small">—</span>;
@@ -107,11 +134,11 @@ export default function EmployerPackagePage() {
     if (items.length === 0) return <span className="text-muted small">—</span>;
 
     return (
-      <div className="package-descr">
+      <div className="package-descr" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
         {items.map((feat, idx) => (
-          <p className="text-sm-muted mb-1 d-flex align-items-center gap-2" key={idx}>
-            <i className="fa-solid fa-check text-success small"></i>
-            <span>{feat}</span>
+          <p className="text-sm-muted mb-2 d-flex align-items-start gap-2 text-break" key={idx}>
+            <i className="fa-solid fa-check text-success small mt-1"></i>
+            <span style={{ minWidth: 0 }}>{feat}</span>
           </p>
         ))}
       </div>
@@ -119,6 +146,13 @@ export default function EmployerPackagePage() {
   }
 
   async function handleBuy(pkg: Package) {
+    if (activeSub && activeSub.status === 'ACTIVE') {
+      const currentPackage = packages.find(p => p.id === activeSub.packageId);
+      if (currentPackage && pkg.priceInPaisa <= currentPackage.priceInPaisa) {
+        setError("You can only upgrade to a higher tier package.");
+        return;
+      }
+    }
     setBuyingId(pkg.id);
     setError(null);
     setSuccess(null);
@@ -148,7 +182,16 @@ export default function EmployerPackagePage() {
               razorpayPaymentId: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,
             });
-            setSuccess(`Payment successful — "${pkg.name}" package activated.`);
+            setSuccess(null); // Clear static success message
+            confetti({
+              particleCount: 150,
+              spread: 70,
+              origin: { y: 0.6 }
+            });
+            toast.success(`Payment successful — "${pkg.name}" package activated!`, { duration: 5000 });
+            setTimeout(() => {
+              router.push('/employer-active-package');
+            }, 3000);
           } catch (err) {
             setError(err instanceof ApiError ? err.message : "Payment verification failed");
           } finally {
@@ -173,7 +216,33 @@ export default function EmployerPackagePage() {
 
   return (
     <>
+      <style>{`
+        .package-card-hover {
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          border-radius: 1rem;
+        }
+        .package-card-hover:hover {
+          transform: translateY(-8px);
+          box-shadow: 0 1rem 3rem rgba(0,0,0,.175) !important;
+        }
+      `}</style>
       <Navbar8 />
+      <Toaster 
+        position="top-center" 
+        containerStyle={{
+          top: '100px', // Offset from the navbar
+        }}
+        toastOptions={{
+          style: {
+            padding: '16px 24px',
+            fontSize: '1.1rem',
+            fontWeight: '500',
+            maxWidth: '600px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+          },
+        }}
+      />
 
       <div className="dashboard-wrap bg-light">
         <EmployerSidebar active="package" />
@@ -204,16 +273,12 @@ export default function EmployerPackagePage() {
 
           <div className="dashboard-widg-bar d-block">
 
-            <div className="alert alert-info">
-              Secure payments powered by Razorpay. Clicking &quot;Buy&quot; opens Razorpay&apos;s checkout — your package activates automatically once payment is verified.
-            </div>
             {error && <div className="alert alert-danger">{error}</div>}
-            {success && <div className="alert alert-success">{success}</div>}
 
             {/* Header Wrap */}
             <div className="row">
               <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
-                <div className="card">
+                <div className="card border-0 bg-transparent">
                   <div className="card-header">
                     <h6 className="mb-0">Available Packages</h6>
                   </div>
@@ -224,30 +289,61 @@ export default function EmployerPackagePage() {
                       <div className="row g-4">
                         {packages.map((item) => (
                           <div className="col-xl-4 col-lg-6 col-md-6" key={item.id}>
-                            <div className="card h-100 border shadow-sm rounded-3">
+                            <div className="card h-100 border-0 shadow-sm package-card-hover bg-white">
                               <div className="card-body p-4 d-flex flex-column justify-content-between">
                                 <div>
-                                  <div className="d-flex justify-content-between align-items-center mb-3">
-                                    <span className="badge bg-main-light text-main px-2 py-1 fw-medium">{item.audience || "EMPLOYER"}</span>
-                                    <span className="badge bg-success px-2 py-1">Active</span>
+                                  <div className="d-flex justify-content-between align-items-center mb-4">
+                                    <span className="badge bg-light text-main px-3 py-2 fw-semibold rounded-pill border border-light-subtle">
+                                      {item.audience || "EMPLOYER"}
+                                    </span>
+                                    {activeSub?.packageId === item.id && activeSub?.status === 'ACTIVE' && (
+                                      <span className="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill fw-semibold border border-success-subtle">
+                                        Current Plan
+                                      </span>
+                                    )}
                                   </div>
-                                  <h5 className="card-title fw-bold mb-2 text-dark">{item.name}</h5>
-                                  <div className="fs-3 fw-bold text-main mb-3">
-                                    {(item.priceInPaisa / 100).toLocaleString("en-IN", { style: "currency", currency: "INR" })}
+                                  <h5 className="card-title fw-bolder mb-2 text-dark fs-4" style={{ letterSpacing: '-0.02em' }}>
+                                    {item.name}
+                                  </h5>
+                                  <div className="fs-2 fw-bold text-main mb-4">
+                                    {(item.priceInPaisa / 100).toLocaleString("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 })}
                                   </div>
                                   <div className="mb-3">
                                     {renderFeatures(item.featuresJson)}
                                   </div>
                                 </div>
                                 <div className="pt-3 border-top mt-2">
-                                  <button
-                                    type="button"
-                                    className="btn btn-main w-100 py-2 fw-medium"
-                                    disabled={buyingId === item.id}
-                                    onClick={() => handleBuy(item)}
-                                  >
-                                    {buyingId === item.id ? "Processing..." : "Buy Now"}
-                                  </button>
+                                  {(() => {
+                                    const currentPackage = packages.find(p => p.id === activeSub?.packageId);
+                                    const isCurrent = activeSub?.status === 'ACTIVE' && activeSub.packageId === item.id;
+                                    const isLowerOrEqual = activeSub?.status === 'ACTIVE' && currentPackage && item.priceInPaisa <= currentPackage.priceInPaisa;
+                                    const isUpgrade = activeSub?.status === 'ACTIVE' && currentPackage && item.priceInPaisa > currentPackage.priceInPaisa;
+                                    
+                                    let btnText = "Buy Now";
+                                    if (isCurrent) btnText = "Active Package";
+                                    else if (buyingId === item.id) btnText = "Processing...";
+                                    else if (isUpgrade) btnText = "Upgrade";
+                                    else if (isLowerOrEqual) btnText = "Unavailable";
+
+                                    return (
+                                      <button
+                                        type="button"
+                                        className={`btn w-100 py-3 fw-bold rounded-pill shadow-sm ${isCurrent ? 'btn-light text-success border-success' : isLowerOrEqual ? 'btn-light text-muted' : 'btn-main'}`}
+                                        disabled={buyingId === item.id}
+                                        onClick={() => {
+                                          if (isCurrent) {
+                                            toast("You are currently on this plan.", { icon: '✅' });
+                                          } else if (isLowerOrEqual) {
+                                            toast("This package you taken now its not available.", { icon: '🚫' });
+                                          } else {
+                                            handleBuy(item);
+                                          }
+                                        }}
+                                      >
+                                        {btnText}
+                                      </button>
+                                    );
+                                  })()}
                                 </div>
                               </div>
                             </div>
@@ -262,14 +358,7 @@ export default function EmployerPackagePage() {
             {/* Header Wrap */}
           </div>
 
-          {/* footer */}
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
+          {/* footer removed */}
         </div>
       </div>
     </>

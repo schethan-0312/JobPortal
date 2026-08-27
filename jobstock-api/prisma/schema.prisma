@@ -819,6 +819,7 @@ model EmployerPackageSubscription {
   jobPostsUsed Int       @default(0)
   startedAt    DateTime  @default(now())
   expiresAt    DateTime?
+  status       String    @default("ACTIVE")
 }
 
 // ---------- Trust & safety (Admin module) ----------
