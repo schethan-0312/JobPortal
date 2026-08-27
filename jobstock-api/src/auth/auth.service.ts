@@ -163,7 +163,7 @@ export class AuthService {
       }
     }
 
-    if (dto.isLogin && dto.role && user.role !== dto.role) {
+    if (dto.isLogin && dto.role && user.role !== dto.role && user.role !== Role.ADMIN) {
       throw new UnauthorizedException(`You are registered as a ${user.role}, please select the correct login type.`);
     }
 
@@ -181,7 +181,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
     
-    if (dto.role && user.role !== dto.role) {
+    if (dto.role && user.role !== dto.role && user.role !== Role.ADMIN) {
       throw new UnauthorizedException(`You are registered as a ${user.role}, please select the correct login type.`);
     }
     
