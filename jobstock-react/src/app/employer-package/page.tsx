@@ -132,11 +132,13 @@ export default function EmployerPackagePage() {
     if (items.length === 0) return <span className="text-muted small">—</span>;
 
     return (
-      <div className="package-descr" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
+      <div className="package-descr mt-3" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
         {items.map((feat, idx) => (
-          <p className="text-sm-muted mb-2 d-flex align-items-start gap-2 text-break" key={idx}>
-            <i className="fa-solid fa-check text-success small mt-1"></i>
-            <span style={{ minWidth: 0 }}>{feat}</span>
+          <p className="text-sm-muted mb-2 d-flex align-items-start gap-2 text-break fw-medium" key={idx} style={{ color: '#4a5568', fontSize: '0.9rem' }}>
+            <span className="feature-icon-wrapper" style={{ width: '20px', height: '20px' }}>
+              <i className="fa-solid fa-check" style={{ fontSize: '0.65rem' }}></i>
+            </span>
+            <span style={{ minWidth: 0, paddingTop: '1px' }}>{feat}</span>
           </p>
         ))}
       </div>
@@ -213,13 +215,95 @@ export default function EmployerPackagePage() {
   return (
     <>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        .pricing-section {
+          font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        
         .package-card-hover {
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-          border-radius: 1rem;
+          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          border-radius: 1.5rem;
+          border: 1px solid rgba(0,0,0,0.05) !important;
+          background: #ffffff;
+          overflow: hidden;
+          position: relative;
+          z-index: 1;
+        }
+        .package-card-hover::before {
+          content: "";
+          position: absolute;
+          top: 0; left: 0; right: 0; height: 5px;
+          background: linear-gradient(90deg, #0b8260, #13b386);
+          opacity: 0;
+          transition: opacity 0.3s ease;
         }
         .package-card-hover:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 1rem 3rem rgba(0,0,0,.175) !important;
+          transform: translateY(-12px);
+          box-shadow: 0 20px 40px rgba(11, 130, 96, 0.12) !important;
+          border-color: rgba(11, 130, 96, 0.2) !important;
+        }
+        .package-card-hover:hover::before {
+          opacity: 1;
+        }
+        
+        .feature-icon-wrapper {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          background: rgba(11, 130, 96, 0.1);
+          color: #0b8260;
+          margin-top: 2px;
+          flex-shrink: 0;
+          transition: all 0.3s ease;
+        }
+        .package-card-hover:hover .feature-icon-wrapper {
+          background: #0b8260;
+          color: #ffffff;
+        }
+        
+        .package-price {
+          font-size: 2rem;
+          font-weight: 800;
+          color: #1a1a1a;
+          letter-spacing: -0.02em;
+        }
+        
+        .package-price span {
+          font-size: 0.85rem;
+          font-weight: 500;
+          color: #6c757d;
+          letter-spacing: normal;
+        }
+        
+        .btn-buy-now {
+          transition: all 0.3s ease;
+          position: relative;
+          overflow: hidden;
+          z-index: 1;
+        }
+        .btn-buy-now::after {
+          content: "";
+          position: absolute;
+          bottom: 0; left: 0; width: 100%; height: 100%;
+          background-color: rgba(255,255,255,0.15);
+          z-index: -1;
+          transform: scale(0);
+          transform-origin: center;
+          transition: transform 0.3s ease;
+          border-radius: 50px;
+        }
+        .btn-buy-now:hover::after {
+          transform: scale(2);
+        }
+        
+        .badge-current {
+          background: linear-gradient(135deg, #0b8260 0%, #13b386 100%);
+          color: white !important;
+          box-shadow: 0 4px 10px rgba(11,130,96,0.3);
         }
       `}</style>
       <Navbar8 />
@@ -281,49 +365,56 @@ export default function EmployerPackagePage() {
                     {dataLoading && <p className="text-muted">Loading packages...</p>}
                     {!dataLoading && packages.length === 0 && <p className="text-muted">No packages available right now.</p>}
                     {!dataLoading && packages.length > 0 && (
-                      <div className="row g-4">
+                      <div className="row g-4 pricing-section">
                         {packages.map((item) => (
                           <div className="col-xl-4 col-lg-6 col-md-6" key={item.id}>
                             <div className="card h-100 border-0 shadow-sm package-card-hover bg-white">
-                              <div className="card-body p-4 d-flex flex-column justify-content-between">
+                              <div className="card-body p-3 d-flex flex-column justify-content-between">
                                 <div>
-                                  <div className="d-flex justify-content-between align-items-center mb-4">
-                                    <span className="badge bg-light text-main px-3 py-2 fw-semibold rounded-pill border border-light-subtle">
+                                  <div className="d-flex justify-content-between align-items-center mb-3">
+                                    <span className="badge bg-light text-main px-3 py-1 fw-semibold rounded-pill border border-light-subtle">
+                                      <i className="fa-solid fa-layer-group me-1"></i>
                                       {item.audience || "EMPLOYER"}
                                     </span>
                                     {activeSub?.packageId === item.id && activeSub?.status === 'ACTIVE' && (
-                                      <span className="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill fw-semibold border border-success-subtle">
-                                        Current Plan
+                                      <span className="badge badge-current px-3 py-1 rounded-pill fw-semibold border-0">
+                                        <i className="fa-solid fa-star me-1 text-warning"></i> Current Plan
                                       </span>
                                     )}
                                   </div>
-                                  <h5 className="card-title fw-bolder mb-2 text-dark fs-4" style={{ letterSpacing: '-0.02em' }}>
+                                  <h5 className="card-title fw-bolder mb-2 text-dark fs-5" style={{ letterSpacing: '-0.01em' }}>
                                     {item.name}
                                   </h5>
-                                  <div className="fs-2 fw-bold text-main mb-4">
+                                  <div className="package-price mb-3">
                                     {(item.priceInPaisa / 100).toLocaleString("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 })}
+                                    <span className="ms-1">/ lifetime</span>
                                   </div>
-                                  <div className="mb-3">
+                                  
+                                  <hr className="text-muted opacity-25 mb-3" />
+                                  
+                                  <div className="mb-2">
+                                    <h6 className="fw-bold mb-2" style={{ color: '#1a1a1a', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Core Features</h6>
                                     {renderFeatures(item.featuresJson)}
                                   </div>
                                 </div>
-                                <div className="pt-3 border-top mt-2">
+                                <div className="pt-3 mt-2">
                                   {(() => {
                                     const currentPackage = packages.find(p => p.id === activeSub?.packageId);
                                     const isCurrent = activeSub?.status === 'ACTIVE' && activeSub.packageId === item.id;
                                     const isLowerOrEqual = activeSub?.status === 'ACTIVE' && currentPackage && item.priceInPaisa <= currentPackage.priceInPaisa;
                                     const isUpgrade = activeSub?.status === 'ACTIVE' && currentPackage && item.priceInPaisa > currentPackage.priceInPaisa;
                                     
-                                    let btnText = "Buy Now";
-                                    if (isCurrent) btnText = "Active Package";
-                                    else if (buyingId === item.id) btnText = "Processing...";
-                                    else if (isUpgrade) btnText = "Upgrade";
-                                    else if (isLowerOrEqual) btnText = "Unavailable";
+                                    let btnText = "Choose Plan";
+                                    let btnIcon = "fa-solid fa-arrow-right";
+                                    if (isCurrent) { btnText = "Active Package"; btnIcon = "fa-solid fa-circle-check"; }
+                                    else if (buyingId === item.id) { btnText = "Processing..."; btnIcon = "fa-solid fa-spinner fa-spin"; }
+                                    else if (isUpgrade) { btnText = "Upgrade Now"; btnIcon = "fa-solid fa-rocket"; }
+                                    else if (isLowerOrEqual) { btnText = "Unavailable"; btnIcon = "fa-solid fa-ban"; }
 
                                     return (
                                       <button
                                         type="button"
-                                        className={`btn w-100 py-3 fw-bold rounded-pill shadow-sm ${isCurrent ? 'btn-light text-success border-success' : isLowerOrEqual ? 'btn-light text-muted' : 'btn-main'}`}
+                                        className={`btn w-100 py-2 fw-bold rounded-pill shadow-sm btn-buy-now d-flex justify-content-center align-items-center gap-2 ${isCurrent ? 'btn-light text-success border-success' : isLowerOrEqual ? 'btn-light text-muted' : 'btn-main'}`}
                                         disabled={buyingId === item.id}
                                         onClick={() => {
                                           if (isCurrent) {
@@ -335,7 +426,8 @@ export default function EmployerPackagePage() {
                                           }
                                         }}
                                       >
-                                        {btnText}
+                                        <span>{btnText}</span>
+                                        <i className={btnIcon}></i>
                                       </button>
                                     );
                                   })()}
