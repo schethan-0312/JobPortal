@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { api, assetUrl } from "@/lib/api";
+import { api, assetUrl, uploadFile } from "@/lib/api";
 
 export type EmployerSidebarActive =
   | "dashboard"
@@ -31,6 +31,10 @@ interface EmployerProfile {
   companyName: string;
   location: string | null;
   logoUrl: string | null;
+  status: string;
+  gstCertificateUrl?: string;
+  incorporationCertUrl?: string;
+  signatoryIdUrl?: string;
 }
 
 interface EmployerJob {
@@ -38,18 +42,40 @@ interface EmployerJob {
 }
 
 export default function EmployerSidebar({ active }: EmployerSidebarProps) {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
 
   const [profile, setProfile] = useState<EmployerProfile | null>(null);
   const [openingsCount, setOpeningsCount] = useState(0);
   const [unreadMessages, setUnreadMessages] = useState(0);
 
+  // Verification Modal State
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [gstFile, setGstFile] = useState<File | null>(null);
+  const [incFile, setIncFile] = useState<File | null>(null);
+  const [sigFile, setSigFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+
   useEffect(() => {
+    let timer: NodeJS.Timeout;
     const loadProfile = () => {
       api
         .get<EmployerProfile>("/employers/me")
-        .then(setProfile)
+        .then((p) => {
+          setProfile(p);
+          // Show popup after 5 seconds if not VERIFIED and documents are missing
+          if (p.status !== "VERIFIED" && (!p.gstCertificateUrl || !p.incorporationCertUrl || !p.signatoryIdUrl)) {
+            const hasSeen = sessionStorage.getItem(`hasSeenVerificationModal_${user?.userId}`);
+            if (!hasSeen) {
+              timer = setTimeout(() => {
+                setShowVerificationModal(true);
+                sessionStorage.setItem(`hasSeenVerificationModal_${user?.userId}`, "true");
+              }, 5000);
+            }
+          }
+        })
         .catch(() => setProfile(null));
     };
     
@@ -67,8 +93,42 @@ export default function EmployerSidebar({ active }: EmployerSidebarProps) {
 
     return () => {
       window.removeEventListener('profile-updated', loadProfile);
+      if (timer) clearTimeout(timer);
     };
-  }, []);
+  }, [user?.userId]);
+
+  async function handleVerifySubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!gstFile || !incFile || !sigFile) {
+      setUploadError("Please select all three documents.");
+      return;
+    }
+    setUploading(true);
+    setUploadError(null);
+    setUploadSuccess(null);
+    try {
+      // 1. Upload files
+      const [gstRes, incRes, sigRes] = await Promise.all([
+        uploadFile<{ url: string }>("/uploads/document?save=false", gstFile),
+        uploadFile<{ url: string }>("/uploads/document?save=false", incFile),
+        uploadFile<{ url: string }>("/uploads/document?save=false", sigFile),
+      ]);
+
+      // 2. Update profile
+      const updated = await api.patch<EmployerProfile>("/employers/me", {
+        gstCertificateUrl: gstRes.url,
+        incorporationCertUrl: incRes.url,
+        signatoryIdUrl: sigRes.url,
+      });
+      setProfile(updated);
+      setUploadSuccess("Documents submitted successfully. Waiting for admin verification.");
+      setTimeout(() => setShowVerificationModal(false), 2000);
+    } catch (err: any) {
+      setUploadError(err.message || "Failed to upload documents.");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   function handleLogout() {
     logout();
@@ -76,6 +136,17 @@ export default function EmployerSidebar({ active }: EmployerSidebarProps) {
   }
 
   const [isOpen, setIsOpen] = useState(false);
+
+  // Restricted navigation handler
+  const handleRestrictedNav = (e: React.MouseEvent, path: string) => {
+    e.preventDefault();
+    if (profile && profile.status !== "VERIFIED") {
+      setShowVerificationModal(true);
+    } else {
+      setIsOpen(false);
+      router.push(path);
+    }
+  };
 
   return (
     <>
@@ -163,69 +234,69 @@ export default function EmployerSidebar({ active }: EmployerSidebarProps) {
             <ul data-submenu-title="Main Navigation">
               <li className={active === "dashboard" ? "active" : undefined}>
                 <Link href="/employer-dashboard" onClick={() => setIsOpen(false)}>
-                  <i className="fa-solid fa-gauge-high me-2"></i>User Dashboard
+                  <i className="fa-solid fa-gauge-high me-2"></i>Employer Dashboard
                 </Link>
               </li>
               <li className={active === "profile" ? "active" : undefined}>
                 <Link href="/employer-profile" onClick={() => setIsOpen(false)}>
-                  <i className="fa-regular fa-user me-2"></i>User Profile
+                  <i className="fa-regular fa-user me-2"></i>Employer Profile
                 </Link>
               </li>
               <li className={active === "jobs" ? "active" : undefined}>
-                <Link href="/employer-jobs" onClick={() => setIsOpen(false)}>
+                <a href="/employer-jobs" onClick={(e) => handleRestrictedNav(e, "/employer-jobs")}>
                   <i className="fa-solid fa-business-time me-2"></i>My Jobs
-                </Link>
+                </a>
               </li>
               <li className={active === "submit-job" ? "active" : undefined}>
-                <Link href="/employer-submit-job" onClick={() => setIsOpen(false)}>
+                <a href="/employer-submit-job" onClick={(e) => handleRestrictedNav(e, "/employer-submit-job")}>
                   <i className="fa-solid fa-pen-ruler me-2"></i>Submit Jobs
-                </Link>
+                </a>
               </li>
               <li className={active === "applicants-jobs" ? "active" : undefined}>
-                <Link href="/employer-applicants-jobs" onClick={() => setIsOpen(false)}>
+                <a href="/employer-applicants-jobs" onClick={(e) => handleRestrictedNav(e, "/employer-applicants-jobs")}>
                   <i className="fa-solid fa-user-group me-2"></i>Applicants Jobs
-                </Link>
+                </a>
               </li>
               <li className={active === "candidate-search" ? "active" : undefined}>
-                <Link href="/employer-candidate-search" onClick={() => setIsOpen(false)}>
+                <a href="/employer-candidate-search" onClick={(e) => handleRestrictedNav(e, "/employer-candidate-search")}>
                   <i className="fa-solid fa-magnifying-glass me-2"></i>Find Candidates
-                </Link>
+                </a>
               </li>
               <li className={active === "shortlist-candidates" ? "active" : undefined}>
-                <Link href="/employer-shortlist-candidates" onClick={() => setIsOpen(false)}>
+                <a href="/employer-shortlist-candidates" onClick={(e) => handleRestrictedNav(e, "/employer-shortlist-candidates")}>
                   <i className="fa-solid fa-user-clock me-2"></i>Shortlisted Candidates
-                </Link>
+                </a>
               </li>
               <li className={active === "auto-shortlist" ? "active" : undefined}>
-                <Link href="/employer-auto-shortlist" onClick={() => setIsOpen(false)}>
+                <a href="/employer-auto-shortlist" onClick={(e) => handleRestrictedNav(e, "/employer-auto-shortlist")}>
                   <i className="fa-solid fa-wand-magic-sparkles me-2"></i>AI Auto-Shortlist
-                </Link>
+                </a>
               </li>
               <li className={active === "competition" ? "active" : undefined}>
-                <Link href="/employer-competition" onClick={() => setIsOpen(false)}>
+                <a href="/employer-competition" onClick={(e) => handleRestrictedNav(e, "/employer-competition")}>
                   <i className="fa-solid fa-trophy me-2"></i>Competition
-                </Link>
+                </a>
               </li>
               <li className={active === "submissions" ? "active" : undefined}>
-                <Link href="/employer-submissions" onClick={() => setIsOpen(false)}>
+                <a href="/employer-submissions" onClick={(e) => handleRestrictedNav(e, "/employer-submissions")}>
                   <i className="fa-solid fa-clipboard-list me-2"></i>Submissions
-                </Link>
+                </a>
               </li>
               <li className={active === "package" ? "active" : undefined}>
-                <Link href="/employer-package" onClick={() => setIsOpen(false)}>
+                <a href="/employer-package" onClick={(e) => handleRestrictedNav(e, "/employer-package")}>
                   <i className="fa-solid fa-wallet me-2"></i>Package
-                </Link>
+                </a>
               </li>
               <li className={active === "active-package" ? "active" : undefined}>
-                <Link href="/employer-active-package" onClick={() => setIsOpen(false)}>
+                <a href="/employer-active-package" onClick={(e) => handleRestrictedNav(e, "/employer-active-package")}>
                   <i className="fa-solid fa-box-open me-2"></i>Active Package
-                </Link>
+                </a>
               </li>
               <li className={active === "messages" ? "active" : undefined}>
-                <Link href="/employer-messages" onClick={() => setIsOpen(false)}>
+                <a href="/employer-messages" onClick={(e) => handleRestrictedNav(e, "/employer-messages")}>
                   <i className="fa-solid fa-comments me-2"></i>Messages
                   {unreadMessages > 0 && <span className="count-tag">{unreadMessages}</span>}
-                </Link>
+                </a>
               </li>
               <li className={active === "delete-account" ? "active" : undefined}>
                 <Link href="/employer-delete-account" onClick={() => setIsOpen(false)}>
@@ -241,6 +312,67 @@ export default function EmployerSidebar({ active }: EmployerSidebarProps) {
           </div>
         </div>
       </div>
+
+      {/* Verification Modal */}
+      {showVerificationModal && (
+        <>
+          <div className="modal-backdrop fade show" style={{ zIndex: 1050 }}></div>
+          <div className="modal fade show d-block" style={{ zIndex: 1060 }} tabIndex={-1}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Verification Required</h5>
+                  <button type="button" className="btn-close" onClick={() => setShowVerificationModal(false)}></button>
+                </div>
+                <div className="modal-body">
+                  <p className="text-muted mb-4">
+                    Please upload the following documents for further verification. Once verified by our admin, you will have full access to the dashboard.
+                  </p>
+                  
+                  {uploadError && <div className="alert alert-danger p-2">{uploadError}</div>}
+                  {uploadSuccess && <div className="alert alert-success p-2">{uploadSuccess}</div>}
+
+                  <form onSubmit={handleVerifySubmit}>
+                    <div className="form-group mb-3">
+                      <label className="fw-medium">GST Certificate <i className="text-danger">*</i></label>
+                      <input 
+                        type="file" 
+                        className="form-control" 
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={(e) => setGstFile(e.target.files?.[0] || null)}
+                        required
+                      />
+                    </div>
+                    <div className="form-group mb-3">
+                      <label className="fw-medium">Incorporation Certificate <i className="text-danger">*</i></label>
+                      <input 
+                        type="file" 
+                        className="form-control" 
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={(e) => setIncFile(e.target.files?.[0] || null)}
+                        required
+                      />
+                    </div>
+                    <div className="form-group mb-4">
+                      <label className="fw-medium">Signatory ID (Aadhar/PAN) <i className="text-danger">*</i></label>
+                      <input 
+                        type="file" 
+                        className="form-control" 
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={(e) => setSigFile(e.target.files?.[0] || null)}
+                        required
+                      />
+                    </div>
+                    <button type="submit" className="btn btn-primary w-100" disabled={uploading}>
+                      {uploading ? "Uploading..." : "Submit Documents"}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }

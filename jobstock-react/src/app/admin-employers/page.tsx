@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -18,6 +18,9 @@ interface PendingEmployer {
   industry: string | null;
   status: string;
   createdAt: string;
+  gstCertificateUrl?: string;
+  incorporationCertUrl?: string;
+  signatoryIdUrl?: string;
   user: { email: string; createdAt: string };
 }
 
@@ -30,6 +33,7 @@ export default function AdminEmployersPage() {
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [actingId, setActingId] = useState<string | null>(null);
+  const [viewingEmployer, setViewingEmployer] = useState<PendingEmployer | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "ADMIN")) {
@@ -52,14 +56,15 @@ export default function AdminEmployersPage() {
     })();
   }, [user]);
 
-  async function handleDecision(id: string, decision: "VERIFIED" | "REJECTED") {
+  async function handleDecision(id: string, decision: "VERIFIED" | "REJECTED" | "SUSPENDED") {
     setActingId(id);
     setError(null);
     setSuccessMsg(null);
     try {
       await api.patch(`/admin/employers/${id}/verify`, { decision });
       setEmployers((prev) => prev.filter((e) => e.id !== id));
-      setSuccessMsg(`Employer ${decision === "VERIFIED" ? "verified" : "rejected"} successfully.`);
+      setSuccessMsg(`Employer ${decision.toLowerCase()} successfully.`);
+      setViewingEmployer(null);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to update employer");
     } finally {
@@ -118,52 +123,24 @@ export default function AdminEmployersPage() {
                     <div className="row justify-content-start gx-3 gy-4">
                       {employers.map((emp) => (
                         <div className="col-xl-12 col-lg-12 col-md-12" key={emp.id}>
-                          <div className="jbs-list-box border">
-                            <div className="jbs-list-head">
-                              <div className="jbs-list-head-thunner">
-                                <div className="jbs-list-emp-thumb">
-                                  <figure>
-                                    <img src={assetUrl(emp.logoUrl) || "/assets/img/l-1.png"} className="img-fluid" alt="" />
-                                  </figure>
-                                </div>
-                                <div className="jbs-list-job-caption">
-                                  <div className="jbs-job-title-wrap">
-                                    <h4>
-                                      <span className="jbs-job-title">{emp.companyName}</span>
-                                    </h4>
-                                  </div>
-                                  <div className="jbs-job-mrch-lists">
-                                    <div className="single-mrch-lists">
-                                      <span>{emp.user.email}</span>
-                                      {emp.location ? (
-                                        <>
-                                          .<span><i className="fa-solid fa-location-dot me-1"></i>{emp.location}</span>
-                                        </>
-                                      ) : null}
-                                      .<span>Applied {new Date(emp.createdAt).toLocaleDateString()}</span>
-                                    </div>
-                                  </div>
-                                  {emp.description && <p className="text-muted mb-0 mt-2">{emp.description}</p>}
-                                </div>
+                          <div className="jbs-list-box border d-flex justify-content-between align-items-center p-3">
+                            <div className="d-flex align-items-center">
+                              <div className="me-3">
+                                <img src={assetUrl(emp.logoUrl) || "/assets/img/l-1.png"} className="img-fluid rounded" alt="" style={{ width: '60px', height: '60px', objectFit: 'cover' }} />
                               </div>
-                              <div className="jbs-list-head-last">
-                                <button
-                                  type="button"
-                                  className="btn btn-md btn-main px-3 me-2"
-                                  disabled={actingId === emp.id}
-                                  onClick={() => handleDecision(emp.id, "VERIFIED")}
-                                >
-                                  {actingId === emp.id ? "Please wait..." : "Verify"}
-                                </button>
-                                <button
-                                  type="button"
-                                  className="btn btn-md btn-gray px-3"
-                                  disabled={actingId === emp.id}
-                                  onClick={() => handleDecision(emp.id, "REJECTED")}
-                                >
-                                  Reject
-                                </button>
+                              <div>
+                                <h4 className="mb-0 fs-5">{emp.companyName}</h4>
+                                <span className="text-muted small">{emp.user.email}</span>
                               </div>
+                            </div>
+                            <div>
+                              <button
+                                type="button"
+                                className="btn btn-md btn-light border px-4"
+                                onClick={() => setViewingEmployer(emp)}
+                              >
+                                View
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -185,6 +162,97 @@ export default function AdminEmployersPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal */}
+      {viewingEmployer && (
+        <div className="modal fade show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-lg modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Review Employer: {viewingEmployer.companyName}</h5>
+                <button type="button" className="btn-close" onClick={() => setViewingEmployer(null)}></button>
+              </div>
+              <div className="modal-body">
+                <div className="d-flex align-items-start mb-4">
+                  <img src={assetUrl(viewingEmployer.logoUrl) || "/assets/img/l-1.png"} className="img-fluid rounded me-3" alt="" style={{ width: '80px', height: '80px', objectFit: 'cover' }} />
+                  <div>
+                    <h4 className="mb-1">{viewingEmployer.companyName}</h4>
+                    <div className="text-muted small">
+                      <span className="me-3"><i className="fa-regular fa-envelope me-1"></i>{viewingEmployer.user.email}</span>
+                      {viewingEmployer.location && <span className="me-3"><i className="fa-solid fa-location-dot me-1"></i>{viewingEmployer.location}</span>}
+                      <span><i className="fa-regular fa-calendar me-1"></i>Applied {new Date(viewingEmployer.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {viewingEmployer.description && (
+                  <div className="mb-4">
+                    <h6 className="fw-medium">Description</h6>
+                    <p className="text-muted small">{viewingEmployer.description}</p>
+                  </div>
+                )}
+                
+                <div className="mb-4 p-3 bg-light rounded border">
+                  <h6 className="mb-3 fs-6">Compliance Documents</h6>
+                  <div className="d-flex flex-wrap gap-4">
+                    {viewingEmployer.gstCertificateUrl ? (
+                      <a href={assetUrl(viewingEmployer.gstCertificateUrl)} target="_blank" rel="noreferrer" className="text-primary fw-medium text-decoration-underline">
+                        <i className="fa-solid fa-file-pdf me-1"></i> GST Certificate
+                      </a>
+                    ) : (
+                      <span className="text-danger fw-medium"><i className="fa-solid fa-circle-xmark me-1"></i> Missing GST</span>
+                    )}
+
+                    {viewingEmployer.incorporationCertUrl ? (
+                      <a href={assetUrl(viewingEmployer.incorporationCertUrl)} target="_blank" rel="noreferrer" className="text-primary fw-medium text-decoration-underline">
+                        <i className="fa-solid fa-file-pdf me-1"></i> Incorporation Cert
+                      </a>
+                    ) : (
+                      <span className="text-danger fw-medium"><i className="fa-solid fa-circle-xmark me-1"></i> Missing Inc. Cert</span>
+                    )}
+
+                    {viewingEmployer.signatoryIdUrl ? (
+                      <a href={assetUrl(viewingEmployer.signatoryIdUrl)} target="_blank" rel="noreferrer" className="text-primary fw-medium text-decoration-underline">
+                        <i className="fa-solid fa-file-pdf me-1"></i> Signatory ID
+                      </a>
+                    ) : (
+                      <span className="text-danger fw-medium"><i className="fa-solid fa-circle-xmark me-1"></i> Missing Signatory ID</span>
+                    )}
+                  </div>
+                  <div className="mt-3 text-muted small">
+                    {viewingEmployer.website && <span className="me-3"><i className="fa-solid fa-globe me-1"></i> {viewingEmployer.website}</span>}
+                    {viewingEmployer.industry && <span><i className="fa-solid fa-building me-1"></i> {viewingEmployer.industry}</span>}
+                  </div>
+                </div>
+
+                {error && <div className="alert alert-danger py-2">{error}</div>}
+              </div>
+              <div className="modal-footer justify-content-between">
+                <button type="button" className="btn btn-secondary" onClick={() => setViewingEmployer(null)}>Cancel</button>
+                <div>
+
+                  <button 
+                    type="button" 
+                    className="btn btn-warning me-2 text-white"
+                    disabled={actingId === viewingEmployer.id}
+                    onClick={() => handleDecision(viewingEmployer.id, "REJECTED")}
+                  >
+                    Reject
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-success"
+                    disabled={actingId === viewingEmployer.id}
+                    onClick={() => handleDecision(viewingEmployer.id, "VERIFIED")}
+                  >
+                    Verify
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

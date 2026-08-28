@@ -31,7 +31,7 @@ const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const DOCUMENT_TYPES = [
   'application/pdf',
   'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'image/webp',
 ];
 
 /**
@@ -110,7 +110,7 @@ export class UploadsController {
       limits: { fileSize: 10 * 1024 * 1024 },
       fileFilter: (_req, file, cb) => {
         if (!DOCUMENT_TYPES.includes(file.mimetype)) {
-          cb(new BadRequestException('Only PDF or Word documents are allowed'), false);
+          cb(new BadRequestException('Only PDF, Word documents, or Images are allowed'), false);
           return;
         }
         cb(null, true);

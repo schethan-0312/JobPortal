@@ -17,6 +17,9 @@ interface EmployerProfile {
   location: string | null;
   industry: string | null;
   status: string;
+  gstCertificateUrl?: string;
+  incorporationCertUrl?: string;
+  signatoryIdUrl?: string;
 }
 
 export default function EmployerProfilePage() {
@@ -113,18 +116,32 @@ export default function EmployerProfilePage() {
     setUploadingPhoto(true);
     setError(null);
     try {
-      const { url } = await uploadFile<{ url: string }>("/uploads/image", file);
-      const updated = await api.patch<EmployerProfile>("/employers/me", { logoUrl: url });
+      const res = await uploadFile<{ url: string }>("/uploads/document", file);
+      const updated = await api.patch<EmployerProfile>("/employers/me", { logoUrl: res.url });
       setProfile(updated);
-      setSuccess("Logo updated.");
-      scrollToTop();
-      window.dispatchEvent(new CustomEvent('profile-updated'));
+      setSuccess("Profile photo updated successfully");
+      window.dispatchEvent(new Event('profile-updated'));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to upload logo");
-      scrollToTop();
+      setError(err instanceof ApiError ? err.message : "Failed to upload photo");
     } finally {
       setUploadingPhoto(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function handleDocumentUpload(field: string, e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await uploadFile<{ url: string }>("/uploads/document?save=false", file);
+      const updated = await api.patch<EmployerProfile>("/employers/me", { [field]: res.url });
+      setProfile(updated);
+      setSuccess("Document uploaded successfully");
+      window.dispatchEvent(new Event('profile-updated'));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to upload document");
     }
   }
 
@@ -282,6 +299,59 @@ export default function EmployerProfilePage() {
                       </div>
                     </div>
                   </div>
+              </div>
+            </div>
+            {/* Card Row End */}
+
+            {/* Compliance Documents Card */}
+            <div className="card mt-4">
+              <div className="card-header">
+                <h4>Compliance Documents</h4>
+              </div>
+              <div className="card-body">
+                <p className="text-muted small mb-4">
+                  Upload your compliance documents for admin verification. Required for full dashboard access.
+                </p>
+                <div className="row">
+                  <div className="col-xl-4 col-lg-4 col-md-12 mb-3">
+                    <label className="fw-medium">GST Certificate</label>
+                    {profile?.gstCertificateUrl ? (
+                      <div className="d-flex align-items-center gap-2 mt-2">
+                        <i className="fa-solid fa-circle-check text-success"></i>
+                        <a href={assetUrl(profile.gstCertificateUrl)} target="_blank" rel="noopener noreferrer">View Document</a>
+                      </div>
+                    ) : (
+                      <div className="mt-2 text-warning"><i className="fa-solid fa-triangle-exclamation"></i> Missing</div>
+                    )}
+                    <input type="file" className="form-control mt-2" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => handleDocumentUpload("gstCertificateUrl", e)} />
+                  </div>
+                  
+                  <div className="col-xl-4 col-lg-4 col-md-12 mb-3">
+                    <label className="fw-medium">Incorporation Certificate</label>
+                    {profile?.incorporationCertUrl ? (
+                      <div className="d-flex align-items-center gap-2 mt-2">
+                        <i className="fa-solid fa-circle-check text-success"></i>
+                        <a href={assetUrl(profile.incorporationCertUrl)} target="_blank" rel="noopener noreferrer">View Document</a>
+                      </div>
+                    ) : (
+                      <div className="mt-2 text-warning"><i className="fa-solid fa-triangle-exclamation"></i> Missing</div>
+                    )}
+                    <input type="file" className="form-control mt-2" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => handleDocumentUpload("incorporationCertUrl", e)} />
+                  </div>
+
+                  <div className="col-xl-4 col-lg-4 col-md-12 mb-3">
+                    <label className="fw-medium">Signatory ID</label>
+                    {profile?.signatoryIdUrl ? (
+                      <div className="d-flex align-items-center gap-2 mt-2">
+                        <i className="fa-solid fa-circle-check text-success"></i>
+                        <a href={assetUrl(profile.signatoryIdUrl)} target="_blank" rel="noopener noreferrer">View Document</a>
+                      </div>
+                    ) : (
+                      <div className="mt-2 text-warning"><i className="fa-solid fa-triangle-exclamation"></i> Missing</div>
+                    )}
+                    <input type="file" className="form-control mt-2" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => handleDocumentUpload("signatoryIdUrl", e)} />
+                  </div>
+                </div>
               </div>
             </div>
             {/* Card Row End */}

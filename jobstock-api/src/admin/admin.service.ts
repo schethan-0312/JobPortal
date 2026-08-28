@@ -3,12 +3,14 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { VerifyEmployerDto, VerifyDecision } from './dto/verify-employer.dto.js';
 import { ResolveReportDto } from './dto/resolve-report.dto.js';
+import { EmailService } from '../email/email.service.js';
 
 @Injectable()
 export class AdminService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly emailService: EmailService,
   ) {}
 
   listPendingEmployers() {
@@ -20,7 +22,7 @@ export class AdminService {
   }
 
   async verifyEmployer(adminUserId: string, employerId: string, dto: VerifyEmployerDto) {
-    const employer = await this.prisma.employer.findUnique({ where: { id: employerId } });
+    const employer = await this.prisma.employer.findUnique({ where: { id: employerId }, include: { user: true } });
     if (!employer) {
       throw new NotFoundException('Employer not found');
     }
@@ -28,7 +30,7 @@ export class AdminService {
     const updated = await this.prisma.employer.update({
       where: { id: employerId },
       data: {
-        status: dto.decision === VerifyDecision.VERIFIED ? 'VERIFIED' : 'REJECTED',
+        status: dto.decision as any, // Works for VERIFIED, REJECTED, SUSPENDED
         verifiedAt: new Date(),
         verifiedById: adminUserId,
       },
@@ -39,8 +41,14 @@ export class AdminService {
       'Company verification update',
       dto.decision === VerifyDecision.VERIFIED
         ? 'Your company has been verified. You can now post jobs.'
-        : 'Your company verification was rejected. Please contact support for details.',
+        : dto.decision === VerifyDecision.REJECTED ? 'Your company verification was rejected. Please contact support for details.' : 'Your company account was suspended.'
     );
+
+    try {
+      await this.emailService.sendEmployerVerificationStatus(employer.user.email, employer.companyName, dto.decision as any);
+    } catch (e) {
+      // Ignore email errors
+    }
 
     return updated;
   }
