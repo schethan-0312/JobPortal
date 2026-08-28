@@ -12,7 +12,16 @@ interface Package {
   id: string;
   name: string;
   priceInPaisa: number;
-  featuresJson: Record<string, unknown>;
+  durationType: string;
+  duration: number;
+  postJobLimit: number;
+  applicantViewLimit: number;
+  jobSeekerViewLimit: number;
+  chatEnabled: boolean;
+  filterShortlistEnabled: boolean;
+  scheduleInterviewsEnabled: boolean;
+  companyBrandingEnabled: boolean;
+  verifiedRecruiterBadgeEnabled: boolean;
 }
 
 interface ActiveSubscription {
@@ -22,6 +31,9 @@ interface ActiveSubscription {
   status: string;
   startedAt: string;
   expiresAt: string | null;
+  jobPostsUsed: number;
+  applicantsViewed: number;
+  jobSeekersViewed: number;
 }
 
 export default function EmployerActivePackagePage() {
@@ -30,7 +42,7 @@ export default function EmployerActivePackagePage() {
 
   const [activeSub, setActiveSub] = useState<ActiveSubscription | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
-    const [now, setNow] = useState(new Date());
+  const [now, setNow] = useState(new Date());
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "EMPLOYER")) {
@@ -64,20 +76,6 @@ export default function EmployerActivePackagePage() {
     return null;
   }
 
-  function getDurationText(featuresJson: unknown) {
-    if (!featuresJson) return "Unknown";
-    let meta: any = null;
-    if (typeof featuresJson === "object" && featuresJson !== null && !Array.isArray(featuresJson)) {
-      meta = featuresJson;
-    } else if (typeof featuresJson === "string") {
-      try { meta = JSON.parse(featuresJson); } catch {}
-    }
-    if (meta && meta.duration && meta.durationType) {
-      return `${meta.duration} ${meta.durationType}`;
-    }
-    return "Unknown";
-  }
-
   function getRemainingTime(expiresAtStr: string) {
     const expiresAt = new Date(expiresAtStr);
     const diff = expiresAt.getTime() - now.getTime();
@@ -95,25 +93,43 @@ export default function EmployerActivePackagePage() {
     return parts.join(" ") || "Less than a minute";
   }
 
+  function renderProgressBar(used: number, limit: number, label: string) {
+    if (limit === 999999) {
+      return (
+        <div className="mb-4">
+          <div className="d-flex justify-content-between mb-1">
+            <span className="fw-medium small">{label}</span>
+            <span className="text-success small fw-bold">Unlimited ({used} Used)</span>
+          </div>
+          <div className="progress bg-success-subtle" style={{ height: "8px" }}>
+            <div className="progress-bar bg-success" role="progressbar" style={{ width: "100%" }}></div>
+          </div>
+        </div>
+      );
+    }
+
+    const percent = Math.min(100, Math.max(0, (used / limit) * 100));
+    const isWarning = percent > 80;
+    const barClass = isWarning ? "bg-warning" : "bg-primary";
+
+    return (
+      <div className="mb-4">
+        <div className="d-flex justify-content-between mb-1">
+          <span className="fw-medium small">{label}</span>
+          <span className={`small fw-bold ${isWarning ? 'text-warning' : 'text-primary'}`}>
+            {used} / {limit} Used
+          </span>
+        </div>
+        <div className="progress" style={{ height: "8px" }}>
+          <div className={`progress-bar ${barClass}`} role="progressbar" style={{ width: `${percent}%` }}></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Navbar8 />
-      <Toaster 
-        position="top-center" 
-        containerStyle={{
-          top: '100px',
-        }}
-        toastOptions={{
-          style: {
-            padding: '16px 24px',
-            fontSize: '1.1rem',
-            fontWeight: '500',
-            maxWidth: '600px',
-            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
-            borderRadius: '12px',
-          },
-        }}
-      />
 
       <div className="dashboard-wrap bg-light">
         <EmployerSidebar active="active-package" />
@@ -121,21 +137,12 @@ export default function EmployerActivePackagePage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
+              <div className="col-xl-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Active Package</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
-                    <li className="breadcrumb-item text-muted">
-                      <a href="#">Employer</a>
-                    </li>
-                    <li className="breadcrumb-item text-muted">
-                      <a href="#">Dashboard</a>
-                    </li>
-                    <li className="breadcrumb-item">
-                      <a href="#" className="text-main">
-                        Active Package
-                      </a>
-                    </li>
+                    <li className="breadcrumb-item text-muted"><a href="#">Employer</a></li>
+                    <li className="breadcrumb-item"><a href="#" className="text-main">Active Package</a></li>
                   </ol>
                 </nav>
               </div>
@@ -143,107 +150,120 @@ export default function EmployerActivePackagePage() {
           </div>
 
           <div className="dashboard-widg-bar d-block">
-                        
+            <Toaster position="top-right" />
+
             {dataLoading ? (
-              <p className="text-muted">Loading your active package...</p>
-            ) : !activeSub || activeSub.status !== 'ACTIVE' ? (
-              <div className="card text-center p-5">
-                <div className="card-body">
-                  <div className="mb-4 text-muted">
-                    <i className="fa-solid fa-box-open fa-4x"></i>
-                  </div>
-                  <h4 className="fw-bold mb-3">No Active Package</h4>
-                  <p className="text-muted mb-4">You do not have any active package at the moment.</p>
-                  <button className="btn btn-main" onClick={() => router.push('/employer-package')}>
-                    Browse Packages
+              <div className="card border-0 shadow-sm p-5 text-center">
+                <div className="spinner-border text-main mb-3" role="status"></div>
+                <p className="text-muted">Loading your subscription data...</p>
+              </div>
+            ) : !activeSub ? (
+              <div className="card border-0 shadow-sm p-5 text-center">
+                <div className="mb-4">
+                  <i className="fa-solid fa-box-open text-muted" style={{ fontSize: "64px" }}></i>
+                </div>
+                <h4 className="fw-bold mb-3">No Active Package</h4>
+                <p className="text-muted mb-4">You do not have an active package. Upgrade to a premium plan to post jobs, view applicant details, and access advanced features.</p>
+                <div>
+                  <button className="btn btn-main px-4 py-2" onClick={() => router.push("/employer-package")}>
+                    View Packages
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="row">
-                <div className="col-lg-8 col-md-10 col-sm-12">
-                  <div className="card shadow-sm border-0">
-                    <div className="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-                      <h5 className="mb-0 fw-bold text-dark">Your Subscription Details</h5>
-                      <span className="badge bg-success px-3 py-2 fs-6 rounded-pill">Active</span>
+              <div className="row g-4">
+                <div className="col-xl-8 col-lg-7">
+                  <div className="card border-0 shadow-sm h-100">
+                    <div className="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                      <h5 className="mb-0 fw-semibold">Current Plan details</h5>
+                      <span className={`badge ${activeSub.status === 'ACTIVE' ? 'bg-success' : 'bg-danger'}`}>
+                        {activeSub.status}
+                      </span>
                     </div>
                     <div className="card-body p-4">
-                      <div className="row mb-4">
-                        <div className="col-md-6">
-                          <p className="text-muted mb-1 small">Package Name</p>
-                          <h4 className="fw-bold text-dark mb-0">{activeSub.package?.name}</h4>
+                      <div className="d-flex align-items-center justify-content-between border-bottom pb-4 mb-4">
+                        <div>
+                          <h2 className="fw-bold text-dark mb-1">{activeSub.package.name}</h2>
+                          <p className="text-muted mb-0">Active since {new Date(activeSub.startedAt).toLocaleDateString()}</p>
                         </div>
-                        <div className="col-md-6 text-md-end mt-3 mt-md-0">
-                          <p className="text-muted mb-1 small">Package Price</p>
-                          <h4 className="fw-bold text-main mb-0">
-                            {((activeSub.package?.priceInPaisa || 0) / 100).toLocaleString("en-IN", { style: "currency", currency: "INR" })}
-                          </h4>
-                        </div>
-                      </div>
-
-                      <div className="bg-light rounded p-4 mb-4">
-                        <div className="row g-4">
-                          <div className="col-md-4 col-sm-6">
-                            <div className="d-flex flex-column">
-                              <span className="text-muted small mb-1">Duration</span>
-                              <span className="fw-semibold text-dark">
-                                {getDurationText(activeSub.package?.featuresJson)}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="col-md-4 col-sm-6">
-                            <div className="d-flex flex-column">
-                              <span className="text-muted small mb-1">Started</span>
-                              <span className="fw-semibold text-dark">
-                                {new Date(activeSub.startedAt).toLocaleString("en-IN", {
-                                  day: "2-digit",
-                                  month: "short",
-                                  year: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  hour12: true
-                                })}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="col-md-4 col-sm-6">
-                            <div className="d-flex flex-column">
-                              <span className="text-muted small mb-1">Ends</span>
-                              <span className="fw-semibold text-dark">
-                                {activeSub.expiresAt ? new Date(activeSub.expiresAt).toLocaleString("en-IN", {
-                                  day: "2-digit",
-                                  month: "short",
-                                  year: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  hour12: true
-                                }) : "Never"}
-                              </span>
-                            </div>
-                          </div>
+                        <div className="text-end">
+                          <h3 className="fw-bold text-primary mb-1">
+                            {(activeSub.package.priceInPaisa / 100).toLocaleString("en-IN", { style: "currency", currency: "INR" })}
+                          </h3>
+                          <p className="text-muted mb-0">per {activeSub.package.duration} {activeSub.package.durationType.toLowerCase()}</p>
                         </div>
                       </div>
 
-                      <div className="d-flex align-items-center gap-3 p-3 border rounded border-warning bg-warning bg-opacity-10">
-                        <div className="text-warning fs-3">
+                      <h6 className="fw-bold mb-3">Usage Statistics</h6>
+                      
+                      {renderProgressBar(activeSub.jobPostsUsed || 0, activeSub.package.postJobLimit, "Jobs Posted")}
+                      {renderProgressBar(activeSub.applicantsViewed || 0, activeSub.package.applicantViewLimit, "Applicants Viewed")}
+                      {renderProgressBar(activeSub.jobSeekersViewed || 0, activeSub.package.jobSeekerViewLimit, "Job Seeker Profiles Searched")}
+
+                      <div className="mt-5">
+                        <button className="btn btn-main px-4" onClick={() => router.push("/employer-package")}>
+                          Upgrade Package
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="col-xl-4 col-lg-5">
+                  <div className="card border-0 shadow-sm h-100">
+                    <div className="card-header bg-white py-3 border-bottom">
+                      <h5 className="mb-0 fw-semibold">Subscription Status</h5>
+                    </div>
+                    <div className="card-body p-4 bg-light">
+                      <div className="text-center mb-4">
+                        <div className="d-inline-flex align-items-center justify-content-center bg-white text-main rounded-circle shadow-sm mb-3" style={{ width: "70px", height: "70px", fontSize: "28px" }}>
                           <i className="fa-regular fa-clock"></i>
                         </div>
-                        <div>
-                          <p className="mb-0 text-dark fw-medium">Remaining Time</p>
-                          <h5 className="mb-0 fw-bold text-warning">
-                            {activeSub.expiresAt ? getRemainingTime(activeSub.expiresAt) : "Unlimited"}
-                          </h5>
-                        </div>
+                        <h6 className="text-muted mb-1">Time Remaining</h6>
+                        <h4 className="fw-bold text-dark">
+                          {activeSub.expiresAt ? getRemainingTime(activeSub.expiresAt) : "Unlimited"}
+                        </h4>
+                      </div>
+
+                      <ul className="list-group list-group-flush rounded shadow-sm border mt-4">
+                        <li className="list-group-item d-flex justify-content-between align-items-center py-3">
+                          <span className="text-muted small">Started On</span>
+                          <span className="fw-medium small text-dark">{new Date(activeSub.startedAt).toLocaleDateString()}</span>
+                        </li>
+                        <li className="list-group-item d-flex justify-content-between align-items-center py-3">
+                          <span className="text-muted small">Expires On</span>
+                          <span className="fw-medium small text-dark">{activeSub.expiresAt ? new Date(activeSub.expiresAt).toLocaleDateString() : "N/A"}</span>
+                        </li>
+                        <li className="list-group-item d-flex justify-content-between align-items-center py-3">
+                          <span className="text-muted small">Auto-Renew</span>
+                          <span className="badge bg-secondary">Off</span>
+                        </li>
+                      </ul>
+                      
+                      <div className="mt-4 pt-4 border-top">
+                        <h6 className="fw-bold mb-3 small text-muted text-uppercase">Included Features</h6>
+                        <ul className="list-unstyled mb-0 small">
+                          {activeSub.package.chatEnabled && <li className="mb-2"><i className="fa-solid fa-check text-success me-2"></i> In-App Chat</li>}
+                          {activeSub.package.filterShortlistEnabled && <li className="mb-2"><i className="fa-solid fa-check text-success me-2"></i> Filter & Shortlist</li>}
+                          {activeSub.package.scheduleInterviewsEnabled && <li className="mb-2"><i className="fa-solid fa-check text-success me-2"></i> Schedule Interviews</li>}
+                          {activeSub.package.companyBrandingEnabled && <li className="mb-2"><i className="fa-solid fa-check text-success me-2"></i> Company Branding</li>}
+                          {activeSub.package.verifiedRecruiterBadgeEnabled && <li className="mb-2"><i className="fa-solid fa-check text-success me-2"></i> Verified Recruiter Badge</li>}
+                        </ul>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             )}
-
           </div>
 
-          {/* footer removed */}
+          <div className="row mt-4">
+            <div className="col-md-12">
+              <div className="py-3 text-center text-muted small">
+                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </>

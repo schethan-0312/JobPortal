@@ -107,13 +107,10 @@ export default function EmployerProfilePage() {
       const { url } = await uploadFile<{ url: string }>("/uploads/image", file);
       const updated = await api.patch<EmployerProfile>("/employers/me", { logoUrl: url });
       setProfile(updated);
-      toast.success("Logo updated.");
-      scrollToTop();
-      window.dispatchEvent(new CustomEvent('profile-updated'));
+      toast.success("Profile photo updated successfully");
+      window.dispatchEvent(new Event('profile-updated'));
     } catch (err) {
-      const msg = err instanceof ApiError ? err.message : "Failed to upload logo";
-      toast.error(msg);
-      scrollToTop();
+      toast.error(err instanceof ApiError ? err.message : "Failed to upload photo");
     } finally {
       setUploadingPhoto(false);
       if (fileInputRef.current) fileInputRef.current.value = "";

@@ -1,18 +1,27 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AdminNavbar from "@/components/AdminNavbar";
 import AdminSidebar from "@/components/AdminSidebar";
 import { useAuth } from "@/lib/auth-context";
-import { api, ApiError, uploadFile, assetUrl } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 
 interface PackageItem {
   id: string;
   name: string;
   audience: "CANDIDATE" | "EMPLOYER" | "RESUME";
   priceInPaisa: number;
-  featuresJson: string[] | Record<string, unknown> | unknown;
+  durationType: "DAYS" | "MONTHS" | "YEARS";
+  duration: number;
+  postJobLimit: number;
+  applicantViewLimit: number;
+  jobSeekerViewLimit: number;
+  chatEnabled: boolean;
+  filterShortlistEnabled: boolean;
+  scheduleInterviewsEnabled: boolean;
+  companyBrandingEnabled: boolean;
+  verifiedRecruiterBadgeEnabled: boolean;
   isActive: boolean;
 }
 
@@ -27,78 +36,39 @@ export default function AdminPackagesPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  function renderFeatures(featuresJson: unknown) {
-    if (!featuresJson) return <span className="text-muted small">â€”</span>;
-    let items: string[] = [];
-    if (Array.isArray(featuresJson)) {
-      items = featuresJson.map((f) => String(f));
-    } else if (typeof featuresJson === "object" && featuresJson !== null) {
-      if ("features" in featuresJson && Array.isArray((featuresJson as any).features)) {
-        items = (featuresJson as any).features.map((f: any) => String(f));
-      } else {
-        items = Object.entries(featuresJson).map(([k, v]) =>
-          !isNaN(Number(k)) ? String(v) : `${k}: ${String(v)}`
-        );
-      }
-    } else if (typeof featuresJson === "string") {
-      items = [featuresJson];
-    }
-    if (items.length === 0) return <span className="text-muted small">â€”</span>;
-    return (
-      <div className="mt-3">
-        {items.map((feat, idx) => (
-          <p className="text-muted small mb-1 d-flex align-items-center gap-2 flex-wrap" key={idx}>
-            <i className="fa-solid fa-check text-success small"></i>
-            <span>{feat}</span>
-          </p>
-        ))}
-      </div>
-    );
-  }
-
   // Form fields
   const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
   const [priceInRupees, setPriceInRupees] = useState<string>("");
-  const [durationType, setDurationType] = useState<"Days" | "Months" | "Years">("Days");
+  const [durationType, setDurationType] = useState<"DAYS" | "MONTHS" | "YEARS">("DAYS");
   const [duration, setDuration] = useState("");
-  const [featuresInput, setFeaturesInput] = useState("");
+  const [postJobLimit, setPostJobLimit] = useState("");
+  const [applicantViewLimit, setApplicantViewLimit] = useState("");
+  const [jobSeekerViewLimit, setJobSeekerViewLimit] = useState("");
+  
+  const [chatEnabled, setChatEnabled] = useState(false);
+  const [filterShortlistEnabled, setFilterShortlistEnabled] = useState(false);
+  const [scheduleInterviewsEnabled, setScheduleInterviewsEnabled] = useState(false);
+  const [companyBrandingEnabled, setCompanyBrandingEnabled] = useState(false);
+  const [verifiedRecruiterBadgeEnabled, setVerifiedRecruiterBadgeEnabled] = useState(false);
   const [isActive, setIsActive] = useState(true);
-  const [packageImage, setPackageImage] = useState("");
-  const [isUploading, setIsUploading] = useState(false);
+
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const handleEditClick = (pkg: PackageItem) => {
     setEditingId(pkg.id);
     setName(pkg.name);
     setPriceInRupees(String(pkg.priceInPaisa / 100));
-    setIsActive(pkg.isActive);
-
-    const isObj = typeof pkg.featuresJson === "object" && pkg.featuresJson !== null && !Array.isArray(pkg.featuresJson);
-    if (isObj) {
-      const meta = pkg.featuresJson as any;
-      setDescription(meta.description || "");
-      setDurationType(meta.durationType || "Days");
-      setDuration(meta.duration !== undefined ? String(meta.duration) : "");
-      setPackageImage(meta.packageImage || "");
-      if (Array.isArray(meta.features)) {
-        setFeaturesInput(meta.features.join(", "));
-      } else {
-        setFeaturesInput("");
-      }
-    } else {
-      setDescription("");
-      setDurationType("Days");
-      setDuration("");
-      setPackageImage("");
-      if (Array.isArray(pkg.featuresJson)) {
-        setFeaturesInput(pkg.featuresJson.join(", "));
-      } else if (typeof pkg.featuresJson === "string") {
-        setFeaturesInput(pkg.featuresJson);
-      } else {
-        setFeaturesInput("");
-      }
-    }
+    setDurationType(pkg.durationType || "DAYS");
+    setDuration(String(pkg.duration ?? 0));
+    setPostJobLimit(String(pkg.postJobLimit ?? 0));
+    setApplicantViewLimit(String(pkg.applicantViewLimit ?? 0));
+    setJobSeekerViewLimit(String(pkg.jobSeekerViewLimit ?? 0));
+    setChatEnabled(pkg.chatEnabled ?? false);
+    setFilterShortlistEnabled(pkg.filterShortlistEnabled ?? false);
+    setScheduleInterviewsEnabled(pkg.scheduleInterviewsEnabled ?? false);
+    setCompanyBrandingEnabled(pkg.companyBrandingEnabled ?? false);
+    setVerifiedRecruiterBadgeEnabled(pkg.verifiedRecruiterBadgeEnabled ?? false);
+    setIsActive(pkg.isActive ?? true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -133,12 +103,7 @@ export default function AdminPackagesPage() {
       const data = await api.get<PackageItem[]>("/packages/all");
       setPackages(data);
     } catch (err) {
-      try {
-        const data = await api.get<PackageItem[]>("/packages");
-        setPackages(data);
-      } catch (fallbackErr) {
-        setError(err instanceof ApiError ? err.message : "Failed to load packages");
-      }
+      setError(err instanceof ApiError ? err.message : "Failed to load packages");
     } finally {
       setDataLoading(false);
     }
@@ -148,26 +113,6 @@ export default function AdminPackagesPage() {
     if (!user || user.role !== "ADMIN") return;
     loadPackages();
   }, [user]);
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
-    setIsUploading(true);
-    setError(null);
-    setSuccessMsg(null);
-    try {
-      const res = await uploadFile<{ url: string }>("/uploads/image", file);
-      if (res.url) {
-        const fullUrl = assetUrl(res.url) || res.url;
-        setPackageImage(fullUrl);
-        setSuccessMsg("Package image uploaded successfully!");
-      }
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to upload image");
-    } finally {
-      setIsUploading(false);
-    }
-  };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -187,53 +132,50 @@ export default function AdminPackagesPage() {
       setError("Please enter a valid positive duration.");
       return;
     }
-    if (featuresInput.trim() === "") {
-      setError("Please add at least one feature.");
-      return;
-    }
 
     const priceInPaisa = Math.round(Number(priceInRupees) * 100);
-    const features = featuresInput.split(",").map((f) => f.trim()).filter(Boolean);
 
-    const featuresJsonObj = {
-      description: description.trim(),
+    const payload = {
+      name: name.trim(),
+      audience: "EMPLOYER",
+      priceInPaisa,
       durationType,
       duration: Number(duration),
-      packageImage: packageImage || undefined,
-      features
+      postJobLimit: Number(postJobLimit) || 0,
+      applicantViewLimit: Number(applicantViewLimit) || 0,
+      jobSeekerViewLimit: Number(jobSeekerViewLimit) || 0,
+      chatEnabled,
+      filterShortlistEnabled,
+      scheduleInterviewsEnabled,
+      companyBrandingEnabled,
+      verifiedRecruiterBadgeEnabled,
+      isActive,
     };
 
     setSubmitting(true);
     try {
       if (editingId) {
-        await api.patch(`/packages/${editingId}`, {
-          name: name.trim(),
-          audience: "EMPLOYER",
-          priceInPaisa,
-          featuresJson: featuresJsonObj,
-          isActive,
-        });
+        await api.patch(`/packages/${editingId}`, payload);
         setSuccessMsg(`Package "${name.trim()}" updated successfully!`);
       } else {
-        await api.post<PackageItem>("/packages", {
-          name: name.trim(),
-          audience: "EMPLOYER",
-          priceInPaisa,
-          featuresJson: featuresJsonObj,
-          isActive,
-        });
+        await api.post<PackageItem>("/packages", payload);
         setSuccessMsg(`Package "${name.trim()}" created successfully!`);
       }
 
       // Reset form
       setName("");
-      setDescription("");
       setPriceInRupees("");
-      setDurationType("Days");
+      setDurationType("DAYS");
       setDuration("");
-      setFeaturesInput("");
+      setPostJobLimit("");
+      setApplicantViewLimit("");
+      setJobSeekerViewLimit("");
+      setChatEnabled(false);
+      setFilterShortlistEnabled(false);
+      setScheduleInterviewsEnabled(false);
+      setCompanyBrandingEnabled(false);
+      setVerifiedRecruiterBadgeEnabled(false);
       setIsActive(true);
-      setPackageImage("");
       setEditingId(null);
 
       // Reload packages
@@ -257,21 +199,14 @@ export default function AdminPackagesPage() {
         <AdminSidebar active="packages" />
 
         <div className="dashboard-content">
-          {/* Header */}
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
               <div className="col-xl-12 col-lg-12 col-md-12">
                 <h1 className="mb-1 fs-3 fw-medium">Package Management</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
-                    <li className="breadcrumb-item text-muted">
-                      <a href="#">Admin</a>
-                    </li>
-                    <li className="breadcrumb-item">
-                      <a href="#" className="text-main">
-                        Package
-                      </a>
-                    </li>
+                    <li className="breadcrumb-item text-muted"><a href="#">Admin</a></li>
+                    <li className="breadcrumb-item"><a href="#" className="text-main">Package</a></li>
                   </ol>
                 </nav>
               </div>
@@ -282,7 +217,6 @@ export default function AdminPackagesPage() {
             {error && <div className="alert alert-danger mb-4">{error}</div>}
             {successMsg && <div className="alert alert-success mb-4">{successMsg}</div>}
 
-            {/* Create/Edit Package Form */}
             <div className="card border-0 shadow-sm mb-4">
               <div className="card-header bg-white py-3">
                 <h5 className="mb-0 fw-semibold text-dark">
@@ -293,147 +227,126 @@ export default function AdminPackagesPage() {
               <div className="card-body p-4">
                 <form onSubmit={handleFormSubmit}>
                   <div className="row g-3">
-                    {/* Row 1: Package Name*, Description, Price* */}
-                    <div className="col-md-4 col-sm-12">
+                    <div className="col-md-6 col-sm-12">
                       <div className="form-group mb-0">
                         <label className="form-label small fw-medium">Package Name*</label>
-                        <input
-                          type="text"
-                          className="form-control form-control-sm"
-                          placeholder="Example: Premium Package"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                        />
+                        <input type="text" className="form-control form-control-sm" placeholder="Example: Premium Package" value={name} onChange={(e) => setName(e.target.value)} />
                       </div>
                     </div>
-                    <div className="col-md-5 col-sm-12">
+                    <div className="col-md-6 col-sm-12">
                       <div className="form-group mb-0">
-                        <label className="form-label small fw-medium">Description</label>
-                        <input
-                          type="text"
-                          className="form-control form-control-sm"
-                          placeholder="Short description."
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
-                        />
-                      </div>
-                    </div>
-                    <div className="col-md-3 col-sm-12">
-                      <div className="form-group mb-0">
-                        <label className="form-label small fw-medium">Price*</label>
-                        <input
-                          type="number"
-                          className="form-control form-control-sm"
-                          placeholder="Example: 999"
-                          value={priceInRupees}
-                          onChange={(e) => setPriceInRupees(e.target.value)}
-                        />
+                        <label className="form-label small fw-medium">Price (Rs)*</label>
+                        <input type="number" className="form-control form-control-sm" placeholder="Example: 999" value={priceInRupees} onChange={(e) => setPriceInRupees(e.target.value)} />
                       </div>
                     </div>
 
-                    {/* Row 2: Duration Type*, Duration* */}
                     <div className="col-md-6 col-sm-12">
                       <div className="form-group mb-0">
                         <label className="form-label small fw-medium">Duration Type*</label>
-                        <select
-                          className="form-select form-select-sm"
-                          value={durationType}
-                          onChange={(e) => setDurationType(e.target.value as any)}
-                        >
-                          <option value="Days">Days</option>
-                          <option value="Months">Months</option>
-                          <option value="Years">Years</option>
+                        <select className="form-select form-select-sm" value={durationType} onChange={(e) => setDurationType(e.target.value as any)}>
+                          <option value="DAYS">Days</option>
+                          <option value="MONTHS">Months</option>
+                          <option value="YEARS">Years</option>
                         </select>
                       </div>
                     </div>
                     <div className="col-md-6 col-sm-12">
                       <div className="form-group mb-0">
                         <label className="form-label small fw-medium">Duration*</label>
-                        <input
-                          type="number"
-                          className="form-control form-control-sm"
-                          placeholder="Example: 30"
-                          value={duration}
-                          onChange={(e) => setDuration(e.target.value)}
-                        />
+                        <input type="number" className="form-control form-control-sm" placeholder="Example: 30" value={duration} onChange={(e) => setDuration(e.target.value)} />
                       </div>
                     </div>
 
-                    {/* Row 3: Features*, Status*, Package Image */}
-                    <div className="col-md-6 col-sm-12">
+                    <div className="col-md-4 col-sm-12">
                       <div className="form-group mb-0">
-                        <label className="form-label small fw-medium">Features* (comma separated)</label>
-                        <input
-                          type="text"
-                          className="form-control form-control-sm"
-                          placeholder="Add multiple features."
-                          value={featuresInput}
-                          onChange={(e) => setFeaturesInput(e.target.value)}
-                        />
+                        <label className="form-label small fw-medium">Post Job Limit</label>
+                        <input type="number" className="form-control form-control-sm" placeholder="Example: 10" value={postJobLimit} onChange={(e) => setPostJobLimit(e.target.value)} />
                       </div>
                     </div>
-                    <div className="col-md-3 col-sm-12">
+                    <div className="col-md-4 col-sm-12">
                       <div className="form-group mb-0">
-                        <label className="form-label small fw-medium">Status*</label>
-                        <select
-                          className="form-select form-select-sm"
-                          value={isActive ? "Active" : "Inactive"}
-                          onChange={(e) => setIsActive(e.target.value === "Active")}
-                        >
+                        <label className="form-label small fw-medium">Applicant View Limit</label>
+                        <input type="number" className="form-control form-control-sm" placeholder="Example: 100" value={applicantViewLimit} onChange={(e) => setApplicantViewLimit(e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="col-md-4 col-sm-12">
+                      <div className="form-group mb-0">
+                        <label className="form-label small fw-medium">Job Seeker Search Limit</label>
+                        <input type="number" className="form-control form-control-sm" placeholder="Example: 50" value={jobSeekerViewLimit} onChange={(e) => setJobSeekerViewLimit(e.target.value)} />
+                      </div>
+                    </div>
+
+                    <div className="col-12 mt-4">
+                      <h6 className="fw-semibold">Features</h6>
+                      <hr className="my-2" />
+                    </div>
+
+                    <div className="col-md-3 col-sm-6">
+                      <div className="form-check">
+                        <input className="form-check-input" type="checkbox" id="chatEnabled" checked={chatEnabled} onChange={(e) => setChatEnabled(e.target.checked)} />
+                        <label className="form-check-label small" htmlFor="chatEnabled">In-App Chat</label>
+                      </div>
+                    </div>
+                    <div className="col-md-3 col-sm-6">
+                      <div className="form-check">
+                        <input className="form-check-input" type="checkbox" id="filterShortlistEnabled" checked={filterShortlistEnabled} onChange={(e) => setFilterShortlistEnabled(e.target.checked)} />
+                        <label className="form-check-label small" htmlFor="filterShortlistEnabled">Filter & Shortlist</label>
+                      </div>
+                    </div>
+                    <div className="col-md-3 col-sm-6">
+                      <div className="form-check">
+                        <input className="form-check-input" type="checkbox" id="scheduleInterviewsEnabled" checked={scheduleInterviewsEnabled} onChange={(e) => setScheduleInterviewsEnabled(e.target.checked)} />
+                        <label className="form-check-label small" htmlFor="scheduleInterviewsEnabled">Schedule Interviews</label>
+                      </div>
+                    </div>
+                    <div className="col-md-3 col-sm-6">
+                      <div className="form-check">
+                        <input className="form-check-input" type="checkbox" id="companyBrandingEnabled" checked={companyBrandingEnabled} onChange={(e) => setCompanyBrandingEnabled(e.target.checked)} />
+                        <label className="form-check-label small" htmlFor="companyBrandingEnabled">Company Branding</label>
+                      </div>
+                    </div>
+                    <div className="col-md-3 col-sm-6 mt-2">
+                      <div className="form-check">
+                        <input className="form-check-input" type="checkbox" id="verifiedRecruiterBadgeEnabled" checked={verifiedRecruiterBadgeEnabled} onChange={(e) => setVerifiedRecruiterBadgeEnabled(e.target.checked)} />
+                        <label className="form-check-label small" htmlFor="verifiedRecruiterBadgeEnabled">Verified Recruiter Badge</label>
+                      </div>
+                    </div>
+
+                    <div className="col-12 mt-4">
+                      <h6 className="fw-semibold">Status</h6>
+                      <hr className="my-2" />
+                    </div>
+                    <div className="col-md-4 col-sm-12">
+                      <div className="form-group mb-0">
+                        <select className="form-select form-select-sm" value={isActive ? "Active" : "Inactive"} onChange={(e) => setIsActive(e.target.value === "Active")}>
                           <option value="Active">Active</option>
                           <option value="Inactive">Inactive</option>
                         </select>
                       </div>
                     </div>
-                    <div className="col-md-3 col-sm-12">
-                      <div className="form-group mb-0">
-                        <label className="form-label small fw-medium">Package Image (optional)</label>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="form-control form-control-sm"
-                          onChange={handleImageUpload}
-                          disabled={isUploading}
-                        />
-                        {isUploading && <span className="small text-muted">Uploading image...</span>}
-                        {packageImage && (
-                          <div className="mt-2 d-flex align-items-center gap-2 flex-wrap">
-                            <img src={packageImage} alt="Package Preview" style={{ height: "40px", width: "40px", objectFit: "cover", borderRadius: "4px" }} />
-                            <button type="button" className="btn btn-sm btn-link text-danger p-0" onClick={() => setPackageImage("")}>Remove</button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
                   </div>
+
                   <div className="d-flex gap-2 mt-4 flex-wrap">
                     <button type="submit" className="btn btn-sm btn-main px-4" disabled={submitting}>
-                      {submitting ? (
-                        <>
-                          <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                          Saving...
-                        </>
-                      ) : editingId ? (
-                        "Update Package"
-                      ) : (
-                        "Create Package"
-                      )}
+                      {submitting ? "Saving..." : editingId ? "Update Package" : "Create Package"}
                     </button>
                     {editingId && (
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-outline-secondary px-4"
-                        onClick={() => {
-                          setEditingId(null);
-                          setName("");
-                          setDescription("");
-                          setPriceInRupees("");
-                          setDurationType("Days");
-                          setDuration("");
-                          setFeaturesInput("");
-                          setPackageImage("");
-                          setIsActive(true);
-                        }}
-                      >
+                      <button type="button" className="btn btn-sm btn-outline-secondary px-4" onClick={() => {
+                        setEditingId(null);
+                        setName("");
+                        setPriceInRupees("");
+                        setDurationType("DAYS");
+                        setDuration("");
+                        setPostJobLimit("");
+                        setApplicantViewLimit("");
+                        setJobSeekerViewLimit("");
+                        setChatEnabled(false);
+                        setFilterShortlistEnabled(false);
+                        setScheduleInterviewsEnabled(false);
+                        setCompanyBrandingEnabled(false);
+                        setVerifiedRecruiterBadgeEnabled(false);
+                        setIsActive(true);
+                      }}>
                         Cancel
                       </button>
                     )}
@@ -442,7 +355,6 @@ export default function AdminPackagesPage() {
               </div>
             </div>
 
-            {/* List of Existing Packages */}
             <div className="card border-0 shadow-sm">
               <div className="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h5 className="mb-0 fw-semibold text-dark">
@@ -459,85 +371,58 @@ export default function AdminPackagesPage() {
                   <div className="p-4 text-center text-muted">No packages found. Create one above!</div>
                 ) : (
                   <div className="row g-4">
-                    {packages.map((pkg) => {
-                      const isObj = typeof pkg.featuresJson === "object" && pkg.featuresJson !== null && !Array.isArray(pkg.featuresJson);
-                      const meta = isObj ? (pkg.featuresJson as any) : null;
-                      return (
-                        <div className="col-xl-4 col-lg-6 col-md-6" key={pkg.id}>
-                          <div className="card h-100 border shadow-sm rounded-3 overflow-hidden">
-                            {meta?.packageImage && (
-                              <div style={{ height: "140px", overflow: "hidden", position: "relative", backgroundColor: "#f8f9fa" }}>
-                                <img src={meta.packageImage} alt={pkg.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    {packages.map((pkg) => (
+                      <div className="col-xl-4 col-lg-6 col-md-6" key={pkg.id}>
+                        <div className="card h-100 border shadow-sm rounded-3 overflow-hidden">
+                          <div className="card-body p-4 d-flex flex-column justify-content-between">
+                            <div>
+                              <div className="d-flex justify-content-between align-items-center mb-3">
+                                <span className="badge bg-light text-dark border px-2 py-1">
+                                  <i className="fa-regular fa-clock me-1"></i>
+                                  {pkg.duration} {pkg.durationType}
+                                </span>
+                                <span className={`badge ${pkg.isActive ? "bg-success" : "bg-secondary"} px-2 py-1`}>
+                                  {pkg.isActive ? "Active" : "Inactive"}
+                                </span>
                               </div>
-                            )}
-                            <div className="card-body p-4 d-flex flex-column justify-content-between">
-                              <div>
-                                <div className="d-flex justify-content-between align-items-center mb-3">
-                                  {meta?.duration ? (
-                                    <span className="badge bg-light text-dark border px-2 py-1">
-                                      <i className="fa-regular fa-clock me-1"></i>
-                                      {meta.duration} {meta.durationType || "Days"}
-                                    </span>
-                                  ) : (
-                                    <span className="badge bg-light text-dark border px-2 py-1">{pkg.audience}</span>
-                                  )}
-                                  <span className={`badge ${pkg.isActive ? "bg-success" : "bg-secondary"} px-2 py-1`}>
-                                    {pkg.isActive ? "Active" : "Inactive"}
-                                  </span>
-                                </div>
-                                <h5 className="card-title fw-bold mb-2 text-dark">{pkg.name}</h5>
-                                {meta?.description && (
-                                  <p className="text-muted small mb-2">{meta.description}</p>
-                                )}
-                                <div className="fs-3 fw-bold text-primary mb-3">
-                                  {(pkg.priceInPaisa / 100).toLocaleString("en-IN", { style: "currency", currency: "INR" })}
-                                </div>
+                              <h5 className="card-title fw-bold mb-2 text-dark">{pkg.name}</h5>
+                              <div className="fs-3 fw-bold text-primary mb-3">
+                                {(pkg.priceInPaisa / 100).toLocaleString("en-IN", { style: "currency", currency: "INR" })}
+                              </div>
 
-                                <div className="mb-3">
-                                  {renderFeatures(pkg.featuresJson)}
-                                </div>
+                              <div className="mb-3">
+                                <ul className="list-unstyled mb-0 small text-muted">
+                                  <li className="mb-1"><i className="fa-solid fa-check text-success me-2"></i> {pkg.postJobLimit} Jobs Limit</li>
+                                  <li className="mb-1"><i className="fa-solid fa-check text-success me-2"></i> {pkg.applicantViewLimit} Applicants Limit</li>
+                                  <li className="mb-1"><i className="fa-solid fa-check text-success me-2"></i> {pkg.jobSeekerViewLimit} Profile Views Limit</li>
+                                  {pkg.chatEnabled && <li className="mb-1"><i className="fa-solid fa-check text-success me-2"></i> In-App Chat</li>}
+                                  {pkg.filterShortlistEnabled && <li className="mb-1"><i className="fa-solid fa-check text-success me-2"></i> Filter & Shortlist</li>}
+                                  {pkg.scheduleInterviewsEnabled && <li className="mb-1"><i className="fa-solid fa-check text-success me-2"></i> Schedule Interviews</li>}
+                                  {pkg.companyBrandingEnabled && <li className="mb-1"><i className="fa-solid fa-check text-success me-2"></i> Company Branding</li>}
+                                  {pkg.verifiedRecruiterBadgeEnabled && <li className="mb-1"><i className="fa-solid fa-check text-success me-2"></i> Verified Recruiter Badge</li>}
+                                </ul>
                               </div>
-                              <div className="pt-3 border-top d-flex justify-content-between align-items-center">
-                                <span className="small text-muted">Status: <span className="fw-medium text-success">Ready</span></span>
-                                <div className="d-flex gap-2 flex-wrap">
-                                  <button
-                                    type="button"
-                                    className="btn btn-sm btn-outline-primary px-3"
-                                    onClick={() => handleEditClick(pkg)}
-                                  >
-                                    <i className="fa-solid fa-pen-to-square me-1"></i>Edit
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="btn btn-sm btn-outline-danger px-3"
-                                    disabled={deletingId === pkg.id}
-                                    onClick={() => handleDeletePackage(pkg.id, pkg.name)}
-                                  >
-                                    {deletingId === pkg.id ? (
-                                      <>
-                                        <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                                        Deleting...
-                                      </>
-                                    ) : (
-                                      <>
-                                        <i className="fa-solid fa-trash-can me-1"></i>Delete
-                                      </>
-                                    )}
-                                  </button>
-                                </div>
+                            </div>
+                            <div className="pt-3 border-top d-flex justify-content-end align-items-center">
+                              <div className="d-flex gap-2 flex-wrap">
+                                <button type="button" className="btn btn-sm btn-outline-primary px-3" onClick={() => handleEditClick(pkg)}>
+                                  <i className="fa-solid fa-pen-to-square me-1"></i>Edit
+                                </button>
+                                <button type="button" className="btn btn-sm btn-outline-danger px-3" disabled={deletingId === pkg.id} onClick={() => handleDeletePackage(pkg.id, pkg.name)}>
+                                  {deletingId === pkg.id ? "Deleting..." : <><i className="fa-solid fa-trash-can me-1"></i>Delete</>}
+                                </button>
                               </div>
                             </div>
                           </div>
                         </div>
-                      );
-                    })}
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Footer */}
           <div className="row mt-4">
             <div className="col-md-12">
               <div className="py-3 text-center text-muted small">
@@ -550,4 +435,3 @@ export default function AdminPackagesPage() {
     </>
   );
 }
-

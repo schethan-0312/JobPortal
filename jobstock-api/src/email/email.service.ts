@@ -1,3 +1,4 @@
+import * as path from 'path';
 import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 
@@ -136,12 +137,50 @@ export class EmailService {
     }
 
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
+    
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const logoUrl = `${frontendUrl}/assets/img/logo.png`;
+    
+    const htmlTemplate = `
+      <div style="font-family: Arial, sans-serif; color: #333333; line-height: 1.6; margin: 0; padding: 0; background-color: #f4f7f6;">
+        <div style="max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden;">
+          <div style="background-color: #0b8260; padding: 20px; text-align: center;">
+            <img src="${logoUrl}" alt="JobStock Logo" style="height: 40px; max-width: 100%; filter: brightness(0) invert(1);" />
+          </div>
+          <div style="padding: 30px;">
+            <h2 style="color: #0b8260; margin-top: 0;">Welcome to JobStock, ${name}! 🎉</h2>
+            <p>Your registration was completely successful, and we are absolutely thrilled to have you on board.</p>
+            <p>JobStock is your ultimate destination for finding the perfect job or the ideal candidate. We offer a comprehensive suite of tools designed to make your job search or hiring process as smooth and efficient as possible.</p>
+            <p>Here is what you can do next:</p>
+            <ul>
+              <li>Complete your profile to stand out.</li>
+              <li>Browse thousands of fresh job listings.</li>
+              <li>Connect with top employers and candidates.</li>
+            </ul>
+            <p>If you have any questions or need assistance, feel free to reach out to our support team.</p>
+            <a href="${frontendUrl}/login" style="display: inline-block; padding: 10px 20px; background-color: #0b8260; color: #ffffff; text-decoration: none; border-radius: 5px; margin-top: 20px; font-weight: bold;">Get Started Now</a>
+          </div>
+          <div style="background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 13px; color: #666666; border-top: 1px solid #e9ecef;">
+            <p style="margin: 0 0 10px 0;"><strong>JobStock Job Portal</strong></p>
+            <p style="margin: 0 0 10px 0;">Find your dream job with us. We connect talent with opportunity.</p>
+            <p style="margin: 0 0 10px 0;">Contact Us: support@jobstock.com | <a href="${frontendUrl}" style="color: #0b8260; text-decoration: none;">Visit our website</a></p>
+            <p style="margin: 0;">&copy; ${new Date().getFullYear()} JobStock. All rights reserved.</p>
+          </div>
+        </div>
+      </div>
+    `;
+
     const mailOptions = {
       from: `"JobStock" <${from}>`,
       to: email,
       subject: 'Welcome to JobStock!',
-      text: `Hello ${name},\n\nRegistration successful! Welcome to JobStock. We are thrilled to have you on board.\n\nBest regards,\nThe JobStock Team`,
-      html: `<p>Hello <strong>${name}</strong>,</p><p>Registration successful! Welcome to JobStock. We are thrilled to have you on board.</p><br><p>Best regards,<br>The JobStock Team</p>`,
+      text: `Welcome to JobStock, ${name}!\n\nYour registration was completely successful, and we are absolutely thrilled to have you on board.\n\nJobStock is your ultimate destination for finding the perfect job or the ideal candidate.\n\nHere is what you can do next:\n- Complete your profile to stand out.\n- Browse thousands of fresh job listings.\n- Connect with top employers and candidates.\n\nGet Started Now: ${frontendUrl}/login\n\nIf you have any questions or need assistance, feel free to reach out to our support team.\n\nBest regards,\nThe JobStock Team`,
+      html: htmlTemplate.replace(logoUrl, 'cid:jobstocklogo'),
+      attachments: [{
+        filename: 'logo.png',
+        path: path.join(process.cwd(), 'public', 'logo.png'),
+        cid: 'jobstocklogo'
+      }]
     };
 
     try {

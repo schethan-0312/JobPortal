@@ -14,7 +14,16 @@ interface Package {
   audience: string;
   name: string;
   priceInPaisa: number;
-  featuresJson: Record<string, unknown>;
+  durationType: "DAYS" | "MONTHS" | "YEARS";
+  duration: number;
+  postJobLimit: number;
+  applicantViewLimit: number;
+  jobSeekerViewLimit: number;
+  chatEnabled: boolean;
+  filterShortlistEnabled: boolean;
+  scheduleInterviewsEnabled: boolean;
+  companyBrandingEnabled: boolean;
+  verifiedRecruiterBadgeEnabled: boolean;
   isActive: boolean;
 }
 
@@ -72,7 +81,7 @@ export default function EmployerPackagePage() {
   const [packages, setPackages] = useState<Package[]>([]);
   const [activeSub, setActiveSub] = useState<ActiveSubscription | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
-      const [buyingId, setBuyingId] = useState<string | null>(null);
+  const [buyingId, setBuyingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "EMPLOYER")) {
@@ -114,35 +123,6 @@ export default function EmployerPackagePage() {
     }
   }, [activeSub]);
 
-  function renderFeatures(featuresJson: unknown) {
-    if (!featuresJson) return <span className="text-muted small">—</span>;
-
-    let items: string[] = [];
-
-    if (Array.isArray(featuresJson)) {
-      items = featuresJson.map((f) => String(f));
-    } else if (typeof featuresJson === "object" && featuresJson !== null) {
-      items = Object.entries(featuresJson).map(([k, v]) =>
-        !isNaN(Number(k)) ? String(v) : `${k}: ${String(v)}`
-      );
-    } else if (typeof featuresJson === "string") {
-      items = [featuresJson];
-    }
-
-    if (items.length === 0) return <span className="text-muted small">—</span>;
-
-    return (
-      <div className="package-descr" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
-        {items.map((feat, idx) => (
-          <p className="text-sm-muted mb-2 d-flex align-items-start gap-2 text-break" key={idx}>
-            <i className="fa-solid fa-check text-success small mt-1"></i>
-            <span style={{ minWidth: 0 }}>{feat}</span>
-          </p>
-        ))}
-      </div>
-    );
-  }
-
   async function handleBuy(pkg: Package) {
     if (activeSub && activeSub.status === 'ACTIVE') {
       const currentPackage = packages.find(p => p.id === activeSub.packageId);
@@ -152,7 +132,7 @@ export default function EmployerPackagePage() {
       }
     }
     setBuyingId(pkg.id);
-            try {
+    try {
       const order = await api.post<Order>("/packages/orders", { packageId: pkg.id });
 
       const scriptLoaded = await loadRazorpayScript();
@@ -178,7 +158,6 @@ export default function EmployerPackagePage() {
               razorpayPaymentId: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,
             });
-            // Clear static success message
             confetti({
               particleCount: 150,
               spread: 70,
@@ -213,147 +192,244 @@ export default function EmployerPackagePage() {
   return (
     <>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        .pricing-section {
+          font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        
         .package-card-hover {
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-          border-radius: 1rem;
+          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          border-radius: 1.5rem;
+          border: 1px solid rgba(0,0,0,0.05) !important;
+          background: #ffffff;
+          overflow: hidden;
+          position: relative;
+          z-index: 1;
+        }
+        .package-card-hover::before {
+          content: "";
+          position: absolute;
+          top: 0; left: 0; right: 0; height: 5px;
+          background: linear-gradient(90deg, #0b8260, #13b386);
+          opacity: 0;
+          transition: opacity 0.3s ease;
         }
         .package-card-hover:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 1rem 3rem rgba(0,0,0,.175) !important;
+          transform: translateY(-12px);
+          box-shadow: 0 20px 40px rgba(11, 130, 96, 0.12) !important;
+          border-color: rgba(11, 130, 96, 0.2) !important;
+        }
+        .package-card-hover:hover::before {
+          opacity: 1;
+        }
+        
+        .feature-icon-wrapper {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background-color: rgba(11, 130, 96, 0.1);
+          color: #0b8260;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+        
+        .btn-buy-now {
+          background: #0b8260;
+          color: white;
+          border: none;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 14px rgba(11, 130, 96, 0.25);
+        }
+        .btn-buy-now:hover {
+          background: #09684d;
+          color: white;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(11, 130, 96, 0.35);
         }
       `}</style>
+      
+      <Toaster position="top-right" />
       <Navbar8 />
-      <Toaster 
-        position="top-center" 
-        containerStyle={{
-          top: '100px', // Offset from the navbar
-        }}
-        toastOptions={{
-          style: {
-            padding: '16px 24px',
-            fontSize: '1.1rem',
-            fontWeight: '500',
-            maxWidth: '600px',
-            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
-            borderRadius: '12px',
-          },
-        }}
-      />
 
       <div className="dashboard-wrap bg-light">
         <EmployerSidebar active="package" />
-
+        
         <div className="dashboard-content">
-          <div className="dashboard-tlbar d-block mb-4">
+          <div className="dashboard-tlbar d-block mb-5">
             <div className="row">
-              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
-                <h1 className="mb-1 fs-3 fw-medium">My Package</h1>
+              <div className="col-xl-12 col-lg-12 col-md-12">
+                <h1 className="mb-1 fs-3 fw-bold text-dark pricing-section">Recruiter Subscriptions</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
-                    <li className="breadcrumb-item text-muted">
-                      <a href="#">Employer</a>
-                    </li>
-                    <li className="breadcrumb-item text-muted">
-                      <a href="#">Dashboard</a>
-                    </li>
-                    <li className="breadcrumb-item">
-                      <a href="#" className="text-main">
-                        My Package
-                      </a>
-                    </li>
+                    <li className="breadcrumb-item text-muted"><a href="#">Employer</a></li>
+                    <li className="breadcrumb-item"><a href="#" className="text-primary fw-medium">Packages</a></li>
                   </ol>
                 </nav>
+                <p className="text-muted mt-2 fs-6">Upgrade your recruiting potential with our specialized plans tailored for businesses of all sizes.</p>
               </div>
             </div>
           </div>
 
-          <div className="dashboard-widg-bar d-block">
-
-            
-            {/* Header Wrap */}
-            <div className="row">
-              <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
-                <div className="card border-0 bg-transparent">
-                  <div className="card-header">
-                    <h6 className="mb-0">Available Packages</h6>
-                  </div>
-                  <div className="card-body">
-                    {dataLoading && <p className="text-muted">Loading packages...</p>}
-                    {!dataLoading && packages.length === 0 && <p className="text-muted">No packages available right now.</p>}
-                    {!dataLoading && packages.length > 0 && (
-                      <div className="row g-4">
-                        {packages.map((item) => (
-                          <div className="col-xl-4 col-lg-6 col-md-6" key={item.id}>
-                            <div className="card h-100 border-0 shadow-sm package-card-hover bg-white">
-                              <div className="card-body p-4 d-flex flex-column justify-content-between">
-                                <div>
-                                  <div className="d-flex justify-content-between align-items-center mb-4">
-                                    <span className="badge bg-light text-main px-3 py-2 fw-semibold rounded-pill border border-light-subtle">
-                                      {item.audience || "EMPLOYER"}
-                                    </span>
-                                    {activeSub?.packageId === item.id && activeSub?.status === 'ACTIVE' && (
-                                      <span className="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill fw-semibold border border-success-subtle">
-                                        Current Plan
-                                      </span>
-                                    )}
-                                  </div>
-                                  <h5 className="card-title fw-bolder mb-2 text-dark fs-4" style={{ letterSpacing: '-0.02em' }}>
-                                    {item.name}
-                                  </h5>
-                                  <div className="fs-2 fw-bold text-main mb-4">
-                                    {(item.priceInPaisa / 100).toLocaleString("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 })}
-                                  </div>
-                                  <div className="mb-3">
-                                    {renderFeatures(item.featuresJson)}
-                                  </div>
-                                </div>
-                                <div className="pt-3 border-top mt-2">
-                                  {(() => {
-                                    const currentPackage = packages.find(p => p.id === activeSub?.packageId);
-                                    const isCurrent = activeSub?.status === 'ACTIVE' && activeSub.packageId === item.id;
-                                    const isLowerOrEqual = activeSub?.status === 'ACTIVE' && currentPackage && item.priceInPaisa <= currentPackage.priceInPaisa;
-                                    const isUpgrade = activeSub?.status === 'ACTIVE' && currentPackage && item.priceInPaisa > currentPackage.priceInPaisa;
-                                    
-                                    let btnText = "Buy Now";
-                                    if (isCurrent) btnText = "Active Package";
-                                    else if (buyingId === item.id) btnText = "Processing...";
-                                    else if (isUpgrade) btnText = "Upgrade";
-                                    else if (isLowerOrEqual) btnText = "Unavailable";
-
-                                    return (
-                                      <button
-                                        type="button"
-                                        className={`btn w-100 py-3 fw-bold rounded-pill shadow-sm ${isCurrent ? 'btn-light text-success border-success' : isLowerOrEqual ? 'btn-light text-muted' : 'btn-main'}`}
-                                        disabled={buyingId === item.id}
-                                        onClick={() => {
-                                          if (isCurrent) {
-                                            toast("You are currently on this plan.", { icon: '✅' });
-                                          } else if (isLowerOrEqual) {
-                                            toast("This package you taken now its not available.", { icon: '🚫' });
-                                          } else {
-                                            handleBuy(item);
-                                          }
-                                        }}
-                                      >
-                                        {btnText}
-                                      </button>
-                                    );
-                                  })()}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+          <div className="dashboard-widg-bar d-block pricing-section">
+            {dataLoading ? (
+              <div className="text-center py-5">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
                 </div>
+                <p className="text-muted mt-3 fw-medium">Loading packages...</p>
               </div>
-            </div>
-            {/* Header Wrap */}
-          </div>
+            ) : packages.length === 0 ? (
+              <div className="text-center py-5 bg-white rounded shadow-sm border">
+                <i className="fa-solid fa-box-open text-muted fs-1 mb-3"></i>
+                <p className="text-muted fs-5 fw-medium">No packages available at the moment.</p>
+              </div>
+            ) : (
+              <div className="row g-4 justify-content-center align-items-stretch">
+                {packages.map((pkg) => {
+                  const isCurrent = activeSub?.status === 'ACTIVE' && activeSub.packageId === pkg.id;
+                  let upgradeStatus = "";
+                  
+                  if (activeSub && activeSub.status === 'ACTIVE') {
+                    const currentPkg = packages.find(p => p.id === activeSub.packageId);
+                    if (currentPkg) {
+                      if (pkg.id === activeSub.packageId) {
+                        upgradeStatus = "CURRENT";
+                      } else if (pkg.priceInPaisa > currentPkg.priceInPaisa) {
+                        upgradeStatus = "UPGRADE";
+                      } else {
+                        upgradeStatus = "DOWNGRADE";
+                      }
+                    }
+                  }
 
-          {/* footer removed */}
+                  return (
+                    <div className="col-xl-4 col-lg-6 col-md-12 d-flex" key={pkg.id}>
+                      <div className={`card package-card-hover shadow-sm w-100 d-flex flex-column ${isCurrent ? 'border-primary shadow' : ''}`} style={isCurrent ? { borderColor: '#0b8260 !important', borderWidth: '2px' } : {}}>
+                        <div className="card-body p-4 p-xl-5 d-flex flex-column h-100">
+                          {isCurrent && (
+                            <div className="position-absolute top-0 end-0 bg-primary text-white px-3 py-1 fw-bold small" style={{ borderBottomLeftRadius: '1rem', backgroundColor: '#0b8260' }}>
+                              Current Plan
+                            </div>
+                          )}
+                          
+                          <div className="mb-4">
+                            <span className="badge bg-light text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm d-inline-flex align-items-center gap-2">
+                              <i className="fa-regular fa-clock"></i> 
+                              {pkg.duration} {pkg.durationType}
+                            </span>
+                            <h3 className="card-title fw-bold text-dark mb-1 fs-4">{pkg.name}</h3>
+                          </div>
+                          
+                          <div className="mb-4 pb-4 border-bottom position-relative">
+                            <div className="d-flex align-items-start">
+                              <span className="fs-5 fw-bold text-dark mt-1 me-1">₹</span>
+                              <span className="display-4 fw-bolder text-dark lh-1" style={{ letterSpacing: '-1px' }}>
+                                {(pkg.priceInPaisa / 100).toLocaleString("en-IN")}
+                              </span>
+                            </div>
+                            <p className="text-muted small mt-2 mb-0">Billed once for {pkg.duration} {pkg.durationType.toLowerCase()}</p>
+                          </div>
+
+                          <div className="package-descr mt-2 mb-4 flex-grow-1" style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
+                            <p className="text-sm-muted mb-3 d-flex align-items-start gap-2 text-break fw-medium" style={{ color: '#4a5568', fontSize: '0.95rem' }}>
+                              <span className="feature-icon-wrapper" style={{ width: '22px', height: '22px' }}>
+                                <i className="fa-solid fa-briefcase" style={{ fontSize: '0.7rem' }}></i>
+                              </span>
+                              <span style={{ minWidth: 0, paddingTop: '1px' }}>
+                                <strong>{pkg.postJobLimit === 999999 ? "Unlimited" : pkg.postJobLimit}</strong> Job Postings
+                              </span>
+                            </p>
+                            <p className="text-sm-muted mb-3 d-flex align-items-start gap-2 text-break fw-medium" style={{ color: '#4a5568', fontSize: '0.95rem' }}>
+                              <span className="feature-icon-wrapper" style={{ width: '22px', height: '22px' }}>
+                                <i className="fa-solid fa-users-viewfinder" style={{ fontSize: '0.7rem' }}></i>
+                              </span>
+                              <span style={{ minWidth: 0, paddingTop: '1px' }}>
+                                <strong>{pkg.applicantViewLimit === 999999 ? "Unlimited" : pkg.applicantViewLimit}</strong> Applicant Views
+                              </span>
+                            </p>
+                            <p className="text-sm-muted mb-3 d-flex align-items-start gap-2 text-break fw-medium" style={{ color: '#4a5568', fontSize: '0.95rem' }}>
+                              <span className="feature-icon-wrapper" style={{ width: '22px', height: '22px' }}>
+                                <i className="fa-solid fa-magnifying-glass" style={{ fontSize: '0.7rem' }}></i>
+                              </span>
+                              <span style={{ minWidth: 0, paddingTop: '1px' }}>
+                                <strong>{pkg.jobSeekerViewLimit === 999999 ? "Unlimited" : pkg.jobSeekerViewLimit}</strong> Profile Searches
+                              </span>
+                            </p>
+                            
+                            {pkg.chatEnabled && (
+                              <p className="text-sm-muted mb-3 d-flex align-items-start gap-2 text-break fw-medium" style={{ color: '#4a5568', fontSize: '0.95rem' }}>
+                                <span className="feature-icon-wrapper" style={{ width: '22px', height: '22px' }}>
+                                  <i className="fa-solid fa-check" style={{ fontSize: '0.7rem' }}></i>
+                                </span>
+                                <span style={{ minWidth: 0, paddingTop: '1px' }}>In-App Chat Messaging</span>
+                              </p>
+                            )}
+                            {pkg.filterShortlistEnabled && (
+                              <p className="text-sm-muted mb-3 d-flex align-items-start gap-2 text-break fw-medium" style={{ color: '#4a5568', fontSize: '0.95rem' }}>
+                                <span className="feature-icon-wrapper" style={{ width: '22px', height: '22px' }}>
+                                  <i className="fa-solid fa-check" style={{ fontSize: '0.7rem' }}></i>
+                                </span>
+                                <span style={{ minWidth: 0, paddingTop: '1px' }}>Advanced Filter & Shortlist</span>
+                              </p>
+                            )}
+                            {pkg.scheduleInterviewsEnabled && (
+                              <p className="text-sm-muted mb-3 d-flex align-items-start gap-2 text-break fw-medium" style={{ color: '#4a5568', fontSize: '0.95rem' }}>
+                                <span className="feature-icon-wrapper" style={{ width: '22px', height: '22px' }}>
+                                  <i className="fa-solid fa-check" style={{ fontSize: '0.7rem' }}></i>
+                                </span>
+                                <span style={{ minWidth: 0, paddingTop: '1px' }}>Schedule Interviews</span>
+                              </p>
+                            )}
+                            {pkg.companyBrandingEnabled && (
+                              <p className="text-sm-muted mb-3 d-flex align-items-start gap-2 text-break fw-medium" style={{ color: '#4a5568', fontSize: '0.95rem' }}>
+                                <span className="feature-icon-wrapper" style={{ width: '22px', height: '22px' }}>
+                                  <i className="fa-solid fa-check" style={{ fontSize: '0.7rem' }}></i>
+                                </span>
+                                <span style={{ minWidth: 0, paddingTop: '1px' }}>Premium Company Branding</span>
+                              </p>
+                            )}
+                            {pkg.verifiedRecruiterBadgeEnabled && (
+                              <p className="text-sm-muted mb-3 d-flex align-items-start gap-2 text-break fw-medium" style={{ color: '#4a5568', fontSize: '0.95rem' }}>
+                                <span className="feature-icon-wrapper" style={{ width: '22px', height: '22px' }}>
+                                  <i className="fa-solid fa-check" style={{ fontSize: '0.7rem' }}></i>
+                                </span>
+                                <span style={{ minWidth: 0, paddingTop: '1px' }}>Verified Recruiter Badge</span>
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="mt-auto">
+                            {isCurrent ? (
+                              <button className="btn btn-outline-success w-100 py-3 fw-bold rounded-pill" disabled>
+                                <i className="fa-solid fa-circle-check me-2"></i> Current Plan
+                              </button>
+                            ) : upgradeStatus === "DOWNGRADE" ? (
+                              <button className="btn btn-outline-secondary w-100 py-3 fw-bold rounded-pill" disabled title="You cannot downgrade your current plan">
+                                Not Available
+                              </button>
+                            ) : (
+                              <button 
+                                onClick={() => handleBuy(pkg)} 
+                                disabled={buyingId === pkg.id || !pkg.isActive} 
+                                className="btn btn-buy-now w-100 py-3 fw-bold rounded-pill fs-6"
+                              >
+                                {buyingId === pkg.id ? (
+                                  <><span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...</>
+                                ) : (
+                                  upgradeStatus === "UPGRADE" ? "Upgrade Plan" : "Choose Plan"
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>

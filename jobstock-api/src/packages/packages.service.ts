@@ -41,7 +41,16 @@ export class PackagesService {
     name: string;
     audience: 'CANDIDATE' | 'EMPLOYER' | 'RESUME';
     priceInPaisa: number;
-    featuresJson?: any;
+    durationType?: 'DAYS' | 'MONTHS' | 'YEARS';
+    duration?: number;
+    postJobLimit?: number;
+    applicantViewLimit?: number;
+    jobSeekerViewLimit?: number;
+    chatEnabled?: boolean;
+    filterShortlistEnabled?: boolean;
+    scheduleInterviewsEnabled?: boolean;
+    companyBrandingEnabled?: boolean;
+    verifiedRecruiterBadgeEnabled?: boolean;
     isActive?: boolean;
   }) {
     return this.prisma.package.create({
@@ -49,7 +58,16 @@ export class PackagesService {
         name: data.name,
         audience: data.audience,
         priceInPaisa: Number(data.priceInPaisa),
-        featuresJson: data.featuresJson ?? [],
+        durationType: data.durationType ?? 'MONTHS',
+        duration: data.duration !== undefined ? Number(data.duration) : 1,
+        postJobLimit: data.postJobLimit !== undefined ? Number(data.postJobLimit) : 0,
+        applicantViewLimit: data.applicantViewLimit !== undefined ? Number(data.applicantViewLimit) : 0,
+        jobSeekerViewLimit: data.jobSeekerViewLimit !== undefined ? Number(data.jobSeekerViewLimit) : 0,
+        chatEnabled: data.chatEnabled ?? false,
+        filterShortlistEnabled: data.filterShortlistEnabled ?? false,
+        scheduleInterviewsEnabled: data.scheduleInterviewsEnabled ?? false,
+        companyBrandingEnabled: data.companyBrandingEnabled ?? false,
+        verifiedRecruiterBadgeEnabled: data.verifiedRecruiterBadgeEnabled ?? false,
         isActive: data.isActive ?? true,
       },
     });
@@ -80,7 +98,16 @@ export class PackagesService {
       name?: string;
       audience?: 'CANDIDATE' | 'EMPLOYER' | 'RESUME';
       priceInPaisa?: number;
-      featuresJson?: any;
+      durationType?: 'DAYS' | 'MONTHS' | 'YEARS';
+      duration?: number;
+      postJobLimit?: number;
+      applicantViewLimit?: number;
+      jobSeekerViewLimit?: number;
+      chatEnabled?: boolean;
+      filterShortlistEnabled?: boolean;
+      scheduleInterviewsEnabled?: boolean;
+      companyBrandingEnabled?: boolean;
+      verifiedRecruiterBadgeEnabled?: boolean;
       isActive?: boolean;
     },
   ) {
@@ -90,7 +117,16 @@ export class PackagesService {
         name: data.name,
         audience: data.audience,
         priceInPaisa: data.priceInPaisa !== undefined ? Number(data.priceInPaisa) : undefined,
-        featuresJson: data.featuresJson,
+        durationType: data.durationType,
+        duration: data.duration !== undefined ? Number(data.duration) : undefined,
+        postJobLimit: data.postJobLimit !== undefined ? Number(data.postJobLimit) : undefined,
+        applicantViewLimit: data.applicantViewLimit !== undefined ? Number(data.applicantViewLimit) : undefined,
+        jobSeekerViewLimit: data.jobSeekerViewLimit !== undefined ? Number(data.jobSeekerViewLimit) : undefined,
+        chatEnabled: data.chatEnabled,
+        filterShortlistEnabled: data.filterShortlistEnabled,
+        scheduleInterviewsEnabled: data.scheduleInterviewsEnabled,
+        companyBrandingEnabled: data.companyBrandingEnabled,
+        verifiedRecruiterBadgeEnabled: data.verifiedRecruiterBadgeEnabled,
         isActive: data.isActive,
       },
     });
@@ -105,9 +141,10 @@ export class PackagesService {
     if (pkg.audience === 'EMPLOYER') {
       const employer = await this.prisma.employer.findUnique({ where: { userId } });
       if (employer) {
-        const sub = await this.prisma.employerPackageSubscription.findUnique({ 
-          where: { employerId: employer.id },
-          include: { package: true }
+        const sub = await this.prisma.employerPackageSubscription.findFirst({ 
+          where: { employerId: employer.id, status: 'ACTIVE' },
+          include: { package: true },
+          orderBy: { createdAt: 'desc' }
         });
         if (sub && sub.status === 'ACTIVE' && sub.expiresAt && sub.expiresAt > new Date()) {
           if (sub.package && pkg.priceInPaisa <= sub.package.priceInPaisa) {
@@ -211,7 +248,7 @@ export class PackagesService {
   }
 
   private async activatePackage(
-    order: { id: string; userId: string; packageId: string; package: { audience: string; featuresJson?: any } },
+    order: { id: string; userId: string; packageId: string; package: any },
     gatewayRef: string,
   ) {
     const updatedOrder = await this.prisma.order.update({
@@ -222,36 +259,46 @@ export class PackagesService {
     if (order.package.audience === 'EMPLOYER') {
       const employer = await this.prisma.employer.findUnique({ where: { userId: order.userId } });
       if (employer) {
-        let expiresAt: Date | null = null;
         const pkg = order.package;
-        if (pkg && pkg.featuresJson) {
-          let meta: any = null;
-          if (typeof pkg.featuresJson === 'object' && pkg.featuresJson !== null && !Array.isArray(pkg.featuresJson)) {
-            meta = pkg.featuresJson;
-          } else if (typeof pkg.featuresJson === 'string') {
-            try {
-              meta = JSON.parse(pkg.featuresJson);
-            } catch {}
-          }
+        const startedAt = new Date();
+        const expiresAt = new Date(startedAt);
 
-          if (meta && meta.duration && meta.durationType) {
-            const duration = Number(meta.duration);
-            const startedAt = new Date();
-            expiresAt = new Date(startedAt);
-            if (meta.durationType === 'Days') {
-              expiresAt.setDate(expiresAt.getDate() + duration);
-            } else if (meta.durationType === 'Months') {
-              expiresAt.setMonth(expiresAt.getMonth() + duration);
-            } else if (meta.durationType === 'Years') {
-              expiresAt.setFullYear(expiresAt.getFullYear() + duration);
-            }
-          }
+        if (pkg.durationType === 'DAYS') {
+          expiresAt.setDate(expiresAt.getDate() + pkg.duration);
+        } else if (pkg.durationType === 'MONTHS') {
+          expiresAt.setMonth(expiresAt.getMonth() + pkg.duration);
+        } else if (pkg.durationType === 'YEARS') {
+          expiresAt.setFullYear(expiresAt.getFullYear() + pkg.duration);
         }
 
-        await this.prisma.employerPackageSubscription.upsert({
-          where: { employerId: employer.id },
-          create: { employerId: employer.id, packageId: order.packageId, jobPostsUsed: 0, startedAt: new Date(), expiresAt, status: 'ACTIVE' },
-          update: { packageId: order.packageId, jobPostsUsed: 0, startedAt: new Date(), expiresAt, status: 'ACTIVE' },
+        // Find existing active subscription
+        const activeSub = await this.prisma.employerPackageSubscription.findFirst({
+          where: { employerId: employer.id, status: 'ACTIVE' },
+          orderBy: { createdAt: 'desc' }
+        });
+
+        if (activeSub) {
+          // Mark previous as UPGRADED
+          await this.prisma.employerPackageSubscription.update({
+            where: { id: activeSub.id },
+            data: { status: 'UPGRADED' }
+          });
+        }
+
+        // Create new subscription
+        await this.prisma.employerPackageSubscription.create({
+          data: {
+            employerId: employer.id,
+            packageId: order.packageId,
+            previousPackageId: activeSub ? activeSub.packageId : null,
+            paymentStatus: 'PAID',
+            jobPostsUsed: 0,
+            applicantsViewed: 0,
+            jobSeekersViewed: 0,
+            startedAt,
+            expiresAt,
+            status: 'ACTIVE'
+          }
         });
       }
     }
@@ -329,9 +376,10 @@ export class PackagesService {
     const employer = await this.prisma.employer.findUnique({ where: { userId } });
     if (!employer) return null;
 
-    let sub = await this.prisma.employerPackageSubscription.findUnique({
-      where: { employerId: employer.id },
+    let sub = await this.prisma.employerPackageSubscription.findFirst({
+      where: { employerId: employer.id, status: 'ACTIVE' },
       include: { package: true },
+      orderBy: { createdAt: 'desc' }
     });
 
     if (!sub) return null;
