@@ -6,6 +6,7 @@ import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError } from "@/lib/api";
+import { Toaster, toast } from "react-hot-toast";
 
 interface EmployerProfile {
   id: string;
@@ -267,9 +268,7 @@ export default function EmployerSubmitJobPage() {
   const [isFeatured, setIsFeatured] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-
+    
   // Location selection states (CountriesNow API)
   const [countries, setCountries] = useState<string[]>([]);
   const [states, setStates] = useState<string[]>([]);
@@ -429,14 +428,6 @@ export default function EmployerSubmitJobPage() {
   };
 
   useEffect(() => {
-    if (success || error) {
-      scrollToTop();
-      const timer = setTimeout(scrollToTop, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [success, error]);
-
-  useEffect(() => {
     if (!loading && (!user || user.role !== "EMPLOYER")) {
       router.push("/");
     }
@@ -450,7 +441,7 @@ export default function EmployerSubmitJobPage() {
         const e = await api.get<EmployerProfile>("/employers/me");
         setEmployer(e);
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Failed to load employer profile");
+        toast.error(err instanceof ApiError ? err.message : "Failed to load employer profile");
       } finally {
         setEmployerLoading(false);
       }
@@ -472,29 +463,27 @@ export default function EmployerSubmitJobPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
-
+        
     // Front-end validations
     if (!title.trim()) {
-      setError("Please enter a Job Title.");
+      toast.error("Please enter a Job Title.");
       scrollToTop();
       return;
     }
     if (!description.trim() || description.trim().length < 20) {
-      setError("Please enter a Job Description with at least 20 characters.");
+      toast.error("Please enter a Job Description with at least 20 characters.");
       scrollToTop();
       return;
     }
 
     if (salaryMin && salaryMax && Number(salaryMin) > Number(salaryMax)) {
-      setError("Minimum Salary cannot be greater than Maximum Salary.");
+      toast.error("Minimum Salary cannot be greater than Maximum Salary.");
       scrollToTop();
       return;
     }
 
     if (minExperience && maxExperience && Number(minExperience) > Number(maxExperience)) {
-      setError("Minimum Experience cannot be greater than Maximum Experience.");
+      toast.error("Minimum Experience cannot be greater than Maximum Experience.");
       scrollToTop();
       return;
     }
@@ -503,13 +492,13 @@ export default function EmployerSubmitJobPage() {
     startOfToday.setHours(0, 0, 0, 0);
 
     if (applicationDeadline && new Date(applicationDeadline) < startOfToday) {
-      setError("Application Deadline cannot be a date in the past.");
+      toast.error("Application Deadline cannot be a date in the past.");
       scrollToTop();
       return;
     }
 
     if (publishDate && new Date(publishDate) < startOfToday) {
-      setError("Publish Date cannot be a date in the past.");
+      toast.error("Publish Date cannot be a date in the past.");
       scrollToTop();
       return;
     }
@@ -560,7 +549,7 @@ export default function EmployerSubmitJobPage() {
         isFeatured,
       });
 
-      setSuccess("Job posted successfully!");
+      toast.success("Job posted successfully!");
       // Reset form
       setTitle("");
       setSummary("");
@@ -580,7 +569,7 @@ export default function EmployerSubmitJobPage() {
       setIsFeatured(false);
       scrollToTop();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to post job.");
+      toast.error(err instanceof ApiError ? err.message : "Failed to post job.");
       scrollToTop();
     } finally {
       setSubmitting(false);
@@ -678,6 +667,22 @@ export default function EmployerSubmitJobPage() {
       `}</style>
 
       <Navbar8 />
+      <Toaster 
+        position="top-center" 
+        containerStyle={{
+          top: '100px',
+        }}
+        toastOptions={{
+          style: {
+            padding: '16px 24px',
+            fontSize: '1.1rem',
+            fontWeight: '500',
+            maxWidth: '600px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+          },
+        }}
+      />
 
       <div className="dashboard-wrap bg-light">
         <EmployerSidebar active="submit-job" />
@@ -713,9 +718,7 @@ export default function EmployerSubmitJobPage() {
                   Your employer account status is <strong>{employer?.status}</strong>. Only VERIFIED employers can post live jobs. You can still fill out this form, but submission requires account verification.
                 </div>
               )}
-              {error && <div className="alert alert-danger mb-4">{error}</div>}
-              {success && <div className="alert alert-success mb-4">{success}</div>}
-            </div>
+                                        </div>
 
             <form onSubmit={handleSubmit}>
               {/* 1. Basic Job Details */}
@@ -1286,14 +1289,7 @@ export default function EmployerSubmitJobPage() {
             </form>
           </div>
 
-          {/* footer */}
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center text-muted">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
+          {/* footer removed */}
         </div>
       </div>
     </>

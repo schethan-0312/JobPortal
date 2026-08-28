@@ -136,13 +136,6 @@ export default function Navbar8() {
             {unreadMessages > 0 && <span className="notti_coun style-3">{unreadMessages}</span>}
           </Link>
         </li>
-        {pathname !== "/employer-submit-job" && (
-          <li>
-            <Link href="/employer-change-password">
-              <i className="fa fa-unlock-alt"></i>Change Password
-            </Link>
-          </li>
-        )}
         <li>
           <Link href="/employer-delete-account">
             <i className="fa-solid fa-trash-can"></i>Delete Account

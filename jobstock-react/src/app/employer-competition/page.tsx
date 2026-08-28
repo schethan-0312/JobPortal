@@ -6,6 +6,7 @@ import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError } from "@/lib/api";
+import { Toaster, toast } from "react-hot-toast";
 
 interface EmployerJob {
   id: string;
@@ -58,8 +59,7 @@ export default function EmployerCompetitionPage() {
 
   const [jobs, setJobs] = useState<EmployerJob[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
+  
   const [selectedJobId, setSelectedJobId] = useState("");
   const [existingAssessments, setExistingAssessments] = useState<any[]>([]);
   const [title, setTitle] = useState("");
@@ -98,7 +98,7 @@ export default function EmployerCompetitionPage() {
         setDataLoading(false);
       })
       .catch((err) => {
-        setError(err instanceof ApiError ? err.message : "Failed to load jobs");
+        toast.error(err instanceof ApiError ? err.message : "Failed to load jobs");
         setDataLoading(false);
       });
   }, [user]);
@@ -162,7 +162,7 @@ export default function EmployerCompetitionPage() {
       setSuccessMsg("Assessment deleted successfully.");
       setTimeout(() => setSuccessMsg(""), 3000);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to delete assessment");
+      toast.error(err instanceof ApiError ? err.message : "Failed to delete assessment");
     }
   };
 
@@ -181,17 +181,16 @@ export default function EmployerCompetitionPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedJobId) {
-      setError("Please select a job");
+      toast.error("Please select a job");
       return;
     }
     if (sections.length === 0) {
-      setError("Please add at least one question section to the assessment.");
+      toast.error("Please add at least one question section to the assessment.");
       return;
     }
 
     setSaving(true);
-    setError(null);
-    setSuccessMsg("");
+        setSuccessMsg("");
 
     try {
       const skillsArr = skills.split(",").map((s) => s.trim()).filter((s) => s.length > 0);
@@ -218,7 +217,7 @@ export default function EmployerCompetitionPage() {
       
       window.scrollTo(0, 0);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to save assessment");
+      toast.error(err instanceof ApiError ? err.message : "Failed to save assessment");
       window.scrollTo(0, 0);
     } finally {
       setSaving(false);
@@ -236,6 +235,22 @@ export default function EmployerCompetitionPage() {
   return (
     <>
       <Navbar8 />
+      <Toaster 
+        position="top-center" 
+        containerStyle={{
+          top: '100px',
+        }}
+        toastOptions={{
+          style: {
+            padding: '16px 24px',
+            fontSize: '1.1rem',
+            fontWeight: '500',
+            maxWidth: '600px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+          },
+        }}
+      />
 
       <div className="dashboard-wrap bg-light">
         <EmployerSidebar active="competition" />
@@ -262,8 +277,7 @@ export default function EmployerCompetitionPage() {
           </div>
 
           <div className="dashboard-widg-bar d-block">
-            {error && <div className="alert alert-danger">{error}</div>}
-            {successMsg && <div className="alert alert-success">{successMsg}</div>}
+                        {successMsg && <div className="alert alert-success">{successMsg}</div>}
             
             <div className="card">
               <div className="card-header">
@@ -719,14 +733,7 @@ export default function EmployerCompetitionPage() {
             </div>
           </div>
 
-          {/* footer */}
-          <div className="row mt-5">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
+          {/* footer removed */}
         </div>
       </div>
     </>

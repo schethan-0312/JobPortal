@@ -7,6 +7,7 @@ import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar"
 import UploadResumeModal from "@/components/candidate-dashboard/UploadResumeModal";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError, assetUrl } from "@/lib/api";
+import { Toaster, toast } from "react-hot-toast";
 
 interface FollowedEmployer {
   id: string;
@@ -34,8 +35,7 @@ export default function CandidateFollowEmployersPage() {
 
   const [employers, setEmployers] = useState<FollowedEmployer[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [loadingId, setLoadingId] = useState<string | null>(null);
+    const [loadingId, setLoadingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || (user.role !== "CANDIDATE" && user.role !== "EMPLOYER"))) {
@@ -51,7 +51,7 @@ export default function CandidateFollowEmployersPage() {
         const list = await api.get<FollowedEmployer[]>("/follow/following");
         setEmployers(list);
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Failed to load followed profiles");
+        toast.error(err instanceof ApiError ? err.message : "Failed to load followed profiles");
       } finally {
         setDataLoading(false);
       }
@@ -64,7 +64,7 @@ export default function CandidateFollowEmployersPage() {
       await api.delete(`/follow/${targetId}`);
       setEmployers((prev) => prev.filter((item) => item.employer?.id !== targetId && item.candidate?.id !== targetId));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to unfollow profile");
+      toast.error(err instanceof ApiError ? err.message : "Failed to unfollow profile");
     } finally {
       setLoadingId(null);
     }
@@ -77,6 +77,22 @@ export default function CandidateFollowEmployersPage() {
   return (
     <>
       <Navbar7 />
+      <Toaster 
+        position="top-center" 
+        containerStyle={{
+          top: '100px',
+        }}
+        toastOptions={{
+          style: {
+            padding: '16px 24px',
+            fontSize: '1.1rem',
+            fontWeight: '500',
+            maxWidth: '600px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+          },
+        }}
+      />
 
       <div className="dashboard-wrap bg-light">
         <CandidateSidebar active="follow-employers" />
@@ -105,8 +121,7 @@ export default function CandidateFollowEmployersPage() {
 
           <div className="dashboard-widg-bar d-block">
 
-            {error && <div className="alert alert-danger">{error}</div>}
-
+            
             {/* Header Wrap */}
             <div className="row">
               <div className="col-12 col-xl-12 col-lg-12 col-md-12 col-sm-12">
@@ -199,14 +214,7 @@ export default function CandidateFollowEmployersPage() {
 
           </div>
 
-          {/* footer */}
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
+          {/* footer removed */}
 
         </div>
 

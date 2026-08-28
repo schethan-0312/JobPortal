@@ -7,6 +7,7 @@ import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError } from "@/lib/api";
+import { Toaster, toast } from "react-hot-toast";
 
 interface AssessmentListResponse {
   id: string;
@@ -29,8 +30,7 @@ export default function EmployerSubmissionsPage() {
 
   const [assessments, setAssessments] = useState<AssessmentListResponse[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
+  
   useEffect(() => {
     if (!loading && (!user || user.role !== "EMPLOYER")) {
       router.push("/");
@@ -47,7 +47,7 @@ export default function EmployerSubmissionsPage() {
         setDataLoading(false);
       })
       .catch((err) => {
-        setError(err instanceof ApiError ? err.message : "Failed to load assessments");
+        toast.error(err instanceof ApiError ? err.message : "Failed to load assessments");
         setDataLoading(false);
       });
   }, [user]);
@@ -109,6 +109,22 @@ export default function EmployerSubmissionsPage() {
   return (
     <>
       <Navbar8 />
+      <Toaster 
+        position="top-center" 
+        containerStyle={{
+          top: '100px',
+        }}
+        toastOptions={{
+          style: {
+            padding: '16px 24px',
+            fontSize: '1.1rem',
+            fontWeight: '500',
+            maxWidth: '600px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+          },
+        }}
+      />
 
       <div className="dashboard-wrap bg-light">
         <EmployerSidebar active="submissions" />
@@ -135,8 +151,7 @@ export default function EmployerSubmissionsPage() {
           </div>
 
           <div className="dashboard-widg-bar d-block">
-            {error && <div className="alert alert-danger">{error}</div>}
-            
+                        
             <div className="card shadow-sm border-0">
               <div className="card-header bg-white py-3">
                 <h4 className="mb-0 fw-bold">Select Assessment to View Submissions</h4>
@@ -210,14 +225,7 @@ export default function EmployerSubmissionsPage() {
             </div>
           </div>
 
-          {/* footer */}
-          <div className="row mt-5">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
+          {/* footer removed */}
         </div>
       </div>
     </>

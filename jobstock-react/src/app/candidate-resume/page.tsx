@@ -8,6 +8,7 @@ import UploadResumeModal from "@/components/candidate-dashboard/UploadResumeModa
 import EducationModals, { EducationInput, ExperienceInput, CertificationInput } from "@/components/candidate-dashboard/EducationModals";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError, assetUrl } from "@/lib/api";
+import { Toaster, toast } from "react-hot-toast";
 
 interface CandidateProfile {
   id: string;
@@ -39,9 +40,7 @@ export default function CandidateResumePage() {
   const [editProj, setEditProj] = useState<{ data: any; index: number } | null>(null);
 
   const [dataLoading, setDataLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
+      const [saving, setSaving] = useState(false);
   const [isDraft, setIsDraft] = useState(false);
 
   useEffect(() => {
@@ -82,7 +81,7 @@ export default function CandidateResumePage() {
           setSummary(p.summary || "");
         }
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Failed to load resume data");
+        toast.error(err instanceof ApiError ? err.message : "Failed to load resume data");
       } finally {
         setDataLoading(false);
       }
@@ -92,9 +91,7 @@ export default function CandidateResumePage() {
   async function handleSaveFullProfile(e?: React.FormEvent) {
     if (e) e.preventDefault();
     setSaving(true);
-    setError(null);
-    setSuccess(null);
-    try {
+            try {
       const skills = skillsInput.split(",").map((s) => s.trim()).filter(Boolean);
       const languages = languagesInput.split(",").map((s) => s.trim()).filter(Boolean);
       const payload = {
@@ -110,12 +107,12 @@ export default function CandidateResumePage() {
       };
       const updated = await api.put<CandidateProfile>("/candidates/me/resume", payload);
       setProfile(updated);
-      setSuccess("Resume saved successfully.");
+      toast.success("Resume saved successfully.");
       window.scrollTo({ top: 0, behavior: "smooth" });
       setIsDraft(false);
       sessionStorage.removeItem("resumeDraft");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to save resume");
+      toast.error(err instanceof ApiError ? err.message : "Failed to save resume");
     } finally {
       setSaving(false);
     }
@@ -141,6 +138,22 @@ export default function CandidateResumePage() {
   return (
     <>
       <Navbar7 />
+      <Toaster 
+        position="top-center" 
+        containerStyle={{
+          top: '100px',
+        }}
+        toastOptions={{
+          style: {
+            padding: '16px 24px',
+            fontSize: '1.1rem',
+            fontWeight: '500',
+            maxWidth: '600px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+          },
+        }}
+      />
 
       <div className="dashboard-wrap bg-light">
         <CandidateSidebar active="resume" />
@@ -173,9 +186,7 @@ export default function CandidateResumePage() {
               </div>
             )}
 
-            {error && <div className="alert alert-danger">{error}</div>}
-            {success && <div className="alert alert-success">{success}</div>}
-            {dataLoading && <p className="text-muted">Loading...</p>}
+                                    {dataLoading && <p className="text-muted">Loading...</p>}
 
             <div className="card">
               <div className="card-header">
@@ -518,13 +529,7 @@ export default function CandidateResumePage() {
 
           </div>
 
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
+          {/* footer removed */}
         </div>
       </div>
 

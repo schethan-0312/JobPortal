@@ -12,6 +12,7 @@ import { Delete } from '@nestjs/common';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 import { CurrentUser } from './decorators/current-user.decorator.js';
 import type { AuthenticatedUser } from './decorators/current-user.decorator.js';
+import { GoogleAuthDto } from './dto/google-auth.dto.js';
 
 @Controller('auth')
 export class AuthController {
@@ -34,6 +35,13 @@ export class AuthController {
   @Throttle({ default: { ttl: 60_000, limit: 5 } })
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
+  }
+
+  @Post('google')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { ttl: 60_000, limit: 5 } })
+  googleAuth(@Body() dto: GoogleAuthDto) {
+    return this.authService.googleAuth(dto);
   }
 
   @Get('me')

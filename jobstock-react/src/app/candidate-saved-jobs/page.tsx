@@ -7,6 +7,7 @@ import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar"
 import UploadResumeModal from "@/components/candidate-dashboard/UploadResumeModal";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError, assetUrl } from "@/lib/api";
+import { Toaster, toast } from "react-hot-toast";
 
 interface SavedJob {
   id: string;
@@ -27,8 +28,7 @@ export default function CandidateSavedJobsPage() {
 
   const [savedJobs, setSavedJobs] = useState<SavedJob[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [removingId, setRemovingId] = useState<string | null>(null);
+    const [removingId, setRemovingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "CANDIDATE")) {
@@ -44,7 +44,7 @@ export default function CandidateSavedJobsPage() {
         const jobs = await api.get<SavedJob[]>("/candidates/saved-jobs", { cache: "no-store" });
         setSavedJobs(jobs);
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Failed to load saved jobs");
+        toast.error(err instanceof ApiError ? err.message : "Failed to load saved jobs");
       } finally {
         setDataLoading(false);
       }
@@ -53,12 +53,11 @@ export default function CandidateSavedJobsPage() {
 
   async function handleRemove(jobId: string) {
     setRemovingId(jobId);
-    setError(null);
-    try {
+        try {
       await api.delete(`/candidates/saved-jobs/${jobId}`);
       setSavedJobs((prev) => prev.filter((s) => s.jobId !== jobId));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to remove saved job");
+      toast.error(err instanceof ApiError ? err.message : "Failed to remove saved job");
     } finally {
       setRemovingId(null);
     }
@@ -71,6 +70,22 @@ export default function CandidateSavedJobsPage() {
   return (
     <>
       <Navbar7 />
+      <Toaster 
+        position="top-center" 
+        containerStyle={{
+          top: '100px',
+        }}
+        toastOptions={{
+          style: {
+            padding: '16px 24px',
+            fontSize: '1.1rem',
+            fontWeight: '500',
+            maxWidth: '600px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+          },
+        }}
+      />
 
       <div className="dashboard-wrap bg-light">
         <CandidateSidebar active="saved-jobs" />
@@ -93,8 +108,7 @@ export default function CandidateSavedJobsPage() {
 
           <div className="dashboard-widg-bar d-block">
 
-            {error && <div className="alert alert-danger">{error}</div>}
-
+            
             {/* Header Wrap */}
             <div className="row">
               <div className="col-12 col-xl-12 col-lg-12 col-md-12 col-sm-12">
@@ -151,14 +165,7 @@ export default function CandidateSavedJobsPage() {
 
           </div>
 
-          {/* footer */}
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
+          {/* footer removed */}
 
         </div>
 

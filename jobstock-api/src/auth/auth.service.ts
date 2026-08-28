@@ -3,6 +3,9 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { OAuth2Client } from 'google-auth-library';
+import { AuthProvider } from '../../generated/prisma/enums.js';
+import { GoogleAuthDto } from './dto/google-auth.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
@@ -103,10 +106,87 @@ export class AuthService {
     };
   }
 
+  
+
+  async googleAuth(dto: GoogleAuthDto) {
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+    const ticket = await client.verifyIdToken({
+      idToken: dto.credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      throw new UnauthorizedException('Invalid Google credential');
+    }
+
+    const { sub: googleId, email, name, email_verified } = payload;
+
+    let user = await this.prisma.user.findUnique({ where: { googleId } });
+
+    if (!user) {
+      user = await this.prisma.user.findUnique({ where: { email } });
+
+      if (user) {
+        if (dto.isLogin === false || dto.isLogin === undefined) {
+          throw new ConflictException('You are already registered. Please log in.');
+        }
+        user = await this.prisma.user.update({
+          where: { id: user.id },
+          data: { googleId, authProvider: AuthProvider.GOOGLE },
+        });
+      } else {
+        if (dto.isLogin) {
+          throw new UnauthorizedException('Please sign up first to sign in to the account');
+        }
+        const role = dto.role || Role.CANDIDATE;
+        const isEmailVerified = email_verified || false;
+        
+        user = await this.prisma.user.create({
+          data: {
+            email,
+            role,
+            googleId,
+            authProvider: AuthProvider.GOOGLE,
+            isEmailVerified,
+            ...(role === Role.CANDIDATE
+              ? { candidateProfile: { create: { fullName: name || 'User' } } }
+              : { employer: { create: { companyName: name || 'Company', location: 'Unknown' } } }),
+          },
+          include: { candidateProfile: true, employer: true },
+        });
+
+        await this.emailService.sendWelcomeEmail(email, name || 'User');
+      }
+    } else {
+      if (dto.isLogin === false || dto.isLogin === undefined) {
+        throw new ConflictException('You are already registered. Please log in.');
+      }
+    }
+
+    if (dto.isLogin && dto.role && user.role !== dto.role && user.role !== Role.ADMIN) {
+      throw new UnauthorizedException(`You are registered as a ${user.role}, please select the correct login type.`);
+    }
+
+    const { passwordHash: _omit, emailVerifyToken: _omitToken, ...safeUser } = user;
+
+    return {
+      user: safeUser,
+      ...this.issueTokens(user.id, user.email, user.role),
+    };
+  }
+
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
+    }
+    
+    if (dto.role && user.role !== dto.role && user.role !== Role.ADMIN) {
+      throw new UnauthorizedException(`You are registered as a ${user.role}, please select the correct login type.`);
+    }
+    
+    if (!user.passwordHash) {
+      throw new UnauthorizedException('Please login with your Google account');
     }
 
     const passwordMatches = await bcrypt.compare(dto.password, user.passwordHash);
@@ -125,8 +205,10 @@ export class AuthService {
   async deleteAccount(userId: string, dto: import('./dto/delete-account.dto.js').DeleteAccountDto) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
-    const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
-    if (!isPasswordValid) throw new BadRequestException('Invalid password');
+    if (user.passwordHash) {
+      const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
+      if (!isPasswordValid) throw new BadRequestException('Invalid password');
+    }
     await this.prisma.user.delete({ where: { id: userId } });
     return { message: 'Account deleted successfully' };
   }
@@ -136,10 +218,12 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
-
-    const currentMatches = await bcrypt.compare(dto.currentPassword, user.passwordHash);
-    if (!currentMatches) {
-      throw new UnauthorizedException('Current password is incorrect');
+    
+    if (user.passwordHash) {
+      const currentMatches = await bcrypt.compare(dto.currentPassword, user.passwordHash);
+      if (!currentMatches) {
+        throw new UnauthorizedException('Current password is incorrect');
+      }
     }
 
     const newPasswordHash = await bcrypt.hash(dto.newPassword, BCRYPT_ROUNDS);

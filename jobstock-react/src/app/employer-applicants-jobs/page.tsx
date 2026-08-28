@@ -7,6 +7,7 @@ import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError, assetUrl } from "@/lib/api";
+import { Toaster, toast } from "react-hot-toast";
 
 interface EmployerJob {
   id: string;
@@ -57,8 +58,7 @@ export default function EmployerApplicantsJobsPage() {
   const [selectedJobId, setSelectedJobId] = useState<string>("");
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [applicantsLoading, setApplicantsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
+    const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [viewingAnswersFor, setViewingAnswersFor] = useState<JobAssessmentAttempt | null>(null);
   const [viewingCandidate, setViewingCandidate] = useState<Applicant | null>(null);
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
@@ -84,7 +84,7 @@ export default function EmployerApplicantsJobsPage() {
           setJobSearchText(list[0].title);
         }
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Failed to load jobs");
+        toast.error(err instanceof ApiError ? err.message : "Failed to load jobs");
       } finally {
         setJobsLoading(false);
       }
@@ -95,12 +95,11 @@ export default function EmployerApplicantsJobsPage() {
     if (!selectedJobId) return;
     (async () => {
       setApplicantsLoading(true);
-      setError(null);
-      try {
+            try {
         const list = await api.get<Applicant[]>(`/applications/for-job/${selectedJobId}`);
         setApplicants(list);
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Failed to load applicants");
+        toast.error(err instanceof ApiError ? err.message : "Failed to load applicants");
       } finally {
         setApplicantsLoading(false);
       }
@@ -109,8 +108,7 @@ export default function EmployerApplicantsJobsPage() {
 
   async function updateStatus(applicationId: string, status: string) {
     setUpdatingId(applicationId);
-    setError(null);
-    try {
+        try {
       await api.patch(`/applications/${applicationId}/status`, { status });
       setApplicants((prev) => prev.map((a) => (a.id === applicationId ? { ...a, status } : a)));
     } catch (err) {
@@ -118,7 +116,7 @@ export default function EmployerApplicantsJobsPage() {
       if (msg.includes("Subscription required") || msg.includes("limit of 20 hired candidates")) {
         setShowSubscriptionModal(true);
       } else {
-        setError(msg);
+        toast.error(msg);
       }
     } finally {
       setUpdatingId(null);
@@ -127,12 +125,11 @@ export default function EmployerApplicantsJobsPage() {
 
   async function deleteApplication(applicationId: string) {
     setUpdatingId(applicationId);
-    setError(null);
-    try {
+        try {
       await api.delete(`/applications/${applicationId}`);
       setApplicants((prev) => prev.filter((a) => a.id !== applicationId));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to delete candidate");
+      toast.error(err instanceof ApiError ? err.message : "Failed to delete candidate");
     } finally {
       setUpdatingId(null);
       setCandidateToDelete(null);
@@ -175,6 +172,22 @@ export default function EmployerApplicantsJobsPage() {
   return (
     <>
       <Navbar8 />
+      <Toaster 
+        position="top-center" 
+        containerStyle={{
+          top: '100px',
+        }}
+        toastOptions={{
+          style: {
+            padding: '16px 24px',
+            fontSize: '1.1rem',
+            fontWeight: '500',
+            maxWidth: '600px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+          },
+        }}
+      />
 
       <div className="dashboard-wrap bg-light">
         <EmployerSidebar active="applicants-jobs" />
@@ -205,8 +218,7 @@ export default function EmployerApplicantsJobsPage() {
 
           <div className="dashboard-widg-bar d-block">
 
-            {error && <div className="alert alert-danger">{error}</div>}
-
+            
             {/* Header Wrap */}
             <div className="row">
               <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
@@ -375,14 +387,7 @@ export default function EmployerApplicantsJobsPage() {
             {/* Header Wrap */}
           </div>
 
-          {/* footer */}
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
+          {/* footer removed */}
         </div>
       </div>
 

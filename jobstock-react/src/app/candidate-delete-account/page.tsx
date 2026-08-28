@@ -6,15 +6,32 @@ import Navbar7 from "@/components/Navbar7";
 import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError } from "@/lib/api";
+import { Toaster, toast } from "react-hot-toast";
 
 export default function CandidateDeleteAccountPage() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (user && user.role === 'CANDIDATE') {
+      const hasShown = sessionStorage.getItem('deleteWarningShown2');
+      if (!hasShown) {
+        setTimeout(() => {
+          toast('Warning: Deleting your account is permanent. All your data will be erased and cannot be recovered.', {
+            duration: 5000,
+            icon: '⚠️',
+            style: { background: '#fff3cd', color: '#856404' }
+          });
+        }, 500);
+        sessionStorage.setItem('deleteWarningShown2', 'true');
+      }
+    }
+  }, [user]);
+
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "CANDIDATE")) {
@@ -28,9 +45,8 @@ export default function CandidateDeleteAccountPage() {
 
   function openConfirmModal(e: React.FormEvent) {
     e.preventDefault();
-    if (!password) return setError("Password is required to delete account.");
-    setError(null);
-    if (typeof window !== "undefined" && (window as any).bootstrap) {
+    if (!password) return toast.error("Password is required to delete account.");
+        if (typeof window !== "undefined" && (window as any).bootstrap) {
       const modal = new (window as any).bootstrap.Modal(modalRef.current);
       modal.show();
     }
@@ -49,7 +65,7 @@ export default function CandidateDeleteAccountPage() {
       logout();
       router.push("/");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to delete account");
+      toast.error(err instanceof ApiError ? err.message : "Failed to delete account");
       if (typeof window !== "undefined" && (window as any).bootstrap) {
         const modal = (window as any).bootstrap.Modal.getInstance(modalRef.current);
         if (modal) modal.hide();
@@ -62,6 +78,22 @@ export default function CandidateDeleteAccountPage() {
   return (
     <>
       <Navbar7 />
+      <Toaster 
+        position="top-center" 
+        containerStyle={{
+          top: '100px',
+        }}
+        toastOptions={{
+          style: {
+            padding: '16px 24px',
+            fontSize: '1.1rem',
+            fontWeight: '500',
+            maxWidth: '600px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+          },
+        }}
+      />
       <div className="dashboard-wrap bg-light">
         <CandidateSidebar active="delete-account" />
         <div className="dashboard-content">
@@ -78,10 +110,7 @@ export default function CandidateDeleteAccountPage() {
                 <h4>Delete Account</h4>
               </div>
               <div className="card-body">
-                {error && <div className="alert alert-danger">{error}</div>}
-                <div className="alert alert-warning">
-                  <strong>Warning:</strong> Deleting your account is permanent. All your data will be erased and cannot be recovered.
-                </div>
+                                
                 <form onSubmit={openConfirmModal}>
                   <div className="row mb-3">
                     <label className="col-xl-12 col-md-12 col-form-label">Enter your password to confirm deletion</label>

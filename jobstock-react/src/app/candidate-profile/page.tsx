@@ -8,6 +8,7 @@ import UploadResumeModal from "@/components/candidate-dashboard/UploadResumeModa
 import VerifyEmailModal from "@/components/candidate-dashboard/VerifyEmailModal";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError, assetUrl, uploadFile } from "@/lib/api";
+import { Toaster, toast } from "react-hot-toast";
 
 interface CandidateProfile {
   id: string;
@@ -40,9 +41,7 @@ export default function CandidateProfilePage() {
   const [experienceYears, setExperienceYears] = useState("");
 
   const [dataLoading, setDataLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
+      const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -97,7 +96,7 @@ export default function CandidateProfilePage() {
         setSkillsInput((p.skills || []).join(", "));
         setExperienceYears(p.experienceYears != null ? String(p.experienceYears) : "");
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Failed to load profile");
+        toast.error(err instanceof ApiError ? err.message : "Failed to load profile");
       } finally {
         setDataLoading(false);
       }
@@ -106,20 +105,16 @@ export default function CandidateProfilePage() {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
-
+        
     if (phone && phone.trim() !== "" && !/^\d{10}$/.test(phone)) {
-      setError("Phone number must be exactly 10 digits.");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      toast.error("Phone number must be exactly 10 digits.");
       return;
     }
 
     if (experienceYears !== "") {
       const expNum = Number(experienceYears);
       if (isNaN(expNum) || expNum < 0 || experienceYears.length > 2) {
-        setError("Experience must be a positive number and cannot be more than 2 digits.");
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        toast.error("Experience must be a positive number and cannot be more than 2 digits.");
         return;
       }
     }
@@ -137,11 +132,10 @@ export default function CandidateProfilePage() {
         experienceYears: experienceYears ? Number(experienceYears) : undefined,
       });
       setProfile(updated);
-      setSuccess("Profile saved successfully.");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      toast.success("Profile saved successfully.");
       window.dispatchEvent(new CustomEvent('profile-updated'));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to save profile");
+      toast.error(err instanceof ApiError ? err.message : "Failed to save profile");
     } finally {
       setSaving(false);
     }
@@ -151,15 +145,14 @@ export default function CandidateProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadingPhoto(true);
-    setError(null);
-    try {
+        try {
       const { url } = await uploadFile<{ url: string }>("/uploads/image", file);
       const updated = await api.patch<CandidateProfile>("/candidates/me", { profilePhotoUrl: url });
       setProfile(updated);
-      setSuccess("Profile photo updated.");
+      toast.success("Profile photo updated.");
       window.dispatchEvent(new CustomEvent('profile-updated'));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to upload photo");
+      toast.error(err instanceof ApiError ? err.message : "Failed to upload photo");
     } finally {
       setUploadingPhoto(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -173,6 +166,22 @@ export default function CandidateProfilePage() {
   return (
     <>
       <Navbar7 />
+      <Toaster 
+        position="top-center" 
+        containerStyle={{
+          top: '100px',
+        }}
+        toastOptions={{
+          style: {
+            padding: '16px 24px',
+            fontSize: '1.1rem',
+            fontWeight: '500',
+            maxWidth: '600px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+          },
+        }}
+      />
 
       <div className="dashboard-wrap bg-light">
         <CandidateSidebar active="profile" />
@@ -195,8 +204,7 @@ export default function CandidateProfilePage() {
 
           <div className="dashboard-widg-bar d-block">
 
-            {error && <div className="alert alert-danger">{error}</div>}
-            {success && <div className="alert alert-success">{success}</div>}
+            {/* Error and Success static alerts removed */}
             {dataLoading && <p className="text-muted">Loading profile...</p>}
 
             <div className="dashboard-profle-wrapper mb-4">
@@ -469,15 +477,7 @@ export default function CandidateProfilePage() {
 
           </div>
 
-          {/* footer */}
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
-
+          {/* footer removed */}
         </div>
 
       </div>

@@ -40,13 +40,11 @@ interface EmployerProfile {
 interface EmployerJob {
   status: string;
 }
-
 export default function EmployerSidebar({ active }: EmployerSidebarProps) {
   const { user, logout } = useAuth();
   const router = useRouter();
 
   const [profile, setProfile] = useState<EmployerProfile | null>(null);
-  const [openingsCount, setOpeningsCount] = useState(0);
   const [unreadMessages, setUnreadMessages] = useState(0);
 
   // Verification Modal State
@@ -59,39 +57,44 @@ export default function EmployerSidebar({ active }: EmployerSidebarProps) {
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
     let timer: NodeJS.Timeout;
     const loadProfile = () => {
       api
         .get<EmployerProfile>("/employers/me")
-        .then((p) => {
-          setProfile(p);
-          // Show popup after 5 seconds if not VERIFIED and documents are missing
-          if (p.status !== "VERIFIED" && (!p.gstCertificateUrl || !p.incorporationCertUrl || !p.signatoryIdUrl)) {
-            const hasSeen = sessionStorage.getItem(`hasSeenVerificationModal_${user?.userId}`);
-            if (!hasSeen) {
-              timer = setTimeout(() => {
-                setShowVerificationModal(true);
-                sessionStorage.setItem(`hasSeenVerificationModal_${user?.userId}`, "true");
-              }, 5000);
+        .then((data) => {
+          if (isMounted) {
+            setProfile(data);
+            if (data.status !== "VERIFIED" && (!data.gstCertificateUrl || !data.incorporationCertUrl || !data.signatoryIdUrl)) {
+              const hasSeen = sessionStorage.getItem(`hasSeenVerificationModal_${user?.userId}`);
+              if (!hasSeen) {
+                timer = setTimeout(() => {
+                  setShowVerificationModal(true);
+                  sessionStorage.setItem(`hasSeenVerificationModal_${user?.userId}`, "true");
+                }, 5000);
+              }
             }
           }
         })
-        .catch(() => setProfile(null));
+        .catch(() => {
+          if (isMounted) setProfile(null);
+        });
     };
     
     loadProfile();
     window.addEventListener('profile-updated', loadProfile);
 
     api
-      .get<EmployerJob[]>("/jobs/mine")
-      .then((jobs) => setOpeningsCount(jobs.filter((j) => j.status === "OPEN").length))
-      .catch(() => setOpeningsCount(0));
-    api
       .get<number>("/messages/unread-count")
-      .then(setUnreadMessages)
-      .catch(() => setUnreadMessages(0));
+      .then((data) => {
+        if (isMounted) setUnreadMessages(data);
+      })
+      .catch(() => {
+        if (isMounted) setUnreadMessages(0);
+      });
 
     return () => {
+      isMounted = false;
       window.removeEventListener('profile-updated', loadProfile);
       if (timer) clearTimeout(timer);
     };
@@ -218,11 +221,6 @@ export default function EmployerSidebar({ active }: EmployerSidebarProps) {
               </div>
             </div>
             <div className="jbs-grid-usrs-caption mb-3">
-              <div className="jbs-kioyer">
-                <span className="label text-light bg-main">
-                  {openingsCount} Opening{openingsCount !== 1 ? "s" : ""}
-                </span>
-              </div>
               <div className="jbs-tiosk">
                 <h4 className="jbs-tiosk-title">
                   <Link href="/employer-profile" onClick={() => setIsOpen(false)}>{profile?.companyName || "My Company"}</Link>

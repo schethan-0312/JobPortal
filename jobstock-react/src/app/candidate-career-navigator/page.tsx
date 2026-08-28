@@ -305,13 +305,7 @@ export default function CandidateCareerNavigatorPage() {
             )}
           </div>
 
-          <div className="row mt-5">
-            <div className="col-md-12">
-              <div className="py-3 text-center text-muted">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
+          {/* footer removed */}
         </div>
       </div>
 

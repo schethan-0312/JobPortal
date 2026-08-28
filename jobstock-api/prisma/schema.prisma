@@ -26,6 +26,11 @@ model ContactMessage {
 
 // ---------- Enums ----------
 
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+}
+
 enum Role {
   CANDIDATE
   EMPLOYER
@@ -290,7 +295,9 @@ enum JobType {
 model User {
   id                   String     @id @default(cuid())
   email                String     @unique
-  passwordHash         String
+  passwordHash         String?
+  googleId             String?    @unique
+  authProvider         AuthProvider @default(LOCAL)
   role                 Role
   /// Only meaningful when role = ADMIN. Governs which admin endpoints this
   /// user can access via AdminRolesGuard; null for CANDIDATE/EMPLOYER users.
