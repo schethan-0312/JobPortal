@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Navbar2 from "@/components/Navbar2";
 import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
+import GoogleAuthButton from "@/components/GoogleAuthButton";
+import Swal from "sweetalert2";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError } from "@/lib/api";
 
@@ -163,7 +165,7 @@ function SearchableSelect({
 }
 
 function SignupForm() {
-  const { register } = useAuth();
+  const { register, googleLogin } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const refCode = searchParams?.get("ref") || undefined;
@@ -335,13 +337,70 @@ function SignupForm() {
       } else if (lowerMsg.includes("name")) {
         setErrors({ fullName: msg });
       } else {
-        setErrors({ general: msg });
+        Swal.fire({
+          title: "Registration Failed",
+          text: msg,
+          icon: "error",
+          confirmButtonColor: "#0b8260",
+        }).then((result) => {
+          if (msg.toLowerCase().includes("already registered") || msg.toLowerCase().includes("already exists")) {
+            const loginBtn = document.querySelector<HTMLElement>('[data-bs-target="#login"]');
+            if (loginBtn) {
+              loginBtn.click();
+            }
+          }
+        });
       }
     } finally {
       submittingRef.current = false;
       setSubmitting(false);
     }
   }
+
+  const handleGoogleSuccess = async (credential: string) => {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    setErrors({});
+    setSubmitting(true);
+    try {
+      const user = await googleLogin(credential, role);
+      router.push(user.role === "CANDIDATE" ? "/candidate-dashboard" : "/employer-dashboard");
+    } catch (err) {
+      let msg = "Google authentication failed. Please try again.";
+      if (err instanceof ApiError) {
+        msg = Array.isArray(err.body && (err.body as { message?: string[] }).message)
+          ? (err.body as { message: string[] }).message.join(", ")
+          : err.message || msg;
+      }
+      
+      Swal.fire({
+        title: "Registration Failed",
+        text: msg,
+        icon: "error",
+        confirmButtonColor: "#0b8260",
+      }).then((result) => {
+        if (msg.toLowerCase().includes("already registered") || msg.toLowerCase().includes("already exists")) {
+          // Open the login modal
+          const loginBtn = document.querySelector<HTMLElement>('[data-bs-target="#login"]');
+          if (loginBtn) {
+            loginBtn.click();
+          }
+        }
+      });
+    } finally {
+      submittingRef.current = false;
+      setSubmitting(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    Swal.fire({
+      title: "Authentication Error",
+      text: "Google authentication was cancelled or failed.",
+      icon: "error",
+      confirmButtonColor: "#0b8260",
+    });
+  };
 
   return (
     <>
@@ -365,79 +424,88 @@ function SignupForm() {
                       </div>
                     </div>
 
-                    <div className="form-float d-flex flex-column gap-4">
-                      {errors.general && <div className="alert alert-danger py-2">{errors.general}</div>}
-
-                      <div className="form-group mb-0">
-                        <label className="fw-medium fs-6 text-dark mb-2">
-                          Work status<i className="text-danger text-md">*</i>
-                        </label>
-                        <div className="row g-4">
-                          <div className="col-sm-6">
-                            <div className="sing-btn-groups">
-                              <input
-                                type="radio"
-                                className="btn-check"
-                                name="lokingfor"
-                                id="findjob"
-                                checked={role === "CANDIDATE"}
-                                onChange={() => {
-                                  setRole("CANDIDATE");
-                                  setFullName("");
-                                  setLocation("");
-                                  setErrors({});
-                                }}
-                              />
-                              <label className="btn btn-md btn-outline-gray h-auto w-100" htmlFor="findjob">
-                                <div className="d-flex align-items-center gap-3">
-                                  <div className="icons">
-                                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                      <path opacity="0.3" d="M20 15H4C2.9 15 2 14.1 2 13V7C2 6.4 2.4 6 3 6H21C21.6 6 22 6.4 22 7V13C22 14.1 21.1 15 20 15ZM13 12H11C10.5 12 10 12.4 10 13V16C10 16.5 10.4 17 11 17H13C13.6 17 14 16.6 14 16V13C14 12.4 13.6 12 13 12Z" fill="#0b8260"/>
-                                      <path d="M14 6V5H10V6H8V5C8 3.9 8.9 3 10 3H14C15.1 3 16 3.9 16 5V6H14ZM20 15H14V16C14 16.6 13.5 17 13 17H11C10.5 17 10 16.6 10 16V15H4C3.6 15 3.3 14.9 3 14.7V18C3 19.1 3.9 20 5 20H19C20.1 20 21 19.1 21 18V14.7C20.7 14.9 20.4 15 20 15Z" fill="#0b8260"/>
-                                    </svg>
-                                  </div>
-                                  <div className="btn-caps text-start">
-                                    <h6 className="mb-0 lh-base">I&apos;m looking for a job</h6>
-                                    <p className="m-0 text-md text-muted">Looking for a great opportunity</p>
-                                  </div>
+                    <div className="form-group mb-4">
+                      <label className="fw-medium fs-6 text-dark mb-2">
+                        Work status<i className="text-danger text-md">*</i>
+                      </label>
+                      <div className="row g-4">
+                        <div className="col-sm-6">
+                          <div className="sing-btn-groups">
+                            <input
+                              type="radio"
+                              className="btn-check"
+                              name="lokingfor"
+                              id="findjob"
+                              checked={role === "CANDIDATE"}
+                              onChange={() => {
+                                setRole("CANDIDATE");
+                                setFullName("");
+                                setLocation("");
+                                setErrors({});
+                              }}
+                            />
+                            <label className="btn btn-md btn-outline-gray h-auto w-100" htmlFor="findjob">
+                              <div className="d-flex align-items-center gap-3">
+                                <div className="icons">
+                                  <svg width="44" height="44" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path opacity="0.3" d="M20 15H4C2.9 15 2 14.1 2 13V7C2 6.4 2.4 6 3 6H21C21.6 6 22 6.4 22 7V13C22 14.1 21.1 15 20 15ZM13 12H11C10.5 12 10 12.4 10 13V16C10 16.5 10.4 17 11 17H13C13.6 17 14 16.6 14 16V13C14 12.4 13.6 12 13 12Z" fill="#0b8260"/>
+                                    <path d="M14 6V5H10V6H8V5C8 3.9 8.9 3 10 3H14C15.1 3 16 3.9 16 5V6H14ZM20 15H14V16C14 16.6 13.5 17 13 17H11C10.5 17 10 16.6 10 16V15H4C3.6 15 3.3 14.9 3 14.7V18C3 19.1 3.9 20 5 20H19C20.1 20 21 19.1 21 18V14.7C20.7 14.9 20.4 15 20 15Z" fill="#0b8260"/>
+                                  </svg>
                                 </div>
-                              </label>
-                            </div>
+                                <div className="btn-caps text-start">
+                                  <h6 className="mb-0 lh-base">I&apos;m looking for a job</h6>
+                                  <p className="m-0 text-md text-muted">Looking for a great opportunity</p>
+                                </div>
+                              </div>
+                            </label>
                           </div>
+                        </div>
 
-                          <div className="col-sm-6">
-                            <div className="sing-btn-groups">
-                              <input
-                                type="radio"
-                                className="btn-check"
-                                name="lokingfor"
-                                id="findtalent"
-                                checked={role === "EMPLOYER"}
-                                onChange={() => {
-                                  setRole("EMPLOYER");
-                                  setFullName("");
-                                  setLocation("");
-                                  setErrors({});
-                                }}
-                              />
-                              <label className="btn btn-md btn-outline-gray h-auto w-100" htmlFor="findtalent">
-                                <div className="d-flex align-items-center gap-3">
-                                  <div className="icons">
-                                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                      <path opacity="0.3" d="M22 12C22 17.5 17.5 22 12 22C6.5 22 2 17.5 2 12C2 6.5 6.5 2 12 2C17.5 2 22 6.5 22 12ZM12 7C10.3 7 9 8.3 9 10C9 11.7 10.3 13 12 13C13.7 13 15 11.7 15 10C15 8.3 13.7 7 12 7Z" fill="#0b8260"/>
-                                      <path d="M12 22C14.6 22 17 21 18.7 19.4C17.9 16.9 15.2 15 12 15C8.8 15 6.09999 16.9 5.29999 19.4C6.99999 21 9.4 22 12 22Z" fill="#0b8260"/>
-                                    </svg>
-                                  </div>
-                                  <div className="btn-caps text-start">
-                                    <h6 className="mb-0 lh-base">I&apos;m hiring talent</h6>
-                                    <p className="m-0 text-md text-muted">Post jobs and find candidates</p>
-                                  </div>
+                        <div className="col-sm-6">
+                          <div className="sing-btn-groups">
+                            <input
+                              type="radio"
+                              className="btn-check"
+                              name="lokingfor"
+                              id="findtalent"
+                              checked={role === "EMPLOYER"}
+                              onChange={() => {
+                                setRole("EMPLOYER");
+                                setFullName("");
+                                setLocation("");
+                                setErrors({});
+                              }}
+                            />
+                            <label className="btn btn-md btn-outline-gray h-auto w-100" htmlFor="findtalent">
+                              <div className="d-flex align-items-center gap-3">
+                                <div className="icons">
+                                  <svg width="44" height="44" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path opacity="0.3" d="M22 12C22 17.5 17.5 22 12 22C6.5 22 2 17.5 2 12C2 6.5 6.5 2 12 2C17.5 2 22 6.5 22 12ZM12 7C10.3 7 9 8.3 9 10C9 11.7 10.3 13 12 13C13.7 13 15 11.7 15 10C15 8.3 13.7 7 12 7Z" fill="#0b8260"/>
+                                    <path d="M12 22C14.6 22 17 21 18.7 19.4C17.9 16.9 15.2 15 12 15C8.8 15 6.09999 16.9 5.29999 19.4C6.99999 21 9.4 22 12 22Z" fill="#0b8260"/>
+                                  </svg>
                                 </div>
-                              </label>
-                            </div>
+                                <div className="btn-caps text-start">
+                                  <h6 className="mb-0 lh-base">I&apos;m hiring talent</h6>
+                                  <p className="m-0 text-md text-muted">Post jobs and find candidates</p>
+                                </div>
+                              </div>
+                            </label>
                           </div>
                         </div>
                       </div>
+                    </div>
+
+                    <GoogleAuthButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} text="signup_with" />
+
+                    <div className="d-flex align-items-center justify-content-center mb-4">
+                      <hr className="flex-grow-1 bg-light" />
+                      <span className="mx-3 text-muted small">OR</span>
+                      <hr className="flex-grow-1 bg-light" />
+                    </div>
+
+                    <div className="form-float d-flex flex-column gap-4">
+
+
 
                       <div className="form-group mb-0">
                         <label className="fw-medium fs-6 text-dark">

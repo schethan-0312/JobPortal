@@ -6,6 +6,7 @@ import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError } from "@/lib/api";
+import { Toaster, toast } from "react-hot-toast";
 
 interface Package {
   id: string;
@@ -29,8 +30,7 @@ export default function EmployerActivePackagePage() {
 
   const [activeSub, setActiveSub] = useState<ActiveSubscription | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [now, setNow] = useState(new Date());
+    const [now, setNow] = useState(new Date());
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "EMPLOYER")) {
@@ -46,7 +46,7 @@ export default function EmployerActivePackagePage() {
         const sub = await api.get<ActiveSubscription | null>("/packages/active-subscription");
         setActiveSub(sub);
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Failed to load active package");
+        toast.error(err instanceof ApiError ? err.message : "Failed to load active package");
       } finally {
         setDataLoading(false);
       }
@@ -98,6 +98,22 @@ export default function EmployerActivePackagePage() {
   return (
     <>
       <Navbar8 />
+      <Toaster 
+        position="top-center" 
+        containerStyle={{
+          top: '100px',
+        }}
+        toastOptions={{
+          style: {
+            padding: '16px 24px',
+            fontSize: '1.1rem',
+            fontWeight: '500',
+            maxWidth: '600px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+          },
+        }}
+      />
 
       <div className="dashboard-wrap bg-light">
         <EmployerSidebar active="active-package" />
@@ -127,8 +143,7 @@ export default function EmployerActivePackagePage() {
           </div>
 
           <div className="dashboard-widg-bar d-block">
-            {error && <div className="alert alert-danger">{error}</div>}
-            
+                        
             {dataLoading ? (
               <p className="text-muted">Loading your active package...</p>
             ) : !activeSub || activeSub.status !== 'ACTIVE' ? (
@@ -228,13 +243,7 @@ export default function EmployerActivePackagePage() {
 
           </div>
 
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
+          {/* footer removed */}
         </div>
       </div>
     </>

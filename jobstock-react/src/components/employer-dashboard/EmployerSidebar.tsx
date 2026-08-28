@@ -40,13 +40,11 @@ interface EmployerProfile {
 interface EmployerJob {
   status: string;
 }
-
 export default function EmployerSidebar({ active }: EmployerSidebarProps) {
   const { user, logout } = useAuth();
   const router = useRouter();
 
   const [profile, setProfile] = useState<EmployerProfile | null>(null);
-  const [openingsCount, setOpeningsCount] = useState(0);
   const [unreadMessages, setUnreadMessages] = useState(0);
 
   // Verification Modal State
@@ -83,15 +81,16 @@ export default function EmployerSidebar({ active }: EmployerSidebarProps) {
     window.addEventListener('profile-updated', loadProfile);
 
     api
-      .get<EmployerJob[]>("/jobs/mine")
-      .then((jobs) => setOpeningsCount(jobs.filter((j) => j.status === "OPEN").length))
-      .catch(() => setOpeningsCount(0));
-    api
       .get<number>("/messages/unread-count")
-      .then(setUnreadMessages)
-      .catch(() => setUnreadMessages(0));
+      .then((data) => {
+        if (isMounted) setUnreadMessages(data);
+      })
+      .catch(() => {
+        if (isMounted) setUnreadMessages(0);
+      });
 
     return () => {
+      isMounted = false;
       window.removeEventListener('profile-updated', loadProfile);
       if (timer) clearTimeout(timer);
     };
@@ -218,11 +217,6 @@ export default function EmployerSidebar({ active }: EmployerSidebarProps) {
               </div>
             </div>
             <div className="jbs-grid-usrs-caption mb-3">
-              <div className="jbs-kioyer">
-                <span className="label text-light bg-main">
-                  {openingsCount} Opening{openingsCount !== 1 ? "s" : ""}
-                </span>
-              </div>
               <div className="jbs-tiosk">
                 <h4 className="jbs-tiosk-title">
                   <Link href="/employer-profile" onClick={() => setIsOpen(false)}>{profile?.companyName || "My Company"}</Link>
