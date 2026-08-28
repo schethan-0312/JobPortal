@@ -42,7 +42,29 @@ export default function EmployerActivePackagePage() {
 
   const [activeSub, setActiveSub] = useState<ActiveSubscription | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
+  const [refunding, setRefunding] = useState(false);
+  const [showRefundModal, setShowRefundModal] = useState(false);
   const [now, setNow] = useState(new Date());
+
+  const handleRefund = async () => {
+    setRefunding(true);
+    try {
+      const res = await api.post<{success: boolean, refundAmountInPaisa: number, message: string}>("/packages/refund-active", {});
+      toast.success(`Refund of ₹${res.refundAmountInPaisa / 100} processed successfully!`);
+      // Reload active sub (it should become null or show expired)
+      const sub = await api.get<ActiveSubscription | null>("/packages/active-subscription");
+      setActiveSub(sub);
+      setShowRefundModal(false);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        toast.error(err.message);
+      } else {
+        toast.error("An error occurred while processing refund.");
+      }
+    } finally {
+      setRefunding(false);
+    }
+  };
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "EMPLOYER")) {
@@ -71,6 +93,35 @@ export default function EmployerActivePackagePage() {
     }, 60000);
     return () => clearInterval(interval);
   }, []);
+
+  let estimatedRefund = 0;
+  let isRefundEligible = false;
+  let hasUsage = false;
+  if (activeSub) {
+    const startedAt = new Date(activeSub.startedAt);
+    const diffTime = Math.abs(now.getTime() - startedAt.getTime());
+    const daysUsed = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+    
+    let totalPackageDays = 30;
+    if (activeSub.package.durationType === 'DAYS') totalPackageDays = activeSub.package.duration;
+    if (activeSub.package.durationType === 'MONTHS') totalPackageDays = activeSub.package.duration * 30;
+    if (activeSub.package.durationType === 'YEARS') totalPackageDays = activeSub.package.duration * 365;
+
+    hasUsage = (activeSub.jobPostsUsed || 0) > 0 || (activeSub.applicantsViewed || 0) > 0 || (activeSub.jobSeekersViewed || 0) > 0;
+
+    if (!hasUsage) {
+      estimatedRefund = activeSub.package.priceInPaisa / 100;
+    } else {
+      const costPerDay = activeSub.package.priceInPaisa / totalPackageDays;
+      const deduction = Math.round(costPerDay * daysUsed);
+      estimatedRefund = Math.max(0, (activeSub.package.priceInPaisa - deduction) / 100);
+    }
+
+    // Eligible if within 7 days
+    if (diffTime <= 7 * 24 * 60 * 60 * 1000) {
+      isRefundEligible = true;
+    }
+  }
 
   if (loading || !user || user.role !== "EMPLOYER") {
     return null;
@@ -129,6 +180,58 @@ export default function EmployerActivePackagePage() {
 
   return (
     <>
+      <style dangerouslySetInnerHTML={{ __html: `
+        .active-dashboard-card {
+          border-radius: 1.25rem;
+          border: 1px solid rgba(0,0,0,0.05) !important;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.03) !important;
+        }
+        .active-dashboard-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 12px 30px rgba(0,0,0,0.08) !important;
+        }
+        .progress {
+          border-radius: 1rem;
+          background-color: #f1f5f9;
+          overflow: hidden;
+        }
+        .progress-bar {
+          border-radius: 1rem;
+          transition: width 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .progress-bar.bg-primary {
+          background: linear-gradient(90deg, #0b8260, #13b386) !important;
+        }
+        .progress-bar.bg-warning {
+          background: linear-gradient(90deg, #f59e0b, #fbbf24) !important;
+        }
+        .progress-bar.bg-success {
+          background: linear-gradient(90deg, #10b981, #34d399) !important;
+        }
+        .icon-circle {
+          width: 70px; 
+          height: 70px; 
+          font-size: 28px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #e0f2ec 0%, #ffffff 100%);
+          color: #0b8260;
+          box-shadow: 0 8px 16px rgba(11, 130, 96, 0.1);
+          border: 1px solid rgba(11,130,96,0.1);
+          margin-bottom: 1rem;
+        }
+        .list-group-custom .list-group-item {
+          border-color: rgba(0,0,0,0.04);
+          padding: 1rem 1.25rem;
+          transition: background 0.2s;
+        }
+        .list-group-custom .list-group-item:hover {
+          background-color: #f8fafc;
+        }
+      `}} />
       <Navbar8 />
 
       <div className="dashboard-wrap bg-light">
@@ -173,36 +276,36 @@ export default function EmployerActivePackagePage() {
             ) : (
               <div className="row g-4">
                 <div className="col-xl-8 col-lg-7">
-                  <div className="card border-0 shadow-sm h-100">
-                    <div className="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-                      <h5 className="mb-0 fw-semibold">Current Plan details</h5>
-                      <span className={`badge ${activeSub.status === 'ACTIVE' ? 'bg-success' : 'bg-danger'}`}>
+                  <div className="card active-dashboard-card bg-white h-100">
+                    <div className="card-header bg-white py-4 border-bottom d-flex justify-content-between align-items-center">
+                      <h5 className="mb-0 fw-bold">Current Plan Details</h5>
+                      <span className={`badge rounded-pill px-3 py-2 ${activeSub.status === 'ACTIVE' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-danger-subtle text-danger border border-danger-subtle'}`}>
                         {activeSub.status}
                       </span>
                     </div>
-                    <div className="card-body p-4">
-                      <div className="d-flex align-items-center justify-content-between border-bottom pb-4 mb-4">
+                    <div className="card-body p-4 p-xl-5">
+                      <div className="d-flex flex-wrap align-items-center justify-content-between border-bottom pb-4 mb-4 gap-3">
                         <div>
-                          <h2 className="fw-bold text-dark mb-1">{activeSub.package.name}</h2>
+                          <h2 className="fw-bolder text-dark mb-1 display-6">{activeSub.package.name}</h2>
                           <p className="text-muted mb-0">Active since {new Date(activeSub.startedAt).toLocaleDateString()}</p>
                         </div>
-                        <div className="text-end">
-                          <h3 className="fw-bold text-primary mb-1">
+                        <div className="text-md-end">
+                          <h3 className="fw-bold text-main mb-0" style={{ color: '#0b8260' }}>
                             {(activeSub.package.priceInPaisa / 100).toLocaleString("en-IN", { style: "currency", currency: "INR" })}
                           </h3>
-                          <p className="text-muted mb-0">per {activeSub.package.duration} {activeSub.package.durationType.toLowerCase()}</p>
+                          <p className="text-muted mb-0 fw-medium">per {activeSub.package.duration} {activeSub.package.durationType.toLowerCase()}</p>
                         </div>
                       </div>
 
-                      <h6 className="fw-bold mb-3">Usage Statistics</h6>
+                      <h5 className="fw-bold mb-4">Usage Statistics</h5>
                       
                       {renderProgressBar(activeSub.jobPostsUsed || 0, activeSub.package.postJobLimit, "Jobs Posted")}
                       {renderProgressBar(activeSub.applicantsViewed || 0, activeSub.package.applicantViewLimit, "Applicants Viewed")}
                       {renderProgressBar(activeSub.jobSeekersViewed || 0, activeSub.package.jobSeekerViewLimit, "Job Seeker Profiles Searched")}
 
                       <div className="mt-5">
-                        <button className="btn btn-main px-4" onClick={() => router.push("/employer-package")}>
-                          Upgrade Package
+                        <button className="btn btn-main px-4 py-2 fw-medium shadow-sm" onClick={() => router.push("/employer-package")}>
+                          <i className="fa-solid fa-arrow-up-right-dots me-2"></i>Upgrade Package
                         </button>
                       </div>
                     </div>
@@ -210,33 +313,29 @@ export default function EmployerActivePackagePage() {
                 </div>
 
                 <div className="col-xl-4 col-lg-5">
-                  <div className="card border-0 shadow-sm h-100">
-                    <div className="card-header bg-white py-3 border-bottom">
-                      <h5 className="mb-0 fw-semibold">Subscription Status</h5>
+                  <div className="card active-dashboard-card bg-white h-100">
+                    <div className="card-header bg-white py-4 border-bottom">
+                      <h5 className="mb-0 fw-bold">Subscription Status</h5>
                     </div>
-                    <div className="card-body p-4 bg-light">
+                    <div className="card-body p-4 p-xl-5">
                       <div className="text-center mb-4">
-                        <div className="d-inline-flex align-items-center justify-content-center bg-white text-main rounded-circle shadow-sm mb-3" style={{ width: "70px", height: "70px", fontSize: "28px" }}>
+                        <div className="icon-circle">
                           <i className="fa-regular fa-clock"></i>
                         </div>
-                        <h6 className="text-muted mb-1">Time Remaining</h6>
-                        <h4 className="fw-bold text-dark">
+                        <h6 className="text-muted mb-1 text-uppercase small fw-bold tracking-wider">Time Remaining</h6>
+                        <h4 className="fw-bolder text-dark mb-0">
                           {activeSub.expiresAt ? getRemainingTime(activeSub.expiresAt) : "Unlimited"}
                         </h4>
                       </div>
 
-                      <ul className="list-group list-group-flush rounded shadow-sm border mt-4">
-                        <li className="list-group-item d-flex justify-content-between align-items-center py-3">
-                          <span className="text-muted small">Started On</span>
-                          <span className="fw-medium small text-dark">{new Date(activeSub.startedAt).toLocaleDateString()}</span>
+                      <ul className="list-group list-group-flush list-group-custom rounded shadow-sm border mt-4">
+                        <li className="list-group-item d-flex justify-content-between align-items-center">
+                          <span className="text-muted fw-medium small">Started On</span>
+                          <span className="fw-bold small text-dark">{new Date(activeSub.startedAt).toLocaleDateString()}</span>
                         </li>
-                        <li className="list-group-item d-flex justify-content-between align-items-center py-3">
-                          <span className="text-muted small">Expires On</span>
-                          <span className="fw-medium small text-dark">{activeSub.expiresAt ? new Date(activeSub.expiresAt).toLocaleDateString() : "N/A"}</span>
-                        </li>
-                        <li className="list-group-item d-flex justify-content-between align-items-center py-3">
-                          <span className="text-muted small">Auto-Renew</span>
-                          <span className="badge bg-secondary">Off</span>
+                        <li className="list-group-item d-flex justify-content-between align-items-center">
+                          <span className="text-muted fw-medium small">Expires On</span>
+                          <span className="fw-bold small text-dark">{activeSub.expiresAt ? new Date(activeSub.expiresAt).toLocaleDateString() : "N/A"}</span>
                         </li>
                       </ul>
                       
@@ -249,6 +348,19 @@ export default function EmployerActivePackagePage() {
                           {activeSub.package.companyBrandingEnabled && <li className="mb-2"><i className="fa-solid fa-check text-success me-2"></i> Company Branding</li>}
                           {activeSub.package.verifiedRecruiterBadgeEnabled && <li className="mb-2"><i className="fa-solid fa-check text-success me-2"></i> Verified Recruiter Badge</li>}
                         </ul>
+                      </div>
+                      
+                      <div className="mt-4 pt-4 border-top text-center">
+                        <button 
+                          className="btn btn-outline-danger btn-sm w-100" 
+                          onClick={() => setShowRefundModal(true)}
+                          disabled={refunding || !isRefundEligible}
+                        >
+                          Cancel & Refund Package
+                        </button>
+                        <p className="text-muted small mt-2 mb-0" style={{ fontSize: "11px" }}>
+                          You can cancel or refund a package within 7 days of purchase. After 7 days, you cannot cancel or refund your amount.
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -266,6 +378,54 @@ export default function EmployerActivePackagePage() {
           </div>
         </div>
       </div>
+
+      {/* Custom Refund Confirmation Modal */}
+      {showRefundModal && (
+        <>
+          <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
+          <div className="modal fade show d-block" tabIndex={-1} style={{ zIndex: 1050 }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content border-0 shadow">
+                <div className="modal-header bg-danger text-white border-0">
+                  <h5 className="modal-title">Confirm Cancellation</h5>
+                  <button type="button" className="btn-close btn-close-white" onClick={() => !refunding && setShowRefundModal(false)}></button>
+                </div>
+                <div className="modal-body p-4 text-center">
+                  <div className="text-warning mb-3" style={{ fontSize: "40px" }}>
+                    <i className="fa-regular fa-circle-question"></i>
+                  </div>
+                  <h5 className="fw-bold mb-3">Are you sure you want to cancel?</h5>
+                  <p className="text-muted mb-3">
+                    Your estimated refund is <strong>{estimatedRefund.toLocaleString("en-IN", { style: "currency", currency: "INR" })}</strong>
+                    {!hasUsage ? " (full refund since no features were used)." : " (calculated based on unused time)."}
+                  </p>
+                  <p className="text-muted mb-0 small">
+                    <i className="fa-solid fa-circle-info me-1"></i>
+                    You will receive this amount in your original payment method within <strong>5 to 7 working days</strong>.
+                    <br/><br/>
+                    <strong className="text-danger">You will lose access to all premium features immediately upon cancellation.</strong>
+                  </p>
+                </div>
+                <div className="modal-footer border-0 justify-content-center pb-4">
+                  <button type="button" className="btn btn-light px-4" onClick={() => setShowRefundModal(false)} disabled={refunding}>
+                    Keep My Package
+                  </button>
+                  <button type="button" className="btn btn-danger px-4" onClick={handleRefund} disabled={refunding}>
+                    {refunding ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Processing...
+                      </>
+                    ) : (
+                      "Yes, Cancel & Refund"
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }

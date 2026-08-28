@@ -337,4 +337,92 @@ export class PackagesService {
 
     return sub;
   }
+
+  async refundActiveSubscription(userId: string) {
+    const employer = await this.prisma.employer.findUnique({ where: { userId } });
+    if (!employer) {
+      throw new NotFoundException('Employer not found');
+    }
+
+    const sub = await this.prisma.employerPackageSubscription.findFirst({
+      where: { employerId: employer.id, status: 'ACTIVE' },
+      include: { package: true },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (!sub) {
+      throw new BadRequestException('You do not have an active subscription to refund.');
+    }
+
+    // Find the order that created this subscription.
+    const order = await this.prisma.order.findFirst({
+      where: { userId, packageId: sub.packageId, status: 'PAID' },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (!order || !order.gatewayRef) {
+      throw new BadRequestException('Could not find a valid payment record to refund.');
+    }
+
+    // Check if the order was created within the last 7 days (grace period)
+    const refundWindowMs = 7 * 24 * 60 * 60 * 1000;
+    if (new Date().getTime() - order.createdAt.getTime() > refundWindowMs) {
+      throw new BadRequestException('Refund window (7 days) has expired.');
+    }
+
+    const hasUsage = (sub.jobPostsUsed || 0) > 0 || (sub.applicantsViewed || 0) > 0 || (sub.jobSeekersViewed || 0) > 0;
+    
+    let refundAmount = 0;
+
+    if (!hasUsage) {
+      refundAmount = order.amountInPaisa;
+    } else {
+      const startedAt = sub.startedAt;
+      const now = new Date();
+      
+      let totalPackageDays = 30; // fallback
+      if (sub.package.durationType === 'DAYS') totalPackageDays = sub.package.duration;
+      if (sub.package.durationType === 'MONTHS') totalPackageDays = sub.package.duration * 30;
+      if (sub.package.durationType === 'YEARS') totalPackageDays = sub.package.duration * 365;
+
+      const daysUsed = Math.max(1, Math.ceil((now.getTime() - startedAt.getTime()) / (1000 * 60 * 60 * 24)));
+      
+      const costPerDay = order.amountInPaisa / totalPackageDays;
+      const deduction = Math.round(costPerDay * daysUsed);
+      refundAmount = Math.max(0, order.amountInPaisa - deduction);
+    }
+
+    if (refundAmount <= 0) {
+      throw new BadRequestException('Calculated refund amount is zero or negative due to time used.');
+    }
+
+    // Try Razorpay Refund
+    try {
+      if (order.gatewayRef !== 'dev-simulated') {
+        const razorpay = this.getRazorpayClient();
+        await razorpay.payments.refund(order.gatewayRef, {
+          amount: refundAmount
+        });
+      }
+    } catch (e: any) {
+      throw new InternalServerErrorException('Payment gateway refund failed: ' + (e.message || 'Contact support.'));
+    }
+
+    // 1. Update Order status
+    await this.prisma.order.update({
+      where: { id: order.id },
+      data: { status: 'REFUNDED' }
+    });
+
+    // 2. Update Subscription status and immediately expire it
+    await this.prisma.employerPackageSubscription.update({
+      where: { id: sub.id },
+      data: { 
+        status: 'REFUNDED', 
+        expiresAt: new Date() // Revoke immediately
+      }
+    });
+
+    return { success: true, refundAmountInPaisa: refundAmount, message: 'Refund successful' };
+  }
 }

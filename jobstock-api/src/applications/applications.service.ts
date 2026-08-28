@@ -71,14 +71,7 @@ export class ApplicationsService {
       throw new ForbiddenException('You must have an active package to view applicants.');
     }
 
-    if (sub.package.applicantViewLimit < 999999 && sub.applicantsViewed >= sub.package.applicantViewLimit) {
-      throw new ForbiddenException(`You have reached your limit of ${sub.package.applicantViewLimit} applicants viewed. Please upgrade your package.`);
-    }
-
-    await this.prisma.employerPackageSubscription.update({
-      where: { id: sub.id },
-      data: { applicantsViewed: { increment: 1 } },
-    });
+    // Note: The limit is now enforced per profile view, not on list.
 
     const applications = await this.prisma.application.findMany({
       where: { jobId },
@@ -145,6 +138,24 @@ export class ApplicationsService {
     }
     if (application.job.employerId !== employer.id) {
       throw new ForbiddenException('This application does not belong to one of your job postings');
+    }
+
+    if (application.status === 'APPLIED' && dto.status !== 'APPLIED') {
+      const activeSub = await this.prisma.employerPackageSubscription.findFirst({
+        where: { employerId: employer.id, status: 'ACTIVE' },
+        orderBy: { createdAt: 'desc' },
+        include: { package: true }
+      });
+      if (!activeSub || (activeSub.expiresAt && new Date(activeSub.expiresAt) < new Date())) {
+        throw new ForbiddenException('You must have an active package to view or manage applicants.');
+      }
+      if (activeSub.package.applicantViewLimit < 999999 && activeSub.applicantsViewed >= activeSub.package.applicantViewLimit) {
+        throw new ForbiddenException(`You have reached your limit of ${activeSub.package.applicantViewLimit} applicants viewed. Please upgrade your package.`);
+      }
+      await this.prisma.employerPackageSubscription.update({
+        where: { id: activeSub.id },
+        data: { applicantsViewed: { increment: 1 } },
+      });
     }
 
     if (dto.status === 'OFFERED' && application.status !== 'OFFERED') {

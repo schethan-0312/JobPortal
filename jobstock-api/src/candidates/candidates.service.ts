@@ -152,9 +152,18 @@ export class CandidatesService {
     params: { location?: string; skill?: string; page: number; pageSize: number },
     user?: { role: string; userId: string } | null,
   ) {
+    const skillVariations = params.skill 
+      ? [
+          params.skill, 
+          params.skill.toLowerCase(), 
+          params.skill.toUpperCase(), 
+          params.skill.charAt(0).toUpperCase() + params.skill.slice(1).toLowerCase()
+        ]
+      : [];
+
     const where: Prisma.CandidateProfileWhereInput = {
       ...(params.location ? { location: { contains: params.location, mode: 'insensitive' as const } } : {}),
-      ...(params.skill ? { skills: { has: params.skill } } : {}),
+      ...(params.skill ? { skills: { hasSome: skillVariations } } : {}),
     };
 
     if (user && user.role === 'CANDIDATE') {
@@ -195,22 +204,20 @@ export class CandidatesService {
       include: { package: true },
     });
 
-    if (!sub || (sub.expiresAt && new Date(sub.expiresAt) < new Date())) {
-      throw new ForbiddenException('You must have an active package to search candidates.');
-    }
+    // Note: The limit is now enforced per profile view, not on search.
 
-    if (sub.package.jobSeekerViewLimit < 999999 && sub.jobSeekersViewed >= sub.package.jobSeekerViewLimit) {
-      throw new ForbiddenException(`You have reached your limit of ${sub.package.jobSeekerViewLimit} profile searches. Please upgrade your package.`);
-    }
-
-    await this.prisma.employerPackageSubscription.update({
-      where: { id: sub.id },
-      data: { jobSeekersViewed: { increment: 1 } },
-    });
+    const skillVariations = params.skill 
+      ? [
+          params.skill, 
+          params.skill.toLowerCase(), 
+          params.skill.toUpperCase(), 
+          params.skill.charAt(0).toUpperCase() + params.skill.slice(1).toLowerCase()
+        ]
+      : [];
 
     const where = {
       ...(params.location ? { location: { contains: params.location, mode: 'insensitive' as const } } : {}),
-      ...(params.skill ? { skills: { has: params.skill } } : {}),
+      ...(params.skill ? { skills: { hasSome: skillVariations } } : {}),
       ...(params.minExperience != null ? { experienceYears: { gte: params.minExperience } } : {}),
     };
 
@@ -228,6 +235,34 @@ export class CandidatesService {
     ]);
 
     return { items, total, page: params.page, pageSize: params.pageSize };
+  }
+
+  async trackProfileView(employerUserId: string, candidateProfileId: string) {
+    const employer = await this.prisma.employer.findUnique({
+      where: { userId: employerUserId },
+    });
+    if (!employer) throw new NotFoundException('Employer not found');
+
+    const sub = await this.prisma.employerPackageSubscription.findFirst({
+      where: { employerId: employer.id, status: 'ACTIVE' },
+      orderBy: { createdAt: 'desc' },
+      include: { package: true },
+    });
+
+    if (!sub || (sub.expiresAt && new Date(sub.expiresAt) < new Date())) {
+      throw new ForbiddenException('You must have an active package to view candidate profiles.');
+    }
+
+    if (sub.package.jobSeekerViewLimit < 999999 && sub.jobSeekersViewed >= sub.package.jobSeekerViewLimit) {
+      throw new ForbiddenException(`You have reached your limit of ${sub.package.jobSeekerViewLimit} profile views. Please upgrade your package.`);
+    }
+
+    await this.prisma.employerPackageSubscription.update({
+      where: { id: sub.id },
+      data: { jobSeekersViewed: { increment: 1 } },
+    });
+
+    return { success: true };
   }
 
   async getPublicProfile(id: string) {

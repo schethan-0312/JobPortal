@@ -191,7 +191,7 @@ export default function EmployerPackagePage() {
 
   return (
     <>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         
         .pricing-section {
@@ -199,26 +199,30 @@ export default function EmployerPackagePage() {
         }
         
         .package-card-hover {
-          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.4s ease;
           border-radius: 1.5rem;
-          border: 1px solid rgba(0,0,0,0.05) !important;
+          border: 1px solid rgba(0,0,0,0.08) !important;
           background: #ffffff;
-          overflow: hidden;
+          overflow: visible;
           position: relative;
           z-index: 1;
         }
         .package-card-hover::before {
           content: "";
           position: absolute;
-          top: 0; left: 0; right: 0; height: 5px;
+          top: -1px; left: -1px; right: -1px; height: 6px;
+          border-top-left-radius: 1.5rem;
+          border-top-right-radius: 1.5rem;
           background: linear-gradient(90deg, #0b8260, #13b386);
           opacity: 0;
           transition: opacity 0.3s ease;
+          z-index: 0;
         }
         .package-card-hover:hover {
-          transform: translateY(-12px);
-          box-shadow: 0 20px 40px rgba(11, 130, 96, 0.12) !important;
-          border-color: rgba(11, 130, 96, 0.2) !important;
+          transform: translateY(-15px) scale(1.02);
+          box-shadow: 0 30px 60px rgba(11, 130, 96, 0.15) !important;
+          border-color: rgba(11, 130, 96, 0.3) !important;
+          z-index: 10;
         }
         .package-card-hover:hover::before {
           opacity: 1;
@@ -247,7 +251,7 @@ export default function EmployerPackagePage() {
           transform: translateY(-2px);
           box-shadow: 0 6px 20px rgba(11, 130, 96, 0.35);
         }
-      `}</style>
+      `}} />
       
       <Toaster position="top-right" />
       <Navbar8 />
@@ -302,23 +306,31 @@ export default function EmployerPackagePage() {
                       }
                     }
                   }
+                  const isPopular = pkg.name.toLowerCase().includes('pro');
 
                   return (
                     <div className="col-xl-4 col-lg-6 col-md-12 d-flex" key={pkg.id}>
-                      <div className={`card package-card-hover shadow-sm w-100 d-flex flex-column ${isCurrent ? 'border-primary shadow' : ''}`} style={isCurrent ? { borderColor: '#0b8260 !important', borderWidth: '2px' } : {}}>
-                        <div className="card-body p-4 p-xl-5 d-flex flex-column h-100">
+                      <div className="card package-card-hover shadow-sm w-100 d-flex flex-column" style={isCurrent ? { borderColor: '#0b8260', borderWidth: '2px', backgroundColor: '#f4fcf9' } : {}}>
+                        
+                        {isPopular && !isCurrent && (
+                          <div className="position-absolute top-0 start-50 translate-middle-x bg-warning text-dark px-3 py-1 fw-bold small rounded-bottom shadow-sm" style={{ zIndex: 5, fontSize: '0.75rem', letterSpacing: '0.5px' }}>
+                            <i className="fa-solid fa-star me-1"></i> MOST POPULAR
+                          </div>
+                        )}
+
+                        <div className="card-body p-4 p-xl-5 d-flex flex-column h-100" style={{ position: 'relative', zIndex: 2 }}>
                           {isCurrent && (
-                            <div className="position-absolute top-0 end-0 bg-primary text-white px-3 py-1 fw-bold small" style={{ borderBottomLeftRadius: '1rem', backgroundColor: '#0b8260' }}>
+                            <div className="position-absolute top-0 end-0 text-white px-3 py-1 fw-bold small shadow-sm" style={{ borderBottomLeftRadius: '1rem', borderTopRightRadius: '1.25rem', backgroundColor: '#0b8260' }}>
                               Current Plan
                             </div>
                           )}
                           
-                          <div className="mb-4">
+                          <div className="mb-4 mt-2">
                             <span className="badge bg-light text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm d-inline-flex align-items-center gap-2">
                               <i className="fa-regular fa-clock"></i> 
                               {pkg.duration} {pkg.durationType}
                             </span>
-                            <h3 className="card-title fw-bold text-dark mb-1 fs-4">{pkg.name}</h3>
+                            <h3 className="card-title fw-bolder text-dark mb-1 fs-4">{pkg.name}</h3>
                           </div>
                           
                           <div className="mb-4 pb-4 border-bottom position-relative">

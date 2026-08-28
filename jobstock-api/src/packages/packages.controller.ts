@@ -124,4 +124,11 @@ export class PackagesController {
   getActiveSubscription(@CurrentUser() user: AuthenticatedUser) {
     return this.packagesService.getActiveSubscription(user.userId);
   }
+
+  @Post('refund-active')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EMPLOYER)
+  refundActiveSubscription(@CurrentUser() user: AuthenticatedUser) {
+    return this.packagesService.refundActiveSubscription(user.userId);
+  }
 }

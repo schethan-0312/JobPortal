@@ -140,6 +140,13 @@ export class CandidatesController {
     });
   }
 
+  @Post(':id/view')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EMPLOYER)
+  trackProfileView(@CurrentUser() user: AuthenticatedUser, @Param('id') candidateProfileId: string) {
+    return this.candidatesService.trackProfileView(user.userId, candidateProfileId);
+  }
+
   @Get(':id')
   getPublicProfile(@Param('id') id: string) {
     return this.candidatesService.getPublicProfile(id);
