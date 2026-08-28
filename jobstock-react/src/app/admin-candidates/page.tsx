@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -19,6 +19,7 @@ interface CandidateRow {
   applicationsCount: number;
   assessmentsCount: number;
   interviewsCount: number;
+  activeResumePackage: string | null;
 }
 
 interface CandidateListResponse {
@@ -128,6 +129,7 @@ export default function AdminCandidatesPage() {
                           <th>Name</th>
                           <th>Email</th>
                           <th>Location</th>
+                          <th>Package</th>
                           <th>Applications</th>
                           <th>Assessments</th>
                           <th>Interviews</th>
@@ -143,7 +145,14 @@ export default function AdminCandidatesPage() {
                               {c.isVerified && <i className="fa-solid fa-circle-check text-success ms-1" title="Verified"></i>}
                             </td>
                             <td className="small">{c.email}</td>
-                            <td className="small">{c.location ?? "â€”"}</td>
+                            <td className="small">{c.location ?? "—"}</td>
+                            <td className="small">
+                              {c.activeResumePackage ? (
+                                <span className="badge bg-primary text-white">{c.activeResumePackage}</span>
+                              ) : (
+                                <span className="text-muted">—</span>
+                              )}
+                            </td>
                             <td className="small">{c.applicationsCount}</td>
                             <td className="small">{c.assessmentsCount}</td>
                             <td className="small">{c.interviewsCount}</td>

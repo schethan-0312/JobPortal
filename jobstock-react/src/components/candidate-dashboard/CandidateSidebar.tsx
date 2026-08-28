@@ -22,7 +22,7 @@ export type CandidateSidebarActive =
   | "follow-employers"
   | "competition"
   | "messages"
- 
+  | "payment-history"
   | "delete-account";
 
 interface CandidateSidebarProps {
@@ -233,6 +233,11 @@ export default function CandidateSidebar({ active }: CandidateSidebarProps) {
                 <Link href="/candidate-messages" onClick={() => setIsOpen(false)}>
                   <i className="fa-solid fa-comments me-2"></i>Messages
                   {unreadMessages > 0 && <span className="count-tag">{unreadMessages}</span>}
+                </Link>
+              </li>
+              <li className={active === "payment-history" ? "active" : undefined}>
+                <Link href="/candidate-payment-history" onClick={() => setIsOpen(false)}>
+                  <i className="fa-solid fa-file-invoice-dollar me-2"></i>Payment History
                 </Link>
               </li>
               <li className={active === "delete-account" ? "active" : undefined}>

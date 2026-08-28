@@ -314,6 +314,64 @@ export class PackagesService {
     });
   }
 
+  async trackDownload(userId: string, orderId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order || order.userId !== userId) {
+      throw new NotFoundException('Order not found');
+    }
+    return this.prisma.order.update({
+      where: { id: orderId },
+      data: { downloadsCount: { increment: 1 } },
+    });
+  }
+
+  async cancelOrder(userId: string, orderId: string, reason: string) {
+    const order = await this.prisma.order.findUnique({ 
+      where: { id: orderId },
+      include: { package: true }
+    });
+    if (!order || order.userId !== userId) {
+      throw new NotFoundException('Order not found');
+    }
+    if (order.status !== 'PAID') {
+      throw new BadRequestException('Only PAID transactions can be refunded');
+    }
+
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const daysSincePurchase = (Date.now() - order.createdAt.getTime()) / msPerDay;
+    if (daysSincePurchase > 7) {
+      throw new BadRequestException('Refunds are only available within 7 days of purchase.');
+    }
+
+    let refundAmount = order.amountInPaisa;
+    if (order.downloadsCount > 0) {
+      if (order.package.name.toLowerCase().includes('smart')) {
+        refundAmount = Math.floor(order.amountInPaisa * 0.85); // 15% deduction
+      } else if (order.package.name.toLowerCase().includes('pro')) {
+        refundAmount = Math.floor(order.amountInPaisa * 0.90); // 10% deduction
+      }
+    }
+
+    if (order.gatewayRef && order.gatewayRef !== 'dev-simulated') {
+      const razorpay = this.getRazorpayClient();
+      try {
+        await razorpay.payments.refund(order.gatewayRef, { amount: refundAmount });
+      } catch (err) {
+        const rzpError = err as { error?: { description?: string }; message?: string; statusCode?: number };
+        const description = rzpError?.error?.description || rzpError?.message || 'unknown error';
+        throw new BadRequestException(`Razorpay refund failed: ${description}`);
+      }
+    }
+
+    return this.prisma.order.update({
+      where: { id: orderId },
+      data: { 
+        status: 'REFUNDED',
+        refundedAmountInPaisa: refundAmount
+      },
+    });
+  }
+
   async getActiveSubscription(userId: string) {
     const employer = await this.prisma.employer.findUnique({ where: { userId } });
     if (!employer) return null;

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -16,6 +16,7 @@ interface Mode {
 interface Transaction {
   id: string;
   amountInPaisa: number;
+  refundedAmountInPaisa?: number;
   status: string;
   gatewayRef: string | null;
   createdAt: string;
@@ -53,7 +54,7 @@ interface Subscription {
 }
 
 function formatMoney(paisa: number) {
-  return `â‚¹${(paisa / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
+  return `₹${(paisa / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 }
 
 export default function AdminFinancialsPage() {
@@ -250,7 +251,15 @@ export default function AdminFinancialsPage() {
                             <td className="small text-nowrap">{new Date(tx.createdAt).toLocaleString()}</td>
                             <td className="small">{tx.user.email}</td>
                             <td className="small">{tx.package.name}</td>
-                            <td className="small fw-medium">{formatMoney(tx.amountInPaisa)}</td>
+                            <td className="small fw-medium">
+                              {formatMoney(tx.amountInPaisa)}
+                              {tx.status === "REFUNDED" && tx.refundedAmountInPaisa !== undefined && (
+                                <div className="text-muted" style={{ fontSize: '0.75rem' }}>
+                                  Refunded: {formatMoney(tx.refundedAmountInPaisa)}
+                                  {tx.refundedAmountInPaisa < tx.amountInPaisa && " (Partial)"}
+                                </div>
+                              )}
+                            </td>
                             <td>
                               <span
                                 className={`badge ${

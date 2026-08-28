@@ -6,6 +6,7 @@ import Navbar7 from "@/components/Navbar7";
 import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar";
 import UploadResumeModal from "@/components/candidate-dashboard/UploadResumeModal";
 import TemplateRenderer, { BuiltResume } from "@/components/resume-templates/TemplateRenderer";
+import ResumePackageCheckoutModal from "@/components/candidate-dashboard/ResumePackageCheckoutModal";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError, uploadFile } from "@/lib/api";
 
@@ -75,6 +76,11 @@ export default function CandidateResumeBuilderPage() {
 
   // Drag-and-drop state for sections
   const [draggedSection, setDraggedSection] = useState<string | null>(null);
+
+  // Resume Package Checkout
+  const [hasActivePackage, setHasActivePackage] = useState(false);
+  const [activePackageOrderId, setActivePackageOrderId] = useState<string | null>(null);
+  const [showPackageModal, setShowPackageModal] = useState(false);
 
   async function handleSaveToProfile() {
     if (!resume) return;
@@ -153,6 +159,18 @@ export default function CandidateResumeBuilderPage() {
         if (parsed.profilePhoto) setProfilePhoto(parsed.profilePhoto);
         if (parsed.photoAlignment) setPhotoAlignment(parsed.photoAlignment);
       } catch (e) {}
+    }
+
+    if (user && user.role === "CANDIDATE") {
+      api.get<any[]>("/packages/orders/mine").then((orders) => {
+        const resumeOrder = orders.find(
+          (o) => o.status === "PAID" && o.package?.audience === "RESUME"
+        );
+        setHasActivePackage(!!resumeOrder);
+        if (resumeOrder) {
+          setActivePackageOrderId(resumeOrder.id);
+        }
+      }).catch(() => {});
     }
   }, [loading, user, router]);
 
@@ -442,7 +460,18 @@ Education: ${(parsedData.educations || []).map((ed: any) => `${ed.title} at ${ed
                     </div>
 
                     <div className="mt-auto d-flex flex-column gap-2">
-                      <button type="button" className="btn btn-light w-100" onClick={() => window.print()}>
+                      <button type="button" className="btn btn-light w-100" onClick={async () => {
+                        if (hasActivePackage && activePackageOrderId) {
+                          try {
+                            await api.post(`/packages/orders/${activePackageOrderId}/track-download`, {});
+                          } catch (err) {
+                            console.error("Failed to track download", err);
+                          }
+                          window.print();
+                        } else {
+                          setShowPackageModal(true);
+                        }
+                      }}>
                         <i className="fa-solid fa-download me-2"></i>Download PDF
                       </button>
                       <button type="button" className="btn btn-main w-100" onClick={handleSaveToProfile} disabled={savingToProfile}>
@@ -479,6 +508,15 @@ Education: ${(parsedData.educations || []).map((ed: any) => `${ed.title} at ${ed
 
       <div className="no-print">
         <UploadResumeModal />
+        <ResumePackageCheckoutModal 
+          show={showPackageModal} 
+          onClose={() => setShowPackageModal(false)}
+          onSuccess={() => {
+            setShowPackageModal(false);
+            setHasActivePackage(true);
+            setTimeout(() => window.print(), 500);
+          }}
+        />
       </div>
     </>
   );

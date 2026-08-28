@@ -119,6 +119,25 @@ export class PackagesController {
     return this.packagesService.listMyOrders(user.userId);
   }
 
+  @Post('orders/:id/track-download')
+  @UseGuards(JwtAuthGuard)
+  trackDownload(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+  ) {
+    return this.packagesService.trackDownload(user.userId, id);
+  }
+
+  @Post('orders/:id/cancel')
+  @UseGuards(JwtAuthGuard)
+  cancelOrder(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body('reason') reason: string,
+  ) {
+    return this.packagesService.cancelOrder(user.userId, id, reason);
+  }
+
   @Get('active-subscription')
   @UseGuards(JwtAuthGuard)
   getActiveSubscription(@CurrentUser() user: AuthenticatedUser) {

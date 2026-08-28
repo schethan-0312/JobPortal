@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -73,9 +73,9 @@ interface TrendPoint {
 }
 
 function formatCost(rs: number) {
-  if (rs === 0) return "â‚¹0.00";
-  if (rs < 0.1) return `â‚¹${rs.toFixed(4)}`;
-  return `â‚¹${rs.toFixed(2)}`;
+  if (rs === 0) return "₹0.00";
+  if (rs < 0.1) return `₹${rs.toFixed(4)}`;
+  return `₹${rs.toFixed(2)}`;
 }
 
 function featureLabel(feature: string) {
