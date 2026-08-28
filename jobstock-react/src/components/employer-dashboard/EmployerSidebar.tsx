@@ -57,6 +57,7 @@ export default function EmployerSidebar({ active }: EmployerSidebarProps) {
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
     let timer: NodeJS.Timeout;
     const loadProfile = () => {
       api

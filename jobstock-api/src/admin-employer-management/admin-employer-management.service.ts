@@ -16,7 +16,7 @@ export class AdminEmployerManagementService {
         where,
         include: {
           user: { select: { email: true, createdAt: true } },
-          activePackage: { include: { package: { select: { name: true } } } },
+          subscriptions: { where: { status: 'ACTIVE' }, include: { package: { select: { name: true } } } },
           _count: { select: { jobs: true } },
         },
         orderBy: { createdAt: 'desc' },
@@ -43,7 +43,7 @@ export class AdminEmployerManagementService {
       email: e.user.email,
       signupDate: e.user.createdAt,
       jobsPostedCount: e._count.jobs,
-      activeSubscription: e.activePackage?.package.name ?? null,
+      activeSubscription: e.subscriptions?.[0]?.package?.name ?? null,
       totalSpendPaisa: spendMap.get(e.userId) ?? 0,
     }));
 
@@ -56,7 +56,7 @@ export class AdminEmployerManagementService {
       include: {
         user: { select: { id: true, email: true, createdAt: true } },
         jobs: { orderBy: { createdAt: 'desc' }, select: { id: true, title: true, status: true, createdAt: true } },
-        activePackage: { include: { package: true } },
+        subscriptions: { where: { status: 'ACTIVE' }, include: { package: true } },
         verificationHistory: { orderBy: { createdAt: 'desc' } },
       },
     });

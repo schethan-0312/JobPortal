@@ -32,7 +32,16 @@ export class PackagesController {
       name: string;
       audience: 'CANDIDATE' | 'EMPLOYER' | 'RESUME';
       priceInPaisa: number;
-      featuresJson?: any;
+      durationType?: 'DAYS' | 'MONTHS' | 'YEARS';
+      duration?: number;
+      postJobLimit?: number;
+      applicantViewLimit?: number;
+      jobSeekerViewLimit?: number;
+      chatEnabled?: boolean;
+      filterShortlistEnabled?: boolean;
+      scheduleInterviewsEnabled?: boolean;
+      companyBrandingEnabled?: boolean;
+      verifiedRecruiterBadgeEnabled?: boolean;
       isActive?: boolean;
     },
   ) {
@@ -56,7 +65,16 @@ export class PackagesController {
       name?: string;
       audience?: 'CANDIDATE' | 'EMPLOYER' | 'RESUME';
       priceInPaisa?: number;
-      featuresJson?: any;
+      durationType?: 'DAYS' | 'MONTHS' | 'YEARS';
+      duration?: number;
+      postJobLimit?: number;
+      applicantViewLimit?: number;
+      jobSeekerViewLimit?: number;
+      chatEnabled?: boolean;
+      filterShortlistEnabled?: boolean;
+      scheduleInterviewsEnabled?: boolean;
+      companyBrandingEnabled?: boolean;
+      verifiedRecruiterBadgeEnabled?: boolean;
       isActive?: boolean;
     },
   ) {
