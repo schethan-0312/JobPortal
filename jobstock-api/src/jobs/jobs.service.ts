@@ -29,29 +29,18 @@ export class JobsService {
     const employer = await this.employersService.assertVerified(userId);
 
     // Fetch subscription
-    const sub = await this.prisma.employerPackageSubscription.findUnique({
-      where: { employerId: employer.id },
+    const sub = await this.prisma.employerPackageSubscription.findFirst({
+      where: { employerId: employer.id, status: 'ACTIVE' },
       include: { package: true },
+      orderBy: { createdAt: 'desc' },
     });
 
-    let maxJobs = 0;
-    if (sub && sub.package) {
-      if (sub.package.name.includes('Enterprise')) {
-        maxJobs = Infinity;
-      } else if (sub.package.name.includes('Growth')) {
-        maxJobs = 15;
-      } else if (sub.package.name.includes('Starter')) {
-        maxJobs = 5;
-      }
+    if (!sub || !sub.package) {
+      throw new ForbiddenException('You must have an active subscription package to post a job.');
     }
 
-    if (maxJobs < Infinity) {
-      const activeJobsCount = await this.prisma.job.count({
-        where: { employerId: employer.id, status: 'OPEN' },
-      });
-      if (activeJobsCount >= maxJobs) {
-        throw new ForbiddenException(`You have reached the maximum of ${maxJobs} active job postings for your package. Please upgrade your package or close an existing job.`);
-      }
+    if (sub.jobPostsUsed >= sub.package.postJobLimit) {
+      throw new ForbiddenException(`You have reached the maximum of ${sub.package.postJobLimit} job postings for your package. Please upgrade your package.`);
     }
 
     if (dto.salaryMin != null && dto.salaryMax != null && dto.salaryMin > dto.salaryMax) {
@@ -117,6 +106,11 @@ export class JobsService {
         expiryDate: dto.expiryDate ? new Date(dto.expiryDate) : undefined,
         isFeatured: dto.isFeatured ?? false,
       },
+    });
+
+    await this.prisma.employerPackageSubscription.update({
+      where: { id: sub.id },
+      data: { jobPostsUsed: { increment: 1 } },
     });
 
     // Fire-and-forget: candidate matching/notifications must never slow down or
@@ -234,29 +228,21 @@ export class JobsService {
     }
 
     if (dto.status === 'OPEN' && job.status !== 'OPEN') {
-      const sub = await this.prisma.employerPackageSubscription.findUnique({
-        where: { employerId: employer.id },
+      const sub = await this.prisma.employerPackageSubscription.findFirst({
+        where: { employerId: employer.id, status: 'ACTIVE' },
         include: { package: true },
+        orderBy: { createdAt: 'desc' },
       });
 
-      let maxJobs = 0;
-      if (sub && sub.package) {
-        if (sub.package.name.includes('Enterprise')) {
-          maxJobs = Infinity;
-        } else if (sub.package.name.includes('Growth')) {
-          maxJobs = 15;
-        } else if (sub.package.name.includes('Starter')) {
-          maxJobs = 5;
-        }
+      if (!sub || !sub.package) {
+        throw new ForbiddenException('You must have an active subscription package to reopen a job.');
       }
 
-      if (maxJobs < Infinity) {
-        const activeJobsCount = await this.prisma.job.count({
-          where: { employerId: employer.id, status: 'OPEN' },
-        });
-        if (activeJobsCount >= maxJobs) {
-          throw new ForbiddenException(`You have reached the maximum of ${maxJobs} active job postings for your package. Please upgrade your package or close another existing job first.`);
-        }
+      const activeJobsCount = await this.prisma.job.count({
+        where: { employerId: employer.id, status: 'OPEN' },
+      });
+      if (activeJobsCount >= sub.package.postJobLimit) {
+        throw new ForbiddenException(`You have reached the maximum of ${sub.package.postJobLimit} active job postings for your package. Please upgrade your package or close an existing job.`);
       }
     }
 

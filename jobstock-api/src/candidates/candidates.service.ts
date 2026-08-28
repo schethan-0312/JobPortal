@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { UpdateCandidateProfileDto } from './dto/update-candidate-profile.dto.js';
@@ -177,12 +177,37 @@ export class CandidatesService {
 
   /** Employer-only candidate discovery — the "reverse search" recruiters use to find talent proactively. */
   async searchForEmployers(params: {
+    userId: string;
     location?: string;
     skill?: string;
     minExperience?: number;
     page: number;
     pageSize: number;
   }) {
+    const employer = await this.prisma.employer.findUnique({
+      where: { userId: params.userId },
+    });
+    if (!employer) throw new NotFoundException('Employer not found');
+
+    const sub = await this.prisma.employerPackageSubscription.findFirst({
+      where: { employerId: employer.id, status: 'ACTIVE' },
+      orderBy: { createdAt: 'desc' },
+      include: { package: true },
+    });
+
+    if (!sub || (sub.expiresAt && new Date(sub.expiresAt) < new Date())) {
+      throw new ForbiddenException('You must have an active package to search candidates.');
+    }
+
+    if (sub.package.jobSeekerViewLimit < 999999 && sub.jobSeekersViewed >= sub.package.jobSeekerViewLimit) {
+      throw new ForbiddenException(`You have reached your limit of ${sub.package.jobSeekerViewLimit} profile searches. Please upgrade your package.`);
+    }
+
+    await this.prisma.employerPackageSubscription.update({
+      where: { id: sub.id },
+      data: { jobSeekersViewed: { increment: 1 } },
+    });
+
     const where = {
       ...(params.location ? { location: { contains: params.location, mode: 'insensitive' as const } } : {}),
       ...(params.skill ? { skills: { has: params.skill } } : {}),

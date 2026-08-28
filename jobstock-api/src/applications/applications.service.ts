@@ -61,6 +61,25 @@ export class ApplicationsService {
       throw new NotFoundException('Job not found');
     }
 
+    const sub = await this.prisma.employerPackageSubscription.findFirst({
+      where: { employerId: employer.id, status: 'ACTIVE' },
+      orderBy: { createdAt: 'desc' },
+      include: { package: true },
+    });
+
+    if (!sub || (sub.expiresAt && new Date(sub.expiresAt) < new Date())) {
+      throw new ForbiddenException('You must have an active package to view applicants.');
+    }
+
+    if (sub.package.applicantViewLimit < 999999 && sub.applicantsViewed >= sub.package.applicantViewLimit) {
+      throw new ForbiddenException(`You have reached your limit of ${sub.package.applicantViewLimit} applicants viewed. Please upgrade your package.`);
+    }
+
+    await this.prisma.employerPackageSubscription.update({
+      where: { id: sub.id },
+      data: { applicantsViewed: { increment: 1 } },
+    });
+
     const applications = await this.prisma.application.findMany({
       where: { jobId },
       include: {
@@ -137,8 +156,9 @@ export class ApplicationsService {
       });
 
       if (hiredCount >= 20) {
-        const activeSub = await this.prisma.employerPackageSubscription.findUnique({
-          where: { employerId: employer.id },
+        const activeSub = await this.prisma.employerPackageSubscription.findFirst({
+          where: { employerId: employer.id, status: 'ACTIVE' },
+          orderBy: { createdAt: 'desc' }
         });
 
         const isSubActive = activeSub && (!activeSub.expiresAt || new Date(activeSub.expiresAt) > new Date());

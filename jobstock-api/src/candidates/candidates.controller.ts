@@ -123,6 +123,7 @@ export class CandidatesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EMPLOYER)
   searchForEmployers(
+    @CurrentUser() user: AuthenticatedUser,
     @Query('location') location?: string,
     @Query('skill') skill?: string,
     @Query('minExperience') minExperience?: string,
@@ -130,6 +131,7 @@ export class CandidatesController {
     @Query('pageSize') pageSize = '12',
   ) {
     return this.candidatesService.searchForEmployers({
+      userId: user.userId,
       location,
       skill,
       minExperience: minExperience ? Math.max(0, parseInt(minExperience, 10) || 0) : undefined,
