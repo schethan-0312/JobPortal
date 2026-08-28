@@ -1,3 +1,4 @@
+import * as path from 'path';
 import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 
@@ -173,8 +174,13 @@ export class EmailService {
       from: `"JobStock" <${from}>`,
       to: email,
       subject: 'Welcome to JobStock!',
-      text: `Hello ${name},\n\nRegistration successful! Welcome to JobStock. We are thrilled to have you on board.\n\nBest regards,\nThe JobStock Team`,
-      html: htmlTemplate,
+      text: `Welcome to JobStock, ${name}!\n\nYour registration was completely successful, and we are absolutely thrilled to have you on board.\n\nJobStock is your ultimate destination for finding the perfect job or the ideal candidate.\n\nHere is what you can do next:\n- Complete your profile to stand out.\n- Browse thousands of fresh job listings.\n- Connect with top employers and candidates.\n\nGet Started Now: ${frontendUrl}/login\n\nIf you have any questions or need assistance, feel free to reach out to our support team.\n\nBest regards,\nThe JobStock Team`,
+      html: htmlTemplate.replace(logoUrl, 'cid:jobstocklogo'),
+      attachments: [{
+        filename: 'logo.png',
+        path: path.join(process.cwd(), 'public', 'logo.png'),
+        cid: 'jobstocklogo'
+      }]
     };
 
     try {
