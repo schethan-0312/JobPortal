@@ -104,8 +104,8 @@ export default function EmployerProfilePage() {
     if (!file) return;
     setUploadingPhoto(true);
     try {
-      const res = await uploadFile<{ url: string }>("/uploads/document", file);
-      const updated = await api.patch<EmployerProfile>("/employers/me", { logoUrl: res.url });
+      const { url } = await uploadFile<{ url: string }>("/uploads/image", file);
+      const updated = await api.patch<EmployerProfile>("/employers/me", { logoUrl: url });
       setProfile(updated);
       toast.success("Profile photo updated successfully");
       window.dispatchEvent(new Event('profile-updated'));

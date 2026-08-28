@@ -62,20 +62,23 @@ export default function EmployerSidebar({ active }: EmployerSidebarProps) {
     const loadProfile = () => {
       api
         .get<EmployerProfile>("/employers/me")
-        .then((p) => {
-          setProfile(p);
-          // Show popup after 5 seconds if not VERIFIED and documents are missing
-          if (p.status !== "VERIFIED" && (!p.gstCertificateUrl || !p.incorporationCertUrl || !p.signatoryIdUrl)) {
-            const hasSeen = sessionStorage.getItem(`hasSeenVerificationModal_${user?.userId}`);
-            if (!hasSeen) {
-              timer = setTimeout(() => {
-                setShowVerificationModal(true);
-                sessionStorage.setItem(`hasSeenVerificationModal_${user?.userId}`, "true");
-              }, 5000);
+        .then((data) => {
+          if (isMounted) {
+            setProfile(data);
+            if (data.status !== "VERIFIED" && (!data.gstCertificateUrl || !data.incorporationCertUrl || !data.signatoryIdUrl)) {
+              const hasSeen = sessionStorage.getItem(`hasSeenVerificationModal_${user?.userId}`);
+              if (!hasSeen) {
+                timer = setTimeout(() => {
+                  setShowVerificationModal(true);
+                  sessionStorage.setItem(`hasSeenVerificationModal_${user?.userId}`, "true");
+                }, 5000);
+              }
             }
           }
         })
-        .catch(() => setProfile(null));
+        .catch(() => {
+          if (isMounted) setProfile(null);
+        });
     };
     
     loadProfile();
