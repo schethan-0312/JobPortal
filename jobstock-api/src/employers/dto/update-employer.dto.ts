@@ -29,4 +29,19 @@ export class UpdateEmployerDto {
   @IsString()
   @Matches(/^(https?:\/\/|\/uploads\/)/, { message: 'logoUrl must be a valid URL or an uploaded file path' })
   logoUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^(https?:\/\/|\/uploads\/)/, { message: 'Must be a valid URL or an uploaded file path' })
+  gstCertificateUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^(https?:\/\/|\/uploads\/)/, { message: 'Must be a valid URL or an uploaded file path' })
+  incorporationCertUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^(https?:\/\/|\/uploads\/)/, { message: 'Must be a valid URL or an uploaded file path' })
+  signatoryIdUrl?: string;
 }

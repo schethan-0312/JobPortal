@@ -103,19 +103,16 @@ export default function EmployerProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadingPhoto(true);
-    setError(null);
     try {
       const { url } = await uploadFile<{ url: string }>("/uploads/image", file);
       const updated = await api.patch<EmployerProfile>("/employers/me", { logoUrl: url });
       setProfile(updated);
       toast.success("Logo updated.");
-      setSuccess("Profile photo updated successfully");
       scrollToTop();
       window.dispatchEvent(new CustomEvent('profile-updated'));
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : "Failed to upload logo";
       toast.error(msg);
-      setError(msg);
       scrollToTop();
     } finally {
       setUploadingPhoto(false);
@@ -126,16 +123,14 @@ export default function EmployerProfilePage() {
   async function handleDocumentUpload(field: string, e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setError(null);
-    setSuccess(null);
     try {
       const res = await uploadFile<{ url: string }>("/uploads/document?save=false", file);
       const updated = await api.patch<EmployerProfile>("/employers/me", { [field]: res.url });
       setProfile(updated);
-      setSuccess("Document uploaded successfully");
+      toast.success("Document uploaded successfully");
       window.dispatchEvent(new Event('profile-updated'));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to upload document");
+      toast.error(err instanceof ApiError ? err.message : "Failed to upload document");
     }
   }
 
