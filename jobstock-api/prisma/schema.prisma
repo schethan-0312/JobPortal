@@ -812,6 +812,8 @@ model Order {
   status          OrderStatus @default(PENDING)
   gatewayRef      String?
   razorpayOrderId String?     @unique
+  downloadsCount  Int         @default(0)
+  refundedAmountInPaisa Int?
   createdAt       DateTime    @default(now())
 
   @@index([userId, status])

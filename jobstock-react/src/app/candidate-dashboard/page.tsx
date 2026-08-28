@@ -8,6 +8,8 @@ import UploadResumeModal from "@/components/candidate-dashboard/UploadResumeModa
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError, assetUrl } from "@/lib/api";
 import { Toaster, toast } from "react-hot-toast";
+import ResumePackageCheckoutModal from "@/components/candidate-dashboard/ResumePackageCheckoutModal";
+import Swal from "sweetalert2";
 
 interface Notification {
   id: string;
@@ -61,6 +63,8 @@ export default function CandidateDashboardPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [recommended, setRecommended] = useState<JobMatch[] | null>(null);
+  const [activePackage, setActivePackage] = useState<{ id: string; orderId: string; name: string; downloads: string } | null>(null);
+  const [showPackageModal, setShowPackageModal] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
   
   useEffect(() => {
@@ -74,12 +78,23 @@ export default function CandidateDashboardPage() {
     (async () => {
       setDataLoading(true);
       try {
-        const [notifs, apps] = await Promise.all([
+        const [notifs, apps, orders] = await Promise.all([
           api.get<Notification[]>("/notifications"),
           api.get<Application[]>("/applications/mine"),
+          api.get<any[]>("/packages/orders/mine"),
         ]);
         setNotifications(notifs.slice(0, 5));
         setApplications(apps.slice(0, 10));
+
+        const resumeOrder = orders.find((o) => o.status === "PAID" && o.package?.audience === "RESUME");
+        if (resumeOrder) {
+          setActivePackage({
+            id: resumeOrder.package.id,
+            orderId: resumeOrder.id,
+            name: resumeOrder.package.name,
+            downloads: "Unlimited Downloads",
+          });
+        }
       } catch (err) {
         toast.error(err instanceof ApiError ? err.message : "Failed to load dashboard data");
       } finally {
@@ -95,6 +110,63 @@ export default function CandidateDashboardPage() {
       .then((data) => setRecommended(data.slice(0, 3)))
       .catch(() => setRecommended([]));
   }, [user]);
+
+  const handleCancelPlan = async () => {
+    if (!activePackage?.orderId) return;
+
+    const { value: reason } = await Swal.fire({
+      title: 'Cancel Plan',
+      text: 'Are you sure you want to cancel your active plan? Please tell us why.',
+      input: 'textarea',
+      inputPlaceholder: 'Enter your reason here...',
+      showCancelButton: true,
+      confirmButtonText: 'Submit Cancellation',
+      confirmButtonColor: '#dc3545',
+      customClass: {
+        popup: 'elite-popup',
+        title: 'elite-title',
+        confirmButton: 'elite-confirm-btn',
+        cancelButton: 'elite-cancel-btn',
+      },
+      showClass: {
+        popup: 'elite-fadeIn',
+      },
+      hideClass: {
+        popup: 'elite-fadeOut',
+      },
+      inputValidator: (value) => {
+        if (!value) {
+          return 'You need to write something!';
+        }
+      }
+    });
+
+    if (reason) {
+      try {
+        await api.post(`/packages/orders/${activePackage.orderId}/cancel`, { reason });
+        await Swal.fire({
+          icon: 'success',
+          title: 'Plan Cancelled',
+          text: 'You will get the refund within 3 to 4 working days.',
+          confirmButtonColor: '#198754',
+          customClass: {
+            popup: 'elite-popup',
+            title: 'elite-title',
+            confirmButton: 'elite-confirm-btn',
+          },
+          showClass: {
+            popup: 'elite-fadeIn',
+          },
+          hideClass: {
+            popup: 'elite-fadeOut',
+          },
+        });
+        window.location.reload();
+      } catch (err) {
+        toast.error(err instanceof ApiError ? err.message : 'Failed to cancel plan');
+      }
+    }
+  };
 
   if (loading || !user || user.role !== "CANDIDATE") {
     return null;
@@ -237,6 +309,46 @@ export default function CandidateDashboardPage() {
                     ))}
                   </div>
                 </div>
+
+                <div className="card mt-4">
+                  <div className="card-header">
+                    <h4>Active Plan</h4>
+                  </div>
+                  <div className="card-body p-4">
+                    {activePackage ? (
+                      <div className="d-flex align-items-center justify-content-between">
+                        <div>
+                          <h5 className="fw-bold text-dark mb-1">{activePackage.name}</h5>
+                          <span className="badge bg-success text-white">Active</span>
+                          <div className="text-muted small mt-2">
+                            <i className="fa-solid fa-check text-success me-2"></i>
+                            {activePackage.downloads}
+                          </div>
+                        </div>
+                        <div className="text-end">
+                          <i className="fa-solid fa-award text-warning mb-2 d-block" style={{ fontSize: "2.5rem" }}></i>
+                          <div className="d-flex flex-column gap-2">
+                            {activePackage.name !== "Pro Resume" && (
+                              <button className="btn btn-sm btn-outline-primary" onClick={() => setShowPackageModal(true)}>
+                                Upgrade Plan
+                              </button>
+                            )}
+                            <button className="btn btn-sm btn-outline-danger" onClick={handleCancelPlan}>
+                              Cancel Plan
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <p className="text-muted mb-3">Upgrade your account to unlock premium templates and unlimited PDF downloads.</p>
+                        <button type="button" className="btn btn-sm btn-main" onClick={() => setShowPackageModal(true)}>
+                          View Plans
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
             {/* Row End */}
@@ -297,6 +409,18 @@ export default function CandidateDashboardPage() {
       </div>
 
       <UploadResumeModal />
+      <ResumePackageCheckoutModal
+        show={showPackageModal}
+        onClose={() => setShowPackageModal(false)}
+        activePackageId={activePackage?.id}
+        title="Upgrade Your Plan"
+        description="Choose a higher tier to unlock more features."
+        onSuccess={() => {
+          setShowPackageModal(false);
+          // Reload page to reflect new active plan
+          window.location.reload();
+        }}
+      />
     </>
   );
 }

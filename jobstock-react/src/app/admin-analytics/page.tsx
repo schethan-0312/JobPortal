@@ -33,7 +33,7 @@ interface Breakdowns {
 }
 
 function formatMoney(paisa: number) {
-  return `â‚¹${(paisa / 100).toLocaleString("en-IN")}`;
+  return `₹${(paisa / 100).toLocaleString("en-IN")}`;
 }
 
 function MiniBarChart({ data, color }: { data: TrendPoint[]; color: string }) {

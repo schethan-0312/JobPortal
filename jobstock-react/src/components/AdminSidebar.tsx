@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -99,6 +99,9 @@ export default function AdminSidebar({ active }: AdminSidebarProps) {
               </li>
               <li className={active === "packages" ? "active" : undefined}>
                 <Link href="/admin-packages" onClick={() => setIsOpen(false)}><i className="fa-solid fa-box-archive me-2"></i>Package</Link>
+              </li>
+              <li className={active === "resume-packages" ? "active" : undefined}>
+                <Link href="/admin-resume-packages" onClick={() => setIsOpen(false)}><i className="fa-solid fa-file-invoice me-2"></i>Resume Package</Link>
               </li>
               <li className={active === "employers" ? "active" : undefined}>
                 <Link href="/admin-employers" onClick={() => setIsOpen(false)}><i className="fa-solid fa-user-check me-2"></i>Verify Employers</Link>

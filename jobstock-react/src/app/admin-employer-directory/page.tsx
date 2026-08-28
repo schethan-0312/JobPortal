@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -26,7 +26,7 @@ interface DirectoryResponse {
 }
 
 function formatMoney(paisa: number) {
-  return `â‚¹${(paisa / 100).toLocaleString("en-IN")}`;
+  return `₹${(paisa / 100).toLocaleString("en-IN")}`;
 }
 
 export default function AdminEmployerDirectoryPage() {
