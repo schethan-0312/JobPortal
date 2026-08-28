@@ -40,6 +40,17 @@ export default function LoginModal() {
         text: msg,
         icon: "error",
         confirmButtonColor: "#0b8260",
+        customClass: {
+          popup: 'elite-popup',
+          title: 'elite-title',
+          confirmButton: 'elite-confirm'
+        },
+        showClass: {
+          popup: 'elite-swal-show'
+        },
+        hideClass: {
+          popup: 'elite-swal-hide'
+        }
       });
     } finally {
       submittingRef.current = false;
@@ -123,6 +134,17 @@ export default function LoginModal() {
                       text: msg,
                       icon: "error",
                       confirmButtonColor: "#0b8260",
+                      customClass: {
+                        popup: 'elite-popup',
+                        title: 'elite-title',
+                        confirmButton: 'elite-confirm'
+                      },
+                      showClass: {
+                        popup: 'elite-swal-show'
+                      },
+                      hideClass: {
+                        popup: 'elite-swal-hide'
+                      }
                     });
                   }
                 }}
@@ -132,6 +154,17 @@ export default function LoginModal() {
                     text: "Google authentication failed or was cancelled.",
                     icon: "error",
                     confirmButtonColor: "#0b8260",
+                    customClass: {
+                      popup: 'elite-popup',
+                      title: 'elite-title',
+                      confirmButton: 'elite-confirm'
+                    },
+                    showClass: {
+                      popup: 'elite-swal-show'
+                    },
+                    hideClass: {
+                      popup: 'elite-swal-hide'
+                    }
                   });
                 }}
               />

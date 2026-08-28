@@ -337,12 +337,23 @@ function SignupForm() {
       } else if (lowerMsg.includes("name")) {
         setErrors({ fullName: msg });
       } else {
-        Swal.fire({
-          title: "Registration Failed",
-          text: msg,
-          icon: "error",
-          confirmButtonColor: "#0b8260",
-        }).then((result) => {
+      Swal.fire({
+        title: "Registration Failed",
+        text: msg,
+        icon: "error",
+        confirmButtonColor: "#0b8260",
+        customClass: {
+          popup: 'elite-popup',
+          title: 'elite-title',
+          confirmButton: 'elite-confirm'
+        },
+        showClass: {
+          popup: 'elite-swal-show'
+        },
+        hideClass: {
+          popup: 'elite-swal-hide'
+        }
+      }).then((result) => {
           if (msg.toLowerCase().includes("already registered") || msg.toLowerCase().includes("already exists")) {
             const loginBtn = document.querySelector<HTMLElement>('[data-bs-target="#login"]');
             if (loginBtn) {
@@ -378,6 +389,17 @@ function SignupForm() {
         text: msg,
         icon: "error",
         confirmButtonColor: "#0b8260",
+        customClass: {
+          popup: 'elite-popup',
+          title: 'elite-title',
+          confirmButton: 'elite-confirm'
+        },
+        showClass: {
+          popup: 'elite-swal-show'
+        },
+        hideClass: {
+          popup: 'elite-swal-hide'
+        }
       }).then((result) => {
         if (msg.toLowerCase().includes("already registered") || msg.toLowerCase().includes("already exists")) {
           // Open the login modal
@@ -399,6 +421,17 @@ function SignupForm() {
       text: "Google authentication was cancelled or failed.",
       icon: "error",
       confirmButtonColor: "#0b8260",
+      customClass: {
+        popup: 'elite-popup',
+        title: 'elite-title',
+        confirmButton: 'elite-confirm'
+      },
+      showClass: {
+        popup: 'elite-swal-show'
+      },
+      hideClass: {
+        popup: 'elite-swal-hide'
+      }
     });
   };
 

@@ -152,6 +152,50 @@ body .table-responsive table {
   box-shadow: 0 .5em 0 0 #ffffff, 0 1em 0 0 #ffffff !important;
 }
 
+/* Elite SweetAlert2 Styling */
+.elite-popup {
+  border-radius: 24px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+  padding: 2rem !important;
+}
 
+.elite-title {
+  font-weight: 800 !important;
+  letter-spacing: -0.5px !important;
+  font-size: 1.75rem !important;
+  color: #1a1a2e !important;
+}
 
+.elite-confirm {
+  border-radius: 12px !important;
+  padding: 12px 32px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
 
+.elite-confirm:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 25px -5px rgba(11, 130, 96, 0.5) !important;
+}
+
+@keyframes eliteZoomIn {
+  0% { transform: scale(0.6) translateY(40px); opacity: 0; }
+  60% { transform: scale(1.05) translateY(-10px); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes eliteZoomOut {
+  0% { transform: scale(1) translateY(0); opacity: 1; }
+  40% { transform: scale(1.05) translateY(-10px); opacity: 1; }
+  100% { transform: scale(0.6) translateY(40px); opacity: 0; }
+}
+
+.elite-swal-show {
+  animation: eliteZoomIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+}
+
+.elite-swal-hide {
+  animation: eliteZoomOut 0.4s cubic-bezier(0.36, 0, 0.66, -0.56) forwards !important;
+}
