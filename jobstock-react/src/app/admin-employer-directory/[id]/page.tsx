@@ -101,6 +101,21 @@ export default function AdminEmployerDetailPage() {
       setClearingContent(false);
     }
   }
+  const [actingDecision, setActingDecision] = useState<string | null>(null);
+
+  async function handleDecision(decision: "VERIFIED" | "REJECTED" | "SUSPENDED") {
+    if (!id || typeof id !== "string") return;
+    setActingDecision(decision);
+    setError(null);
+    try {
+      await api.patch(`/admin/employers/${id}/verify`, { decision });
+      await loadDetail();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to update employer status");
+    } finally {
+      setActingDecision(null);
+    }
+  }
 
   if (loading || !user || user.role !== "ADMIN") {
     return null;
@@ -115,8 +130,8 @@ export default function AdminEmployerDetailPage() {
 
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
-            <div className="row">
-              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
+            <div className="row align-items-center">
+              <div className="col-xl-7 col-lg-7 col-md-7 col-12">
                 <h1 className="mb-1 fs-3 fw-medium">{detail?.companyName ?? "Employer"}</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
@@ -128,6 +143,23 @@ export default function AdminEmployerDetailPage() {
                   </ol>
                 </nav>
               </div>
+              {detail && (
+                <div className="col-xl-5 col-lg-5 col-md-5 col-12 text-md-end mt-3 mt-md-0 d-flex gap-2 justify-content-md-end flex-wrap">
+                  <button 
+                    className="btn btn-sm btn-danger"
+                    disabled={!!actingDecision || detail.status === "SUSPENDED"}
+                    onClick={() => handleDecision("SUSPENDED")}
+                  >
+                    {actingDecision === "SUSPENDED" ? "Wait..." : "Suspend"}
+                  </button>
+                  <button 
+                    className="btn btn-sm btn-success"
+                    onClick={() => router.push('/admin-employer-directory')}
+                  >
+                    <i className="fa-solid fa-arrow-left"></i> Back
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 

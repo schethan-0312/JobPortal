@@ -11,11 +11,10 @@ export class EmailService {
   }
 
   private initTransporter() {
-    const host = process.env.EMAIL_HOST || process.env.SMTP_HOST;
-    const port = process.env.EMAIL_PORT || process.env.SMTP_PORT;
-    const user = process.env.EMAIL_USERNAME || process.env.SMTP_USER;
-    const pass = process.env.EMAIL_PASSWORD || process.env.SMTP_PASS;
-    const fromEnv = process.env.EMAIL_FROM || process.env.SMTP_FROM;
+    const host = (process.env.EMAIL_HOST || process.env.SMTP_HOST)?.trim();
+    const port = (process.env.EMAIL_PORT || process.env.SMTP_PORT)?.trim();
+    const user = (process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
+    const pass = (process.env.EMAIL_PASSWORD || process.env.SMTP_PASS)?.trim();
 
     if (!host || !user || !pass) {
       this.logger.warn('Email configuration missing in .env. EmailService is disabled.');
@@ -39,7 +38,7 @@ export class EmailService {
       return;
     }
 
-    const from = process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
     const mailOptions = {
       from: `"JobStock" <${from}>`,
       to: email,
@@ -63,7 +62,7 @@ export class EmailService {
     }
 
     const adminEmail = process.env.EMAIL_USERNAME || process.env.SMTP_USER; // Sending the notification to the sender's own email inbox by default
-    const from = process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
 
     if (!adminEmail) return;
 
@@ -89,7 +88,7 @@ export class EmailService {
       return;
     }
 
-    const from = process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
     const mailOptions = {
       from: `"JobStock Security" <${from}>`,
       to: email,
@@ -112,7 +111,7 @@ export class EmailService {
       return;
     }
 
-    const from = process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
     const mailOptions = {
       from: `"JobStock Verification" <${from}>`,
       to: email,
@@ -136,7 +135,7 @@ export class EmailService {
       return;
     }
 
-    const from = process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
     const mailOptions = {
       from: `"JobStock" <${from}>`,
       to: email,
@@ -152,6 +151,30 @@ export class EmailService {
       this.logger.error(`Failed to send welcome email to ${email}`, error);
     }
   }
+  async sendEmployerVerificationStatus(email: string, companyName: string, status: 'VERIFIED' | 'REJECTED' | 'SUSPENDED') {
+    if (!this.transporter) return;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
+    
+    let subject = 'Employer Verification Update';
+    let message = '';
+    
+    if (status === 'VERIFIED') {
+      subject = 'Your Company is Verified';
+      message = `<p>Good news, <b>${companyName}</b> has been successfully verified! You can now access your dashboard and post jobs.</p>`;
+    } else if (status === 'REJECTED') {
+      subject = 'Verification Rejected';
+      message = `<p>Unfortunately, your verification for <b>${companyName}</b> was rejected. Please review your documents and contact support.</p>`;
+    } else if (status === 'SUSPENDED') {
+      subject = 'Account Suspended';
+      message = `<p>Your account for <b>${companyName}</b> has been suspended. Please contact support.</p>`;
+    }
+    
+    const html = `<h2>JobStock Employer Update</h2>` + message;
+    
+    try {
+      await this.transporter.sendMail({ from, to: email, subject, html });
+    } catch (e) {
+      this.logger.error('Failed to send employer verification email', e);
+    }
+  }
 }
-// Trigger rebuild
-
