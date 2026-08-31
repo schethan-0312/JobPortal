@@ -1,6 +1,7 @@
 import { ConflictException, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { EmailService } from '../email/email.service.js';
 import { UpdateCandidateProfileDto } from './dto/update-candidate-profile.dto.js';
 import { CreateJobAlertDto } from './dto/create-job-alert.dto.js';
 
@@ -33,7 +34,10 @@ const EMPLOYER_SEARCH_SELECT = {
 
 @Injectable()
 export class CandidatesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly emailService: EmailService,
+  ) {}
 
   async getMyProfile(userId: string) {
     const profile = await this.prisma.candidateProfile.findUnique({
@@ -262,6 +266,25 @@ export class CandidatesService {
       data: { jobSeekersViewed: { increment: 1 } },
     });
 
+    // Send profile viewed email in background
+    (async () => {
+      try {
+        const candidate = await this.prisma.candidateProfile.findUnique({
+          where: { id: candidateProfileId },
+          include: { user: { select: { email: true } } },
+        });
+        if (candidate?.user?.email) {
+          await this.emailService.sendProfileViewedEmail({
+            candidateEmail: candidate.user.email,
+            candidateName: candidate.fullName || 'Candidate',
+            companyName: employer.companyName,
+          });
+        }
+      } catch (e) {
+        // Fail silently
+      }
+    })();
+
     return { success: true };
   }
 
@@ -326,7 +349,30 @@ export class CandidatesService {
   // ---- Job alerts ----
 
   async createJobAlert(userId: string, dto: CreateJobAlertDto) {
-    return this.prisma.jobAlert.create({ data: { userId, ...dto } });
+    const alert = await this.prisma.jobAlert.create({ data: { userId, ...dto } });
+
+    // Send confirmation email in background
+    (async () => {
+      try {
+        const user = await this.prisma.user.findUnique({
+          where: { id: userId },
+          include: { candidateProfile: true },
+        });
+        if (user?.email) {
+          await this.emailService.sendJobAlertCreatedEmail({
+            candidateEmail: user.email,
+            candidateName: user.candidateProfile?.fullName || 'Candidate',
+            keyword: dto.keyword,
+            category: dto.category,
+            location: dto.location,
+          });
+        }
+      } catch (e) {
+        // Fail silently
+      }
+    })();
+
+    return alert;
   }
 
   async listJobAlerts(userId: string) {

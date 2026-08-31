@@ -279,9 +279,9 @@ export default async function CandidateDetailPage({
                           <textarea className="form-control" placeholder="Your Message"></textarea>
                         </div>
                         <div className="form-group m-0">
-                          <button type="button" className="btn btn-main fw-medium full-width">
-                            Send Message
-                          </button>
+                          <a href={`/employer-messages?newChat=${candidate.id}`} className="btn btn-main fw-medium full-width d-block text-center text-white">
+                            <i className="fa-regular fa-comment-dots me-2"></i> Message {candidate.fullName}
+                          </a>
                         </div>
                       </form>
                     </div>

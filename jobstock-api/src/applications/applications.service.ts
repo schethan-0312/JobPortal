@@ -1,6 +1,7 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
+import { EmailService } from '../email/email.service.js';
 import { CreateApplicationDto } from './dto/create-application.dto.js';
 import { UpdateApplicationStatusDto } from './dto/update-application-status.dto.js';
 
@@ -9,10 +10,18 @@ export class ApplicationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly emailService: EmailService,
   ) {}
 
   async apply(candidateUserId: string, dto: CreateApplicationDto) {
-    const job = await this.prisma.job.findUnique({ where: { id: dto.jobId } });
+    const job = await this.prisma.job.findUnique({
+      where: { id: dto.jobId },
+      include: {
+        employer: {
+          select: { companyName: true },
+        },
+      },
+    });
     if (!job || job.status !== 'OPEN') {
       throw new NotFoundException('Job not found or no longer accepting applications');
     }
@@ -24,13 +33,54 @@ export class ApplicationsService {
       throw new ConflictException('You have already applied to this job');
     }
 
-    return this.prisma.application.create({
+    const application = await this.prisma.application.create({
       data: {
         jobId: dto.jobId,
         candidateId: candidateUserId,
         coverNote: dto.coverNote,
       },
     });
+
+    // Send confirmation email to candidate in background safely
+    (async () => {
+      try {
+        const candidateUser = await this.prisma.user.findUnique({
+          where: { id: candidateUserId },
+          include: { candidateProfile: true },
+        });
+
+        if (candidateUser) {
+          let salaryText: string | undefined;
+          if (job.salaryMin && job.salaryMax) {
+            salaryText = `${job.currency || '₹'} ${job.salaryMin.toLocaleString()} - ${job.salaryMax.toLocaleString()}${job.salaryPeriod ? ` / ${job.salaryPeriod.toLowerCase()}` : ''}`;
+          } else if (job.salaryMin) {
+            salaryText = `From ${job.currency || '₹'} ${job.salaryMin.toLocaleString()}${job.salaryPeriod ? ` / ${job.salaryPeriod.toLowerCase()}` : ''}`;
+          } else if (job.salaryMax) {
+            salaryText = `Up to ${job.currency || '₹'} ${job.salaryMax.toLocaleString()}${job.salaryPeriod ? ` / ${job.salaryPeriod.toLowerCase()}` : ''}`;
+          }
+
+          await this.emailService.sendApplicationSubmittedEmail({
+            candidateEmail: candidateUser.email,
+            candidateName: candidateUser.candidateProfile?.fullName || 'Candidate',
+            jobTitle: job.title,
+            companyName: job.employer.companyName,
+            location: job.location,
+            jobType: job.jobType,
+            category: job.category,
+            workMode: job.workMode,
+            salaryText,
+            jobSlug: job.slug,
+            jobId: job.id,
+            applicationId: application.id,
+            appliedAt: application.appliedAt,
+          });
+        }
+      } catch (e) {
+        // Fail silently so apply operation is never disrupted
+      }
+    })();
+
+    return application;
   }
 
   async listMine(candidateUserId: string) {
@@ -192,18 +242,70 @@ export class ApplicationsService {
       `Your application for "${application.job.title}" is now ${dto.status}`,
     );
 
+    // Send email in background
+    (async () => {
+      try {
+        const candidateUser = await this.prisma.user.findUnique({
+          where: { id: application.candidateId },
+          include: { candidateProfile: true },
+        });
+        if (candidateUser) {
+          await this.emailService.sendApplicationStatusUpdateEmail({
+            candidateEmail: candidateUser.email,
+            candidateName: candidateUser.candidateProfile?.fullName || 'Candidate',
+            jobTitle: application.job.title,
+            companyName: employer.companyName,
+            newStatus: dto.status,
+          });
+        }
+      } catch (e) {
+        // Fail silently
+      }
+    })();
+
     return updated;
   }
 
   async withdraw(candidateUserId: string, applicationId: string) {
-    const application = await this.prisma.application.findUnique({ where: { id: applicationId } });
+    const application = await this.prisma.application.findUnique({
+      where: { id: applicationId },
+      include: {
+        job: {
+          include: {
+            employer: { select: { companyName: true } },
+          },
+        },
+      },
+    });
     if (!application || application.candidateId !== candidateUserId) {
       throw new NotFoundException('Application not found');
     }
-    return this.prisma.application.update({
+    const updated = await this.prisma.application.update({
       where: { id: applicationId },
       data: { status: 'WITHDRAWN' },
     });
+
+    // Send email in background
+    (async () => {
+      try {
+        const candidateUser = await this.prisma.user.findUnique({
+          where: { id: candidateUserId },
+          include: { candidateProfile: true },
+        });
+        if (candidateUser) {
+          await this.emailService.sendApplicationWithdrawnEmail({
+            candidateEmail: candidateUser.email,
+            candidateName: candidateUser.candidateProfile?.fullName || 'Candidate',
+            jobTitle: application.job.title,
+            companyName: application.job.employer.companyName,
+          });
+        }
+      } catch (e) {
+        // Fail silently
+      }
+    })();
+
+    return updated;
   }
 
   async deleteApplication(employerUserId: string, applicationId: string) {

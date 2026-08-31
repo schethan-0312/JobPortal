@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AiService } from '../ai/ai.service.js';
+import { EmailService } from '../email/email.service.js';
 import { StartAssessmentDto } from './dto/start-assessment.dto.js';
 import { SubmitAssessmentDto } from './dto/submit-assessment.dto.js';
 import { AiFeature } from '../../generated/prisma/enums.js';
@@ -36,6 +37,7 @@ export class SkillAssessmentService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly ai: AiService,
+    private readonly emailService: EmailService,
   ) {}
 
   private async getCandidateId(userId: string): Promise<string> {
@@ -110,6 +112,28 @@ export class SkillAssessmentService {
         completedAt: new Date(),
       },
     });
+
+    // Send result email in background
+    (async () => {
+      try {
+        const candidateUser = await this.prisma.user.findUnique({
+          where: { id: userId },
+          include: { candidateProfile: true },
+        });
+        if (candidateUser?.email) {
+          await this.emailService.sendSkillAssessmentResultEmail({
+            candidateEmail: candidateUser.email,
+            candidateName: candidateUser.candidateProfile?.fullName || 'Candidate',
+            skillName: updated.skill,
+            score,
+            totalQuestions: questions.length,
+            passed,
+          });
+        }
+      } catch (e) {
+        // Fail silently
+      }
+    })();
 
     return {
       id: updated.id,
