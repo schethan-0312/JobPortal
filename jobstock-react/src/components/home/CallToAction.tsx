@@ -94,7 +94,7 @@ export default function CallToAction() {
                   Join JobStock Today
                 </span>
 
-                <h2 className="display-6 fw-bold text-white mb-3" style={{ lineHeight: 1.25 }}>
+                <h2 className="cta-title fw-bold text-white mb-3" style={{ lineHeight: 1.25 }}>
                   Ready to Take the Next Step in Your Career or Hire Top Talent?
                 </h2>
 
@@ -121,7 +121,7 @@ export default function CallToAction() {
                 <div className="d-flex flex-wrap gap-3 mt-4">
                   <Link
                     href="/jobs"
-                    className="btn btn-lg fw-semibold px-4 py-3 shadow-sm d-inline-flex align-items-center"
+                    className="btn btn-lg fw-semibold px-4 py-3 shadow-sm d-inline-flex align-items-center justify-content-center cta-btn"
                     style={{
                       backgroundColor: "#ffffff",
                       color: "#145758",
@@ -135,7 +135,7 @@ export default function CallToAction() {
 
                   <Link
                     href={getStartedHref}
-                    className="btn btn-lg fw-semibold px-4 py-3 shadow-sm d-inline-flex align-items-center"
+                    className="btn btn-lg fw-semibold px-4 py-3 shadow-sm d-inline-flex align-items-center justify-content-center cta-btn"
                     style={{
                       backgroundColor: "#5df0c2",
                       color: "#0b292a",
@@ -152,6 +152,17 @@ export default function CallToAction() {
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        .cta-title {
+          font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+        }
+        @media (max-width: 576px) {
+          .cta-btn {
+            width: 100%;
+          }
+        }
+      `}</style>
     </section>
   );
 }

@@ -1,11 +1,23 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import AuthMenu from "./AuthMenu";
 import { useAuth } from "@/lib/auth-context";
 
 export default function Navbar5() {
   const { user } = useAuth();
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+
+  const toggleDropdown = (name: string) => {
+    setOpenDropdown(openDropdown === name ? null : name);
+  };
+
+  const closeMobileNav = () => {
+    setIsMobileOpen(false);
+    setOpenDropdown(null);
+  };
 
   return (
     <>
@@ -13,10 +25,18 @@ export default function Navbar5() {
         <div className="container">
           <nav id="navigation" className="navigation navigation-landscape">
             <div className="nav-header">
-              <Link className="nav-brand" href="/">
+              <Link className="nav-brand" href="/" onClick={closeMobileNav}>
                 <img src="/assets/img/logo-light.png" className="logo" alt="JobStock" />
               </Link>
-              <div className="nav-toggle"></div>
+              <div
+                className={`nav-toggle ${isMobileOpen ? "open" : ""}`}
+                onClick={() => setIsMobileOpen(!isMobileOpen)}
+                style={{ cursor: "pointer" }}
+              >
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
               <div className="mobile_nav">
                 <ul>
                   <li className="list-buttons">
@@ -30,31 +50,79 @@ export default function Navbar5() {
                 </ul>
               </div>
             </div>
-            <div className="nav-menus-wrapper">
+
+            {/* Mobile Backdrop */}
+            {isMobileOpen && (
+              <div
+                className="nav-backdrop d-lg-none"
+                onClick={closeMobileNav}
+                style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  width: "100vw",
+                  height: "100vh",
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  zIndex: 1040,
+                }}
+              />
+            )}
+
+            <div className={`nav-menus-wrapper ${isMobileOpen ? "nav-menus-wrapper-open show" : ""}`}>
               <ul className="nav-menu">
                 <li>
-                  <Link href="/" className="sub-menu-item">
+                  <Link href="/" className="sub-menu-item" onClick={closeMobileNav}>
                     Home
                   </Link>
                 </li>
 
-                <li className="parent-parent-menu-item">
-                  <a href="#!" className="home-link">
-                    Candidates<span className="submenu-indicator"></span>
+                <li className={`parent-parent-menu-item ${openDropdown === "candidates" ? "active" : ""}`}>
+                  <a
+                    href="#!"
+                    className="home-link d-flex justify-content-between align-items-center"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleDropdown("candidates");
+                    }}
+                  >
+                    Candidates <span className="submenu-indicator"></span>
                   </a>
-                  <ul className="nav-dropdown nav-submenu">
+                  <ul
+                    className="nav-dropdown nav-submenu"
+                    style={{ display: openDropdown === "candidates" ? "block" : undefined }}
+                  >
                     <li>
                       {user ? (
-                        <Link href="/jobs" className="sub-menu-item">View Jobs</Link>
+                        <Link href="/jobs" className="sub-menu-item" onClick={closeMobileNav}>
+                          View Jobs
+                        </Link>
                       ) : (
-                        <a href="#!" className="sub-menu-item" data-bs-toggle="modal" data-bs-target="#login">View Jobs</a>
+                        <a
+                          href="#!"
+                          className="sub-menu-item"
+                          data-bs-toggle="modal"
+                          data-bs-target="#login"
+                          onClick={closeMobileNav}
+                        >
+                          View Jobs
+                        </a>
                       )}
                     </li>
                     <li>
                       {user ? (
-                        <Link href="/candidates" className="sub-menu-item">View Candidates</Link>
+                        <Link href="/candidates" className="sub-menu-item" onClick={closeMobileNav}>
+                          View Candidates
+                        </Link>
                       ) : (
-                        <a href="#!" className="sub-menu-item" data-bs-toggle="modal" data-bs-target="#login">View Candidates</a>
+                        <a
+                          href="#!"
+                          className="sub-menu-item"
+                          data-bs-toggle="modal"
+                          data-bs-target="#login"
+                          onClick={closeMobileNav}
+                        >
+                          View Candidates
+                        </a>
                       )}
                     </li>
                   </ul>
@@ -62,51 +130,69 @@ export default function Navbar5() {
 
                 <li>
                   {user ? (
-                    <Link href="/employers" className="sub-menu-item">Employers</Link>
+                    <Link href="/employers" className="sub-menu-item" onClick={closeMobileNav}>
+                      Employers
+                    </Link>
                   ) : (
-                    <a href="#!" className="sub-menu-item" data-bs-toggle="modal" data-bs-target="#login">Employers</a>
+                    <a
+                      href="#!"
+                      className="sub-menu-item"
+                      data-bs-toggle="modal"
+                      data-bs-target="#login"
+                      onClick={closeMobileNav}
+                    >
+                      Employers
+                    </a>
                   )}
                 </li>
 
-                <li className="parent-parent-menu-item">
-                  <a href="#!" className="home-link">
-                    Pages<span className="submenu-indicator"></span>
+                <li className={`parent-parent-menu-item ${openDropdown === "pages" ? "active" : ""}`}>
+                  <a
+                    href="#!"
+                    className="home-link d-flex justify-content-between align-items-center"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleDropdown("pages");
+                    }}
+                  >
+                    Pages <span className="submenu-indicator"></span>
                   </a>
-                  <ul className="nav-dropdown nav-submenu">
+                  <ul
+                    className="nav-dropdown nav-submenu"
+                    style={{ display: openDropdown === "pages" ? "block" : undefined }}
+                  >
                     <li>
-                      <Link href="/about-us" className="sub-menu-item">
+                      <Link href="/about-us" className="sub-menu-item" onClick={closeMobileNav}>
                         About Us
                       </Link>
                     </li>
                     <li>
-                      <Link href="/blog" className="sub-menu-item">
+                      <Link href="/blog" className="sub-menu-item" onClick={closeMobileNav}>
                         Blogs Page
                       </Link>
                     </li>
                     <li>
-                      <Link href="/privacy" className="sub-menu-item">
+                      <Link href="/privacy" className="sub-menu-item" onClick={closeMobileNav}>
                         Terms &amp; Privacy
                       </Link>
                     </li>
                     <li>
-                      <Link href="/faq" className="sub-menu-item">
+                      <Link href="/faq" className="sub-menu-item" onClick={closeMobileNav}>
                         FAQ&apos;s
                       </Link>
                     </li>
                     <li>
-                      <Link href="/contact" className="sub-menu-item">
+                      <Link href="/contact" className="sub-menu-item" onClick={closeMobileNav}>
                         Contacts
                       </Link>
                     </li>
-                     <li>
-                  <Link href="/help" className="sub-menu-item">
-                    Help
-                  </Link>
-                </li>
+                    <li>
+                      <Link href="/help" className="sub-menu-item" onClick={closeMobileNav}>
+                        Help
+                      </Link>
+                    </li>
                   </ul>
                 </li>
-
-               
               </ul>
 
               <AuthMenu />
@@ -115,6 +201,49 @@ export default function Navbar5() {
         </div>
       </div>
       <div className="clearfix"></div>
+
+      <style jsx global>{`
+        @media (max-width: 991px) {
+          .nav-menus-wrapper {
+            position: fixed !important;
+            top: 0 !important;
+            left: -300px !important;
+            width: 290px !important;
+            height: 100vh !important;
+            background-color: #ffffff !important;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2) !important;
+            transition: left 0.3s ease !important;
+            overflow-y: auto !important;
+            z-index: 1050 !important;
+            display: block !important;
+            visibility: hidden !important;
+          }
+          .nav-menus-wrapper.nav-menus-wrapper-open,
+          .nav-menus-wrapper.show {
+            left: 0 !important;
+            visibility: visible !important;
+          }
+          .nav-menus-wrapper .nav-menu {
+            padding: 20px 10px !important;
+          }
+          .nav-menus-wrapper .nav-menu > li > a {
+            color: #1e293b !important;
+            padding: 12px 16px !important;
+            display: flex !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+          }
+          .nav-menus-wrapper .nav-dropdown {
+            background-color: #f8fafc !important;
+            padding-left: 15px !important;
+            box-shadow: none !important;
+          }
+          .nav-menus-wrapper .nav-dropdown > li > a {
+            color: #475569 !important;
+            padding: 10px 14px !important;
+            font-size: 0.9rem !important;
+          }
+        }
+      `}</style>
     </>
   );
 }

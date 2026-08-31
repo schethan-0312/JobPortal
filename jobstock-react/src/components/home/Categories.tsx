@@ -130,7 +130,7 @@ export default function Categories() {
           {/* Row 1: Candidate AI Tools Cards (3 Cards) */}
           <div className="row justify-content-center g-4 mb-5">
             {candidateAiTools.map((tool) => (
-              <div className="col-xl-4 col-lg-4 col-md-6" key={tool.id}>
+              <div className="col-12 col-md-6 col-lg-4" key={tool.id}>
                 <Link
                   href={tool.href}
                   onClick={(e) => handleCardClick(e, tool.href, tool.targetRole)}
@@ -201,7 +201,7 @@ export default function Categories() {
           {/* Row 2: Employer AI Tools Cards (3 Cards) */}
           <div className="row justify-content-center g-4">
             {employerAiTools.map((tool) => (
-              <div className="col-xl-4 col-lg-4 col-md-6" key={tool.id}>
+              <div className="col-12 col-md-6 col-lg-4" key={tool.id}>
                 <Link
                   href={tool.href}
                   onClick={(e) => handleCardClick(e, tool.href, tool.targetRole)}
