@@ -567,6 +567,7 @@ export default function EmployerSubmitJobPage() {
       setApplicationDeadline("");
       setPublishDate("");
       setIsFeatured(false);
+      setStatus("OPEN");
       scrollToTop();
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Failed to post job.");
@@ -1258,22 +1259,7 @@ export default function EmployerSubmitJobPage() {
                       </div>
                     </div>
 
-                    <div className="col-xl-12 col-lg-12 col-md-12 pt-2">
-                      <div className="form-group mb-0">
-                        <div className="form-check form-switch switch-align-box">
-                          <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="featuredCheck"
-                            checked={isFeatured}
-                            onChange={(e) => setIsFeatured(e.target.checked)}
-                          />
-                          <label className="form-check-label fw-medium ms-2 mb-0" htmlFor="featuredCheck">
-                            Mark as Featured Job (Promote at top of job listings)
-                          </label>
-                        </div>
-                      </div>
-                    </div>
+                    
                   </div>
                 </div>
               </div>

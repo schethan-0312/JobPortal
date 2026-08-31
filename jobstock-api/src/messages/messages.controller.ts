@@ -18,6 +18,11 @@ const typingMap = new Map<string, number>();
 export class MessagesController {
   constructor(private readonly messagesService: MessagesService) {}
 
+  @Get('support-admin')
+  getSupportAdmin() {
+    return this.messagesService.getSupportAdmin();
+  }
+
   @Post('upload')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -71,8 +76,11 @@ export class MessagesController {
   }
 
   @Get('unread-count')
-  countUnread(@CurrentUser() user: AuthenticatedUser) {
-    return this.messagesService.countUnread(user.userId);
+  countUnread(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query('role') role?: 'ADMIN' | 'NON_ADMIN',
+  ) {
+    return this.messagesService.countUnread(user.userId, role);
   }
 
   @Get('conversations/:counterpartId')

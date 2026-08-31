@@ -17,17 +17,8 @@ async function main() {
       name: 'Smart Resume',
       audience: 'RESUME',
       priceInPaisa: 9900,
-      featuresJson: {
-        description: 'Standard resume building tools',
-        durationType: 'Days',
-        duration: 365,
-        features: [
-          'ATS-friendly template',
-          'Keyword optimization',
-          'Formatting',
-          'PDF Download'
-        ]
-      }
+      durationType: 'DAYS',
+      duration: 365,
     }
   });
 
@@ -36,17 +27,8 @@ async function main() {
       name: 'Pro Resume',
       audience: 'RESUME',
       priceInPaisa: 29900,
-      featuresJson: {
-        description: 'Advanced resume building tools',
-        durationType: 'Days',
-        duration: 365,
-        features: [
-          'Everything in Smart Resume',
-          'Industry-specific versions',
-          'Cover Letter creation',
-          'Editable DOC version'
-        ]
-      }
+      durationType: 'DAYS',
+      duration: 365,
     }
   });
 

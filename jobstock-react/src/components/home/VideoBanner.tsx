@@ -102,7 +102,7 @@ export default function VideoBanner() {
                 <i className="fa-solid fa-circle-play me-2"></i>Platform Overview
               </span>
 
-              <h2 className="display-6 fw-bold text-dark mb-3" style={{ lineHeight: 1.25 }}>
+              <h2 className="video-title fw-bold text-dark mb-3" style={{ lineHeight: 1.25 }}>
                 See How JobStock Accelerates Hiring &amp; Career Growth
               </h2>
 
@@ -228,6 +228,12 @@ export default function VideoBanner() {
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        .video-title {
+          font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+        }
+      `}</style>
     </section>
   );
 }

@@ -18,6 +18,7 @@ export type EmployerSidebarActive =
   | "package"
   | "active-package"
   | "messages"
+  | "chat-admin"
   | "competition"
   | "submissions"
  
@@ -46,6 +47,7 @@ export default function EmployerSidebar({ active }: EmployerSidebarProps) {
 
   const [profile, setProfile] = useState<EmployerProfile | null>(null);
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [unreadAdminMessages, setUnreadAdminMessages] = useState(0);
 
   // Verification Modal State
   const [showVerificationModal, setShowVerificationModal] = useState(false);
@@ -85,12 +87,21 @@ export default function EmployerSidebar({ active }: EmployerSidebarProps) {
     window.addEventListener('profile-updated', loadProfile);
 
     api
-      .get<number>("/messages/unread-count")
+      .get<number>("/messages/unread-count?role=NON_ADMIN")
       .then((data) => {
         if (isMounted) setUnreadMessages(data);
       })
       .catch(() => {
         if (isMounted) setUnreadMessages(0);
+      });
+
+    api
+      .get<number>("/messages/unread-count?role=ADMIN")
+      .then((data) => {
+        if (isMounted) setUnreadAdminMessages(data);
+      })
+      .catch(() => {
+        if (isMounted) setUnreadAdminMessages(0);
       });
 
     return () => {
@@ -294,6 +305,12 @@ export default function EmployerSidebar({ active }: EmployerSidebarProps) {
                 <a href="/employer-messages" onClick={(e) => handleRestrictedNav(e, "/employer-messages")}>
                   <i className="fa-solid fa-comments me-2"></i>Messages
                   {unreadMessages > 0 && <span className="count-tag">{unreadMessages}</span>}
+                </a>
+              </li>
+              <li className={active === "chat-admin" ? "active" : undefined}>
+                <a href="/employer-chat-admin" onClick={(e) => handleRestrictedNav(e, "/employer-chat-admin")}>
+                  <i className="fa-solid fa-headset me-2"></i>Chat with Admin
+                  {unreadAdminMessages > 0 && <span className="count-tag">{unreadAdminMessages}</span>}
                 </a>
               </li>
               <li className={active === "delete-account" ? "active" : undefined}>

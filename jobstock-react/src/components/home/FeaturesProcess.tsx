@@ -74,15 +74,15 @@ export default function FeaturesProcess() {
             ))}
           </div>
 
-          <div className="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12 order-xl-2 order-lg-3 order-md-3">
-            <div className="eslio-pincc m-auto">
-              <img src="/assets/img/wp-iphone.png" className="img-fluid" alt="" />
+          <div className="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12 order-xl-2 order-lg-3 order-md-3 my-4 my-xl-0">
+            <div className="eslio-pincc m-auto text-center" style={{ maxWidth: "280px" }}>
+              <img src="/assets/img/wp-iphone.png" className="img-fluid" alt="Mobile App preview" />
             </div>
           </div>
 
           <div className="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12 order-xl-3 order-lg-2 order-md-2">
             {rightSteps.map((s) => (
-              <div className="work-process mb-5" key={s.title}>
+              <div className="work-process mb-4 mb-md-5" key={s.title}>
                 <div className="work-process-icon">
                   <span>
                     <i className={`${s.icon} text-main`}></i>

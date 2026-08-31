@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { api } from "@/lib/api";
 
-export type AdminSidebarActive = "dashboard" | "employers" | "reports" | "ai-monitoring" | "analytics" | (string & {});
+export type AdminSidebarActive = "dashboard" | "employers" | "reports" | "ai-monitoring" | "analytics" | "messages" | (string & {});
 
 interface AdminSidebarProps {
   active?: AdminSidebarActive;
@@ -14,6 +15,22 @@ interface AdminSidebarProps {
 export default function AdminSidebar({ active }: AdminSidebarProps) {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
+  useEffect(() => {
+    let isMounted = true;
+    api
+      .get<number>("/messages/unread-count")
+      .then((data) => {
+        if (isMounted) setUnreadMessages(data);
+      })
+      .catch(() => {
+        if (isMounted) setUnreadMessages(0);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   function handleLogout() {
     logout();
@@ -141,6 +158,12 @@ export default function AdminSidebar({ active }: AdminSidebarProps) {
               </li>
               <li className={active === "support" ? "active" : undefined}>
                 <Link href="/admin-support" onClick={() => setIsOpen(false)}><i className="fa-solid fa-headset me-2"></i>Support</Link>
+              </li>
+              <li className={active === "messages" ? "active" : undefined}>
+                <Link href="/admin-messages" onClick={() => setIsOpen(false)}>
+                  <i className="fa-solid fa-comments me-2"></i>Employee Messages
+                  {unreadMessages > 0 && <span className="count-tag">{unreadMessages}</span>}
+                </Link>
               </li>
               <li className={active === "search" ? "active" : undefined}>
                 <Link href="/admin-search" onClick={() => setIsOpen(false)}><i className="fa-solid fa-magnifying-glass me-2"></i>Search Config</Link>

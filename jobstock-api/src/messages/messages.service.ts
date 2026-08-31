@@ -10,6 +10,17 @@ export class MessagesService {
     private readonly notifications: NotificationsService,
   ) {}
 
+  async getSupportAdmin() {
+    const admin = await this.prisma.user.findFirst({
+      where: { role: 'ADMIN' },
+      select: { id: true, email: true },
+    });
+    if (!admin) {
+      throw new NotFoundException('Support admin not found');
+    }
+    return admin;
+  }
+
   async send(senderId: string, dto: SendMessageDto) {
     if (senderId === dto.receiverId) {
       throw new BadRequestException('You cannot message yourself');
@@ -96,8 +107,14 @@ export class MessagesService {
     return Array.from(conversations.values());
   }
 
-  countUnread(userId: string) {
-    return this.prisma.message.count({ where: { receiverId: userId, readAt: null, deletedForReceiver: false } });
+  countUnread(userId: string, role?: 'ADMIN' | 'NON_ADMIN') {
+    const where: any = { receiverId: userId, readAt: null, deletedForReceiver: false };
+    if (role === 'ADMIN') {
+      where.sender = { role: 'ADMIN' };
+    } else if (role === 'NON_ADMIN') {
+      where.sender = { role: { not: 'ADMIN' } };
+    }
+    return this.prisma.message.count({ where });
   }
 
   async getConversation(userId: string, counterpartId: string) {

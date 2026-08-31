@@ -44,6 +44,18 @@ export default function EmployerDashboardPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [jobs, setJobs] = useState<EmployerJob[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
+
+  async function startAdminChat() {
+    try {
+      const admin = await api.get<{id: string}>("/messages/support-admin");
+      if (admin && admin.id) {
+        router.push(`/employer-messages?newChat=${admin.id}`);
+      }
+    } catch (err) {
+      toast.error("Support admin is currently unavailable.");
+    }
+  }
+
   
   useEffect(() => {
     if (!loading && (!user || user.role !== "EMPLOYER")) {
@@ -110,8 +122,9 @@ export default function EmployerDashboardPage() {
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
-                <h1 className="mb-1 fs-3 fw-medium">Employer Dashboard</h1>
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12 d-flex justify-content-between align-items-center">
+                <div>
+                  <h1 className="mb-1 fs-3 fw-medium">Employer Dashboard</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
                     <li className="breadcrumb-item text-muted">
@@ -126,7 +139,13 @@ export default function EmployerDashboardPage() {
                       </a>
                     </li>
                   </ol>
-                </nav>
+                  </nav>
+                </div>
+                <div>
+                  <button onClick={startAdminChat} className="btn btn-primary">
+                    <i className="fa-solid fa-headset me-2"></i> Chat with Support
+                  </button>
+                </div>
               </div>
             </div>
           </div>
