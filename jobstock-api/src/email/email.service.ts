@@ -793,7 +793,6 @@ export class EmailService {
       this.logger.error(`Failed to send new job follower email to ${opts.candidateEmail}`, e);
     }
   }
-}
 
 
   async sendNewJobNotification(email: string, jobTitle: string, companyName: string, location: string, jobSlug: string) {
