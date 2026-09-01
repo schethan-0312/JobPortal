@@ -123,7 +123,14 @@ export default function CandidatesListClient({
                 </div>
                 <div className="jbs-grid-usrs-contact">
                   <div className="jbs-btn-groups">
-                    <Link href={`/employer-messages?newChat=${item.id}`} className="btn btn-md btn-gray px-4">
+                    <Link
+                      href={
+                        user?.role === "CANDIDATE"
+                          ? `/candidate-messages?userId=${item.id}`
+                          : `/employer-messages?newChat=${item.id}`
+                      }
+                      className="btn btn-md btn-gray px-4"
+                    >
                       Message
                     </Link>
                     <Link href={`/candidate-detail/${item.id}`} className="btn btn-md btn-main px-4">

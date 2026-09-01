@@ -3,6 +3,7 @@ import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AuditLogService } from '../audit-log/audit-log.service.js';
+import { EmailService } from '../email/email.service.js';
 import { AdminRole, AuditTargetType, Role } from '../../generated/prisma/enums.js';
 import { InviteAdminDto } from './dto/invite-admin.dto.js';
 import { UpdateAdminRoleDto } from './dto/update-admin-role.dto.js';
@@ -14,6 +15,7 @@ export class AdminTeamService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly emailService: EmailService,
   ) {}
 
   async list() {
@@ -71,6 +73,13 @@ export class AdminTeamService {
     });
 
     // No transactional email provider is wired up yet, so the one-time temp
+    
+    this.emailService.sendAdminTeamInvitation({
+      email: admin.email,
+      role: admin.adminRole || 'ADMIN',
+      tempPass: tempPassword
+    }).catch(console.error);
+    
     // password is returned directly to the inviting super admin to hand off
     // out-of-band, rather than silently vanishing.
     return { id: admin.id, email: admin.email, adminRole: admin.adminRole, tempPassword };

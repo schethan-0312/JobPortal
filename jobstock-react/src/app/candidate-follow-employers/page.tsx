@@ -1,41 +1,49 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Navbar7 from "@/components/Navbar7";
+import Navbar8 from "@/components/Navbar8";
 import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar";
 import UploadResumeModal from "@/components/candidate-dashboard/UploadResumeModal";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError, assetUrl } from "@/lib/api";
 import { Toaster, toast } from "react-hot-toast";
 
-interface FollowedEmployer {
+interface FollowItem {
   id: string;
   employer?: {
     id: string;
     companyName: string;
     logoUrl: string | null;
     location: string | null;
+    industry?: string | null;
+    userId?: string;
   };
   candidate?: {
     id: string;
     fullName: string;
     profilePhotoUrl: string | null;
     location: string | null;
+    headline?: string | null;
+    userId?: string;
   };
 }
 
-function slugify(title: string) {
-  return title.toLowerCase().replace(/ /g, "-");
-}
+type TabType = "companies" | "candidates" | "followers" | "requests";
 
 export default function CandidateFollowEmployersPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
-  const [employers, setEmployers] = useState<FollowedEmployer[]>([]);
+  const [activeTab, setActiveTab] = useState<TabType>("companies");
+  const [followingList, setFollowingList] = useState<FollowItem[]>([]);
+  const [followersList, setFollowersList] = useState<FollowItem[]>([]);
+  const [requestsList, setRequestsList] = useState<FollowItem[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
-    const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     if (!loading && (!user || (user.role !== "CANDIDATE" && user.role !== "EMPLOYER"))) {
@@ -43,75 +51,170 @@ export default function CandidateFollowEmployersPage() {
     }
   }, [loading, user, router]);
 
-  useEffect(() => {
+  const loadData = async () => {
     if (!user || (user.role !== "CANDIDATE" && user.role !== "EMPLOYER")) return;
-    (async () => {
-      setDataLoading(true);
-      try {
-        const list = await api.get<FollowedEmployer[]>("/follow/following");
-        setEmployers(list);
-      } catch (err) {
-        toast.error(err instanceof ApiError ? err.message : "Failed to load followed profiles");
-      } finally {
-        setDataLoading(false);
+    setDataLoading(true);
+    try {
+      const [followingRes, followersRes, requestsRes] = await Promise.allSettled([
+        api.get<FollowItem[]>("/follow/following"),
+        api.get<FollowItem[]>("/follow/followers"),
+        api.get<FollowItem[]>("/follow/requests"),
+      ]);
+
+      if (followingRes.status === "fulfilled") {
+        setFollowingList(followingRes.value || []);
       }
-    })();
+      if (followersRes.status === "fulfilled") {
+        setFollowersList(followersRes.value || []);
+      }
+      if (requestsRes.status === "fulfilled") {
+        setRequestsList(requestsRes.value || []);
+      }
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to load follow data");
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
   }, [user]);
 
+  // Handle Unfollow / Disconnect
   async function handleUnfollow(targetId: string) {
     setLoadingId(targetId);
     try {
       await api.delete(`/follow/${targetId}`);
-      setEmployers((prev) => prev.filter((item) => item.employer?.id !== targetId && item.candidate?.id !== targetId));
+      toast.success("Disconnected successfully");
+      setFollowingList((prev) =>
+        prev.filter((item) => item.employer?.id !== targetId && item.candidate?.id !== targetId)
+      );
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Failed to unfollow profile");
+      toast.error(err instanceof ApiError ? err.message : "Failed to disconnect profile");
     } finally {
       setLoadingId(null);
     }
   }
 
-  if (loading || !user || (user.role !== "CANDIDATE" && user.role !== "EMPLOYER")) {
+  // Handle Follow / Send Request
+  async function handleFollow(targetId: string, item: FollowItem) {
+    setLoadingId(targetId);
+    try {
+      const res = await api.post<{ isPending?: boolean; message?: string }>(`/follow/${targetId}`, {});
+      if (res?.isPending) {
+        toast.success("Connection request sent!");
+      } else {
+        toast.success("Followed successfully!");
+        setFollowingList((prev) => [item, ...prev]);
+      }
+      loadData();
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to follow profile");
+    } finally {
+      setLoadingId(null);
+    }
+  }
+
+  // Accept incoming connection request
+  async function handleAcceptRequest(candidateId: string) {
+    setLoadingId(candidateId);
+    try {
+      await api.post(`/follow/requests/${candidateId}/accept`, {});
+      toast.success("Connection request accepted! You are now connected.");
+      setRequestsList((prev) => prev.filter((r) => r.candidate?.id !== candidateId));
+      loadData();
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to accept connection request");
+    } finally {
+      setLoadingId(null);
+    }
+  }
+
+  // Reject incoming connection request
+  async function handleRejectRequest(candidateId: string) {
+    setLoadingId(candidateId);
+    try {
+      await api.post(`/follow/requests/${candidateId}/reject`, {});
+      toast.success("Connection request rejected");
+      setRequestsList((prev) => prev.filter((r) => r.candidate?.id !== candidateId));
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to reject connection request");
+    } finally {
+      setLoadingId(null);
+    }
+  }
+
+  // Check if a targetId is already in following list
+  function isFollowing(targetId: string) {
+    return followingList.some(
+      (item) => item.employer?.id === targetId || item.candidate?.id === targetId
+    );
+  }
+
+  // Separate companies and candidates from following list
+  const followedCompanies = useMemo(
+    () => followingList.filter((item) => Boolean(item.employer)),
+    [followingList]
+  );
+
+  const followedCandidates = useMemo(
+    () => followingList.filter((item) => Boolean(item.candidate)),
+    [followingList]
+  );
+
+  // Active list based on tab
+  const displayedList = useMemo(() => {
+    let currentList: FollowItem[] = [];
+    if (activeTab === "companies") currentList = followedCompanies;
+    else if (activeTab === "candidates") currentList = followedCandidates;
+    else if (activeTab === "followers") currentList = followersList;
+    else if (activeTab === "requests") currentList = requestsList;
+
+    if (!searchQuery.trim()) return currentList;
+
+    const q = searchQuery.toLowerCase();
+    return currentList.filter((item) => {
+      const name = item.employer?.companyName || item.candidate?.fullName || "";
+      const loc = item.employer?.location || item.candidate?.location || "";
+      const extra = item.employer?.industry || item.candidate?.headline || "";
+      return (
+        name.toLowerCase().includes(q) ||
+        loc.toLowerCase().includes(q) ||
+        extra.toLowerCase().includes(q)
+      );
+    });
+  }, [activeTab, followedCompanies, followedCandidates, followersList, requestsList, searchQuery]);
+
+  if (loading || !user) {
     return null;
   }
 
   return (
     <>
-      <Navbar7 />
-      <Toaster 
-        position="top-center" 
-        containerStyle={{
-          top: '100px',
-        }}
-        toastOptions={{
-          style: {
-            padding: '16px 24px',
-            fontSize: '1.1rem',
-            fontWeight: '500',
-            maxWidth: '600px',
-            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
-            borderRadius: '12px',
-          },
-        }}
-      />
+      {user.role === "EMPLOYER" ? <Navbar8 /> : <Navbar7 />}
+      <Toaster position="top-center" />
 
       <div className="dashboard-wrap bg-light">
-        <CandidateSidebar active="follow-employers" />
+        {user.role === "CANDIDATE" && <CandidateSidebar active="follow-employers" />}
 
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
               <div className="col-xl-12 col-12 col-lg-12 col-md-12">
-                <h1 className="mb-1 fs-3 fw-medium">
-                  {user.role === "EMPLOYER" ? "Following Candidates" : "Following Employers"}
-                </h1>
+                <h1 className="mb-1 fs-3 fw-medium">Network &amp; Follows</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
-                    <li className="breadcrumb-item text-muted"><a href="#">{user.role === "EMPLOYER" ? "Employer" : "Candidate"}</a></li>
-                    <li className="breadcrumb-item text-muted"><a href="#">Dashboard</a></li>
+                    <li className="breadcrumb-item text-muted">
+                      <Link href="/">{user.role === "EMPLOYER" ? "Employer" : "Candidate"}</Link>
+                    </li>
+                    <li className="breadcrumb-item text-muted">
+                      <Link href={user.role === "EMPLOYER" ? "/employer-dashboard" : "/candidate-dashboard"}>
+                        Dashboard
+                      </Link>
+                    </li>
                     <li className="breadcrumb-item">
-                      <a href="#" className="text-main">
-                        {user.role === "EMPLOYER" ? "Following Candidates" : "Following Employers"}
-                      </a>
+                      <span className="text-main">Network &amp; Follows</span>
                     </li>
                   </ol>
                 </nav>
@@ -120,104 +223,453 @@ export default function CandidateFollowEmployersPage() {
           </div>
 
           <div className="dashboard-widg-bar d-block">
-
-            
-            {/* Header Wrap */}
-            <div className="row">
-              <div className="col-12 col-xl-12 col-lg-12 col-md-12 col-sm-12">
-                <div className="card">
-                  <div className="card-header">
-                    <h6 className="mb-0">
-                      {employers.length} followed {user.role === "EMPLOYER" ? "candidate" : "employer"}{employers.length !== 1 ? "s" : ""}
-                    </h6>
+            {/* Top Quick Stats Row */}
+            <div className="row mb-4 g-3">
+              <div className="col-xl-3 col-lg-6 col-md-6 col-sm-12">
+                <div
+                  className={`card border-0 shadow-sm rounded-4 p-3 cursor-pointer ${
+                    activeTab === "companies" ? "border-main border-2 bg-white" : "bg-white"
+                  }`}
+                  onClick={() => setActiveTab("companies")}
+                  style={{ cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s" }}
+                >
+                  <div className="d-flex align-items-center gap-3">
+                    <div
+                      className="rounded-circle d-flex align-items-center justify-content-center bg-light-primary text-primary"
+                      style={{ width: "50px", height: "50px", fontSize: "20px" }}
+                    >
+                      <i className="fa-solid fa-building"></i>
+                    </div>
+                    <div>
+                      <h4 className="mb-0 fw-bold">{followedCompanies.length}</h4>
+                      <span className="text-muted small">Followed Companies</span>
+                    </div>
                   </div>
-                  <div className="card-body">
-                    {dataLoading && <p className="text-muted">Loading...</p>}
-                    {!dataLoading && employers.length === 0 && (
-                      <p className="text-muted">
-                        You are not following any {user.role === "EMPLOYER" ? "candidates" : "employers"} yet.
-                      </p>
-                    )}
-                    {/* Start All List */}
-                    <div className="row justify-content-start gx-3 gy-4">
-                      {employers.map((item) => {
-                        const isCandidate = Boolean(item.candidate);
-                        const detailUrl = isCandidate 
-                          ? `/candidate-detail/${item.candidate!.id}` 
-                          : `/employer-detail/${item.employer!.id}`;
-                        const logoUrl = isCandidate 
-                          ? item.candidate!.profilePhotoUrl 
-                          : item.employer!.logoUrl;
-                        const defaultImg = isCandidate 
-                          ? "/assets/img/avatar.jpg" 
-                          : "/assets/img/l-1.png";
-                        const name = isCandidate 
-                          ? item.candidate!.fullName 
-                          : item.employer!.companyName;
-                        const location = isCandidate 
-                          ? item.candidate!.location 
-                          : item.employer!.location;
-                        const viewText = isCandidate 
-                          ? "View Profile" 
-                          : "View Company";
-                        const targetId = isCandidate 
-                          ? item.candidate!.id 
-                          : item.employer!.id;
+                </div>
+              </div>
 
-                        return (
-                          <div className="col-xl-12 col-lg-12 col-md-12 col-12" key={item.id}>
-                            <div className="emplors-list-box border">
-                              <div className="emplors-list-head">
-                                <div className="emplors-list-head-thunner">
-                                  <div className="emplors-list-emp-thumb">
-                                    <a href={detailUrl}>
-                                      <figure><img src={assetUrl(logoUrl) || defaultImg} className="img-fluid" alt="" /></figure>
-                                    </a>
-                                  </div>
-                                  <div className="emplors-list-job-caption">
-                                    <div className="emplors-job-title-wrap mb-1">
-                                      <h4>
-                                        <a href={detailUrl} className="emplors-job-title">
-                                          {name}
-                                        </a>
-                                      </h4>
-                                    </div>
-                                    <div className="emplors-job-mrch-lists">
-                                      <div className="single-mrch-lists">
-                                        <span><i className="fa-solid fa-location-dot me-1"></i>{location || "Location not set"}</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="emplors-list-head-last d-flex gap-2 flex-wrap">
-                                  <a href={detailUrl} className="btn btn-md btn-light-main px-3">{viewText}</a>
-                                  <button
-                                    type="button"
-                                    className="btn btn-md btn-outline-danger px-3"
-                                    onClick={() => handleUnfollow(targetId)}
-                                    disabled={loadingId === targetId}
-                                  >
-                                    {loadingId === targetId ? "..." : "Unfollow"}
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
+              <div className="col-xl-3 col-lg-6 col-md-6 col-sm-12">
+                <div
+                  className={`card border-0 shadow-sm rounded-4 p-3 cursor-pointer ${
+                    activeTab === "candidates" ? "border-main border-2 bg-white" : "bg-white"
+                  }`}
+                  onClick={() => setActiveTab("candidates")}
+                  style={{ cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s" }}
+                >
+                  <div className="d-flex align-items-center gap-3">
+                    <div
+                      className="rounded-circle d-flex align-items-center justify-content-center bg-light-info text-info"
+                      style={{ width: "50px", height: "50px", fontSize: "20px" }}
+                    >
+                      <i className="fa-solid fa-user-group"></i>
+                    </div>
+                    <div>
+                      <h4 className="mb-0 fw-bold">{followedCandidates.length}</h4>
+                      <span className="text-muted small">Connected Candidates</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-xl-3 col-lg-6 col-md-6 col-sm-12">
+                <div
+                  className={`card border-0 shadow-sm rounded-4 p-3 cursor-pointer ${
+                    activeTab === "followers" ? "border-main border-2 bg-white" : "bg-white"
+                  }`}
+                  onClick={() => setActiveTab("followers")}
+                  style={{ cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s" }}
+                >
+                  <div className="d-flex align-items-center gap-3">
+                    <div
+                      className="rounded-circle d-flex align-items-center justify-content-center bg-light-success text-success"
+                      style={{ width: "50px", height: "50px", fontSize: "20px" }}
+                    >
+                      <i className="fa-solid fa-users"></i>
+                    </div>
+                    <div>
+                      <h4 className="mb-0 fw-bold">{followersList.length}</h4>
+                      <span className="text-muted small">Followers</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-xl-3 col-lg-6 col-md-6 col-sm-12">
+                <div
+                  className={`card border-0 shadow-sm rounded-4 p-3 cursor-pointer ${
+                    activeTab === "requests" ? "border-main border-2 bg-white" : "bg-white"
+                  }`}
+                  onClick={() => setActiveTab("requests")}
+                  style={{ cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s" }}
+                >
+                  <div className="d-flex align-items-center gap-3">
+                    <div
+                      className="rounded-circle d-flex align-items-center justify-content-center bg-light-warning text-warning"
+                      style={{ width: "50px", height: "50px", fontSize: "20px" }}
+                    >
+                      <i className="fa-solid fa-user-clock"></i>
+                    </div>
+                    <div>
+                      <div className="d-flex align-items-center gap-2">
+                        <h4 className="mb-0 fw-bold">{requestsList.length}</h4>
+                        {requestsList.length > 0 && (
+                          <span className="badge bg-danger rounded-pill small">New</span>
+                        )}
+                      </div>
+                      <span className="text-muted small">Connection Requests</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            {/* Header Wrap */}
 
+            {/* Custom Tab Selection & Search Row */}
+            <div className="row mb-4">
+              <div className="col-12">
+                <div className="card shadow-sm border-0 rounded-4">
+                  <div className="card-body p-3">
+                    <div className="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                      {/* Tabs */}
+                      <ul className="nav nav-pills gap-2">
+                        <li className="nav-item">
+                          <button
+                            type="button"
+                            className={`nav-link rounded-3 fw-medium py-2 px-3.5 ${
+                              activeTab === "companies" ? "active bg-main text-white" : "text-muted"
+                            }`}
+                            onClick={() => setActiveTab("companies")}
+                          >
+                            <i className="fa-solid fa-building me-2"></i>Companies ({followedCompanies.length})
+                          </button>
+                        </li>
+                        <li className="nav-item">
+                          <button
+                            type="button"
+                            className={`nav-link rounded-3 fw-medium py-2 px-3.5 ${
+                              activeTab === "candidates" ? "active bg-main text-white" : "text-muted"
+                            }`}
+                            onClick={() => setActiveTab("candidates")}
+                          >
+                            <i className="fa-solid fa-user-group me-2"></i>Candidates ({followedCandidates.length})
+                          </button>
+                        </li>
+                        <li className="nav-item">
+                          <button
+                            type="button"
+                            className={`nav-link rounded-3 fw-medium py-2 px-3.5 ${
+                              activeTab === "followers" ? "active bg-main text-white" : "text-muted"
+                            }`}
+                            onClick={() => setActiveTab("followers")}
+                          >
+                            <i className="fa-solid fa-users me-2"></i>Followers ({followersList.length})
+                          </button>
+                        </li>
+                        <li className="nav-item">
+                          <button
+                            type="button"
+                            className={`nav-link rounded-3 fw-medium py-2 px-3.5 ${
+                              activeTab === "requests" ? "active bg-main text-white" : "text-muted"
+                            }`}
+                            onClick={() => setActiveTab("requests")}
+                          >
+                            <i className="fa-solid fa-user-clock me-2"></i>Requests ({requestsList.length})
+                          </button>
+                        </li>
+                      </ul>
+
+                      {/* Search Bar */}
+                      <div className="position-relative" style={{ minWidth: "260px" }}>
+                        <i className="fa-solid fa-magnifying-glass position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                        <input
+                          type="text"
+                          className="form-control form-control-sm ps-5 rounded-pill bg-light border-0"
+                          placeholder="Search in list..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        {searchQuery && (
+                          <button
+                            type="button"
+                            className="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-1 text-muted"
+                            onClick={() => setSearchQuery("")}
+                          >
+                            <i className="fa-solid fa-xmark"></i>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Content Display */}
+            {dataLoading ? (
+              <div className="card shadow-sm border-0 rounded-4 p-5 text-center">
+                <div className="spinner-border text-main mx-auto mb-3" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+                <p className="text-muted mb-0">Loading your network...</p>
+              </div>
+            ) : displayedList.length === 0 ? (
+              <div className="card shadow-sm border-0 rounded-4 p-5 text-center bg-white">
+                <div
+                  className="rounded-circle bg-light-main mx-auto mb-3 d-flex align-items-center justify-content-center"
+                  style={{ width: "70px", height: "70px" }}
+                >
+                  <i className="fa-regular fa-folder-open text-main fs-2"></i>
+                </div>
+                <h5 className="fw-bold mb-1">No profiles found</h5>
+                <p className="text-muted small mb-4">
+                  {searchQuery
+                    ? `No matching profiles found for "${searchQuery}" in this tab.`
+                    : activeTab === "companies"
+                    ? "You haven't followed any companies yet."
+                    : activeTab === "candidates"
+                    ? "You haven't connected with any candidates yet."
+                    : activeTab === "requests"
+                    ? "You have no incoming connection requests."
+                    : "No one is following you yet."}
+                </p>
+                {activeTab === "companies" && (
+                  <div>
+                    <Link href="/employers" className="btn btn-main px-4 py-2 rounded-3 fw-medium">
+                      Browse Companies
+                    </Link>
+                  </div>
+                )}
+                {activeTab === "candidates" && (
+                  <div>
+                    <Link href="/candidates" className="btn btn-main px-4 py-2 rounded-3 fw-medium">
+                      Explore Candidates
+                    </Link>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="row g-4">
+                {displayedList.map((item) => {
+                  const isCandidate = Boolean(item.candidate);
+                  const name = isCandidate
+                    ? item.candidate!.fullName
+                    : item.employer!.companyName;
+                  const logoUrl = isCandidate
+                    ? item.candidate!.profilePhotoUrl
+                    : item.employer!.logoUrl;
+                  const defaultImg = isCandidate
+                    ? "/assets/img/avatar.jpg"
+                    : "/assets/img/c-1.png";
+                  const location = isCandidate
+                    ? item.candidate!.location
+                    : item.employer!.location;
+                  const industryOrHeadline = isCandidate
+                    ? item.candidate!.headline
+                    : item.employer!.industry;
+                  const detailUrl = isCandidate
+                    ? `/candidate-detail/${item.candidate!.id}`
+                    : `/employer-detail/${item.employer!.id}`;
+                  const viewText = isCandidate ? "View Profile" : "View Company";
+
+                  const targetId = isCandidate ? item.candidate!.id : item.employer!.id;
+                  const alreadyFollowing = isFollowing(targetId);
+                  const chatUserId = item.candidate?.userId || item.candidate?.id || item.employer?.userId || item.employer?.id;
+
+                  return (
+                    <div className="col-xl-4 col-lg-6 col-md-6 col-12" key={item.id}>
+                      <div
+                        className="card h-100 border-0 shadow-sm rounded-4 p-4 d-flex flex-column justify-content-between bg-white position-relative"
+                        style={{
+                          transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "translateY(-4px)";
+                          e.currentTarget.style.boxShadow = "0 12px 25px -5px rgba(0, 0, 0, 0.1)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "translateY(0)";
+                          e.currentTarget.style.boxShadow = "";
+                        }}
+                      >
+                        <div>
+                          {/* Card Header */}
+                          <div className="d-flex align-items-start justify-content-between gap-3 mb-3">
+                            <Link href={detailUrl}>
+                              <div
+                                className="rounded-circle overflow-hidden border d-flex align-items-center justify-content-center bg-white p-2 shadow-2xs"
+                                style={{ width: "70px", height: "70px" }}
+                              >
+                                <img
+                                  src={assetUrl(logoUrl) || defaultImg}
+                                  className="img-fluid"
+                                  alt={name}
+                                  style={{
+                                    maxHeight: "100%",
+                                    maxWidth: "100%",
+                                    objectFit: isCandidate ? "cover" : "contain",
+                                    borderRadius: isCandidate ? "50%" : "0",
+                                  }}
+                                />
+                              </div>
+                            </Link>
+
+                            <div className="d-flex flex-column align-items-end gap-1">
+                              {isCandidate ? (
+                                <span className="badge bg-light-info text-info border px-2.5 py-1.5 rounded-pill fw-medium">
+                                  <i className="fa-solid fa-user me-1"></i>Candidate
+                                </span>
+                              ) : (
+                                <span className="badge bg-light-success text-success border px-2.5 py-1.5 rounded-pill fw-medium">
+                                  <i className="fa-solid fa-building me-1"></i>Company
+                                </span>
+                              )}
+
+                              {activeTab === "followers" && (
+                                <span className="badge bg-light-primary text-primary border px-2 py-1 rounded-pill small">
+                                  <i className="fa-solid fa-user-check me-1"></i>Follows You
+                                </span>
+                              )}
+
+                              {activeTab === "requests" && (
+                                <span className="badge bg-light-warning text-warning border px-2 py-1 rounded-pill small">
+                                  <i className="fa-solid fa-clock me-1"></i>Wants to connect
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Name and Subtitle */}
+                          <h5 className="fw-bold mb-1 text-dark">
+                            <Link
+                              href={detailUrl}
+                              className="text-dark text-decoration-none"
+                              style={{ transition: "color 0.2s" }}
+                            >
+                              {name}
+                            </Link>
+                          </h5>
+
+                          {industryOrHeadline && (
+                            <p
+                              className="text-muted small mb-2"
+                              style={{
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {industryOrHeadline}
+                            </p>
+                          )}
+
+                          <div className="text-muted small d-flex align-items-center gap-2 mb-3">
+                            <i className="fa-solid fa-location-dot text-main"></i>
+                            <span className="text-truncate">{location || "Location not specified"}</span>
+                          </div>
+                        </div>
+
+                        {/* Bottom Actions */}
+                        <div className="d-flex align-items-center gap-2 pt-3 border-top mt-3 flex-wrap">
+                          <Link
+                            href={detailUrl}
+                            className="btn btn-sm btn-light-main flex-grow-1 py-2 fw-medium rounded-3 text-center"
+                          >
+                            <i className="fa-regular fa-eye me-1"></i>
+                            {viewText}
+                          </Link>
+
+                          {activeTab === "requests" ? (
+                            <>
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-main px-3 py-2 fw-medium rounded-3"
+                                onClick={() => handleAcceptRequest(targetId)}
+                                disabled={loadingId === targetId}
+                                title="Accept Connection Request"
+                              >
+                                {loadingId === targetId ? "..." : (
+                                  <>
+                                    <i className="fa-solid fa-check me-1"></i>Accept
+                                  </>
+                                )}
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-outline-danger px-3 py-2 fw-medium rounded-3"
+                                onClick={() => handleRejectRequest(targetId)}
+                                disabled={loadingId === targetId}
+                                title="Reject Request"
+                              >
+                                <i className="fa-solid fa-xmark"></i>
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              {chatUserId && (
+                                <Link
+                                  href={`/candidate-messages?userId=${chatUserId}`}
+                                  className="btn btn-sm btn-outline-main px-3 py-2 fw-medium rounded-3 text-center"
+                                  title="Send Message"
+                                >
+                                  <i className="fa-regular fa-comment-dots me-1"></i>Message
+                                </Link>
+                              )}
+
+                              {activeTab === "followers" ? (
+                                alreadyFollowing ? (
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-danger px-3 py-2 fw-medium rounded-3"
+                                    onClick={() => handleUnfollow(targetId)}
+                                    disabled={loadingId === targetId}
+                                    title="Click to Disconnect"
+                                  >
+                                    {loadingId === targetId ? "..." : (
+                                      <>
+                                        <i className="fa-solid fa-user-minus me-1"></i>Disconnect
+                                      </>
+                                    )}
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-main px-3 py-2 fw-medium rounded-3"
+                                    onClick={() => handleFollow(targetId, item)}
+                                    disabled={loadingId === targetId}
+                                    title="Send Connection Request"
+                                  >
+                                    {loadingId === targetId ? "..." : (
+                                      <>
+                                        <i className="fa-solid fa-user-plus me-1"></i>Connect Back
+                                      </>
+                                    )}
+                                  </button>
+                                )
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline-danger px-3 py-2 fw-medium rounded-3"
+                                  onClick={() => handleUnfollow(targetId)}
+                                  disabled={loadingId === targetId}
+                                  title="Disconnect"
+                                >
+                                  {loadingId === targetId ? "..." : (
+                                    <>
+                                      <i className="fa-solid fa-user-minus me-1"></i>Disconnect
+                                    </>
+                                  )}
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
-
-          {/* footer removed */}
-
         </div>
-
       </div>
 
       <UploadResumeModal />

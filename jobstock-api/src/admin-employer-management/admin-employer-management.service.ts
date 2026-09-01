@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { EmailService } from '../email/email.service.js';
 
 @Injectable()
 export class AdminEmployerManagementService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly emailService: EmailService) {}
 
   async list(params: { status?: string; search?: string; page: number; pageSize: number }) {
     const where = {
@@ -79,5 +80,18 @@ export class AdminEmployerManagementService {
     ]);
 
     return { ...employer, payments, hiresCount: hires, messageCount: messages };
+  }
+
+  async setStatus(employerId: string, status: 'VERIFIED' | 'REJECTED' | 'SUSPENDED') {
+    const employer = await this.prisma.employer.update({
+      where: { id: employerId },
+      data: { status: status as any },
+      include: { user: true }
+    });
+    
+    // Trigger email in background
+    this.emailService.sendEmployerVerificationStatus(employer.user.email, employer.companyName, status).catch(e => console.error(e));
+    
+    return employer;
   }
 }

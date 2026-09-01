@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AuditLogService } from '../audit-log/audit-log.service.js';
+import { EmailService } from '../email/email.service.js';
 import { AuditTargetType, JobStatus } from '../../generated/prisma/enums.js';
 
 @Injectable()
@@ -8,6 +9,7 @@ export class AdminJobModerationService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly emailService: EmailService,
   ) {}
 
   async list(params: { status?: JobStatus; search?: string; page: number; pageSize: number }) {
@@ -85,7 +87,15 @@ export class AdminJobModerationService {
       throw new NotFoundException('Job not found');
     }
 
-    const updated = await this.prisma.job.update({ where: { id: jobId }, data: { status } });
+    const updated = await this.prisma.job.update({ where: { id: jobId }, data: { status }, include: { employer: { include: { user: true } } } });
+    if (status === 'OPEN' || status === 'FLAGGED') {
+      this.emailService.sendJobModerationStatus({
+        email: updated.employer.user.email,
+        jobTitle: updated.title,
+        companyName: updated.employer.companyName,
+        status: status === 'OPEN' ? 'APPROVED' : 'REJECTED'
+      }).catch(console.error);
+    }
 
     await this.auditLog.log({
       adminId: actorId,

@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards, Patch, Body } from '@nestjs/common';
 import { AdminEmployerManagementService } from './admin-employer-management.service.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
@@ -29,5 +29,10 @@ export class AdminEmployerManagementController {
   @Get(':id')
   getDetail(@Param('id') id: string) {
     return this.service.getDetail(id);
+  }
+
+  @Patch(':id/status')
+  setStatus(@Param('id') id: string, @Body('status') status: 'VERIFIED' | 'REJECTED' | 'SUSPENDED') {
+    return this.service.setStatus(id, status);
   }
 }

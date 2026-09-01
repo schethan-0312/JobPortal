@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, InternalServerErrorException, NotFound
 import Razorpay from 'razorpay';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AuditLogService } from '../audit-log/audit-log.service.js';
+import { EmailService } from '../email/email.service.js';
 import { RefundTransactionDto } from './dto/refund-transaction.dto.js';
 import { OverrideSubscriptionDto } from './dto/override-subscription.dto.js';
 
@@ -12,6 +13,7 @@ export class AdminFinancialsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly emailService: EmailService,
   ) {}
 
   private getRazorpayClient(): Razorpay {
@@ -137,6 +139,21 @@ export class AdminFinancialsService {
       ipAddress: ip,
     });
 
+
+    if (updated.status === 'ACTIVE') {
+      const sub = await this.prisma.employerPackageSubscription.findUnique({
+        where: { id: subscriptionId },
+        include: { employer: { include: { user: true } }, package: true }
+      });
+      if (sub && sub.package && sub.employer?.user) {
+        this.emailService.sendPackageAssignmentConfirmation({
+          email: sub.employer.user.email,
+          planName: sub.package.name,
+          quota: sub.package.postJobLimit || 0,
+          unlocks: sub.package.jobSeekerViewLimit || 0
+        }).catch(console.error);
+      }
+    }
     return updated;
   }
 

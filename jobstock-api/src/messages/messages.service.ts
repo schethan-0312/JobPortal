@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { SendMessageDto } from './dto/send-message.dto.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
@@ -23,19 +23,53 @@ export class MessagesService {
     return admin;
   }
 
+  async resolveUserId(id: string): Promise<string> {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (user) return user.id;
+
+    const candidate = await this.prisma.candidateProfile.findUnique({ where: { id } });
+    if (candidate) return candidate.userId;
+
+    const employer = await this.prisma.employer.findUnique({ where: { id } });
+    if (employer) return employer.userId;
+
+    return id;
+  }
+
   async send(senderId: string, dto: SendMessageDto) {
-    if (senderId === dto.receiverId) {
+    const resolvedReceiverId = await this.resolveUserId(dto.receiverId);
+    if (senderId === resolvedReceiverId) {
       throw new BadRequestException('You cannot message yourself');
     }
-    const receiver = await this.prisma.user.findUnique({ where: { id: dto.receiverId } });
+    const receiver = await this.prisma.user.findUnique({ where: { id: resolvedReceiverId } });
     if (!receiver) {
       throw new NotFoundException('Recipient not found');
+    }
+
+    const sender = await this.prisma.user.findUnique({ where: { id: senderId } });
+    const isCandidateToCandidate = sender?.role === 'CANDIDATE' && receiver.role === 'CANDIDATE';
+
+    if (isCandidateToCandidate) {
+      const isConnected = await this.prisma.candidateEmployerFollow.findFirst({
+        where: {
+          OR: [
+            { followerId: senderId, followingId: resolvedReceiverId, status: 'ACCEPTED' },
+            { followerId: resolvedReceiverId, followingId: senderId, status: 'ACCEPTED' },
+          ],
+        },
+      });
+
+      if (!isConnected) {
+        throw new ForbiddenException(
+          'You can only message candidates who have accepted your connection request.'
+        );
+      }
     }
 
     const message = await this.prisma.message.create({
       data: {
         senderId,
-        receiverId: dto.receiverId,
+        receiverId: resolvedReceiverId,
         body: dto.body ?? '',
         mediaUrl: dto.mediaUrl,
         mediaType: dto.mediaType,
@@ -62,7 +96,7 @@ export class MessagesService {
       },
     });
 
-    await this.notifications.create(dto.receiverId, 'New message', 'You have received a new message');
+    await this.notifications.create(resolvedReceiverId, 'New message', 'You have received a new message');
 
     // Send email notification in background
     (async () => {
@@ -145,7 +179,8 @@ export class MessagesService {
     return this.prisma.message.count({ where });
   }
 
-  async getConversation(userId: string, counterpartId: string) {
+  async getConversation(userId: string, rawCounterpartId: string) {
+    const counterpartId = await this.resolveUserId(rawCounterpartId);
     const messages = await this.prisma.message.findMany({
       where: {
         OR: [

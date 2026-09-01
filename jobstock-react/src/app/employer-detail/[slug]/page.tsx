@@ -1,21 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useParams, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import PublicNavbar from "@/components/PublicNavbar";
+import Navbar7 from "@/components/Navbar7";
+import Navbar8 from "@/components/Navbar8";
 import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError, assetUrl } from "@/lib/api";
+import { Toaster, toast } from "react-hot-toast";
 
 interface EmployerJob {
   id: string;
   title: string;
   slug: string;
-  department: string | null;
+  category?: string | null;
+  jobRole?: string | null;
+  department?: string | null;
   location: string;
   jobType: string;
-  workMode: "REMOTE" | "HYBRID" | "ONSITE" | null;
+  workMode?: string | null;
+  salaryMin?: number | null;
+  salaryMax?: number | null;
+  currency?: string | null;
+  salaryPeriod?: string | null;
   createdAt: string;
 }
 
@@ -31,35 +41,55 @@ interface Employer {
   cultureBlurb?: string | null;
   photos?: string[];
   verifiedAt?: string | null;
-  jobs: EmployerJob[];
-  _count?: { followers: number };
+  jobs?: EmployerJob[];
+  _count?: { followers?: number; jobs?: number };
 }
 
-const workModeLabels: Record<string, string> = { REMOTE: "Remote", HYBRID: "Hybrid", ONSITE: "On-site" };
+const workModeLabels: Record<string, string> = {
+  REMOTE: "Remote",
+  HYBRID: "Hybrid",
+  ONSITE: "On-site",
+  IN_OFFICE: "In-Office",
+};
 
 type TabKey = "overview" | "culture" | "jobs";
 
-export default function EmployerDetailPage() {
+function EmployerDetailContent() {
   const { user } = useAuth();
   const params = useParams();
+  const searchParams = useSearchParams();
   const id = params.slug as string;
+
+  const initialTab = (searchParams.get("tab") as TabKey) || "overview";
 
   const [employer, setEmployer] = useState<Employer | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<TabKey>("overview");
-  const [departmentFilter, setDepartmentFilter] = useState<string | null>(null);
+  const [tab, setTab] = useState<TabKey>(initialTab);
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [following, setFollowing] = useState(false);
   const [followBusy, setFollowBusy] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [appliedJobIds, setAppliedJobIds] = useState<Set<string>>(new Set());
+  const [applyingJobId, setApplyingJobId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (searchParams.get("tab") === "jobs") {
+      setTab("jobs");
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    setLoading(true);
     (async () => {
       try {
         const data = await api.get<Employer>(`/employers/${id}`, { auth: false });
         setEmployer(data);
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : "Failed to load employer");
+        setError(err instanceof ApiError ? err.message : "Failed to load company details");
+      } finally {
+        setLoading(false);
       }
     })();
   }, [id]);
@@ -88,267 +118,512 @@ export default function EmployerDetailPage() {
     })();
   }, [user, id]);
 
+  // Load candidate's applied jobs to prevent duplicate submissions
+  useEffect(() => {
+    if (!user || user.role !== "CANDIDATE") return;
+    (async () => {
+      try {
+        const myApps = await api.get<Array<{ jobId: string }>>("/applications/mine");
+        if (Array.isArray(myApps)) {
+          setAppliedJobIds(new Set(myApps.map((a) => a.jobId)));
+        }
+      } catch {
+        // non-critical
+      }
+    })();
+  }, [user]);
+
   async function toggleFollow() {
+    if (!user) {
+      toast.error("Please login to follow this company");
+      return;
+    }
     setFollowBusy(true);
     const previousFollowing = following;
     const previousCount = followersCount;
     
-    // Optimistic UI updates
     setFollowing(!previousFollowing);
     setFollowersCount(previousFollowing ? previousCount - 1 : previousCount + 1);
 
     try {
       if (previousFollowing) {
         await api.delete(`/follow/${id}`);
+        toast.success("Unfollowed company");
       } else {
         await api.post(`/follow/${id}`);
+        toast.success("Following company");
       }
       
-      // Fetch exact counts from backend to keep UI in sync
       const counts = await api.get<{ followersCount: number; followingCount: number }>(`/follow/counts/${id}`, { auth: false });
       setFollowersCount(counts.followersCount);
       setFollowingCount(counts.followingCount);
-    } catch {
-      // Revert on error
+    } catch (err) {
       setFollowing(previousFollowing);
       setFollowersCount(previousCount);
+      toast.error(err instanceof ApiError ? err.message : "Failed to update follow status");
     } finally {
       setFollowBusy(false);
     }
   }
 
-  const departments = employer ? Array.from(new Set(employer.jobs.map((j) => j.department).filter((d): d is string => Boolean(d)))) : [];
-  const filteredJobs = employer
-    ? departmentFilter
-      ? employer.jobs.filter((j) => j.department === departmentFilter)
-      : employer.jobs
-    : [];
+  // Quick Apply Handler
+  async function handleQuickApply(jobId: string) {
+    if (!user) {
+      toast.error("Please login as a candidate to apply for this job");
+      return;
+    }
+    if (user.role !== "CANDIDATE") {
+      toast.error("Only candidates can apply to jobs");
+      return;
+    }
+    if (appliedJobIds.has(jobId)) {
+      toast.error("You have already applied to this job");
+      return;
+    }
+
+    setApplyingJobId(jobId);
+    try {
+      await api.post("/applications", { jobId });
+      toast.success("Application submitted successfully!");
+      setAppliedJobIds((prev) => new Set([...prev, jobId]));
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to apply for job");
+    } finally {
+      setApplyingJobId(null);
+    }
+  }
+
+  const jobsList = employer?.jobs || [];
+  const categories = Array.from(
+    new Set(
+      jobsList
+        .map((j) => j.category || j.department)
+        .filter((d): d is string => Boolean(d))
+    )
+  );
+  const filteredJobs = categoryFilter
+    ? jobsList.filter((j) => (j.category || j.department) === categoryFilter)
+    : jobsList;
 
   return (
     <>
-      <PublicNavbar />
+      {user?.role === "CANDIDATE" ? (
+        <Navbar7 />
+      ) : user?.role === "EMPLOYER" ? (
+        <Navbar8 />
+      ) : (
+        <PublicNavbar />
+      )}
 
-      <section className="gray-simple">
-        <div className="container">
-          <div className="row">
-            <div className="col-xl-12 col-lg-12 col-md-12">
-              {error && (
-                <div className="emplr-head-block p-5 text-center">
-                  <p className="text-danger m-0">{error}</p>
-                </div>
-              )}
-              {employer && (
-                <div className="emplr-head-block">
-                  <div className="emplr-head-left">
-                    <div className="emplr-head-thumb">
-                      <figure>
-                        <img src={assetUrl(employer.logoUrl) || "/assets/img/l-1.png"} className="img-fluid rounded" alt="" />
-                      </figure>
-                    </div>
-                    <div className="emplr-head-caption">
-                      <div className="emplr-head-caption-top">
-                        <div className="emplr-yior-1">
-                          <span className="label text-sm-muted text-success bg-light-success">
-                            {employer.status ?? "VERIFIED"}
-                          </span>
-                        </div>
-                        <div className="emplr-yior-2">
-                          <h4 className="emplr-title">{employer.companyName}</h4>
-                        </div>
-                        <div className="emplr-yior-3">
-                          <span>
-                            <i className="fa-solid fa-building-shield me-1"></i>
-                            {employer.industry ?? "—"}
-                          </span>
-                          <span>
-                            <i className="fa-solid fa-location-dot me-1"></i>
-                            {employer.location ?? "—"}
-                          </span>
-                          <span>
-                            <i className="fa-solid fa-users me-1"></i>
-                            {followersCount} Followers
-                          </span>
-                          <span>
-                            <i className="fa-solid fa-user-plus me-1"></i>
-                            {followingCount} Following
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="emplr-head-right d-flex gap-2">
-                    {user?.role === "CANDIDATE" && (
-                      <button
-                        type="button"
-                        className={`btn ${following ? "btn-outline-main" : "btn-main"}`}
-                        disabled={followBusy}
-                        onClick={toggleFollow}
-                      >
-                        {following ? "Unfollow" : "Follow"}
-                      </button>
-                    )}
-                    {employer.website ? (
-                      <a href={employer.website} target="_blank" rel="noreferrer" className="btn btn-outline-main">
-                        Visit Website
-                      </a>
-                    ) : (
-                      <button type="button" className="btn btn-outline-main" disabled>
-                        No Website
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+      <Toaster position="top-center" />
+
+      {loading && (
+        <div className="container text-center" style={{ paddingTop: "120px", minHeight: "60vh" }}>
+          <div className="spinner-border text-main" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <p className="text-muted mt-2">Loading company profile...</p>
+        </div>
+      )}
+
+      {error && !loading && (
+        <div className="container text-center" style={{ paddingTop: "120px", minHeight: "60vh" }}>
+          <div className="alert alert-danger d-inline-block px-5 py-3 rounded-4 mb-4">
+            <h5 className="mb-1">{error}</h5>
+            <p className="small mb-0">The requested employer profile could not be found or is not yet published.</p>
+          </div>
+          <div>
+            <Link href="/employers" className="btn btn-outline-main px-4 py-2">
+              <i className="fa-solid fa-arrow-left me-2"></i>Back to Companies Directory
+            </Link>
           </div>
         </div>
-      </section>
+      )}
 
-      {employer && (
-        <section>
+      {employer && !loading && (
+        <section className="bg-light pb-5" style={{ paddingTop: "110px", minHeight: "85vh" }}>
           <div className="container">
-            <ul className="nav nav-tabs mb-4">
-              {(["overview", "culture", "jobs"] as TabKey[]).map((t) => (
-                <li className="nav-item" key={t}>
+            {/* Breadcrumb Navigation */}
+            <div className="mb-3">
+              <nav aria-label="breadcrumb">
+                <ol className="breadcrumb mb-0">
+                  <li className="breadcrumb-item">
+                    <Link href={user?.role === "CANDIDATE" ? "/candidate-dashboard" : "/"}>
+                      {user?.role === "CANDIDATE" ? "Dashboard" : "Home"}
+                    </Link>
+                  </li>
+                  <li className="breadcrumb-item">
+                    <Link href="/employers">Companies</Link>
+                  </li>
+                  <li className="breadcrumb-item active text-muted" aria-current="page">
+                    {employer.companyName}
+                  </li>
+                </ol>
+              </nav>
+            </div>
+
+            <div className="card border-0 shadow-sm rounded-4 p-4 mb-4">
+              <div className="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div className="d-flex align-items-center gap-3">
+                  <div
+                    className="rounded-circle overflow-hidden border d-flex align-items-center justify-content-center bg-white p-2 flex-shrink-0"
+                    style={{ width: 80, height: 80 }}
+                  >
+                    <img
+                      src={assetUrl(employer.logoUrl) || "/assets/img/l-4.png"}
+                      alt={employer.companyName}
+                      className="img-fluid"
+                      style={{ maxHeight: "100%", objectFit: "contain" }}
+                    />
+                  </div>
+                  <div>
+                    <h3 className="mb-1 text-dark fw-bold">{employer.companyName}</h3>
+                    <div className="d-flex flex-wrap gap-2 text-muted small align-items-center">
+                      {employer.industry && (
+                        <span>
+                          <i className="fa-solid fa-layer-group me-1 text-main"></i>
+                          {employer.industry}
+                        </span>
+                      )}
+                      {employer.location && (
+                        <span>
+                          <i className="fa-solid fa-location-dot me-1 text-main"></i>
+                          {employer.location}
+                        </span>
+                      )}
+                      <span className="badge bg-light-main text-main border">
+                        <i className="fa-solid fa-briefcase me-1"></i>
+                        {jobsList.length} Open {jobsList.length === 1 ? "Job" : "Jobs"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="d-flex align-items-center gap-2 flex-wrap">
                   <button
                     type="button"
-                    className={`nav-link ${tab === t ? "active" : ""}`}
-                    onClick={() => setTab(t)}
+                    className={`btn px-4 py-2 fw-medium ${
+                      following ? "btn-outline-main" : "btn-main"
+                    }`}
+                    onClick={toggleFollow}
+                    disabled={followBusy}
                   >
-                    {t === "overview" ? "Overview" : t === "culture" ? "Why Join Us" : `Jobs (${employer.jobs.length})`}
+                    {followBusy ? (
+                      "..."
+                    ) : following ? (
+                      <>
+                        <i className="fa-solid fa-user-check me-2"></i>Following ({followersCount})
+                      </>
+                    ) : (
+                      <>
+                        <i className="fa-solid fa-user-plus me-2"></i>Follow ({followersCount})
+                      </>
+                    )}
                   </button>
-                </li>
-              ))}
+                  {employer.website && (
+                    <a
+                      href={employer.website}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-outline-secondary px-3 py-2"
+                    >
+                      <i className="fa-solid fa-globe me-1"></i>Website
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Navigation Tabs */}
+            <ul className="nav nav-pills gap-2 mb-4">
+              <li className="nav-item">
+                <button
+                  type="button"
+                  className={`nav-link px-4 py-2 fw-medium ${tab === "overview" ? "active bg-main text-white" : "bg-white text-dark shadow-sm"}`}
+                  onClick={() => setTab("overview")}
+                  style={{ borderRadius: 8 }}
+                >
+                  <i className="fa-solid fa-circle-info me-2"></i>Overview
+                </button>
+              </li>
+              <li className="nav-item">
+                <button
+                  type="button"
+                  className={`nav-link px-4 py-2 fw-medium ${tab === "culture" ? "active bg-main text-white" : "bg-white text-dark shadow-sm"}`}
+                  onClick={() => setTab("culture")}
+                  style={{ borderRadius: 8 }}
+                >
+                  <i className="fa-solid fa-heart me-2"></i>Culture &amp; Life
+                </button>
+              </li>
+              <li className="nav-item">
+                <button
+                  type="button"
+                  className={`nav-link px-4 py-2 fw-medium ${tab === "jobs" ? "active bg-main text-white" : "bg-white text-dark shadow-sm"}`}
+                  onClick={() => setTab("jobs")}
+                  style={{ borderRadius: 8 }}
+                >
+                  <i className="fa-solid fa-briefcase me-2"></i>Jobs ({jobsList.length})
+                </button>
+              </li>
             </ul>
 
             <div className="row">
-              <div className="col-xl-8 col-lg-8 col-md-12">
+              <div className="col-xl-8 col-lg-8 col-md-12 mb-4">
                 {tab === "overview" && (
-                  <div className="cdtsr-groups-block">
-                    <div className="single-cdtsr-block">
-                      <div className="single-cdtsr-header">
-                        <h5>About Company</h5>
-                      </div>
-                      <div className="single-cdtsr-body">
-                        <p>{employer.description ?? "No description provided."}</p>
-                      </div>
-                    </div>
+                  <div className="card border-0 shadow-sm rounded-4 p-4">
+                    <h5 className="fw-bold mb-3">About {employer.companyName}</h5>
+                    <p className="text-muted" style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>
+                      {employer.description || "No description provided yet."}
+                    </p>
                   </div>
                 )}
 
                 {tab === "culture" && (
-                  <div className="cdtsr-groups-block">
-                    <div className="single-cdtsr-block">
-                      <div className="single-cdtsr-header">
-                        <h5>Culture &amp; Values</h5>
-                      </div>
-                      <div className="single-cdtsr-body">
-                        <p style={{ whiteSpace: "pre-line" }}>{employer.cultureBlurb ?? "This company hasn't shared what it's like to work here yet."}</p>
-                      </div>
+                  <div className="card border-0 shadow-sm rounded-4 p-4">
+                    <div className="mb-4">
+                      <h5 className="fw-bold mb-3 text-dark">
+                        <i className="fa-solid fa-heart me-2 text-danger"></i>Culture &amp; Values
+                      </h5>
+                      <p className="text-muted" style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>
+                        {employer.cultureBlurb || "This company hasn't shared culture details yet."}
+                      </p>
                     </div>
-                    {employer.photos && employer.photos.length > 0 && (
-                      <div className="single-cdtsr-block">
-                        <div className="single-cdtsr-header">
-                          <h5>Life at {employer.companyName}</h5>
+
+                    <div className="pt-3 border-top">
+                      <h6 className="fw-bold mb-3 text-dark d-flex align-items-center justify-content-between">
+                        <span>
+                          <i className="fa-solid fa-camera-retro me-2 text-main"></i>Workplace &amp; Team Photos
+                        </span>
+                        <span className="badge bg-light-main text-main border">
+                          {employer.photos?.length || 0} {employer.photos?.length === 1 ? "Photo" : "Photos"}
+                        </span>
+                      </h6>
+
+                      {employer.photos && employer.photos.length > 0 ? (
+                        <div className="row g-3">
+                          {employer.photos.map((url, idx) => (
+                            <div className="col-xl-4 col-lg-4 col-md-6 col-6" key={idx}>
+                              <a
+                                href={assetUrl(url) || url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="d-block position-relative rounded-4 overflow-hidden shadow-sm border"
+                                style={{ height: "180px", cursor: "pointer", transition: "transform 0.2s" }}
+                                onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.02)")}
+                                onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                                title="Click to view full image"
+                              >
+                                <img
+                                  src={assetUrl(url) || url}
+                                  alt={`Workplace photo ${idx + 1}`}
+                                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                />
+                              </a>
+                            </div>
+                          ))}
                         </div>
-                        <div className="single-cdtsr-body">
-                          <div className="d-flex flex-wrap gap-3">
-                            {employer.photos.map((url) => (
-                              <img key={url} src={assetUrl(url) ?? url} alt="" width={160} height={160} style={{ objectFit: "cover", borderRadius: 8 }} />
-                            ))}
-                          </div>
+                      ) : (
+                        <div className="border border-dashed rounded-4 p-4 text-center bg-light">
+                          <i className="fa-regular fa-image fs-3 text-muted mb-2 d-block"></i>
+                          <p className="text-muted small mb-0">No workplace photos shared by this company yet.</p>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 )}
 
                 {tab === "jobs" && (
-                  <div className="cdtsr-groups-block">
-                    {departments.length > 0 && (
-                      <div className="d-flex flex-wrap gap-2 mb-4">
+                  <div>
+                    {categories.length > 1 && (
+                      <div className="d-flex flex-wrap gap-2 mb-3">
                         <button
                           type="button"
-                          className={`btn btn-sm ${departmentFilter === null ? "btn-main" : "btn-outline-main"}`}
-                          onClick={() => setDepartmentFilter(null)}
+                          className={`btn btn-sm ${categoryFilter === null ? "btn-main" : "btn-outline-main"}`}
+                          onClick={() => setCategoryFilter(null)}
                         >
-                          All Departments
+                          All Categories
                         </button>
-                        {departments.map((dept) => (
+                        {categories.map((cat) => (
                           <button
-                            key={dept}
+                            key={cat}
                             type="button"
-                            className={`btn btn-sm ${departmentFilter === dept ? "btn-main" : "btn-outline-main"}`}
-                            onClick={() => setDepartmentFilter(dept)}
+                            className={`btn btn-sm ${categoryFilter === cat ? "btn-main" : "btn-outline-main"}`}
+                            onClick={() => setCategoryFilter(cat)}
                           >
-                            {dept}
+                            {cat}
                           </button>
                         ))}
                       </div>
                     )}
 
-                    {filteredJobs.length === 0 && <p className="text-muted">No open roles right now.</p>}
+                    {filteredJobs.length === 0 && (
+                      <div className="card border-0 shadow-sm rounded-4 p-5 text-center">
+                        <div className="mb-2">
+                          <i className="fa-solid fa-briefcase fs-2 text-muted"></i>
+                        </div>
+                        <h6 className="fw-bold text-dark mb-1">No Active Openings</h6>
+                        <p className="text-muted mb-0">This company does not currently have any active job postings.</p>
+                      </div>
+                    )}
+
                     <div className="d-flex flex-column gap-3">
-                      {filteredJobs.map((job) => (
-                        <a
-                          key={job.id}
-                          href={`/job-detail/${job.slug}`}
-                          className="single-cdtsr-block d-block text-decoration-none"
-                          style={{ border: "1px solid #eee", borderRadius: 8, padding: "1rem" }}
-                        >
-                          <h6 className="mb-1 text-dark">{job.title}</h6>
-                          <div className="small text-muted">
-                            {job.department && <span className="me-3">{job.department}</span>}
-                            <span className="me-3"><i className="fa-solid fa-location-dot me-1"></i>{job.location}</span>
-                            <span className="me-3">{job.jobType.replace("_", " ")}</span>
-                            {job.workMode && <span>{workModeLabels[job.workMode]}</span>}
+                      {filteredJobs.map((job) => {
+                        const isApplied = appliedJobIds.has(job.id);
+                        const isBusy = applyingJobId === job.id;
+                        const salaryText = job.salaryMin && job.salaryMax
+                          ? `${job.currency || '₹'} ${job.salaryMin.toLocaleString()} - ${job.salaryMax.toLocaleString()}${job.salaryPeriod ? ` / ${job.salaryPeriod.toLowerCase()}` : ''}`
+                          : job.salaryMin
+                          ? `From ${job.currency || '₹'} ${job.salaryMin.toLocaleString()}`
+                          : null;
+
+                        return (
+                          <div
+                            key={job.id}
+                            className="card border-0 shadow-sm rounded-3 p-4 bg-white"
+                          >
+                            <div className="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                              <div>
+                                <h5 className="mb-2 fw-bold">
+                                  <Link
+                                    href={`/job-detail/${job.slug}`}
+                                    className="text-dark text-decoration-none"
+                                  >
+                                    {job.title}
+                                  </Link>
+                                </h5>
+                                <div className="small text-muted d-flex flex-wrap gap-3 align-items-center">
+                                  {(job.category || job.jobRole) && (
+                                    <span>
+                                      <i className="fa-solid fa-tag me-1 text-main"></i>
+                                      {job.category || job.jobRole}
+                                    </span>
+                                  )}
+                                  <span>
+                                    <i className="fa-solid fa-location-dot me-1 text-main"></i>
+                                    {job.location}
+                                  </span>
+                                  <span>
+                                    <i className="fa-regular fa-clock me-1 text-main"></i>
+                                    {job.jobType.replace(/_/g, " ")}
+                                  </span>
+                                  {salaryText && (
+                                    <span>
+                                      <i className="fa-solid fa-money-bill-wave me-1 text-main"></i>
+                                      {salaryText}
+                                    </span>
+                                  )}
+                                  {job.workMode && (
+                                    <span className="badge bg-light-info text-info border">
+                                      {workModeLabels[job.workMode] || job.workMode}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="d-flex align-items-center gap-2 flex-wrap">
+                                <Link
+                                  href={`/job-detail/${job.slug}`}
+                                  className="btn btn-sm btn-outline-secondary px-3 py-2 fw-medium"
+                                >
+                                  <i className="fa-regular fa-eye me-1"></i>View Details
+                                </Link>
+
+                                {isApplied ? (
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-success px-3 py-2 fw-medium text-white"
+                                    disabled
+                                  >
+                                    <i className="fa-solid fa-check me-1"></i>Applied
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-main px-3 py-2 fw-medium"
+                                    onClick={() => handleQuickApply(job.id)}
+                                    disabled={isBusy}
+                                  >
+                                    {isBusy ? (
+                                      "..."
+                                    ) : (
+                                      <>
+                                        <i className="fa-solid fa-paper-plane me-1"></i>Quick Apply
+                                      </>
+                                    )}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                        </a>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
               </div>
 
+              {/* Sidebar Info Card */}
               <div className="col-xl-4 col-lg-4 col-md-12">
-                <div className="eflorio-wrap-block mb-4">
-                  <div className="eflorio-wrap-group">
-                    <div className="eflorio-wrap-body">
-                      <div className="eflorio-list-groups">
-                        <div className="single-eflorio-list">
-                          <div className="eflorio-list-icons"><i className="fa-solid fa-layer-group text-main"></i></div>
-                          <div className="eflorio-list-captions"><label>Industry</label><h6>{employer.industry ?? "—"}</h6></div>
-                        </div>
-                        <div className="single-eflorio-list">
-                          <div className="eflorio-list-icons"><i className="fa-solid fa-map-location-dot text-main"></i></div>
-                          <div className="eflorio-list-captions"><label>Location</label><h6>{employer.location ?? "—"}</h6></div>
-                        </div>
-                        <div className="single-eflorio-list">
-                          <div className="eflorio-list-icons"><i className="fa-solid fa-building-circle-check text-main"></i></div>
-                          <div className="eflorio-list-captions">
-                            <label>Verified Since</label>
-                            <h6>{employer.verifiedAt ? new Date(employer.verifiedAt).toLocaleDateString() : "—"}</h6>
-                          </div>
-                        </div>
-                        <div className="single-eflorio-list">
-                          <div className="eflorio-list-icons"><i className="fa-solid fa-briefcase text-main"></i></div>
-                          <div className="eflorio-list-captions"><label>Active Postings</label><h6>{employer.jobs.length}</h6></div>
-                        </div>
+                <div className="card border-0 shadow-sm rounded-4 p-4">
+                  <h6 className="fw-bold mb-3 text-dark">Company Information</h6>
+                  <div className="d-flex flex-column gap-3">
+                    <div className="d-flex align-items-center gap-3">
+                      <div className="rounded-circle bg-light-primary text-primary p-3">
+                        <i className="fa-solid fa-layer-group"></i>
+                      </div>
+                      <div>
+                        <span className="text-muted small d-block">Industry</span>
+                        <span className="fw-semibold text-dark">{employer.industry || "—"}</span>
                       </div>
                     </div>
-                    <div className="eflorio-wrap-footer">
-                      <div className="eflorio-footer-body">
-                        {employer.website ? (
-                          <a href={employer.website} target="_blank" rel="noreferrer" className="btn btn-main fw-medium full-width">
-                            View Website
-                          </a>
-                        ) : (
-                          <button type="button" className="btn btn-main fw-medium full-width" disabled>
-                            View Website
-                          </button>
-                        )}
+
+                    <div className="d-flex align-items-center gap-3">
+                      <div className="rounded-circle bg-light-success text-success p-3">
+                        <i className="fa-solid fa-map-location-dot"></i>
+                      </div>
+                      <div>
+                        <span className="text-muted small d-block">Location</span>
+                        <span className="fw-semibold text-dark">{employer.location || "—"}</span>
                       </div>
                     </div>
+
+                    <div className="d-flex align-items-center gap-3">
+                      <div className="rounded-circle bg-light-warning text-warning p-3">
+                        <i className="fa-solid fa-briefcase"></i>
+                      </div>
+                      <div>
+                        <span className="text-muted small d-block">Active Postings</span>
+                        <span className="fw-semibold text-dark">{jobsList.length} Openings</span>
+                      </div>
+                    </div>
+
+                    <div className="d-flex align-items-center gap-3">
+                      <div className="rounded-circle bg-light-info text-info p-3">
+                        <i className="fa-solid fa-users"></i>
+                      </div>
+                      <div>
+                        <span className="text-muted small d-block">Followers</span>
+                        <span className="fw-semibold text-dark">{followersCount} Followers</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-top">
+                    {employer.website ? (
+                      <a
+                        href={employer.website}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="btn btn-main full-width fw-medium py-2"
+                      >
+                        <i className="fa-solid fa-globe me-2"></i>Visit Company Website
+                      </a>
+                    ) : (
+                      <button type="button" className="btn btn-secondary full-width fw-medium py-2" disabled>
+                        No Website Listed
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -357,37 +632,24 @@ export default function EmployerDetailPage() {
         </section>
       )}
 
-      <section className="bg-cover bg-main" style={{ background: "url(/assets/img/footer-bg-dark.png)no-repeat" }}>
-        <div className="container">
-          <div className="row justify-content-center">
-            <div className="col-xl-7 col-lg-10 col-md-12 col-sm-12">
-              <div className="call-action-wrap">
-                <div className="sec-heading center">
-                  <h2 className="lh-base mb-3 text-light">
-                    Find The Perfect Job
-                    <br />
-                    on JobStock That is Superb For You
-                  </h2>
-                  <p className="fs-6 text-light">
-                    Join thousands of job seekers and employers who trust JobStock to find the right fit, faster.
-                  </p>
-                </div>
-                <div className="call-action-buttons mt-3">
-                  <a href="/jobs" className="btn btn-lg btn-dark fw-medium px-xl-5 px-lg-4 me-2">
-                    Browse Jobs
-                  </a>
-                  <a href="/signup" className="btn btn-lg btn-whites fw-medium px-xl-5 px-lg-4 text-main">
-                    Get Started
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <LoginModal />
       <Footer />
     </>
+  );
+}
+
+export default function EmployerDetailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="text-center" style={{ paddingTop: "120px", minHeight: "60vh" }}>
+          <div className="spinner-border text-main" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      }
+    >
+      <EmployerDetailContent />
+    </Suspense>
   );
 }

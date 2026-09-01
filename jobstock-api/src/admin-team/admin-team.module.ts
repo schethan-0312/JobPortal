@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 import { AdminTeamService } from './admin-team.service.js';
 import { AdminTeamController } from './admin-team.controller.js';
 import { AuditLogModule } from '../audit-log/audit-log.module.js';
+import { EmailModule } from '../email/email.module.js';
 
 @Module({
-  imports: [AuditLogModule],
+  imports: [EmailModule, AuditLogModule],
   providers: [AdminTeamService],
   controllers: [AdminTeamController],
 })

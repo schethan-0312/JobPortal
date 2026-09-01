@@ -150,26 +150,28 @@ export default function CandidateFollowHeader({ candidate, initialCounts }: Foll
           </div>
         </div>
       </div>
-      <div className="cndt-head-right d-flex gap-2 align-items-center">
-        <button
-          type="button"
-          className={`btn ${following ? "btn-outline-main" : "btn-main"}`}
-          disabled={followBusy}
-          onClick={toggleFollow}
-        >
-          {following ? "Unfollow" : "Follow"}
-        </button>
+      <div className="cndt-head-right d-flex gap-2 align-items-center flex-wrap">
+        {user?.role !== "EMPLOYER" && (
+          <button
+            type="button"
+            className={`btn ${following ? "btn-outline-main" : "btn-main"}`}
+            disabled={followBusy}
+            onClick={toggleFollow}
+          >
+            {following ? "Unfollow" : "Follow"}
+          </button>
+        )}
         {candidate.resumeUrl ? (
           <a href={candidate.resumeUrl} target="_blank" rel="noreferrer" className="btn btn-main">
             Download CV
             <i className="fa-solid fa-download ms-2"></i>
           </a>
         ) : (
-          <button type="button" className="btn btn-main" disabled>
+          <button type="button" className="btn btn-secondary" disabled>
             No Resume
           </button>
         )}
-        <button type="button" className="btn btn-outline-main">
+        <button type="button" className="btn btn-outline-main" title="Shortlist Candidate">
           <i className="fa-solid fa-bookmark"></i>
         </button>
       </div>

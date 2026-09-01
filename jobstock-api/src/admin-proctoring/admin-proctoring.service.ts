@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AuditLogService } from '../audit-log/audit-log.service.js';
+import { EmailService } from '../email/email.service.js';
 import { AuditTargetType } from '../../generated/prisma/enums.js';
 
 @Injectable()
@@ -8,6 +9,7 @@ export class AdminProctoringService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly emailService: EmailService,
   ) {}
 
   async overview() {

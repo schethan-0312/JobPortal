@@ -17,6 +17,8 @@ interface EmployerProfile {
   website: string | null;
   location: string | null;
   industry: string | null;
+  cultureBlurb: string | null;
+  photos: string[];
   status: string;
   gstCertificateUrl?: string;
   incorporationCertUrl?: string;
@@ -27,6 +29,7 @@ export default function EmployerProfilePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const photosInputRef = useRef<HTMLInputElement>(null);
   const alertRef = useRef<HTMLDivElement>(null);
 
   const [profile, setProfile] = useState<EmployerProfile | null>(null);
@@ -35,14 +38,17 @@ export default function EmployerProfilePage() {
   const [website, setWebsite] = useState("");
   const [location, setLocation] = useState("");
   const [industry, setIndustry] = useState("");
+  const [cultureBlurb, setCultureBlurb] = useState("");
+  const [photos, setPhotos] = useState<string[]>([]);
 
   const [dataLoading, setDataLoading] = useState(true);
-      const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
 
   const scrollToTop = () => {
     if (alertRef.current) {
-      const yOffset = -110; // Leaves space for sticky navbar header at top
+      const yOffset = -110;
       const y = alertRef.current.getBoundingClientRect().top + window.scrollY + yOffset;
       window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
     } else if (typeof window !== "undefined") {
@@ -68,6 +74,8 @@ export default function EmployerProfilePage() {
         setWebsite(p.website || "");
         setLocation(p.location || "");
         setIndustry(p.industry || "");
+        setCultureBlurb(p.cultureBlurb || "");
+        setPhotos(p.photos || []);
       } catch (err) {
         toast.error(err instanceof ApiError ? err.message : "Failed to load profile");
       } finally {
@@ -79,18 +87,20 @@ export default function EmployerProfilePage() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
-            try {
+    try {
       const updated = await api.patch<EmployerProfile>("/employers/me", {
         companyName,
         description,
         website,
         location,
         industry,
+        cultureBlurb,
+        photos,
       });
       setProfile(updated);
       toast.success("Profile saved successfully.");
       scrollToTop();
-      window.dispatchEvent(new CustomEvent('profile-updated'));
+      window.dispatchEvent(new CustomEvent("profile-updated"));
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Failed to save profile");
       scrollToTop();
@@ -108,12 +118,56 @@ export default function EmployerProfilePage() {
       const updated = await api.patch<EmployerProfile>("/employers/me", { logoUrl: url });
       setProfile(updated);
       toast.success("Profile photo updated successfully");
-      window.dispatchEvent(new Event('profile-updated'));
+      window.dispatchEvent(new Event("profile-updated"));
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Failed to upload photo");
     } finally {
       setUploadingPhoto(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  // Upload one or multiple workplace / culture photos
+  async function handleGalleryUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingGallery(true);
+    const newUploadedUrls: string[] = [];
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const res = await uploadFile<{ url: string }>("/uploads/image", file);
+        if (res?.url) {
+          newUploadedUrls.push(res.url);
+        }
+      }
+
+      if (newUploadedUrls.length > 0) {
+        const updatedPhotos = [...photos, ...newUploadedUrls];
+        setPhotos(updatedPhotos);
+        // Persist immediately
+        await api.patch("/employers/me", { photos: updatedPhotos });
+        toast.success(`Uploaded ${newUploadedUrls.length} photo(s) successfully!`);
+      }
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to upload photos");
+    } finally {
+      setUploadingGallery(false);
+      if (photosInputRef.current) photosInputRef.current.value = "";
+    }
+  }
+
+  // Remove photo from gallery
+  async function handleRemovePhoto(indexToRemove: number) {
+    const updatedPhotos = photos.filter((_, idx) => idx !== indexToRemove);
+    setPhotos(updatedPhotos);
+    try {
+      await api.patch("/employers/me", { photos: updatedPhotos });
+      toast.success("Photo removed");
+    } catch {
+      // If saving fails, rollback will happen on save
     }
   }
 
@@ -125,7 +179,7 @@ export default function EmployerProfilePage() {
       const updated = await api.patch<EmployerProfile>("/employers/me", { [field]: res.url });
       setProfile(updated);
       toast.success("Document uploaded successfully");
-      window.dispatchEvent(new Event('profile-updated'));
+      window.dispatchEvent(new Event("profile-updated"));
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Failed to upload document");
     }
@@ -138,19 +192,19 @@ export default function EmployerProfilePage() {
   return (
     <>
       <Navbar8 />
-      <Toaster 
-        position="top-center" 
+      <Toaster
+        position="top-center"
         containerStyle={{
-          top: '100px',
+          top: "100px",
         }}
         toastOptions={{
           style: {
-            padding: '16px 24px',
-            fontSize: '1.1rem',
-            fontWeight: '500',
-            maxWidth: '600px',
-            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
-            borderRadius: '12px',
+            padding: "16px 24px",
+            fontSize: "1.1rem",
+            fontWeight: "500",
+            maxWidth: "600px",
+            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+            borderRadius: "12px",
           },
         }}
       />
@@ -183,9 +237,7 @@ export default function EmployerProfilePage() {
           </div>
 
           <div className="dashboard-widg-bar d-block">
-
-            <div ref={alertRef} style={{ scrollMarginTop: "110px" }}>
-                                        </div>
+            <div ref={alertRef} style={{ scrollMarginTop: "110px" }}></div>
             {dataLoading && <p className="text-muted">Loading profile...</p>}
 
             <div className="dashboard-profle-wrapper mb-4">
@@ -199,15 +251,32 @@ export default function EmployerProfilePage() {
                     </div>
                   )}
                   <div className="position-absolute bottom-0 start-50 translate-middle-x">
-                    <span className={`badge badge-md bg-white rounded-pill fw-medium shadow-sm px-3 py-2 ${profile?.status === "VERIFIED" ? "text-success" : "text-warning"}`}>{profile?.status || "PENDING"}</span>
+                    <span
+                      className={`badge badge-md bg-white rounded-pill fw-medium shadow-sm px-3 py-2 ${
+                        profile?.status === "VERIFIED" ? "text-success" : "text-warning"
+                      }`}
+                    >
+                      {profile?.status || "PENDING"}
+                    </span>
                   </div>
                 </div>
                 <div className="dash-prf-start-bottom">
                   <div className="upload-btn-wrapper small">
-                    <button type="button" className="btn" disabled={uploadingPhoto} onClick={() => fileInputRef.current?.click()}>
+                    <button
+                      type="button"
+                      className="btn"
+                      disabled={uploadingPhoto}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
                       {uploadingPhoto ? "Uploading..." : "Change Logo"}
                     </button>
-                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoChange} hidden />
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                      hidden
+                    />
                   </div>
                 </div>
               </div>
@@ -249,126 +318,305 @@ export default function EmployerProfilePage() {
               </div>
             </div>
 
-            {/* Card Row */}
+            {/* Form */}
             <form onSubmit={handleSave}>
-            <div className="card">
-              <div className="card-header">
-                <h4>Basic Detail</h4>
-              </div>
-              <div className="card-body">
-                  <div className="row">
+              {/* Basic Detail Card */}
+              <div className="card shadow-sm border-0 rounded-4 mb-4">
+                <div className="card-header bg-white py-3 border-bottom">
+                  <h4 className="mb-0 fw-bold">Basic Detail</h4>
+                </div>
+                <div className="card-body p-4">
+                  <div className="row g-3">
                     <div className="col-xl-6 col-lg-6 col-md-12">
                       <div className="form-group">
-                        <label>Employer Name</label>
-                        <input type="text" className="form-control" value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
+                        <label className="fw-medium mb-1">Company Name</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={companyName}
+                          onChange={(e) => setCompanyName(e.target.value)}
+                          placeholder="e.g. Acme Technologies"
+                        />
                       </div>
                     </div>
 
                     <div className="col-xl-6 col-lg-6 col-md-12">
                       <div className="form-group">
-                        <label>Email ID</label>
+                        <label className="fw-medium mb-1">Email ID</label>
                         <input type="text" className="form-control" value={user.email} disabled />
                       </div>
                     </div>
 
                     <div className="col-xl-6 col-lg-6 col-md-12">
                       <div className="form-group">
-                        <label>Website</label>
-                        <input type="text" className="form-control" value={website} onChange={(e) => setWebsite(e.target.value)} />
+                        <label className="fw-medium mb-1">Website</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={website}
+                          onChange={(e) => setWebsite(e.target.value)}
+                          placeholder="https://example.com"
+                        />
                       </div>
                     </div>
 
                     <div className="col-xl-6 col-lg-6 col-md-12">
                       <div className="form-group">
-                        <label>Location</label>
-                        <input type="text" className="form-control" value={location} onChange={(e) => setLocation(e.target.value)} />
+                        <label className="fw-medium mb-1">Location / Headquarter</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={location}
+                          onChange={(e) => setLocation(e.target.value)}
+                          placeholder="e.g. Bangalore, India"
+                        />
                       </div>
                     </div>
 
                     <div className="col-xl-6 col-lg-6 col-md-12">
                       <div className="form-group">
-                        <label>Industry</label>
-                        <input type="text" className="form-control" value={industry} onChange={(e) => setIndustry(e.target.value)} />
+                        <label className="fw-medium mb-1">Industry</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={industry}
+                          onChange={(e) => setIndustry(e.target.value)}
+                          placeholder="e.g. Software & IT, Finance"
+                        />
                       </div>
                     </div>
 
                     <div className="col-xl-12 col-lg-12 col-md-12">
                       <div className="form-group">
-                        <label>About Company</label>
-                        <textarea className="form-control ht-80" value={description} onChange={(e) => setDescription(e.target.value)}></textarea>
+                        <label className="fw-medium mb-1">About Company</label>
+                        <textarea
+                          className="form-control"
+                          rows={3}
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          placeholder="Brief overview of your company, mission, and what you do..."
+                        ></textarea>
                       </div>
                     </div>
                   </div>
+                </div>
               </div>
-            </div>
-            {/* Card Row End */}
 
-            {/* Compliance Documents Card */}
-            <div className="card mt-4">
-              <div className="card-header">
-                <h4>Compliance Documents</h4>
-              </div>
-              <div className="card-body">
-                <p className="text-muted small mb-4">
-                  Upload your compliance documents for admin verification. Required for full dashboard access.
-                </p>
-                <div className="row">
-                  <div className="col-xl-4 col-lg-4 col-md-12 mb-3">
-                    <label className="fw-medium">GST Certificate</label>
-                    {profile?.gstCertificateUrl ? (
-                      <div className="d-flex align-items-center gap-2 mt-2">
-                        <i className="fa-solid fa-circle-check text-success"></i>
-                        <a href={assetUrl(profile.gstCertificateUrl)} target="_blank" rel="noopener noreferrer">View Document</a>
-                      </div>
-                    ) : (
-                      <div className="mt-2 text-warning"><i className="fa-solid fa-triangle-exclamation"></i> Missing</div>
-                    )}
-                    <input type="file" className="form-control mt-2" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => handleDocumentUpload("gstCertificateUrl", e)} />
+              {/* Culture & Workplace Life Card */}
+              <div className="card shadow-sm border-0 rounded-4 mb-4">
+                <div className="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                  <div>
+                    <h4 className="mb-0 fw-bold">Culture &amp; Workplace Life</h4>
+                    <p className="text-muted small mb-0">
+                      Showcase your company culture, values, team events, and office photos on your public profile.
+                    </p>
                   </div>
-                  
-                  <div className="col-xl-4 col-lg-4 col-md-12 mb-3">
-                    <label className="fw-medium">Incorporation Certificate</label>
-                    {profile?.incorporationCertUrl ? (
-                      <div className="d-flex align-items-center gap-2 mt-2">
-                        <i className="fa-solid fa-circle-check text-success"></i>
-                        <a href={assetUrl(profile.incorporationCertUrl)} target="_blank" rel="noopener noreferrer">View Document</a>
-                      </div>
-                    ) : (
-                      <div className="mt-2 text-warning"><i className="fa-solid fa-triangle-exclamation"></i> Missing</div>
-                    )}
-                    <input type="file" className="form-control mt-2" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => handleDocumentUpload("incorporationCertUrl", e)} />
+                  <span className="badge bg-light-primary text-primary px-3 py-2 rounded-pill">
+                    <i className="fa-solid fa-heart me-1"></i>Public Showcase
+                  </span>
+                </div>
+                <div className="card-body p-4">
+                  {/* Culture & Values Textarea */}
+                  <div className="form-group mb-4">
+                    <label className="fw-medium mb-1">Culture, Values &amp; Life at Company</label>
+                    <textarea
+                      className="form-control"
+                      rows={4}
+                      value={cultureBlurb}
+                      onChange={(e) => setCultureBlurb(e.target.value)}
+                      placeholder="Share what makes working at your company special (e.g., work-life balance, collaborative team, perks, regular hackathons, growth opportunities)..."
+                    ></textarea>
                   </div>
 
-                  <div className="col-xl-4 col-lg-4 col-md-12 mb-3">
-                    <label className="fw-medium">Signatory ID</label>
-                    {profile?.signatoryIdUrl ? (
-                      <div className="d-flex align-items-center gap-2 mt-2">
-                        <i className="fa-solid fa-circle-check text-success"></i>
-                        <a href={assetUrl(profile.signatoryIdUrl)} target="_blank" rel="noopener noreferrer">View Document</a>
+                  {/* Company Photos Section */}
+                  <div>
+                    <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                      <div>
+                        <label className="fw-medium mb-0 d-block">Workplace &amp; Team Photos</label>
+                        <span className="text-muted small">
+                          Upload office, team, and culture images ({photos.length} uploaded)
+                        </span>
+                      </div>
+                      <div>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-main px-3 py-2 fw-medium rounded-3"
+                          disabled={uploadingGallery}
+                          onClick={() => photosInputRef.current?.click()}
+                        >
+                          {uploadingGallery ? (
+                            <>
+                              <span className="spinner-border spinner-border-sm me-2"></span>Uploading...
+                            </>
+                          ) : (
+                            <>
+                              <i className="fa-solid fa-cloud-arrow-up me-2"></i>Add Photos
+                            </>
+                          )}
+                        </button>
+                        <input
+                          ref={photosInputRef}
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          onChange={handleGalleryUpload}
+                          hidden
+                        />
+                      </div>
+                    </div>
+
+                    {/* Photos Gallery Grid */}
+                    {photos.length === 0 ? (
+                      <div className="border border-dashed rounded-4 p-4 text-center bg-light">
+                        <div className="mb-2">
+                          <i className="fa-regular fa-images fs-2 text-muted"></i>
+                        </div>
+                        <p className="text-muted small mb-0">
+                          No company photos added yet. Click &quot;Add Photos&quot; to upload workplace or team images.
+                        </p>
                       </div>
                     ) : (
-                      <div className="mt-2 text-warning"><i className="fa-solid fa-triangle-exclamation"></i> Missing</div>
+                      <div className="row g-3">
+                        {photos.map((photoUrl, index) => (
+                          <div className="col-xl-3 col-lg-4 col-md-6 col-6" key={index}>
+                            <div
+                              className="position-relative rounded-3 overflow-hidden border shadow-sm bg-white"
+                              style={{ height: "160px" }}
+                            >
+                              <img
+                                src={assetUrl(photoUrl) || photoUrl}
+                                alt={`Company photo ${index + 1}`}
+                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                              />
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 rounded-circle p-1 d-flex align-items-center justify-content-center shadow"
+                                style={{ width: "28px", height: "28px", fontSize: "12px" }}
+                                onClick={() => handleRemovePhoto(index)}
+                                title="Remove photo"
+                              >
+                                <i className="fa-solid fa-trash"></i>
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     )}
-                    <input type="file" className="form-control mt-2" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => handleDocumentUpload("signatoryIdUrl", e)} />
                   </div>
                 </div>
               </div>
-            </div>
-            {/* Card Row End */}
 
-            {/* Submit Busston */}
-            <div className="row">
-              <div className="col-lg-12 col-md-12">
-                <button type="submit" className="btn ft--medium btn-main px-5" disabled={saving}>
-                  {saving ? "Saving..." : "Save Profile"}
-                </button>
+              {/* Compliance Documents Card */}
+              <div className="card shadow-sm border-0 rounded-4 mb-4">
+                <div className="card-header bg-white py-3 border-bottom">
+                  <h4 className="mb-0 fw-bold">Compliance Documents</h4>
+                </div>
+                <div className="card-body p-4">
+                  <p className="text-muted small mb-4">
+                    Upload your compliance documents for admin verification. Required for full dashboard access.
+                  </p>
+                  <div className="row g-3">
+                    <div className="col-xl-4 col-lg-4 col-md-12">
+                      <label className="fw-medium">GST Certificate</label>
+                      {profile?.gstCertificateUrl ? (
+                        <div className="d-flex align-items-center gap-2 mt-2">
+                          <i className="fa-solid fa-circle-check text-success"></i>
+                          <a
+                            href={assetUrl(profile.gstCertificateUrl)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            View Document
+                          </a>
+                        </div>
+                      ) : (
+                        <div className="mt-2 text-warning">
+                          <i className="fa-solid fa-triangle-exclamation"></i> Missing
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        className="form-control mt-2"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={(e) => handleDocumentUpload("gstCertificateUrl", e)}
+                      />
+                    </div>
+
+                    <div className="col-xl-4 col-lg-4 col-md-12">
+                      <label className="fw-medium">Incorporation Certificate</label>
+                      {profile?.incorporationCertUrl ? (
+                        <div className="d-flex align-items-center gap-2 mt-2">
+                          <i className="fa-solid fa-circle-check text-success"></i>
+                          <a
+                            href={assetUrl(profile.incorporationCertUrl)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            View Document
+                          </a>
+                        </div>
+                      ) : (
+                        <div className="mt-2 text-warning">
+                          <i className="fa-solid fa-triangle-exclamation"></i> Missing
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        className="form-control mt-2"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={(e) => handleDocumentUpload("incorporationCertUrl", e)}
+                      />
+                    </div>
+
+                    <div className="col-xl-4 col-lg-4 col-md-12">
+                      <label className="fw-medium">Signatory ID</label>
+                      {profile?.signatoryIdUrl ? (
+                        <div className="d-flex align-items-center gap-2 mt-2">
+                          <i className="fa-solid fa-circle-check text-success"></i>
+                          <a
+                            href={assetUrl(profile.signatoryIdUrl)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            View Document
+                          </a>
+                        </div>
+                      ) : (
+                        <div className="mt-2 text-warning">
+                          <i className="fa-solid fa-triangle-exclamation"></i> Missing
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        className="form-control mt-2"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={(e) => handleDocumentUpload("signatoryIdUrl", e)}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
+
+              {/* Submit Button */}
+              <div className="row mb-5">
+                <div className="col-lg-12 col-md-12">
+                  <button
+                    type="submit"
+                    className="btn btn-main px-5 py-2.5 rounded-3 fw-medium"
+                    disabled={saving}
+                  >
+                    {saving ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2"></span>Saving...
+                      </>
+                    ) : (
+                      "Save Profile"
+                    )}
+                  </button>
+                </div>
+              </div>
             </form>
           </div>
-
-          {/* footer */}
-          {/* footer removed */}
         </div>
       </div>
     </>
