@@ -983,6 +983,7 @@ model CandidateEmployerFollow {
   follower    User     @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
   followingId String   @map("following_id")
   following   User     @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+  status      String   @default("ACCEPTED")
   createdAt   DateTime @default(now()) @map("created_at")
 
   @@unique([followerId, followingId])

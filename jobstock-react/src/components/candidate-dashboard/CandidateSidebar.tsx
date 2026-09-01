@@ -221,7 +221,7 @@ export default function CandidateSidebar({ active }: CandidateSidebarProps) {
               </li>
               <li className={active === "follow-employers" ? "active" : undefined}>
                 <Link href="/candidate-follow-employers" onClick={() => setIsOpen(false)}>
-                  <i className="fa-solid fa-user-clock me-2"></i>Following Employers
+                  <i className="fa-solid fa-users-viewfinder me-2"></i>Network &amp; Follows
                 </Link>
               </li>
               <li className={active === "competition" ? "active" : undefined}>

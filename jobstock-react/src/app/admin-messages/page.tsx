@@ -2,12 +2,13 @@
 
 import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Navbar8 from "@/components/Navbar8";
+
 import AdminSidebar from "@/components/AdminSidebar";
 import UploadResumeModal from "@/components/candidate-dashboard/UploadResumeModal";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError, assetUrl, uploadFile } from "@/lib/api";
 import { Toaster, toast } from "react-hot-toast";
+import AdminNavbar from "@/components/AdminNavbar";
 
 interface MessageUser {
   id: string;
@@ -343,7 +344,7 @@ function AdminMessagesContent() {
 
   return (
     <>
-      <Navbar8 />
+      <AdminNavbar />
       <Toaster 
         position="top-center" 
         containerStyle={{

@@ -3,6 +3,7 @@ import * as crypto from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { EmployersService } from '../employers/employers.service.js';
 import { JobMatchingService } from '../job-matching/job-matching.service.js';
+import { EmailService } from '../email/email.service.js';
 import { CreateJobDto } from './dto/create-job.dto.js';
 import { UpdateJobStatusDto } from './dto/update-job-status.dto.js';
 import { CreateJobAssessmentDto } from './dto/create-job-assessment.dto.js';
@@ -13,6 +14,7 @@ export class JobsService {
     private readonly prisma: PrismaService,
     private readonly employersService: EmployersService,
     private readonly jobMatching: JobMatchingService,
+    private readonly emailService: EmailService,
   ) {}
 
   private slugify(title: string): string {
@@ -116,6 +118,89 @@ export class JobsService {
     // Fire-and-forget: candidate matching/notifications must never slow down or
     // fail the job-posting request itself (errors are caught inside the service).
     void this.jobMatching.onJobPosted(job);
+
+    // Notify all candidates following this employer in background
+    (async () => {
+      try {
+        const emp = await this.prisma.employer.findUnique({
+          where: { id: employer.id },
+          include: { user: { select: { email: true } } },
+        });
+
+        const candidateFollowers = await this.prisma.candidateEmployerFollow.findMany({
+          where: { followingId: employer.userId },
+          include: {
+            follower: {
+              include: {
+                candidateProfile: { select: { fullName: true } },
+              },
+            },
+          },
+        });
+
+        const legacyFollowers = await this.prisma.employerFollow.findMany({
+          where: { employerId: employer.id },
+          include: {
+            candidate: {
+              include: {
+                user: { select: { id: true, email: true } },
+              },
+            },
+          },
+        });
+
+        const targetCandidates = new Map<string, { name: string; userId: string }>();
+
+        for (const cf of candidateFollowers) {
+          if (cf.follower?.email && cf.follower?.candidateProfile) {
+            targetCandidates.set(cf.follower.email, {
+              name: cf.follower.candidateProfile.fullName || 'Candidate',
+              userId: cf.follower.id,
+            });
+          }
+        }
+
+        for (const lf of legacyFollowers) {
+          if (lf.candidate?.user?.email) {
+            targetCandidates.set(lf.candidate.user.email, {
+              name: lf.candidate.fullName || 'Candidate',
+              userId: lf.candidate.user.id,
+            });
+          }
+        }
+
+        let salaryStr = '';
+        if (job.salaryMin && job.salaryMax) {
+          salaryStr = `${job.currency || '₹'} ${job.salaryMin.toLocaleString()} - ${job.salaryMax.toLocaleString()}${job.salaryPeriod ? ` / ${job.salaryPeriod.toLowerCase()}` : ''}`;
+        } else if (job.salaryMin) {
+          salaryStr = `From ${job.currency || '₹'} ${job.salaryMin.toLocaleString()}`;
+        }
+
+        for (const [candEmail, candInfo] of targetCandidates.entries()) {
+          await this.emailService.sendNewJobFollowerEmail({
+            candidateEmail: candEmail,
+            candidateName: candInfo.name,
+            companyName: emp?.companyName || 'Company',
+            companyEmail: emp?.user?.email,
+            jobTitle: job.title,
+            jobLocation: job.location,
+            jobType: job.jobType,
+            salary: salaryStr,
+            jobSlug: job.slug,
+          });
+
+          await this.prisma.notification.create({
+            data: {
+              userId: candInfo.userId,
+              title: `New Job from ${emp?.companyName || 'Company'}`,
+              body: `${emp?.companyName || 'Company'} just posted: "${job.title}". Click to view & apply!`,
+            },
+          }).catch(() => {});
+        }
+      } catch (err) {
+        // Silently catch background notification errors
+      }
+    })();
 
     return job;
   }

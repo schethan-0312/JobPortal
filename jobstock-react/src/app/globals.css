@@ -199,3 +199,13 @@ body .table-responsive table {
 .elite-swal-hide {
   animation: eliteZoomOut 0.4s cubic-bezier(0.36, 0, 0.66, -0.56) forwards !important;
 }
+
+/* Prevent duplicate submenu indicator chevrons */
+.submenu-indicator ~ .submenu-indicator {
+  display: none !important;
+}
+.home-link .submenu-indicator ~ .submenu-indicator,
+.nav-menu li a .submenu-indicator ~ .submenu-indicator {
+  display: none !important;
+}
+

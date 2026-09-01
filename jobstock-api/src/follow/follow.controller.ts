@@ -11,6 +11,27 @@ import { Role } from '../../generated/prisma/enums.js';
 export class FollowController {
   constructor(private readonly followService: FollowService) {}
 
+  @Get('requests')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.CANDIDATE)
+  incomingRequests(@CurrentUser() user: AuthenticatedUser) {
+    return this.followService.incomingRequests(user.userId);
+  }
+
+  @Post('requests/:targetId/accept')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.CANDIDATE)
+  acceptRequest(@CurrentUser() user: AuthenticatedUser, @Param('targetId') targetId: string) {
+    return this.followService.acceptRequest(user.userId, targetId);
+  }
+
+  @Post('requests/:targetId/reject')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.CANDIDATE)
+  rejectRequest(@CurrentUser() user: AuthenticatedUser, @Param('targetId') targetId: string) {
+    return this.followService.rejectRequest(user.userId, targetId);
+  }
+
   @Post(':targetId')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.CANDIDATE, Role.EMPLOYER)
@@ -37,6 +58,13 @@ export class FollowController {
   @Roles(Role.CANDIDATE, Role.EMPLOYER)
   following(@CurrentUser() user: AuthenticatedUser) {
     return this.followService.following(user.userId);
+  }
+
+  @Get('followers')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.CANDIDATE, Role.EMPLOYER)
+  followers(@CurrentUser() user: AuthenticatedUser) {
+    return this.followService.followers(user.userId);
   }
 
   @Get('counts/:id')

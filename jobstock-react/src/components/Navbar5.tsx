@@ -85,7 +85,7 @@ export default function Navbar5() {
                       toggleDropdown("candidates");
                     }}
                   >
-                    Candidates <span className="submenu-indicator"></span>
+                    Candidates <span className="submenu-indicator"><span className="submenu-indicator-chevron"></span></span>
                   </a>
                   <ul
                     className="nav-dropdown nav-submenu"
@@ -155,7 +155,7 @@ export default function Navbar5() {
                       toggleDropdown("pages");
                     }}
                   >
-                    Pages <span className="submenu-indicator"></span>
+                    Pages <span className="submenu-indicator"><span className="submenu-indicator-chevron"></span></span>
                   </a>
                   <ul
                     className="nav-dropdown nav-submenu"

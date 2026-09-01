@@ -695,5 +695,54 @@ export class EmailService {
       this.logger.error('Failed to send profile viewed email', e);
     }
   }
+
+  async sendNewJobFollowerEmail(opts: {
+    candidateEmail: string;
+    candidateName: string;
+    companyName: string;
+    companyEmail?: string;
+    jobTitle: string;
+    jobLocation?: string;
+    jobType?: string;
+    salary?: string;
+    jobSlug: string;
+  }) {
+    const transporter = this.getTransporter();
+    if (!transporter) return;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
+
+    const content = `
+      <p>Hi <strong>${opts.candidateName}</strong>,</p>
+      <p><strong>${opts.companyName}</strong>, a company you follow on JobStock, just posted an exciting new job opportunity! 🚀</p>
+      <div style="background-color: #f8fafc; border-left: 4px solid #0b8260; padding: 14px; margin: 20px 0; border-radius: 0 6px 6px 0;">
+        <h4 style="margin: 0 0 8px 0; color: #1a202c; font-size: 16px;">💼 ${opts.jobTitle}</h4>
+        <p style="margin: 0 0 4px 0; font-size: 14px; color: #4a5568;">🏢 <strong>Company:</strong> ${opts.companyName}</p>
+        <p style="margin: 0 0 4px 0; font-size: 14px; color: #4a5568;">📍 <strong>Location:</strong> ${opts.jobLocation || 'Remote / Unspecified'}</p>
+        ${opts.jobType ? `<p style="margin: 0 0 4px 0; font-size: 14px; color: #4a5568;">⏰ <strong>Job Type:</strong> ${opts.jobType.replace(/_/g, ' ')}</p>` : ''}
+        ${opts.salary ? `<p style="margin: 0; font-size: 14px; color: #4a5568;">💰 <strong>Salary:</strong> ${opts.salary}</p>` : ''}
+      </div>
+      <p style="color: #4a5568; font-size: 14px;">As a follower, you are among the first to be notified. Be an early applicant to increase your chances of being shortlisted!</p>
+    `;
+
+    const html = this.wrapInTemplate(
+      `New Job Opening at ${opts.companyName}`,
+      content,
+      { text: 'View & Quick Apply Now', url: `${frontendUrl}/job-detail/${opts.jobSlug}` }
+    );
+
+    try {
+      await transporter.sendMail({
+        from: opts.companyEmail ? `"${opts.companyName} via JobStock" <${from}>` : `"JobStock Updates" <${from}>`,
+        replyTo: opts.companyEmail || from,
+        to: opts.candidateEmail,
+        subject: `🚀 New Job Opening from ${opts.companyName}: ${opts.jobTitle}`,
+        html,
+      });
+      this.logger.log(`Follower new job email sent to ${opts.candidateEmail} for job: ${opts.jobTitle}`);
+    } catch (e) {
+      this.logger.error(`Failed to send new job follower email to ${opts.candidateEmail}`, e);
+    }
+  }
 }
 

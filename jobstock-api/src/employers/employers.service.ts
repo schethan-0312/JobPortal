@@ -14,6 +14,11 @@ const PUBLIC_EMPLOYER_SELECT = {
   industry: true,
   status: true,
   createdAt: true,
+  _count: {
+    select: {
+      jobs: { where: { status: 'OPEN' } },
+    },
+  },
 } as const;
 
 @Injectable()
@@ -58,11 +63,52 @@ export class EmployersService {
   }
 
   async getPublicProfile(id: string) {
-    const employer = await this.prisma.employer.findUnique({
-      where: { id },
-      select: PUBLIC_EMPLOYER_SELECT,
+    const employer = await this.prisma.employer.findFirst({
+      where: {
+        OR: [{ id }, { userId: id }],
+      },
+      select: {
+        id: true,
+        companyName: true,
+        logoUrl: true,
+        description: true,
+        website: true,
+        location: true,
+        industry: true,
+        status: true,
+        createdAt: true,
+        photos: true,
+        cultureBlurb: true,
+        verifiedAt: true,
+        jobs: {
+          where: {
+            NOT: { status: 'CLOSED' },
+          },
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            category: true,
+            jobRole: true,
+            location: true,
+            jobType: true,
+            workMode: true,
+            salaryMin: true,
+            salaryMax: true,
+            currency: true,
+            salaryPeriod: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        _count: {
+          select: {
+            jobs: true,
+          },
+        },
+      },
     });
-    if (!employer || employer.status !== 'VERIFIED') {
+    if (!employer) {
       throw new NotFoundException('Employer not found');
     }
     return employer;
