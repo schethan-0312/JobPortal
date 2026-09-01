@@ -1,17 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { EmailService } from '../email/email.service.js';
 import { CreateReportDto } from './dto/create-report.dto.js';
 
 @Injectable()
 export class ReportsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly emailService: EmailService) {}
 
   async fileReport(reporterId: string, dto: CreateReportDto) {
     const job = await this.prisma.job.findUnique({ where: { id: dto.jobId } });
     if (!job) {
       throw new NotFoundException('Job not found');
     }
-    return this.prisma.report.create({
+    const report = await this.prisma.report.create({
       data: {
         targetType: 'JOB',
         jobId: dto.jobId,

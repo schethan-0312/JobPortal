@@ -8,6 +8,7 @@ export type Role = "CANDIDATE" | "EMPLOYER" | "ADMIN";
 export interface AuthUser {
   userId: string;
   email: string;
+  profilePhotoUrl?: string;
   role: Role;
 }
 

@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, InternalServerErrorException, NotFound
 import * as crypto from 'node:crypto';
 import Razorpay from 'razorpay';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { EmailService } from '../email/email.service.js';
 import { CreateOrderDto } from './dto/create-order.dto.js';
 import { VerifyRazorpayPaymentDto } from './dto/verify-razorpay-payment.dto.js';
 
@@ -9,7 +10,10 @@ import { VerifyRazorpayPaymentDto } from './dto/verify-razorpay-payment.dto.js';
 export class PackagesService {
   private razorpay: Razorpay | null = null;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly emailService: EmailService,
+  ) {}
 
   private getRazorpayClient(): Razorpay {
     if (this.razorpay) return this.razorpay;
@@ -37,7 +41,7 @@ export class PackagesService {
     });
   }
 
-  createPackage(data: {
+  async createPackage(data: {
     name: string;
     audience: 'CANDIDATE' | 'EMPLOYER' | 'RESUME';
     priceInPaisa: number;
@@ -53,7 +57,7 @@ export class PackagesService {
     verifiedRecruiterBadgeEnabled?: boolean;
     isActive?: boolean;
   }) {
-    return this.prisma.package.create({
+    const pkg = await this.prisma.package.create({
       data: {
         name: data.name,
         audience: data.audience,
@@ -71,6 +75,78 @@ export class PackagesService {
         isActive: data.isActive ?? true,
       },
     });
+
+    if (pkg.audience === 'EMPLOYER') {
+      const features: string[] = [];
+      if (pkg.postJobLimit > 0) features.push(`Post up to ${pkg.postJobLimit} Jobs`);
+      if (pkg.applicantViewLimit > 0) features.push(`View up to ${pkg.applicantViewLimit} Applicants`);
+      if (pkg.jobSeekerViewLimit > 0) features.push(`Contact ${pkg.jobSeekerViewLimit} Candidates directly`);
+      if (pkg.chatEnabled) features.push('Direct Chat with Candidates');
+      if (pkg.filterShortlistEnabled) features.push('Advanced Shortlisting & Filters');
+      if (pkg.scheduleInterviewsEnabled) features.push('Integrated Interview Scheduling');
+      if (pkg.companyBrandingEnabled) features.push('Premium Company Branding');
+      if (pkg.verifiedRecruiterBadgeEnabled) features.push('Verified Recruiter Badge');
+      if (features.length === 0) features.push('Access to premium platform features');
+
+      setImmediate(async () => {
+        try {
+          const employers = await this.prisma.user.findMany({
+            where: { role: 'EMPLOYER' },
+            include: { employer: true }
+          });
+
+          for (const emp of employers) {
+            if (!emp.email) continue;
+            const companyName = emp.employer?.companyName || 'Employer';
+            await this.emailService.sendNewPackageNotification({
+              email: emp.email,
+              companyName,
+              packageName: pkg.name,
+              priceInPaisa: pkg.priceInPaisa,
+              duration: pkg.duration,
+              durationType: pkg.durationType,
+              features
+            });
+          }
+        } catch (e) {
+          console.error('Failed to broadcast new package to employers', e);
+        }
+      });
+    }
+
+    if (pkg.audience === 'CANDIDATE' || pkg.audience === 'RESUME') {
+      const features: string[] = [];
+      if (pkg.chatEnabled) features.push('Direct Chat with Recruiters');
+      if (pkg.companyBrandingEnabled) features.push('Profile Spotlight & Boosting');
+      if (features.length === 0) features.push('Premium profile features to stand out');
+
+      setImmediate(async () => {
+        try {
+          const candidates = await this.prisma.user.findMany({
+            where: { role: 'CANDIDATE' },
+            include: { candidateProfile: true }
+          });
+
+          for (const cand of candidates) {
+            if (!cand.email) continue;
+            const candidateName = cand.candidateProfile?.fullName || 'Candidate';
+            await this.emailService.sendNewCandidatePackageNotification({
+              email: cand.email,
+              candidateName,
+              packageName: pkg.name,
+              priceInPaisa: pkg.priceInPaisa,
+              duration: pkg.duration,
+              durationType: pkg.durationType,
+              features
+            });
+          }
+        } catch (e) {
+          console.error('Failed to broadcast new package to candidates', e);
+        }
+      });
+    }
+
+    return pkg;
   }
 
   async deletePackage(id: string) {

@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AuditLogService } from '../audit-log/audit-log.service.js';
+import { EmailService } from '../email/email.service.js';
 import { AuditTargetType, TicketPriority, TicketStatus } from '../../generated/prisma/enums.js';
 import { UpdateTicketDto } from './dto/update-ticket.dto.js';
 import { AdminReplyDto } from './dto/admin-reply.dto.js';
@@ -10,6 +11,7 @@ export class AdminSupportService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly emailService: EmailService,
   ) {}
 
   async overview() {
@@ -93,6 +95,17 @@ export class AdminSupportService {
       ipAddress: ip,
     });
 
+    if (dto.status && (dto.status === 'RESOLVED' || dto.status === 'CLOSED')) {
+      const ticketWithUser = await this.prisma.supportTicket.findUnique({ where: { id: ticketId }, include: { user: true } });
+      if (ticketWithUser) {
+        this.emailService.sendSupportTicketUpdate({
+          email: ticketWithUser.user.email,
+          ticketId: ticketId,
+          subject: ticketWithUser.subject,
+          snippet: `Your ticket has been marked as ${dto.status}.`
+        }).catch(console.error);
+      }
+    }
     return updated;
   }
 

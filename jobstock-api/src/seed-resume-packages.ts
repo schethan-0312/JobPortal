@@ -18,7 +18,7 @@ async function main() {
       audience: 'RESUME',
       priceInPaisa: 9900,
       durationType: 'DAYS',
-      duration: 365,
+      duration: 365
     }
   });
 
@@ -28,7 +28,7 @@ async function main() {
       audience: 'RESUME',
       priceInPaisa: 29900,
       durationType: 'DAYS',
-      duration: 365,
+      duration: 365
     }
   });
 

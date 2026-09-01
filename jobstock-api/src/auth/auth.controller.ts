@@ -8,7 +8,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
 import { VerifyOtpDto } from './dto/verify-otp.dto.js';
 import { ResetPasswordDto } from './dto/reset-password.dto.js';
 import { DeleteAccountDto } from './dto/delete-account.dto.js';
-import { Delete } from '@nestjs/common';
+import { Delete, Patch } from '@nestjs/common';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 import { CurrentUser } from './decorators/current-user.decorator.js';
 import type { AuthenticatedUser } from './decorators/current-user.decorator.js';
@@ -47,7 +47,14 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   me(@CurrentUser() user: AuthenticatedUser) {
-    return user;
+    return this.authService.me(user.userId);
+  }
+
+  @Patch('me/photo')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  updateProfilePhoto(@CurrentUser() user: AuthenticatedUser, @Body() dto: { avatarUrl: string }) {
+    return this.authService.updateProfilePhoto(user.userId, dto.avatarUrl);
   }
 
   @Post('change-password')

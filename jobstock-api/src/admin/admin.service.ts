@@ -27,6 +27,8 @@ export class AdminService {
       throw new NotFoundException('Employer not found');
     }
 
+    const wasSuspended = employer.status === 'SUSPENDED';
+
     const updated = await this.prisma.employer.update({
       where: { id: employerId },
       data: {
@@ -39,15 +41,21 @@ export class AdminService {
     await this.notifications.create(
       employer.userId,
       'Company verification update',
-      dto.decision === VerifyDecision.VERIFIED
+      wasSuspended && dto.decision === VerifyDecision.VERIFIED
+        ? 'Your company account has been reopened.'
+        : dto.decision === VerifyDecision.VERIFIED
         ? 'Your company has been verified. You can now post jobs.'
         : dto.decision === VerifyDecision.REJECTED ? 'Your company verification was rejected. Please contact support for details.' : 'Your company account was suspended.'
     );
 
     try {
-      await this.emailService.sendEmployerVerificationStatus(employer.user.email, employer.companyName, dto.decision as any);
+      if (wasSuspended && dto.decision === VerifyDecision.VERIFIED) {
+        await this.emailService.sendEmployerReopened(employer.user.email, employer.companyName);
+      } else {
+        await this.emailService.sendEmployerVerificationStatus(employer.user.email, employer.companyName, dto.decision as any);
+      }
     } catch (e) {
-      // Ignore email errors
+      console.error('Failed to send verification status email', e);
     }
 
     return updated;

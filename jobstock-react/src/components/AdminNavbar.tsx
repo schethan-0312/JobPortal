@@ -42,8 +42,13 @@ export default function AdminNavbar() {
                       data-bs-toggle="dropdown"
                       aria-haspopup="true"
                       aria-expanded="false"
+                      style={{ padding: "8px 12px" }}
                     >
-                      <i className="fa-solid fa-user-shield"></i>
+                      {user?.profilePhotoUrl ? (
+                        <img src={user.profilePhotoUrl.startsWith('http') ? user.profilePhotoUrl : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}`.replace('/api', '') + user.profilePhotoUrl} style={{width:'28px', height:'28px', borderRadius:'50%', objectFit:'cover'}} alt="Profile" />
+                      ) : (
+                        <i className="fa-solid fa-user-shield"></i>
+                      )}
                     </button>
                     <div className="dropdown-menu pull-right animated flipInX">
                       <div className="drp_menu_headr bg-main">
@@ -68,6 +73,11 @@ export default function AdminNavbar() {
                         <li>
                           <Link href="/admin-reports" className="sub-menu-item">
                             <i className="fa-solid fa-flag"></i>Reports
+                          </Link>
+                        </li>
+                        <li>
+                          <Link href="/admin-profile" className="sub-menu-item">
+                            <i className="fa-solid fa-user-pen"></i>My Profile
                           </Link>
                         </li>
                       </ul>
