@@ -811,6 +811,7 @@ model Package {
   scheduleInterviewsEnabled     Boolean         @default(false)
   companyBrandingEnabled        Boolean         @default(false)
   verifiedRecruiterBadgeEnabled Boolean         @default(false)
+  featuresJson                  Json?
   isActive                      Boolean         @default(true)
 
   orders                Order[]

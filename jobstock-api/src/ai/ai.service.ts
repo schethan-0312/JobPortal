@@ -1,11 +1,15 @@
-import { Injectable, InternalServerErrorException, HttpException, HttpStatus, BadRequestException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, HttpException, HttpStatus, BadRequestException, ServiceUnavailableException } from '@nestjs/common';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AiFeature } from '../../generated/prisma/enums.js';
+import { getCapacityConfig } from '../config/capacity.config.js';
 
 @Injectable()
 export class AiService {
   private client: GoogleGenerativeAI | null = null;
+  private activeRequests = 0;
+  private readonly waitingRequests: Array<() => void> = [];
+  private readonly capacity = getCapacityConfig();
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -20,13 +24,32 @@ export class AiService {
   }
 
   private async withErrorHandling<T>(operation: () => Promise<T>): Promise<T> {
+    return this.runWithConcurrencyLimit(async () => {
+      try {
+        return await operation();
+      } catch (err: any) {
+        if (err?.status === 429 || err?.message?.includes('429')) {
+          throw new HttpException('AI services are currently busy due to high demand. Please wait a minute and try again.', HttpStatus.TOO_MANY_REQUESTS);
+        }
+        throw err;
+      }
+    });
+  }
+
+  private async runWithConcurrencyLimit<T>(operation: () => Promise<T>): Promise<T> {
+    if (this.activeRequests >= this.capacity.ai.maxConcurrent) {
+      if (this.waitingRequests.length >= this.capacity.ai.maxQueued) {
+        throw new ServiceUnavailableException('AI services are busy. Please try again shortly.');
+      }
+      await new Promise<void>((resolve) => this.waitingRequests.push(resolve));
+    }
+
+    this.activeRequests += 1;
     try {
       return await operation();
-    } catch (err: any) {
-      if (err?.status === 429 || err?.message?.includes('429')) {
-        throw new HttpException('AI services are currently busy due to high demand. Please wait a minute and try again.', HttpStatus.TOO_MANY_REQUESTS);
-      }
-      throw err;
+    } finally {
+      this.activeRequests -= 1;
+      this.waitingRequests.shift()?.();
     }
   }
 
