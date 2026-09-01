@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AiService } from '../ai/ai.service.js';
+import { EmailService } from '../email/email.service.js';
 import { StartInterviewDto } from './dto/start-interview.dto.js';
 import { SubmitInterviewDto } from './dto/submit-interview.dto.js';
 import { AiFeature } from '../../generated/prisma/enums.js';
@@ -36,6 +37,7 @@ export class MockInterviewService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly ai: AiService,
+    private readonly emailService: EmailService,
   ) {}
 
   private async getCandidateId(userId: string): Promise<string> {
@@ -115,6 +117,27 @@ export class MockInterviewService {
         completedAt: new Date(),
       },
     });
+
+    // Send mock interview report in background
+    (async () => {
+      try {
+        const candidateUser = await this.prisma.user.findUnique({
+          where: { id: userId },
+          include: { candidateProfile: true },
+        });
+        if (candidateUser?.email) {
+          await this.emailService.sendMockInterviewReportEmail({
+            candidateEmail: candidateUser.email,
+            candidateName: candidateUser.candidateProfile?.fullName || 'Candidate',
+            jobRole: updated.jobRole,
+            overallRating,
+            overallSummary,
+          });
+        }
+      } catch (e) {
+        // Fail silently
+      }
+    })();
 
     return {
       id: updated.id,

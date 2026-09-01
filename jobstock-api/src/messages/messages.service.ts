@@ -2,12 +2,14 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service.js';
 import { SendMessageDto } from './dto/send-message.dto.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
+import { EmailService } from '../email/email.service.js';
 
 @Injectable()
 export class MessagesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly emailService: EmailService,
   ) {}
 
   async getSupportAdmin() {
@@ -61,6 +63,32 @@ export class MessagesService {
     });
 
     await this.notifications.create(dto.receiverId, 'New message', 'You have received a new message');
+
+    // Send email notification in background
+    (async () => {
+      try {
+        const senderName =
+          message.sender.role === 'EMPLOYER'
+            ? message.sender.employer?.companyName || 'Recruiter'
+            : message.sender.candidateProfile?.fullName || 'User';
+
+        const senderCompany = message.sender.role === 'EMPLOYER' ? message.sender.employer?.companyName : undefined;
+        const receiverName =
+          message.receiver.candidateProfile?.fullName || message.receiver.employer?.companyName || 'User';
+
+        if (message.receiver.role === 'CANDIDATE' && message.receiver.email) {
+          await this.emailService.sendRecruiterMessageNotificationEmail({
+            recipientEmail: message.receiver.email,
+            recipientName: receiverName,
+            senderName,
+            senderCompany,
+            messageSnippet: dto.body || 'Attachment sent',
+          });
+        }
+      } catch (e) {
+        // Fail silently
+      }
+    })();
 
     return message;
   }
