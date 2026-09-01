@@ -165,7 +165,7 @@ export class EmailService {
 
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
     
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
     const logoUrl = `${frontendUrl}/assets/img/logo.png`;
     
     const htmlTemplate = `
@@ -217,35 +217,83 @@ export class EmailService {
       this.logger.error(`Failed to send welcome email to ${email}`, error);
     }
   }
-  async sendEmployerVerificationStatus(email: string, companyName: string, status: 'VERIFIED' | 'REJECTED' | 'SUSPENDED') {
-    if (!this.transporter) return;
+  async sendEmployerReopened(email: string, companyName: string) {
+    const transporter = this.getTransporter();
+    if (!transporter) return;
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
-    
-    let subject = 'Employer Verification Update';
-    let message = '';
-    
-    if (status === 'VERIFIED') {
-      subject = 'Your Company is Verified';
-      message = `<p>Good news, <b>${companyName}</b> has been successfully verified! You can now access your dashboard and post jobs.</p>`;
-    } else if (status === 'REJECTED') {
-      subject = 'Verification Rejected';
-      message = `<p>Unfortunately, your verification for <b>${companyName}</b> was rejected. Please review your documents and contact support.</p>`;
-    } else if (status === 'SUSPENDED') {
-      subject = 'Account Suspended';
-      message = `<p>Your account for <b>${companyName}</b> has been suspended. Please contact support.</p>`;
-    }
-    
-    const html = `<h2>JobStock Employer Update</h2>` + message;
-    
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+
+    const html = this.wrapInTemplate(
+      '🎉 Account Reopened',
+      `<p style="font-size: 16px; color: #333;">Great news! Your company <strong>${companyName}</strong> has been <strong>successfully reopened</strong> by our admin team! 🎊</p>
+       <p style="font-size: 15px; color: #333;">Your suspension has been lifted, and you once again have full access to your employer dashboard.</p>
+       <div style="padding: 20px; background-color: #f0fdf4; border-radius: 8px; border-left: 5px solid #0b8260; margin: 25px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+         <p style="margin: 0; font-size: 15px; color: #166534;">✅ <strong>You can now resume posting jobs, viewing candidates, and managing your account!</strong></p>
+       </div>
+       <p style="color: #555; font-size: 15px;">Welcome back to JobStock! 🌟</p>`,
+      { text: '👉 Go to Dashboard', url: `${frontendUrl}/employer-dashboard` }
+    );
+
     try {
-      await this.transporter.sendMail({ from, to: email, subject, html });
+      await transporter.sendMail({ from: `"JobStock Admin" <${from}>`, to: email, subject: '🎉 Your Company Account is Reopened!', html });
+    } catch (e) {
+      this.logger.error('Failed to send reopened email', e);
+    }
+  }
+
+  async sendEmployerVerificationStatus(email: string, companyName: string, status: 'VERIFIED' | 'REJECTED' | 'SUSPENDED') {
+    const transporter = this.getTransporter();
+    if (!transporter) return;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
+    const adminEmail = process.env.EMAIL_USERNAME || process.env.SMTP_USER || 'support@jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+
+    let subject = 'Employer Verification Update';
+    let title = 'JobStock Employer Update';
+    let message = '';
+
+    if (status === 'VERIFIED') {
+      subject = '🎉 Your Company is Verified!';
+      title = '✅ Verification Successful';
+      message = `
+        <p style="font-size: 15px; color: #333;">Great news! Your company <strong>${companyName}</strong> has been successfully verified by our admin team.</p>
+        <p style="font-size: 15px; color: #333;">You now have full access to your employer dashboard and can start posting jobs immediately. Welcome aboard! 🚀</p>
+      `;
+    } else if (status === 'REJECTED') {
+      subject = '❌ Verification Rejected';
+      title = '⚠️ Verification Rejected';
+      message = `
+        <p style="font-size: 15px; color: #333;">Unfortunately, the verification request for your company <strong>${companyName}</strong> was rejected by our admin team.</p>
+        <p style="font-size: 15px; color: #333;">This could be due to missing documentation, invalid details, or policy violations. 🛑</p>
+        <p style="font-size: 15px; color: #333; margin-top: 20px;"><strong>Need help?</strong> Please contact our admin team for further information and guidance on how to resolve this at: <br/>
+        <a href="mailto:${adminEmail}" style="color: #0b8260; font-weight: bold;">${adminEmail}</a> 📧</p>
+      `;
+    } else if (status === 'SUSPENDED') {
+      subject = '🚫 Account Suspended';
+      title = '🚨 Account Suspended';
+      message = `
+        <p style="font-size: 15px; color: #333;">Your employer account for <strong>${companyName}</strong> has been suspended.</p>
+        <p style="font-size: 15px; color: #333;">You will not be able to post jobs or access premium features during this time. ⛔</p>
+        <p style="font-size: 15px; color: #333; margin-top: 20px;"><strong>Next steps:</strong> Please contact our admin team for further information regarding your suspension at: <br/>
+        <a href="mailto:${adminEmail}" style="color: #0b8260; font-weight: bold;">${adminEmail}</a> 📧</p>
+      `;
+    }
+
+    const html = this.wrapInTemplate(
+      title,
+      message,
+      status === 'VERIFIED' ? { text: 'Go to Dashboard', url: `${frontendUrl}/employer-dashboard` } : undefined
+    );
+
+    try {
+      await transporter.sendMail({ from: `"JobStock Admin" <${from}>`, to: email, subject, html });
     } catch (e) {
       this.logger.error('Failed to send employer verification email', e);
     }
   }
 
   private wrapInTemplate(title: string, contentHtml: string, cta?: { text: string; url: string }): string {
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
     const ctaHtml = cta
       ? `<div style="text-align: center; margin: 30px 0 10px;">
           <a href="${cta.url}" style="display: inline-block; padding: 14px 28px; background-color: #0b8260; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 15px; box-shadow: 0 2px 4px rgba(11, 130, 96, 0.2);">${cta.text}</a>
@@ -294,7 +342,7 @@ export class EmailService {
       return;
     }
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
     const formattedDate = (opts.appliedAt || new Date()).toLocaleString('en-US', {
       month: 'short',
@@ -367,7 +415,7 @@ export class EmailService {
       return;
     }
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
 
     let statusTitle = `Application Status: ${opts.newStatus}`;
@@ -450,7 +498,7 @@ export class EmailService {
   }) {
     const transporter = this.getTransporter();
     if (!transporter) return;
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
 
     const content = `
@@ -490,7 +538,7 @@ export class EmailService {
       return;
     }
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
     const senderDisplay = opts.senderCompany ? `${opts.senderName} from ${opts.senderCompany}` : opts.senderName;
 
@@ -536,7 +584,7 @@ export class EmailService {
       return;
     }
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
     const percentage = Math.round((opts.score / opts.totalQuestions) * 100);
 
@@ -587,7 +635,7 @@ export class EmailService {
       return;
     }
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
     const stars = '★'.repeat(opts.overallRating) + '☆'.repeat(5 - opts.overallRating);
 
@@ -631,7 +679,7 @@ export class EmailService {
   }) {
     const transporter = this.getTransporter();
     if (!transporter) return;
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
 
     const content = `
@@ -669,7 +717,7 @@ export class EmailService {
   }) {
     const transporter = this.getTransporter();
     if (!transporter) return;
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
 
     const content = `
@@ -699,7 +747,7 @@ export class EmailService {
   async sendNewJobNotification(email: string, jobTitle: string, companyName: string, location: string, jobSlug: string) {
     if (!this.transporter) return;
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
     
     const subject = `New Job Opening: ${jobTitle} at ${companyName}`;
     const html = `
@@ -722,5 +770,249 @@ export class EmailService {
       this.logger.error(`Failed to send new job notification to ${email}`, e);
     }
   }
-}
 
+  // ADMIN DASHBOARD EMAIL TRIGGERS
+  // =========================================================================
+
+  async sendJobModerationStatus(opts: { email: string; jobTitle: string; companyName: string; status: 'APPROVED' | 'REJECTED' }) {
+    const transporter = this.getTransporter();
+    if (!transporter) return;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+
+    let subject = 'Job Moderation Update';
+    let message = '';
+    
+    if (opts.status === 'APPROVED') {
+      subject = '✅ Your Job is Approved & Live';
+      message = `
+        <p>Good news! Your job listing for <strong>${opts.jobTitle}</strong> has been approved.</p>
+        <p>It is now live on JobStock and visible to candidates.</p>
+      `;
+    } else {
+      subject = '⚠️ Job Listing Rejected';
+      message = `
+        <p>Unfortunately, your job listing for <strong>${opts.jobTitle}</strong> was rejected by our moderation team.</p>
+        <p>Please review our posting guidelines and contact support if you have questions.</p>
+      `;
+    }
+
+    const html = this.wrapInTemplate(
+      'Job Moderation Status',
+      message,
+      opts.status === 'APPROVED' ? { text: 'View Job', url: `${frontendUrl}/employer-manage-jobs` } : undefined
+    );
+
+    try {
+      await transporter.sendMail({ from: `"JobStock Admin" <${from}>`, to: opts.email, subject, html });
+    } catch (e) {
+      this.logger.error('Failed to send job moderation status', e);
+    }
+  }
+
+  async sendSupportTicketUpdate(opts: { email: string; subject: string; snippet: string; status?: string; ticketId?: string }) {
+    const transporter = this.getTransporter();
+    if (!transporter) return;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+
+    const html = this.wrapInTemplate(
+      'Support Ticket Update',
+      `<p>Your support ticket <strong>"${opts.subject}"</strong> has a new update.</p>
+       <div style="padding: 10px; background: #f8fafc; border-left: 4px solid #0b8260; font-style: italic;">"${opts.snippet}"</div>
+       <p><strong>Current Status:</strong> ${opts.status || 'Updated'}</p>`,
+      { text: 'View Ticket', url: `${frontendUrl}/candidate-support` }
+    );
+
+    try {
+      await transporter.sendMail({ from: `"JobStock Support" <${from}>`, to: opts.email, subject: `Update on: ${opts.subject}`, html });
+    } catch (e) {
+      this.logger.error('Failed to send support ticket update', e);
+    }
+  }
+
+  async sendPackageAssignmentConfirmation(opts: { email: string; companyName?: string; planName?: string; packageName?: string; quota: number; unlocks: number }) {
+    const transporter = this.getTransporter();
+    if (!transporter) return;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
+    
+    const pName = opts.planName || opts.packageName || 'Premium';
+    
+    const html = this.wrapInTemplate(
+      'Premium Package Activated',
+      `<p>Hi <strong>${opts.companyName || 'Employer'}</strong>,</p>
+       <p>An admin has successfully activated your <strong>${pName}</strong> package.</p>
+       <ul>
+         <li>Job Posts Quota: <strong>${opts.quota}</strong></li>
+         <li>Candidate Contact Unlocks: <strong>${opts.unlocks}</strong></li>
+       </ul>
+       <p>Enjoy your premium features!</p>`
+    );
+
+    try {
+      await transporter.sendMail({ from: `"JobStock Admin" <${from}>`, to: opts.email, subject: `Package Activated: ${pName}`, html });
+    } catch (e) {
+      this.logger.error('Failed to send package assignment email', e);
+    }
+  }
+
+  async sendAdminTeamInvitation(opts: { email: string; role: string; tempPass: string }) {
+    const transporter = this.getTransporter();
+    if (!transporter) return;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+
+    const html = this.wrapInTemplate(
+      'Admin Invitation',
+      `<p>You have been invited to join the JobStock Admin Team.</p>
+       <p><strong>Role:</strong> ${opts.role}</p>
+       <p><strong>Temporary Password:</strong> ${opts.tempPass}</p>
+       <p>Please log in and change your password immediately.</p>`,
+      { text: 'Admin Login', url: `${frontendUrl}/login` }
+    );
+
+    try {
+      await transporter.sendMail({ from: `"JobStock Admin" <${from}>`, to: opts.email, subject: `Invitation to JobStock Admin Team`, html });
+    } catch (e) {
+      this.logger.error('Failed to send admin invite', e);
+    }
+  }
+
+  async sendProctoringNotice(opts: { email: string; testName: string; decision: string; instructions: string }) {
+    const transporter = this.getTransporter();
+    if (!transporter) return;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
+
+    const html = this.wrapInTemplate(
+      'Proctoring Notice',
+      `<p>Your recent assessment for <strong>${opts.testName}</strong> has been reviewed by our proctoring team.</p>
+       <p><strong>Decision:</strong> ${opts.decision}</p>
+       <p>${opts.instructions}</p>`
+    );
+
+    try {
+      await transporter.sendMail({ from: `"JobStock Proctoring" <${from}>`, to: opts.email, subject: `Proctoring Notice: ${opts.testName}`, html });
+    } catch (e) {
+      this.logger.error('Failed to send proctoring notice', e);
+    }
+  }
+
+  async sendAdminAlert(opts: { type: string; details: string }) {
+    const transporter = this.getTransporter();
+    if (!transporter) return;
+    const adminEmail = process.env.EMAIL_USERNAME || process.env.SMTP_USER;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
+    if (!adminEmail) return;
+
+    const html = this.wrapInTemplate(
+      'System Alert',
+      `<p><strong>Alert Type:</strong> ${opts.type}</p>
+       <div style="padding: 10px; background: #fee2e2; color: #991b1b; border-radius: 4px;">${opts.details}</div>`
+    );
+
+    try {
+      await transporter.sendMail({ from: `"JobStock System" <${from}>`, to: adminEmail, subject: `[ALERT] ${opts.type}`, html });
+    } catch (e) {
+      this.logger.error('Failed to send admin alert', e);
+    }
+  }
+
+  async sendNewEmployerAlert(opts: { employerName: string }) {
+    const transporter = this.getTransporter();
+    if (!transporter) return;
+    const adminEmail = process.env.EMAIL_USERNAME || process.env.SMTP_USER;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
+    if (!adminEmail) return;
+
+    const html = this.wrapInTemplate(
+      '🚀 New Employer Registration',
+      `<p style="font-size: 16px; color: #333;"><strong>🎉 Congratulations!</strong> You have a brand new employer registration on your platform.</p>
+       <div style="padding: 18px; background-color: #f0fdf4; border-radius: 8px; border-left: 5px solid #0b8260; margin: 25px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+         <p style="margin: 0 0 10px 0; font-size: 16px; color: #166534;">🏢 <strong>${opts.employerName}</strong> has just signed up!</p>
+         <p style="margin: 0 0 10px 0; color: #15803d; font-size: 14px;">✅ They are currently waiting for admin verification.</p>
+         <p style="margin: 0; color: #15803d; font-size: 14px;">🔍 Please review their profile to unlock their ability to post jobs.</p>
+       </div>
+       <p style="color: #666; font-size: 14px;">Keep up the great work! 🌟</p>`,
+      { text: '👉 Review Employer Now', url: `${process.env.FRONTEND_URL || 'https://www.jobstock.com'}/admin-employers` }
+    );
+
+    try {
+      const subjectLine = "\uD83C\uDF89 New Employer: " + opts.employerName;
+      await transporter.sendMail({ from: `"JobStock Admin" <${from}>`, to: adminEmail, subject: subjectLine, html });
+    } catch (e) {
+      this.logger.error('Failed to send admin employer alert', e);
+    }
+  }
+
+  async sendNewPackageNotification(opts: { email: string; companyName: string; packageName: string; priceInPaisa: number; duration: number; durationType: string; features: string[] }) {
+    const transporter = this.getTransporter();
+    if (!transporter) return;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+
+    const price = opts.priceInPaisa > 0 ? `₹${(opts.priceInPaisa / 100).toFixed(2)}` : 'FREE';
+    const featuresList = opts.features.map(f => `<li style="margin-bottom: 5px;">✅ ${f}</li>`).join('');
+
+    const html = this.wrapInTemplate(
+      '🚀 New Employer Package Available!',
+      `<p style="font-size: 16px; color: #333;">Hi <strong>${opts.companyName}</strong>, 👋</p>
+       <p style="font-size: 15px; color: #333;">We've just rolled out a brand new package to help you hire top talent faster! 🎉</p>
+       
+       <div style="padding: 20px; background-color: #f8fafc; border-radius: 8px; border-left: 5px solid #0b8260; margin: 25px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+         <h3 style="margin: 0 0 15px 0; color: #0b8260; font-size: 18px;">💎 ${opts.packageName}</h3>
+         <p style="margin: 0 0 10px 0; font-size: 15px; color: #333;"><strong>💰 Price:</strong> ${price}</p>
+         <p style="margin: 0 0 15px 0; font-size: 15px; color: #333;"><strong>⏱️ Duration:</strong> ${opts.duration} ${opts.durationType}</p>
+         
+         <p style="margin: 0 0 10px 0; font-weight: bold; color: #333;">✨ Key Features Included:</p>
+         <ul style="margin: 0; padding-left: 20px; color: #444; font-size: 14px;">
+           ${featuresList}
+         </ul>
+       </div>
+       
+       <p style="color: #555; font-size: 15px;">Upgrade your plan today and start connecting with amazing candidates! 🌟</p>`,
+      { text: '👉 View Packages', url: `${frontendUrl}/employer-packages` }
+    );
+
+    try {
+      await transporter.sendMail({ from: `"JobStock" <${from}>`, to: opts.email, subject: `🔥 New Premium Package: ${opts.packageName}`, html });
+    } catch (e) {
+      this.logger.error('Failed to send new package notification', e);
+    }
+  }
+
+  async sendNewCandidatePackageNotification(opts: { email: string; candidateName: string; packageName: string; priceInPaisa: number; duration: number; durationType: string; features: string[] }) {
+    const transporter = this.getTransporter();
+    if (!transporter) return;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+
+    const price = opts.priceInPaisa > 0 ? `₹${(opts.priceInPaisa / 100).toFixed(2)}` : 'FREE';
+    const featuresList = opts.features.map(f => `<li style="margin-bottom: 5px;">✅ ${f}</li>`).join('');
+
+    const html = this.wrapInTemplate(
+      '🚀 New Resume Package Available!',
+      `<p style="font-size: 16px; color: #333;">Hi <strong>${opts.candidateName}</strong>, 👋</p>
+       <p style="font-size: 15px; color: #333;">We've just rolled out a brand new package to help you stand out to recruiters and land your dream job faster! 🎉</p>
+       
+       <div style="padding: 20px; background-color: #f8fafc; border-radius: 8px; border-left: 5px solid #0b8260; margin: 25px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+         <h3 style="margin: 0 0 15px 0; color: #0b8260; font-size: 18px;">💎 ${opts.packageName}</h3>
+         <p style="margin: 0 0 10px 0; font-size: 15px; color: #333;"><strong>💰 Price:</strong> ${price}</p>
+         <p style="margin: 0 0 15px 0; font-size: 15px; color: #333;"><strong>⏱️ Duration:</strong> ${opts.duration} ${opts.durationType}</p>
+         
+         <p style="margin: 0 0 10px 0; font-weight: bold; color: #333;">✨ Key Features Included:</p>
+         <ul style="margin: 0; padding-left: 20px; color: #444; font-size: 14px;">
+           ${featuresList}
+         </ul>
+       </div>
+       
+       <p style="color: #555; font-size: 15px;">Upgrade your plan today to give your resume the spotlight it deserves! 🌟</p>`,
+      { text: '👉 View Resume Packages', url: `${frontendUrl}/candidate-resume-packages` }
+    );
+
+    try {
+      await transporter.sendMail({ from: `"JobStock" <${from}>`, to: opts.email, subject: `🔥 New Resume Package: ${opts.packageName}`, html });
+    } catch (e) {
+      this.logger.error('Failed to send new candidate package notification', e);
+    }
+  }
+}

@@ -152,12 +152,15 @@ export default function AdminEmployerDetailPage() {
                   >
                     {actingDecision === "SUSPENDED" ? "Wait..." : "Suspend"}
                   </button>
-                  <button 
-                    className="btn btn-sm btn-success"
-                    onClick={() => router.push('/admin-employer-directory')}
-                  >
-                    <i className="fa-solid fa-arrow-left"></i> Back
-                  </button>
+                  {detail.status === "SUSPENDED" && (
+                    <button 
+                      className="btn btn-sm btn-info text-white"
+                      disabled={!!actingDecision}
+                      onClick={() => handleDecision("VERIFIED")}
+                    >
+                      {actingDecision === "VERIFIED" ? "Wait..." : "Reopen"}
+                    </button>
+                  )}
                 </div>
               )}
             </div>

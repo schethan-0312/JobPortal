@@ -232,6 +232,22 @@ export class AuthService {
     return { success: true };
   }
 
+  async me(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return user;
+  }
+
+  async updateProfilePhoto(userId: string, avatarUrl: string) {
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: { profilePhotoUrl: avatarUrl }
+    });
+    return { success: true, profilePhotoUrl: user.profilePhotoUrl };
+  }
+
   async forgotPassword(email: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) {
