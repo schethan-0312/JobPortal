@@ -1,23 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
+import { EmailService } from '../email/email.service.js';
 import type { Job } from '../../generated/prisma/client.js';
 
 const GENERAL_INTEREST_LIMIT = 20;
 
-/**
- * Fan-out matching that runs once, synchronously, right after a job is posted.
- * Two independent, cheap (no AI) passes:
- *  1. Explicit job alerts — a candidate opted into these criteria, so a match is a
- *     strong, real-time-worthy signal.
- *  2. General skill/location overlap — a lighter-touch notification for candidates
- *     who look like a fit but never set up an alert. Capped and recency-ordered so
- *     it can't turn into a spam blast on a broad job post.
- * Deliberately does NOT call the AI scorer here — that runs on-demand (Smart Match)
- * when a candidate actually opens their dashboard, not synchronously for every
- * candidate on every job post. Doing per-candidate AI calls at post-time wouldn't
- * scale and would make job creation slow.
- */
 @Injectable()
 export class JobMatchingService {
   private readonly logger = new Logger(JobMatchingService.name);
@@ -25,19 +13,50 @@ export class JobMatchingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly emailService: EmailService,
   ) {}
 
   async onJobPosted(job: Job): Promise<void> {
     try {
+      await this.notifyFollowers(job);
       const alertedUserIds = await this.matchJobAlerts(job);
       await this.matchGeneralInterest(job, alertedUserIds);
     } catch (err) {
-      // Matching is best-effort — a failure here must never fail the job-posting request.
       this.logger.error(`Job matching failed for job ${job.id}: ${(err as Error).message}`);
     }
   }
 
-  /** Notifies candidates whose saved Job Alert criteria match this job. Returns the set of userIds notified. */
+  private async notifyFollowers(job: Job): Promise<void> {
+    const employer = await this.prisma.employer.findUnique({
+      where: { id: job.employerId },
+      include: { user: true }
+    });
+    if (!employer) return;
+
+    const follows = await this.prisma.candidateEmployerFollow.findMany({
+      where: { followingId: employer.userId },
+      include: { follower: { select: { email: true, id: true } } }
+    });
+
+    for (const follow of follows) {
+      if (follow.follower?.email) {
+        await this.emailService.sendNewJobNotification(
+          follow.follower.email,
+          job.title,
+          employer.companyName,
+          job.location,
+          job.slug
+        );
+      }
+      
+      await this.notifications.create(
+        follow.follower.id,
+        'New Job from ' + employer.companyName,
+        `"${job.title}" was just posted by ${employer.companyName}.`
+      );
+    }
+  }
+
   private async matchJobAlerts(job: Job): Promise<Set<string>> {
     const alerts = await this.prisma.jobAlert.findMany();
     const notified = new Set<string>();
@@ -62,7 +81,6 @@ export class JobMatchingService {
     return notified;
   }
 
-  /** Notifies a capped, recency-ordered set of candidates with obvious skill/location overlap. */
   private async matchGeneralInterest(job: Job, excludeUserIds: Set<string>): Promise<void> {
     const candidates = await this.prisma.candidateProfile.findMany({
       where: {

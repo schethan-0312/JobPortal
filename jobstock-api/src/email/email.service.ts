@@ -216,4 +216,31 @@ export class EmailService {
       this.logger.error('Failed to send employer verification email', e);
     }
   }
+
+  async sendNewJobNotification(email: string, jobTitle: string, companyName: string, location: string, jobSlug: string) {
+    if (!this.transporter) return;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    
+    const subject = `New Job Opening: ${jobTitle} at ${companyName}`;
+    const html = `
+      <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+        <h2 style="color: #0b8260;">New Job Opening</h2>
+        <p>Hello,</p>
+        <p><b>${companyName}</b> has just posted a new job opening that might interest you.</p>
+        <p><b>Position:</b> ${jobTitle}</p>
+        <p><b>Location:</b> ${location}</p>
+        <br/>
+        <a href="${frontendUrl}/job/${jobSlug}" style="display:inline-block;padding:10px 20px;background:#0b8260;color:#fff;text-decoration:none;border-radius:4px;">View Job Details</a>
+        <p><br>Best regards,<br>The JobStock Team</p>
+      </div>
+    `;
+    
+    try {
+      await this.transporter.sendMail({ from: `"JobStock" <${from}>`, to: email, subject, html });
+      this.logger.log(`New job notification email sent to ${email}`);
+    } catch (e) {
+      this.logger.error(`Failed to send new job notification to ${email}`, e);
+    }
+  }
 }
