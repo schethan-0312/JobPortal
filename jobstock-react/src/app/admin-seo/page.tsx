@@ -208,7 +208,7 @@ export default function AdminSeoPage() {
             <div className="card">
               <div className="card-header"><h6 className="mb-0">Per-Page Overrides ({overrides.length})</h6></div>
               <div className="card-body">
-                {overrides.length === 0 && <p className="text-muted small mb-0">No overrides â€” all pages use site-wide defaults.</p>}
+                {overrides.length === 0 && <p className="text-muted small mb-0">No overrides — all pages use site-wide defaults.</p>}
                 {overrides.length > 0 && (
                   <table className="table table-sm align-middle mb-0">
                     <thead><tr><th>Path</th><th>Title</th><th>Description</th><th></th></tr></thead>
@@ -216,8 +216,8 @@ export default function AdminSeoPage() {
                       {overrides.map((o) => (
                         <tr key={o.path}>
                           <td className="small font-monospace">{o.path}</td>
-                          <td className="small">{o.metaTitle ?? "â€”"}</td>
-                          <td className="small">{o.metaDescription ?? "â€”"}</td>
+                          <td className="small">{o.metaTitle ?? "—"}</td>
+                          <td className="small">{o.metaDescription ?? "—"}</td>
                           <td>
                             <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => handleDeleteOverride(o.path)}>
                               Delete
@@ -228,14 +228,6 @@ export default function AdminSeoPage() {
                     </tbody>
                   </table>
                 )}
-              </div>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
               </div>
             </div>
           </div>

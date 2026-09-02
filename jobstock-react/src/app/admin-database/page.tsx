@@ -188,7 +188,7 @@ export default function AdminDatabasePage() {
                                 <div className="small text-danger mt-1">{b.errorMessage}</div>
                               )}
                             </td>
-                            <td className="small">{b.sizeBytes ? formatBytes(b.sizeBytes) : "â€”"}</td>
+                            <td className="small">{b.sizeBytes ? formatBytes(b.sizeBytes) : "—"}</td>
                             <td className="small text-muted">{new Date(b.createdAt).toLocaleString()}</td>
                           </tr>
                         ))}
@@ -230,14 +230,6 @@ export default function AdminDatabasePage() {
                     {JSON.stringify(exportedData, null, 2)}
                   </pre>
                 ) : null}
-              </div>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
               </div>
             </div>
           </div>

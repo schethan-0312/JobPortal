@@ -153,8 +153,8 @@ export default function AdminAuditLogPage() {
                             <td className="small">
                               {entry.targetType} <span className="text-muted">#{entry.targetId.slice(0, 8)}</span>
                             </td>
-                            <td className="small text-muted">{entry.reason ?? "â€”"}</td>
-                            <td className="small text-muted">{entry.ipAddress ?? "â€”"}</td>
+                            <td className="small text-muted">{entry.reason ?? "—"}</td>
+                            <td className="small text-muted">{entry.ipAddress ?? "—"}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -177,14 +177,6 @@ export default function AdminAuditLogPage() {
                     </div>
                   </div>
                 )}
-              </div>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
               </div>
             </div>
           </div>

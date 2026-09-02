@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { api } from "@/lib/api";
+import { api, assetUrl } from "@/lib/api";
 
 export type AdminSidebarActive = "dashboard" | "employers" | "reports" | "ai-monitoring" | "analytics" | "messages" | (string & {});
 
@@ -96,7 +96,11 @@ export default function AdminSidebar({ active }: AdminSidebarProps) {
             <div className="jbs-grid-usrs-thumb">
               <div className="jbs-grid-yuo">
                 <figure>
-                  <img src="/assets/img/l-1.png" className="img-fluid circle" alt="" />
+                  <img 
+                    src={user?.profilePhotoUrl ? assetUrl(user.profilePhotoUrl) : "/assets/img/l-1.png"} 
+                    className="img-fluid circle" 
+                    alt="Profile Photo" 
+                  />
                 </figure>
               </div>
             </div>

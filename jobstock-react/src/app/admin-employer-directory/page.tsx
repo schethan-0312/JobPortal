@@ -150,7 +150,7 @@ export default function AdminEmployerDirectoryPage() {
                               </span>
                             </td>
                             <td className="small">{e.jobsPostedCount}</td>
-                            <td className="small">{e.activeSubscription ?? "â€”"}</td>
+                            <td className="small">{e.activeSubscription ?? "—"}</td>
                             <td className="small">{formatMoney(e.totalSpendPaisa)}</td>
                             <td className="small text-muted">{new Date(e.signupDate).toLocaleDateString()}</td>
                           </tr>
@@ -159,14 +159,6 @@ export default function AdminEmployerDirectoryPage() {
                     </table>
                   </div>
                 )}
-              </div>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
               </div>
             </div>
           </div>

@@ -92,7 +92,7 @@ export default function AdminLegalPage() {
                     {rows.map((r) => (
                       <tr key={r.slug}>
                         <td className="small fw-medium">{r.label}</td>
-                        <td className="small">{r.doc ? `v${r.doc.version}` : "â€”"}</td>
+                        <td className="small">{r.doc ? `v${r.doc.version}` : "—"}</td>
                         <td className="small text-muted">{r.doc ? new Date(r.doc.updatedAt).toLocaleString() : "Not created yet"}</td>
                         <td>
                           <button
@@ -123,14 +123,6 @@ export default function AdminLegalPage() {
                     ))}
                   </tbody>
                 </table>
-              </div>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
               </div>
             </div>
           </div>

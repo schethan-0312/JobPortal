@@ -27,7 +27,7 @@ const ROLE_OPTIONS: { value: AdminRoleValue; label: string }[] = [
 ];
 
 function roleLabel(role: string | null) {
-  return ROLE_OPTIONS.find((r) => r.value === role)?.label ?? role ?? "â€”";
+  return ROLE_OPTIONS.find((r) => r.value === role)?.label ?? role ?? "—";
 }
 
 export default function AdminTeamPage() {
@@ -242,7 +242,7 @@ export default function AdminTeamPage() {
                                 </span>
                               )}
                             </td>
-                            <td className="small text-muted">{m.invitedByEmail ?? "â€”"}</td>
+                            <td className="small text-muted">{m.invitedByEmail ?? "—"}</td>
                             <td className="small text-muted">
                               {m.lastLoginAt ? new Date(m.lastLoginAt).toLocaleString() : "Never"}
                             </td>
@@ -267,14 +267,6 @@ export default function AdminTeamPage() {
                     </table>
                   </div>
                 )}
-              </div>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
               </div>
             </div>
           </div>

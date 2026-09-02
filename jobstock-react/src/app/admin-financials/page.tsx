@@ -168,10 +168,10 @@ export default function AdminFinancialsPage() {
                 {mode.configured ? (
                   <span>
                     Razorpay is in <strong>{mode.mode} MODE</strong> ({mode.keyIdPrefix})
-                    {mode.mode === "LIVE" ? " â€” real money moves through this panel." : " â€” no real money moves here."}
+                    {mode.mode === "LIVE" ? " — real money moves through this panel." : " — no real money moves here."}
                   </span>
                 ) : (
-                  <span>Razorpay is not configured yet â€” no keys set.</span>
+                  <span>Razorpay is not configured yet — no keys set.</span>
                 )}
               </div>
             )}
@@ -181,7 +181,7 @@ export default function AdminFinancialsPage() {
                 <div className="card h-100">
                   <div className="card-body">
                     <div className="text-muted small mb-1">Total revenue (paid)</div>
-                    <div className="fs-3 fw-bold">{revenue ? formatMoney(revenue.totalPaisa) : "â€”"}</div>
+                    <div className="fs-3 fw-bold">{revenue ? formatMoney(revenue.totalPaisa) : "—"}</div>
                     <div className="small text-muted">{revenue?.transactionCount ?? 0} transactions</div>
                   </div>
                 </div>
@@ -191,7 +191,7 @@ export default function AdminFinancialsPage() {
                   <div className="card-body">
                     <div className="text-muted small mb-1">Refund rate</div>
                     <div className="fs-3 fw-bold">
-                      {refundRate ? `${(refundRate.refundRate * 100).toFixed(1)}%` : "â€”"}
+                      {refundRate ? `${(refundRate.refundRate * 100).toFixed(1)}%` : "—"}
                     </div>
                     <div className="small text-muted">
                       {refundRate?.refunded ?? 0} of {refundRate?.total ?? 0} orders
@@ -320,21 +320,13 @@ export default function AdminFinancialsPage() {
                             <td className="small">{s.package.name}</td>
                             <td className="small">{s.jobPostsUsed}</td>
                             <td className="small">{new Date(s.startedAt).toLocaleDateString()}</td>
-                            <td className="small">{s.expiresAt ? new Date(s.expiresAt).toLocaleDateString() : "â€”"}</td>
+                            <td className="small">{s.expiresAt ? new Date(s.expiresAt).toLocaleDateString() : "—"}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
                 )}
-              </div>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
               </div>
             </div>
           </div>

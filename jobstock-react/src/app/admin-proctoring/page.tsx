@@ -187,12 +187,12 @@ export default function AdminProctoringPage() {
                           <tr key={a.id}>
                             <td className="small">{a.candidate.fullName}</td>
                             <td className="small">{a.skill}</td>
-                            <td className="small">{a.score !== null ? `${a.score}/${a.totalQuestions}` : "â€”"}</td>
+                            <td className="small">{a.score !== null ? `${a.score}/${a.totalQuestions}` : "—"}</td>
                             <td>
                               {a.violations > 0 ? <span className="badge bg-danger">{a.violations}</span> : "0"}
                             </td>
                             <td>{a.timeExceeded && <span className="badge bg-warning">Exceeded</span>}</td>
-                            <td className="small text-muted">{a.completedAt ? new Date(a.completedAt).toLocaleDateString() : "â€”"}</td>
+                            <td className="small text-muted">{a.completedAt ? new Date(a.completedAt).toLocaleDateString() : "—"}</td>
                             <td>
                               <button
                                 type="button"
@@ -227,12 +227,12 @@ export default function AdminProctoringPage() {
                           <tr key={i.id}>
                             <td className="small">{i.candidate.fullName}</td>
                             <td className="small">{i.jobRole}</td>
-                            <td className="small">{i.overallRating !== null ? `${i.overallRating}/5` : "â€”"}</td>
+                            <td className="small">{i.overallRating !== null ? `${i.overallRating}/5` : "—"}</td>
                             <td>
                               {i.violations > 0 ? <span className="badge bg-danger">{i.violations}</span> : "0"}
                             </td>
                             <td>{i.timeExceeded && <span className="badge bg-warning">Exceeded</span>}</td>
-                            <td className="small text-muted">{i.completedAt ? new Date(i.completedAt).toLocaleDateString() : "â€”"}</td>
+                            <td className="small text-muted">{i.completedAt ? new Date(i.completedAt).toLocaleDateString() : "—"}</td>
                             <td>
                               <button
                                 type="button"
@@ -249,14 +249,6 @@ export default function AdminProctoringPage() {
                     </table>
                   </div>
                 )}
-              </div>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
               </div>
             </div>
           </div>

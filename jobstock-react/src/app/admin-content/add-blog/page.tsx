@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -142,7 +142,7 @@ export default function AddBlogPage() {
         seoDescription: res.seoDescription || prev.seoDescription,
         readTimeMinutes: res.readTimeMinutes?.toString() || prev.readTimeMinutes,
       }));
-      setSuccessMessage("Blog post auto-filled from document magically! âœ¨");
+      setSuccessMessage("Blog post auto-filled from document!");
     } catch (err: any) {
       setErrorMessage(err.message || "Failed to parse document with AI");
     } finally {
@@ -305,14 +305,6 @@ export default function AddBlogPage() {
                     </div>
                   </div>
                 </form>
-              </div>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
               </div>
             </div>
           </div>

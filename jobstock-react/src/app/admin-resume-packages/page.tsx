@@ -28,7 +28,7 @@ export default function AdminResumePackagesPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   function renderFeatures(featuresJson: unknown) {
-    if (!featuresJson) return <span className="text-muted small">â€”</span>;
+    if (!featuresJson) return <span className="text-muted small">—</span>;
     let items: string[] = [];
     if (Array.isArray(featuresJson)) {
       items = featuresJson.map((f) => String(f));
@@ -43,7 +43,7 @@ export default function AdminResumePackagesPage() {
     } else if (typeof featuresJson === "string") {
       items = [featuresJson];
     }
-    if (items.length === 0) return <span className="text-muted small">â€”</span>;
+    if (items.length === 0) return <span className="text-muted small">—</span>;
     return (
       <div className="mt-3">
         {items.map((feat, idx) => (
@@ -538,13 +538,7 @@ export default function AdminResumePackagesPage() {
           </div>
 
           {/* Footer */}
-          <div className="row mt-4">
-            <div className="col-md-12">
-              <div className="py-3 text-center text-muted small">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
+
         </div>
       </div>
     </>

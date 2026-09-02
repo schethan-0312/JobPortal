@@ -3,9 +3,14 @@ import * as crypto from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreatePostDto } from './dto/create-post.dto.js';
 
+import { EmailService } from '../email/email.service.js';
+
 @Injectable()
 export class BlogService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly emailService: EmailService
+  ) {}
 
   private slugify(title: string): string {
     const base = title
@@ -16,11 +21,11 @@ export class BlogService {
     return `${base}-${crypto.randomBytes(3).toString('hex')}`;
   }
 
-  create(authorId: string, dto: CreatePostDto) {
+  async create(authorId: string, dto: CreatePostDto) {
     const isPublished = dto.status === 'published';
     const publishedAt = isPublished ? new Date() : null;
 
-    return this.prisma.blogPost.create({
+    const blogPost = await this.prisma.blogPost.create({
       data: {
         authorId,
         customAuthorName: dto.author,
@@ -39,6 +44,26 @@ export class BlogService {
         publishedAt,
       },
     });
+
+    // Notify all candidates and employers asynchronously
+    this.notifyUsersOfNewBlog(blogPost.title, blogPost.slug).catch(err => {
+      console.error('Error notifying users of new blog:', err);
+    });
+
+    return blogPost;
+  }
+
+  private async notifyUsersOfNewBlog(title: string, slug: string) {
+    const users = await this.prisma.user.findMany({
+      where: {
+        role: { in: ['CANDIDATE', 'EMPLOYER'] }
+      },
+      select: { email: true }
+    });
+
+    for (const user of users) {
+      await this.emailService.sendNewBlogPost(user.email, title, slug);
+    }
   }
 
   async update(id: string, dto: any) {

@@ -188,7 +188,7 @@ export default function AdminSecurityPage() {
                             <td className="small">{s.email}</td>
                             <td><span className="badge bg-secondary">{s.role}</span></td>
                             <td className="small">{new Date(s.lastLoginAt).toLocaleString()}</td>
-                            <td className="small text-muted">{s.ipAddress ?? "â€”"}</td>
+                            <td className="small text-muted">{s.ipAddress ?? "—"}</td>
                             <td>
                               <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => revokeSession(s.userId, s.email)}>
                                 Force logout
@@ -225,7 +225,7 @@ export default function AdminSecurityPage() {
                           <tr key={f.id}>
                             <td className="small">{new Date(f.createdAt).toLocaleString()}</td>
                             <td className="small">{f.email}</td>
-                            <td className="small text-muted">{f.ipAddress ?? "â€”"}</td>
+                            <td className="small text-muted">{f.ipAddress ?? "—"}</td>
                             <td className="small text-muted">{f.reason}</td>
                           </tr>
                         ))}
@@ -254,7 +254,7 @@ export default function AdminSecurityPage() {
                             {rateLimitHits.items.slice(0, 10).map((r) => (
                               <tr key={r.id}>
                                 <td className="small">{new Date(r.createdAt).toLocaleTimeString()}</td>
-                                <td className="small">{r.ipAddress ?? "â€”"}</td>
+                                <td className="small">{r.ipAddress ?? "—"}</td>
                                 <td className="small text-muted">{r.path}</td>
                               </tr>
                             ))}
@@ -304,14 +304,6 @@ export default function AdminSecurityPage() {
                     ))}
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
               </div>
             </div>
           </div>

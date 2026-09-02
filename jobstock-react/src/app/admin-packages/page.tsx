@@ -423,13 +423,7 @@ export default function AdminPackagesPage() {
             </div>
           </div>
 
-          <div className="row mt-4">
-            <div className="col-md-12">
-              <div className="py-3 text-center text-muted small">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
+
         </div>
       </div>
     </>

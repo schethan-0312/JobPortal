@@ -171,9 +171,9 @@ export default function AdminAiMonitoringPage() {
                             </td>
                             <td className="small">{f.calls}</td>
                             <td className="small">
-                              {f.successRate === null ? "â€”" : `${f.successRate}%`}
+                              {f.successRate === null ? "—" : `${f.successRate}%`}
                             </td>
-                            <td className="small">{f.avgLatencyMs === null ? "â€”" : `${f.avgLatencyMs} ms`}</td>
+                            <td className="small">{f.avgLatencyMs === null ? "—" : `${f.avgLatencyMs} ms`}</td>
                             <td className="small">{f.totalTokens.toLocaleString()}</td>
                             <td>
                               <button
@@ -217,14 +217,6 @@ export default function AdminAiMonitoringPage() {
                     </table>
                   </div>
                 )}
-              </div>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
               </div>
             </div>
           </div>

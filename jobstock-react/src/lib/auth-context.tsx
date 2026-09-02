@@ -61,37 +61,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [loadMe]);
 
   const login = useCallback(async (email: string, password: string, role?: Role) => {
-    const res = await api.post<{ accessToken: string; user: { id: string; email: string; role: Role } }>(
+    const res = await api.post<{ accessToken: string; user: { id: string; email: string; role: Role; profilePhotoUrl?: string } }>(
       "/auth/login",
       { email, password, role },
       { auth: false },
     );
     setToken(res.accessToken);
-    const authUser: AuthUser = { userId: res.user.id, email: res.user.email, role: res.user.role };
+    const authUser: AuthUser = { userId: res.user.id, email: res.user.email, role: res.user.role, profilePhotoUrl: res.user.profilePhotoUrl };
     setUser(authUser);
     return authUser;
   }, []);
 
   const googleLogin = useCallback(async (credential: string, role?: Role, isLogin?: boolean) => {
-    const res = await api.post<{ accessToken: string; user: { id: string; email: string; role: Role } }>(
+    const res = await api.post<{ accessToken: string; user: { id: string; email: string; role: Role; profilePhotoUrl?: string } }>(
       "/auth/google",
       { credential, role, isLogin },
       { auth: false },
     );
     setToken(res.accessToken);
-    const authUser: AuthUser = { userId: res.user.id, email: res.user.email, role: res.user.role };
+    const authUser: AuthUser = { userId: res.user.id, email: res.user.email, role: res.user.role, profilePhotoUrl: res.user.profilePhotoUrl };
     setUser(authUser);
     return authUser;
   }, []);
 
   const register = useCallback(async (input: RegisterInput) => {
-    const res = await api.post<{ accessToken: string; user: { id: string; email: string; role: Role } }>(
+    const res = await api.post<{ accessToken: string; user: { id: string; email: string; role: Role; profilePhotoUrl?: string } }>(
       "/auth/register",
       input,
       { auth: false },
     );
     setToken(res.accessToken);
-    const authUser: AuthUser = { userId: res.user.id, email: res.user.email, role: res.user.role };
+    const authUser: AuthUser = { userId: res.user.id, email: res.user.email, role: res.user.role, profilePhotoUrl: res.user.profilePhotoUrl };
     setUser(authUser);
     return authUser;
   }, []);
