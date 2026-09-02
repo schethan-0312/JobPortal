@@ -18,6 +18,13 @@ export class FollowController {
     return this.followService.incomingRequests(user.userId);
   }
 
+  @Get('sent-requests')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.CANDIDATE)
+  sentRequests(@CurrentUser() user: AuthenticatedUser) {
+    return this.followService.sentRequests(user.userId);
+  }
+
   @Post('requests/:targetId/accept')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.CANDIDATE)

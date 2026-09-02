@@ -10,6 +10,7 @@ import { CreateJobAlertDto } from './dto/create-job-alert.dto.js';
 // own authenticated `/candidates/me` call.
 const PUBLIC_CANDIDATE_SELECT = {
   id: true,
+  userId: true,
   fullName: true,
   headline: true,
   location: true,
@@ -153,25 +154,62 @@ export class CandidatesService {
   }
 
   async listPublic(
-    params: { location?: string; skill?: string; page: number; pageSize: number },
+    params: {
+      location?: string;
+      skill?: string;
+      keyword?: string;
+      search?: string;
+      sortBy?: string;
+      page: number;
+      pageSize: number;
+    },
     user?: { role: string; userId: string } | null,
   ) {
-    const skillVariations = params.skill 
+    const searchTerm = (params.skill || params.search || params.keyword || '').trim();
+    const skillVariations = searchTerm
       ? [
-          params.skill, 
-          params.skill.toLowerCase(), 
-          params.skill.toUpperCase(), 
-          params.skill.charAt(0).toUpperCase() + params.skill.slice(1).toLowerCase()
+          searchTerm,
+          searchTerm.toLowerCase(),
+          searchTerm.toUpperCase(),
+          searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1).toLowerCase(),
         ]
       : [];
 
-    const where: Prisma.CandidateProfileWhereInput = {
-      ...(params.location ? { location: { contains: params.location, mode: 'insensitive' as const } } : {}),
-      ...(params.skill ? { skills: { hasSome: skillVariations } } : {}),
-    };
+    const andConditions: Prisma.CandidateProfileWhereInput[] = [];
+
+    if (params.location && params.location.trim()) {
+      andConditions.push({ location: { contains: params.location.trim(), mode: 'insensitive' as const } });
+    }
+
+    if (searchTerm) {
+      andConditions.push({
+        OR: [
+          { fullName: { contains: searchTerm, mode: 'insensitive' as const } },
+          { headline: { contains: searchTerm, mode: 'insensitive' as const } },
+          { about: { contains: searchTerm, mode: 'insensitive' as const } },
+          { location: { contains: searchTerm, mode: 'insensitive' as const } },
+          { skills: { hasSome: skillVariations } },
+        ],
+      });
+    }
 
     if (user && user.role === 'CANDIDATE') {
-      where.userId = { not: user.userId };
+      andConditions.push({ userId: { not: user.userId } });
+    }
+
+    const where: Prisma.CandidateProfileWhereInput = andConditions.length > 0 ? { AND: andConditions } : {};
+
+    let orderBy: Prisma.CandidateProfileOrderByWithRelationInput = { updatedAt: 'desc' };
+    if (params.sortBy === 'experience') {
+      orderBy = { experienceYears: 'desc' };
+    } else if (params.sortBy === 'name_asc') {
+      orderBy = { fullName: 'asc' };
+    } else if (params.sortBy === 'name_desc') {
+      orderBy = { fullName: 'desc' };
+    } else if (params.sortBy === 'newest') {
+      orderBy = { createdAt: 'desc' };
+    } else {
+      orderBy = { updatedAt: 'desc' };
     }
 
     const [items, total] = await Promise.all([
@@ -180,7 +218,7 @@ export class CandidatesService {
         select: PUBLIC_CANDIDATE_SELECT,
         skip: (params.page - 1) * params.pageSize,
         take: params.pageSize,
-        orderBy: { updatedAt: 'desc' },
+        orderBy,
       }),
       this.prisma.candidateProfile.count({ where }),
     ]);

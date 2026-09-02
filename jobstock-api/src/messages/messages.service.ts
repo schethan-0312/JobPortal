@@ -38,9 +38,8 @@ export class MessagesService {
 
   async send(senderId: string, dto: SendMessageDto) {
     const resolvedReceiverId = await this.resolveUserId(dto.receiverId);
-    if (senderId === resolvedReceiverId) {
-      throw new BadRequestException('You cannot message yourself');
-    }
+    const isSelfMessage = senderId === resolvedReceiverId;
+
     const receiver = await this.prisma.user.findUnique({ where: { id: resolvedReceiverId } });
     if (!receiver) {
       throw new NotFoundException('Recipient not found');
@@ -49,7 +48,7 @@ export class MessagesService {
     const sender = await this.prisma.user.findUnique({ where: { id: senderId } });
     const isCandidateToCandidate = sender?.role === 'CANDIDATE' && receiver.role === 'CANDIDATE';
 
-    if (isCandidateToCandidate) {
+    if (isCandidateToCandidate && !isSelfMessage) {
       const isConnected = await this.prisma.candidateEmployerFollow.findFirst({
         where: {
           OR: [
@@ -96,33 +95,35 @@ export class MessagesService {
       },
     });
 
-    await this.notifications.create(resolvedReceiverId, 'New message', 'You have received a new message');
+    if (!isSelfMessage) {
+      await this.notifications.create(resolvedReceiverId, 'New message', 'You have received a new message');
 
-    // Send email notification in background
-    (async () => {
-      try {
-        const senderName =
-          message.sender.role === 'EMPLOYER'
-            ? message.sender.employer?.companyName || 'Recruiter'
-            : message.sender.candidateProfile?.fullName || 'User';
+      // Send email notification in background
+      (async () => {
+        try {
+          const senderName =
+            message.sender.role === 'EMPLOYER'
+              ? message.sender.employer?.companyName || 'Recruiter'
+              : message.sender.candidateProfile?.fullName || 'User';
 
-        const senderCompany = message.sender.role === 'EMPLOYER' ? message.sender.employer?.companyName : undefined;
-        const receiverName =
-          message.receiver.candidateProfile?.fullName || message.receiver.employer?.companyName || 'User';
+          const senderCompany = message.sender.role === 'EMPLOYER' ? message.sender.employer?.companyName : undefined;
+          const receiverName =
+            message.receiver.candidateProfile?.fullName || message.receiver.employer?.companyName || 'User';
 
-        if (message.receiver.role === 'CANDIDATE' && message.receiver.email) {
-          await this.emailService.sendRecruiterMessageNotificationEmail({
-            recipientEmail: message.receiver.email,
-            recipientName: receiverName,
-            senderName,
-            senderCompany,
-            messageSnippet: dto.body || 'Attachment sent',
-          });
+          if (message.receiver.role === 'CANDIDATE' && message.receiver.email) {
+            await this.emailService.sendRecruiterMessageNotificationEmail({
+              recipientEmail: message.receiver.email,
+              recipientName: receiverName,
+              senderName,
+              senderCompany,
+              messageSnippet: dto.body || 'Attachment sent',
+            });
+          }
+        } catch (e) {
+          // Fail silently
         }
-      } catch (e) {
-        // Fail silently
-      }
-    })();
+      })();
+    }
 
     return message;
   }
@@ -162,7 +163,7 @@ export class MessagesService {
     const conversations = new Map<string, (typeof messages)[number]>();
     for (const msg of messages) {
       const counterpartId = msg.senderId === userId ? msg.receiverId : msg.senderId;
-      if (!conversations.has(counterpartId)) {
+      if (counterpartId && counterpartId !== userId && !conversations.has(counterpartId)) {
         conversations.set(counterpartId, msg);
       }
     }

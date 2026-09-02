@@ -61,6 +61,17 @@ function getUserDisplayName(userObj?: MessageUser | null): string {
   return userObj.email || "User";
 }
 
+function checkIsSelf(counterpart?: MessageUser | null, currentUser?: any, currentFullName?: string | null): boolean {
+  if (!counterpart || !currentUser) return false;
+  if (counterpart.id === currentUser.userId) return true;
+  if (counterpart.email && currentUser.email && counterpart.email.toLowerCase() === currentUser.email.toLowerCase()) return true;
+  if (currentFullName && counterpart.candidateProfile?.fullName) {
+    const cleanCounterpartName = counterpart.candidateProfile.fullName.replace(/\s*\(You\)$/i, "").trim().toLowerCase();
+    if (cleanCounterpartName === currentFullName.trim().toLowerCase()) return true;
+  }
+  return false;
+}
+
 export default function CandidateMessagesPage() {
   return (
     <Suspense
@@ -87,6 +98,7 @@ function CandidateMessagesContent() {
   const [thread, setThread] = useState<ConversationMessage[]>([]);
   const [replyText, setReplyText] = useState("");
   const [myProfilePhoto, setMyProfilePhoto] = useState<string | null>(null);
+  const [myFullName, setMyFullName] = useState<string | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [threadLoading, setThreadLoading] = useState(false);
   const [sending, setSending] = useState(false);
@@ -149,15 +161,21 @@ function CandidateMessagesContent() {
   useEffect(() => {
     if (!user || user.role !== "CANDIDATE") return;
     api
-      .get<{ profilePhotoUrl?: string | null }>("/candidates/me")
-      .then((data) => setMyProfilePhoto(data.profilePhotoUrl ?? null))
-      .catch(() => setMyProfilePhoto(null));
+      .get<{ fullName?: string; profilePhotoUrl?: string | null }>("/candidates/me")
+      .then((data) => {
+        setMyProfilePhoto(data.profilePhotoUrl ?? null);
+        setMyFullName(data.fullName ?? null);
+      })
+      .catch(() => {
+        setMyProfilePhoto(null);
+        setMyFullName(null);
+      });
 
     (async () => {
       setDataLoading(true);
       try {
         const convs = await api.get<ConversationMessage[]>("/messages/conversations");
-        setConversations(convs);
+        setConversations(convs || []);
 
         const newChatId = searchParams.get("newChat") || searchParams.get("userId") || searchParams.get("id");
         if (newChatId) {
@@ -258,6 +276,11 @@ function CandidateMessagesContent() {
       return;
     }
 
+    if (checkIsSelf(selectedCounterpart, user, myFullName)) {
+      setConnectionStatus({ isConnected: true, isPending: false, following: true, isIncomingPending: false });
+      return;
+    }
+
     const isCompany = selectedCounterpart.role === "EMPLOYER" || Boolean(selectedCounterpart.employer);
     if (isCompany) {
       setConnectionStatus({ isConnected: true, isPending: false, following: true, isIncomingPending: false });
@@ -272,10 +295,11 @@ function CandidateMessagesContent() {
       .catch(() =>
         setConnectionStatus({ isConnected: true, isPending: false, following: false, isIncomingPending: false })
       );
-  }, [selectedCounterpart]);
+  }, [selectedCounterpart, user]);
 
   async function handleSendConnectionRequest() {
     if (!selectedCounterpart) return;
+    if (selectedCounterpart.id === user?.userId) return;
     setRequestingConnection(true);
     try {
       const res = await api.post<{ isPending?: boolean }>(`/follow/${selectedCounterpart.id}`, {});
@@ -307,7 +331,19 @@ function CandidateMessagesContent() {
         if (candRes.items) {
           for (const cand of candRes.items) {
             const uId = cand.userId || cand.id;
-            if (uId !== user?.userId) {
+            const isSelf =
+              uId === user?.userId ||
+              cand.userId === user?.userId ||
+              cand.id === user?.userId ||
+              (cand.email && user?.email && cand.email.toLowerCase() === user.email.toLowerCase());
+            if (isSelf) {
+              usersFound.unshift({
+                id: user!.userId,
+                email: user!.email,
+                role: "CANDIDATE",
+                candidateProfile: { fullName: `${cand.fullName} (You)`, profilePhotoUrl: cand.profilePhotoUrl },
+              });
+            } else {
               usersFound.push({
                 id: uId,
                 email: cand.email || cand.fullName,
@@ -321,7 +357,12 @@ function CandidateMessagesContent() {
         if (empRes.items) {
           for (const emp of empRes.items) {
             const uId = emp.userId || emp.id;
-            if (uId !== user?.userId) {
+            const isSelf =
+              uId === user?.userId ||
+              emp.userId === user?.userId ||
+              emp.id === user?.userId ||
+              (emp.email && user?.email && emp.email.toLowerCase() === user.email.toLowerCase());
+            if (!isSelf) {
               usersFound.push({
                 id: uId,
                 email: emp.email || emp.companyName,
@@ -349,9 +390,9 @@ function CandidateMessagesContent() {
     const interval = setInterval(async () => {
       try {
         const msgs = await api.get<ConversationMessage[]>(`/messages/conversations/${selectedCounterpart.id}`);
-        setThread(msgs);
+        setThread(msgs || []);
         const convs = await api.get<ConversationMessage[]>("/messages/conversations");
-        setConversations(convs);
+        setConversations(convs || []);
 
         const typeRes = await api.get<{ isTyping: boolean }>(`/messages/typing/${selectedCounterpart.id}`);
         setIsCounterpartTyping(typeRes.isTyping);
@@ -364,11 +405,18 @@ function CandidateMessagesContent() {
 
   async function handleSelectConversation(counterpart: MessageUser) {
     setSelectedCounterpart(counterpart);
+    setSearchTerm("");
+    setSearchResults([]);
     shouldScrollRef.current = true;
     setThreadLoading(true);
+
+    if (user && (counterpart.id === user.userId || counterpart.email?.toLowerCase() === user.email?.toLowerCase())) {
+      setConnectionStatus({ isConnected: true, isPending: false, following: true, isIncomingPending: false });
+    }
+
     try {
       const msgs = await api.get<ConversationMessage[]>(`/messages/conversations/${counterpart.id}`);
-      setThread(msgs);
+      setThread(msgs || []);
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Failed to load thread");
     } finally {
@@ -393,7 +441,7 @@ function CandidateMessagesContent() {
       }
 
       const convs = await api.get<ConversationMessage[]>("/messages/conversations");
-      setConversations(convs);
+      setConversations(convs || []);
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Failed to send message");
     } finally {
@@ -534,9 +582,10 @@ function CandidateMessagesContent() {
     return conversations.filter((c) => {
       const isMeSender = c.senderId === user?.userId;
       const otherUser = isMeSender ? c.receiver : c.sender;
-      const name = getUserDisplayName(otherUser).toLowerCase();
+      const isSelfItem = otherUser?.id === user?.userId;
+      const name = isSelfItem ? `${getUserDisplayName(otherUser)} (You) Notes` : getUserDisplayName(otherUser);
       const body = (c.body || "").toLowerCase();
-      return name.includes(term) || body.includes(term);
+      return name.toLowerCase().includes(term) || body.includes(term);
     });
   }, [conversations, searchTerm, user]);
 
@@ -559,7 +608,8 @@ function CandidateMessagesContent() {
 
   if (loading || !user || user.role !== "CANDIDATE") return null;
 
-  const isCandidateCounterpart = selectedCounterpart && selectedCounterpart.role !== "EMPLOYER" && !selectedCounterpart.employer;
+  const isSelf = checkIsSelf(selectedCounterpart, user, myFullName);
+  const isCandidateCounterpart = selectedCounterpart && selectedCounterpart.role !== "EMPLOYER" && !selectedCounterpart.employer && !isSelf;
   const isChatLocked = isCandidateCounterpart && connectionStatus && !connectionStatus.isConnected;
 
   return (
@@ -718,15 +768,17 @@ function CandidateMessagesContent() {
                     {filteredConversations.map((c) => {
                       const isMeSender = c.senderId === user.userId;
                       const otherUser = isMeSender ? c.receiver : c.sender;
+                      const isSelfItem = otherUser?.id === user.userId || (c.senderId === user.userId && c.receiverId === user.userId);
                       const isSelected =
                         selectedCounterpart?.id === otherUser?.id ||
+                        (isSelfItem && selectedCounterpart?.id === user.userId) ||
                         (selectedCounterpart?.candidateProfile?.fullName &&
                           selectedCounterpart.candidateProfile.fullName === otherUser?.candidateProfile?.fullName) ||
                         (selectedCounterpart?.employer?.companyName &&
                           selectedCounterpart.employer.companyName === otherUser?.employer?.companyName);
 
-                      const displayName = getUserDisplayName(otherUser);
-                      const avatarSrc = getUserAvatar(otherUser, false, null, "/assets/img/avatar.jpg");
+                      const displayName = isSelfItem ? `${getUserDisplayName(otherUser)} (You)` : getUserDisplayName(otherUser);
+                      const avatarSrc = getUserAvatar(otherUser, isSelfItem, myProfilePhoto, "/assets/img/avatar.jpg");
 
                       return (
                         <div
@@ -757,7 +809,11 @@ function CandidateMessagesContent() {
                                 </span>
                               </div>
                               <span className="small text-muted d-block text-truncate">
-                                {c.deletedForEveryone ? "This message was deleted" : c.body || "Attachment"}
+                                {isSelfItem && !c.body && !c.mediaUrl
+                                  ? "📝 Message yourself • Notes"
+                                  : c.deletedForEveryone
+                                  ? "This message was deleted"
+                                  : c.body || "Attachment"}
                               </span>
                             </div>
                           </div>
@@ -778,15 +834,31 @@ function CandidateMessagesContent() {
                       >
                         <div className="d-flex align-items-center gap-3">
                           <img
-                            src={getUserAvatar(selectedCounterpart, false, null, "/assets/img/avatar.jpg")}
+                            src={getUserAvatar(selectedCounterpart, isSelf, myProfilePhoto, "/assets/img/avatar.jpg")}
                             alt=""
                             style={{ width: "40px", height: "40px", borderRadius: "50%", objectFit: "cover" }}
                           />
                           <div>
-                            <h6 className="mb-0">{getUserDisplayName(selectedCounterpart)}</h6>
+                            <h6 className="mb-0">
+                              {getUserDisplayName(selectedCounterpart)}
+                              {isSelf && (
+                                <span className="badge bg-light-primary text-primary border border-primary-subtle ms-2" style={{ fontSize: "11px" }}>
+                                  You
+                                </span>
+                              )}
+                            </h6>
                             <span className="small text-success">
-                              <i className="fa-solid fa-circle me-1" style={{ fontSize: "8px" }}></i>
-                              {isChatLocked ? "Not Connected" : "Active Now"}
+                              {isSelf ? (
+                                <>
+                                  <i className="fa-solid fa-lock me-1" style={{ fontSize: "11px" }}></i>
+                                  Message yourself &bull; Private Notes &amp; Drafts
+                                </>
+                              ) : (
+                                <>
+                                  <i className="fa-solid fa-circle me-1" style={{ fontSize: "8px" }}></i>
+                                  {isChatLocked ? "Not Connected" : "Active Now"}
+                                </>
+                              )}
                             </span>
                           </div>
                         </div>
@@ -804,10 +876,25 @@ function CandidateMessagesContent() {
                             <div className="spinner-border text-primary" role="status"></div>
                           </div>
                         ) : thread.length === 0 ? (
-                          <div className="text-center py-5 text-muted">
-                            <i className="fa-regular fa-paper-plane mb-2" style={{ fontSize: "2rem" }}></i>
-                            <p>No messages yet. Send a message to start chatting!</p>
-                          </div>
+                          isSelf ? (
+                            <div className="text-center py-5">
+                              <div
+                                className="rounded-circle bg-light-primary text-primary d-inline-flex align-items-center justify-content-center mb-3"
+                                style={{ width: "60px", height: "60px", fontSize: "26px" }}
+                              >
+                                <i className="fa-solid fa-bookmark"></i>
+                              </div>
+                              <h5 className="fw-bold mb-1">Message Yourself</h5>
+                              <p className="text-muted small mx-auto" style={{ maxWidth: "440px" }}>
+                                This is your private space. Keep notes, save important messages, drafts, resumes, audio notes, and files handy. Only you can view these messages.
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="text-center py-5 text-muted">
+                              <i className="fa-regular fa-paper-plane mb-2" style={{ fontSize: "2rem" }}></i>
+                              <p>No messages yet. Send a message to start chatting!</p>
+                            </div>
+                          )
                         ) : (
                           thread.map((m) => {
                             const isMe = m.senderId === user.userId;

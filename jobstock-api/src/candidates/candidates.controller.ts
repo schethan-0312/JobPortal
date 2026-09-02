@@ -21,6 +21,9 @@ export class CandidatesController {
     @CurrentUser() user: AuthenticatedUser | null,
     @Query('location') location?: string,
     @Query('skill') skill?: string,
+    @Query('keyword') keyword?: string,
+    @Query('search') search?: string,
+    @Query('sortBy') sortBy?: string,
     @Query('page') page = '1',
     @Query('pageSize') pageSize = '12',
   ) {
@@ -28,6 +31,9 @@ export class CandidatesController {
       {
         location,
         skill,
+        keyword,
+        search,
+        sortBy,
         page: Math.max(1, parseInt(page, 10) || 1),
         pageSize: Math.min(50, Math.max(1, parseInt(pageSize, 10) || 12)),
       },
