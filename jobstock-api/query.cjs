@@ -1,0 +1,1 @@
+﻿const { Client } = require('pg'); async function run() { const c = new Client('postgresql://postgres:root@localhost:5432/jobstock'); await c.connect(); const res = await c.query('SELECT email, "passwordHash", role FROM "User"'); console.table(res.rows); await c.end(); } run();

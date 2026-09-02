@@ -1,0 +1,1 @@
+﻿const bcrypt = require('bcrypt'); async function run() { const { Client } = require('pg'); const c = new Client('postgresql://postgres:root@localhost:5432/jobstock'); await c.connect(); const hash = await bcrypt.hash('password123', 12); await c.query('UPDATE "User" SET "passwordHash" = $1', [hash]); await c.end(); console.log('All passwords reset to password123'); } run();

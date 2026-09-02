@@ -49,6 +49,7 @@ enum VerificationDecision {
   VERIFIED
   REJECTED
   INFO_REQUESTED
+  SUSPENDED
 }
 
 enum AdminRole {
