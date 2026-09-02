@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useMemo, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Navbar7 from "@/components/Navbar7";
 import Navbar8 from "@/components/Navbar8";
@@ -34,16 +34,46 @@ interface FollowItem {
 type TabType = "companies" | "candidates" | "followers" | "requests";
 
 export default function CandidateFollowEmployersPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="d-flex justify-content-center align-items-center vh-100">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      }
+    >
+      <CandidateFollowEmployersContent />
+    </Suspense>
+  );
+}
+
+function CandidateFollowEmployersContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [activeTab, setActiveTab] = useState<TabType>("companies");
+  const [requestsSubTab, setRequestsSubTab] = useState<"received" | "sent">("received");
   const [followingList, setFollowingList] = useState<FollowItem[]>([]);
   const [followersList, setFollowersList] = useState<FollowItem[]>([]);
   const [requestsList, setRequestsList] = useState<FollowItem[]>([]);
+  const [sentRequestsList, setSentRequestsList] = useState<FollowItem[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab && ["companies", "candidates", "followers", "requests"].includes(tab)) {
+      setActiveTab(tab as TabType);
+    }
+    const sub = searchParams.get("sub");
+    if (sub && ["received", "sent"].includes(sub)) {
+      setRequestsSubTab(sub as "received" | "sent");
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (!loading && (!user || (user.role !== "CANDIDATE" && user.role !== "EMPLOYER"))) {
@@ -55,10 +85,11 @@ export default function CandidateFollowEmployersPage() {
     if (!user || (user.role !== "CANDIDATE" && user.role !== "EMPLOYER")) return;
     setDataLoading(true);
     try {
-      const [followingRes, followersRes, requestsRes] = await Promise.allSettled([
+      const [followingRes, followersRes, requestsRes, sentRequestsRes] = await Promise.allSettled([
         api.get<FollowItem[]>("/follow/following"),
         api.get<FollowItem[]>("/follow/followers"),
         api.get<FollowItem[]>("/follow/requests"),
+        api.get<FollowItem[]>("/follow/sent-requests"),
       ]);
 
       if (followingRes.status === "fulfilled") {
@@ -69,6 +100,9 @@ export default function CandidateFollowEmployersPage() {
       }
       if (requestsRes.status === "fulfilled") {
         setRequestsList(requestsRes.value || []);
+      }
+      if (sentRequestsRes.status === "fulfilled") {
+        setSentRequestsList(sentRequestsRes.value || []);
       }
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Failed to load follow data");
@@ -90,8 +124,26 @@ export default function CandidateFollowEmployersPage() {
       setFollowingList((prev) =>
         prev.filter((item) => item.employer?.id !== targetId && item.candidate?.id !== targetId)
       );
+      loadData();
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Failed to disconnect profile");
+    } finally {
+      setLoadingId(null);
+    }
+  }
+
+  // Handle Cancel Sent Request
+  async function handleCancelSentRequest(targetId: string) {
+    setLoadingId(targetId);
+    try {
+      await api.delete(`/follow/${targetId}`);
+      toast.success("Connection request cancelled");
+      setSentRequestsList((prev) =>
+        prev.filter((item) => item.candidate?.id !== targetId && item.candidate?.userId !== targetId)
+      );
+      loadData();
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to cancel request");
     } finally {
       setLoadingId(null);
     }
@@ -122,7 +174,7 @@ export default function CandidateFollowEmployersPage() {
     try {
       await api.post(`/follow/requests/${candidateId}/accept`, {});
       toast.success("Connection request accepted! You are now connected.");
-      setRequestsList((prev) => prev.filter((r) => r.candidate?.id !== candidateId));
+      setRequestsList((prev) => prev.filter((r) => r.candidate?.id !== candidateId && r.candidate?.userId !== candidateId));
       loadData();
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Failed to accept connection request");
@@ -137,7 +189,8 @@ export default function CandidateFollowEmployersPage() {
     try {
       await api.post(`/follow/requests/${candidateId}/reject`, {});
       toast.success("Connection request rejected");
-      setRequestsList((prev) => prev.filter((r) => r.candidate?.id !== candidateId));
+      setRequestsList((prev) => prev.filter((r) => r.candidate?.id !== candidateId && r.candidate?.userId !== candidateId));
+      loadData();
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Failed to reject connection request");
     } finally {
@@ -169,7 +222,7 @@ export default function CandidateFollowEmployersPage() {
     if (activeTab === "companies") currentList = followedCompanies;
     else if (activeTab === "candidates") currentList = followedCandidates;
     else if (activeTab === "followers") currentList = followersList;
-    else if (activeTab === "requests") currentList = requestsList;
+    else if (activeTab === "requests") currentList = requestsSubTab === "received" ? requestsList : sentRequestsList;
 
     if (!searchQuery.trim()) return currentList;
 
@@ -184,7 +237,7 @@ export default function CandidateFollowEmployersPage() {
         extra.toLowerCase().includes(q)
       );
     });
-  }, [activeTab, followedCompanies, followedCandidates, followersList, requestsList, searchQuery]);
+  }, [activeTab, requestsSubTab, followedCompanies, followedCandidates, followersList, requestsList, sentRequestsList, searchQuery]);
 
   if (loading || !user) {
     return null;
@@ -316,7 +369,9 @@ export default function CandidateFollowEmployersPage() {
                           <span className="badge bg-danger rounded-pill small">New</span>
                         )}
                       </div>
-                      <span className="text-muted small">Connection Requests</span>
+                      <span className="text-muted small">
+                        Requests ({requestsList.length} In / {sentRequestsList.length} Out)
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -330,59 +385,70 @@ export default function CandidateFollowEmployersPage() {
                   <div className="card-body p-3">
                     <div className="d-flex flex-wrap align-items-center justify-content-between gap-3">
                       {/* Tabs */}
-                      <ul className="nav nav-pills gap-2">
-                        <li className="nav-item">
-                          <button
-                            type="button"
-                            className={`nav-link rounded-3 fw-medium py-2 px-3.5 ${
-                              activeTab === "companies" ? "active bg-main text-white" : "text-muted"
-                            }`}
-                            onClick={() => setActiveTab("companies")}
-                          >
-                            <i className="fa-solid fa-building me-2"></i>Companies ({followedCompanies.length})
-                          </button>
-                        </li>
-                        <li className="nav-item">
-                          <button
-                            type="button"
-                            className={`nav-link rounded-3 fw-medium py-2 px-3.5 ${
-                              activeTab === "candidates" ? "active bg-main text-white" : "text-muted"
-                            }`}
-                            onClick={() => setActiveTab("candidates")}
-                          >
-                            <i className="fa-solid fa-user-group me-2"></i>Candidates ({followedCandidates.length})
-                          </button>
-                        </li>
-                        <li className="nav-item">
-                          <button
-                            type="button"
-                            className={`nav-link rounded-3 fw-medium py-2 px-3.5 ${
-                              activeTab === "followers" ? "active bg-main text-white" : "text-muted"
-                            }`}
-                            onClick={() => setActiveTab("followers")}
-                          >
-                            <i className="fa-solid fa-users me-2"></i>Followers ({followersList.length})
-                          </button>
-                        </li>
-                        <li className="nav-item">
-                          <button
-                            type="button"
-                            className={`nav-link rounded-3 fw-medium py-2 px-3.5 ${
-                              activeTab === "requests" ? "active bg-main text-white" : "text-muted"
-                            }`}
-                            onClick={() => setActiveTab("requests")}
-                          >
-                            <i className="fa-solid fa-user-clock me-2"></i>Requests ({requestsList.length})
-                          </button>
-                        </li>
-                      </ul>
+                      <div className="d-flex flex-wrap align-items-center gap-2">
+                        <button
+                          type="button"
+                          className="btn btn-sm rounded-pill fw-medium py-2 px-3.5 border"
+                          style={{
+                            backgroundColor: activeTab === "companies" ? "#126746" : "#f8fafc",
+                            color: activeTab === "companies" ? "#ffffff" : "#334155",
+                            borderColor: activeTab === "companies" ? "#126746" : "#e2e8f0",
+                            transition: "all 0.2s ease",
+                          }}
+                          onClick={() => setActiveTab("companies")}
+                        >
+                          <i className="fa-solid fa-building me-2"></i>Companies ({followedCompanies.length})
+                        </button>
+
+                        <button
+                          type="button"
+                          className="btn btn-sm rounded-pill fw-medium py-2 px-3.5 border"
+                          style={{
+                            backgroundColor: activeTab === "candidates" ? "#126746" : "#f8fafc",
+                            color: activeTab === "candidates" ? "#ffffff" : "#334155",
+                            borderColor: activeTab === "candidates" ? "#126746" : "#e2e8f0",
+                            transition: "all 0.2s ease",
+                          }}
+                          onClick={() => setActiveTab("candidates")}
+                        >
+                          <i className="fa-solid fa-user-group me-2"></i>Candidates ({followedCandidates.length})
+                        </button>
+
+                        <button
+                          type="button"
+                          className="btn btn-sm rounded-pill fw-medium py-2 px-3.5 border"
+                          style={{
+                            backgroundColor: activeTab === "followers" ? "#126746" : "#f8fafc",
+                            color: activeTab === "followers" ? "#ffffff" : "#334155",
+                            borderColor: activeTab === "followers" ? "#126746" : "#e2e8f0",
+                            transition: "all 0.2s ease",
+                          }}
+                          onClick={() => setActiveTab("followers")}
+                        >
+                          <i className="fa-solid fa-users me-2"></i>Followers ({followersList.length})
+                        </button>
+
+                        <button
+                          type="button"
+                          className="btn btn-sm rounded-pill fw-medium py-2 px-3.5 border"
+                          style={{
+                            backgroundColor: activeTab === "requests" ? "#126746" : "#f8fafc",
+                            color: activeTab === "requests" ? "#ffffff" : "#334155",
+                            borderColor: activeTab === "requests" ? "#126746" : "#e2e8f0",
+                            transition: "all 0.2s ease",
+                          }}
+                          onClick={() => setActiveTab("requests")}
+                        >
+                          <i className="fa-solid fa-user-clock me-2"></i>Requests ({requestsList.length + sentRequestsList.length})
+                        </button>
+                      </div>
 
                       {/* Search Bar */}
                       <div className="position-relative" style={{ minWidth: "260px" }}>
                         <i className="fa-solid fa-magnifying-glass position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                         <input
                           type="text"
-                          className="form-control form-control-sm ps-5 rounded-pill bg-light border-0"
+                          className="form-control form-control-sm ps-5 rounded-pill bg-light border"
                           placeholder="Search in list..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
@@ -402,6 +468,38 @@ export default function CandidateFollowEmployersPage() {
                 </div>
               </div>
             </div>
+
+            {/* Sub-tabs for Requests (Received vs Sent) */}
+            {activeTab === "requests" && (
+              <div className="d-flex align-items-center gap-2 mb-4">
+                <button
+                  type="button"
+                  className="btn btn-sm rounded-pill px-4 py-2 fw-medium border"
+                  style={{
+                    backgroundColor: requestsSubTab === "received" ? "#126746" : "#ffffff",
+                    color: requestsSubTab === "received" ? "#ffffff" : "#334155",
+                    borderColor: requestsSubTab === "received" ? "#126746" : "#e2e8f0",
+                    transition: "all 0.2s ease",
+                  }}
+                  onClick={() => setRequestsSubTab("received")}
+                >
+                  <i className="fa-solid fa-inbox me-1.5"></i>Received Requests ({requestsList.length})
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm rounded-pill px-4 py-2 fw-medium border"
+                  style={{
+                    backgroundColor: requestsSubTab === "sent" ? "#126746" : "#ffffff",
+                    color: requestsSubTab === "sent" ? "#ffffff" : "#334155",
+                    borderColor: requestsSubTab === "sent" ? "#126746" : "#e2e8f0",
+                    transition: "all 0.2s ease",
+                  }}
+                  onClick={() => setRequestsSubTab("sent")}
+                >
+                  <i className="fa-solid fa-paper-plane me-1.5"></i>Sent Requests ({sentRequestsList.length})
+                </button>
+              </div>
+            )}
 
             {/* Content Display */}
             {dataLoading ? (
@@ -428,7 +526,9 @@ export default function CandidateFollowEmployersPage() {
                     : activeTab === "candidates"
                     ? "You haven't connected with any candidates yet."
                     : activeTab === "requests"
-                    ? "You have no incoming connection requests."
+                    ? requestsSubTab === "received"
+                      ? "You have no incoming connection requests."
+                      : "You have no pending sent connection requests."
                     : "No one is following you yet."}
                 </p>
                 {activeTab === "companies" && (
@@ -498,17 +598,37 @@ export default function CandidateFollowEmployersPage() {
                                 className="rounded-circle overflow-hidden border d-flex align-items-center justify-content-center bg-white p-2 shadow-2xs"
                                 style={{ width: "70px", height: "70px" }}
                               >
-                                <img
-                                  src={assetUrl(logoUrl) || defaultImg}
-                                  className="img-fluid"
-                                  alt={name}
-                                  style={{
-                                    maxHeight: "100%",
-                                    maxWidth: "100%",
-                                    objectFit: isCandidate ? "cover" : "contain",
-                                    borderRadius: isCandidate ? "50%" : "0",
-                                  }}
-                                />
+                                {logoUrl ? (
+                                  <img
+                                    src={assetUrl(logoUrl)}
+                                    className="img-fluid"
+                                    alt={name}
+                                    style={{
+                                      maxHeight: "100%",
+                                      maxWidth: "100%",
+                                      objectFit: isCandidate ? "cover" : "contain",
+                                      borderRadius: isCandidate ? "50%" : "0",
+                                    }}
+                                  />
+                                ) : isCandidate ? (
+                                  <div
+                                    className="w-100 h-100 rounded-circle d-flex align-items-center justify-content-center"
+                                    style={{ backgroundColor: "#e2e8f0", color: "#64748b" }}
+                                  >
+                                    <i className="fa-solid fa-user fs-4 text-secondary opacity-75"></i>
+                                  </div>
+                                ) : (
+                                  <img
+                                    src="/assets/img/c-1.png"
+                                    className="img-fluid"
+                                    alt={name}
+                                    style={{
+                                      maxHeight: "100%",
+                                      maxWidth: "100%",
+                                      objectFit: "contain",
+                                    }}
+                                  />
+                                )}
                               </div>
                             </Link>
 
@@ -530,9 +650,15 @@ export default function CandidateFollowEmployersPage() {
                               )}
 
                               {activeTab === "requests" && (
-                                <span className="badge bg-light-warning text-warning border px-2 py-1 rounded-pill small">
-                                  <i className="fa-solid fa-clock me-1"></i>Wants to connect
-                                </span>
+                                requestsSubTab === "sent" ? (
+                                  <span className="badge bg-light-warning text-warning border px-2 py-1 rounded-pill small">
+                                    <i className="fa-solid fa-paper-plane me-1"></i>Request Sent
+                                  </span>
+                                ) : (
+                                  <span className="badge bg-light-info text-info border px-2 py-1 rounded-pill small">
+                                    <i className="fa-solid fa-user-clock me-1"></i>Wants to connect
+                                  </span>
+                                )
                               )}
                             </div>
                           </div>
@@ -578,30 +704,46 @@ export default function CandidateFollowEmployersPage() {
                           </Link>
 
                           {activeTab === "requests" ? (
-                            <>
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-main px-3 py-2 fw-medium rounded-3"
-                                onClick={() => handleAcceptRequest(targetId)}
-                                disabled={loadingId === targetId}
-                                title="Accept Connection Request"
-                              >
-                                {loadingId === targetId ? "..." : (
-                                  <>
-                                    <i className="fa-solid fa-check me-1"></i>Accept
-                                  </>
-                                )}
-                              </button>
+                            requestsSubTab === "received" ? (
+                              <>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-main px-3 py-2 fw-medium rounded-3"
+                                  onClick={() => handleAcceptRequest(targetId)}
+                                  disabled={loadingId === targetId}
+                                  title="Accept Connection Request"
+                                >
+                                  {loadingId === targetId ? "..." : (
+                                    <>
+                                      <i className="fa-solid fa-check me-1"></i>Accept
+                                    </>
+                                  )}
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline-danger px-3 py-2 fw-medium rounded-3"
+                                  onClick={() => handleRejectRequest(targetId)}
+                                  disabled={loadingId === targetId}
+                                  title="Reject Request"
+                                >
+                                  <i className="fa-solid fa-xmark"></i>
+                                </button>
+                              </>
+                            ) : (
                               <button
                                 type="button"
                                 className="btn btn-sm btn-outline-danger px-3 py-2 fw-medium rounded-3"
-                                onClick={() => handleRejectRequest(targetId)}
+                                onClick={() => handleCancelSentRequest(targetId)}
                                 disabled={loadingId === targetId}
-                                title="Reject Request"
+                                title="Cancel Sent Request"
                               >
-                                <i className="fa-solid fa-xmark"></i>
+                                {loadingId === targetId ? "..." : (
+                                  <>
+                                    <i className="fa-solid fa-xmark me-1"></i>Cancel Request
+                                  </>
+                                )}
                               </button>
-                            </>
+                            )
                           ) : (
                             <>
                               {chatUserId && (

@@ -1,9 +1,15 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { EmailService } from '../email/email.service.js';
 
 @Injectable()
 export class FollowService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(FollowService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly emailService: EmailService,
+  ) {}
 
   private async getUserIdFromProfileId(profileId: string): Promise<string> {
     const candidate = await this.prisma.candidateProfile.findFirst({
@@ -77,10 +83,30 @@ export class FollowService {
         .catch(() => {});
     }
 
+    // Trigger Email Notification for Follow / Connection Request
+    if (initialStatus === 'PENDING' && targetUser?.email) {
+      const targetCandidate = await this.prisma.candidateProfile.findUnique({ where: { userId: targetUserId } });
+      const currentCandidate = candidate;
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+      this.emailService
+        .sendFollowRequestEmail({
+          toEmail: targetUser.email,
+          recipientName: targetCandidate?.fullName || targetUser.email || 'Candidate',
+          requesterName: currentCandidate?.fullName || currentUser?.email || 'A Candidate',
+          requesterHeadline: currentCandidate?.headline,
+          requesterProfileUrl: `${frontendUrl}/candidate-detail/${currentCandidate?.id || userId}`,
+          dashboardRequestsUrl: `${frontendUrl}/candidate-follow-employers?tab=requests`,
+        })
+        .catch((err) => {
+          this.logger.error('Failed to send follow request email:', err);
+        });
+    }
+
     return {
       ...created,
       isPending: initialStatus === 'PENDING',
-      message: initialStatus === 'PENDING' ? 'Connection request sent' : 'Following successfully',
+      message: initialStatus === 'PENDING' ? 'Follow request sent successfully' : 'Following successfully',
     };
   }
 
@@ -165,7 +191,20 @@ export class FollowService {
 
     return list
       .map((item) => {
-        if (!item.follower.candidateProfile) return null;
+        if (!item.follower.candidateProfile) {
+          return {
+            id: item.id,
+            candidate: {
+              id: item.follower.id,
+              fullName: item.follower.email,
+              profilePhotoUrl: null,
+              location: null,
+              headline: 'Candidate',
+              userId: item.follower.id,
+            },
+            createdAt: item.createdAt,
+          };
+        }
         return {
           id: item.id,
           candidate: item.follower.candidateProfile,
@@ -175,8 +214,80 @@ export class FollowService {
       .filter(Boolean);
   }
 
+  async sentRequests(userId: string) {
+    const list = await this.prisma.candidateEmployerFollow.findMany({
+      where: {
+        followerId: userId,
+        status: 'PENDING',
+      },
+      include: {
+        following: {
+          include: {
+            candidateProfile: {
+              select: {
+                id: true,
+                fullName: true,
+                profilePhotoUrl: true,
+                location: true,
+                headline: true,
+                userId: true,
+              },
+            },
+            employer: {
+              select: {
+                id: true,
+                companyName: true,
+                logoUrl: true,
+                location: true,
+                industry: true,
+                userId: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return list
+      .map((item) => {
+        if (item.following.candidateProfile) {
+          return {
+            id: item.id,
+            candidate: item.following.candidateProfile,
+            createdAt: item.createdAt,
+          };
+        }
+        if (item.following.employer) {
+          return {
+            id: item.id,
+            employer: item.following.employer,
+            createdAt: item.createdAt,
+          };
+        }
+        return {
+          id: item.id,
+          candidate: {
+            id: item.following.id,
+            fullName: item.following.email,
+            profilePhotoUrl: null,
+            location: null,
+            headline: 'Candidate',
+            userId: item.following.id,
+          },
+          createdAt: item.createdAt,
+        };
+      })
+      .filter(Boolean);
+  }
+
   async acceptRequest(userId: string, requesterId: string) {
     const requesterUserId = await this.getUserIdFromProfileId(requesterId);
+    const requesterUser = await this.prisma.user.findUnique({ where: { id: requesterUserId } });
+    const requesterCandidate = await this.prisma.candidateProfile.findUnique({ where: { userId: requesterUserId } });
+
+    const currentUser = await this.prisma.user.findUnique({ where: { id: userId } });
+    const currentCandidate = await this.prisma.candidateProfile.findUnique({ where: { userId } });
 
     // Update the incoming request to ACCEPTED
     await this.prisma.candidateEmployerFollow.updateMany({
@@ -205,11 +316,31 @@ export class FollowService {
       })
       .catch(() => {});
 
+    // Send email notification to requester
+    if (requesterUser?.email) {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      this.emailService
+        .sendFollowAcceptedEmail({
+          toEmail: requesterUser.email,
+          recipientName: requesterCandidate?.fullName || requesterUser.email || 'Candidate',
+          acceptorName: currentCandidate?.fullName || currentUser?.email || 'A Candidate',
+          acceptorProfileUrl: `${frontendUrl}/candidate-detail/${currentCandidate?.id || userId}`,
+        })
+        .catch((err) => {
+          this.logger.error('Failed to send follow accepted email:', err);
+        });
+    }
+
     return { success: true, message: 'Connection request accepted' };
   }
 
   async rejectRequest(userId: string, requesterId: string) {
     const requesterUserId = await this.getUserIdFromProfileId(requesterId);
+    const requesterUser = await this.prisma.user.findUnique({ where: { id: requesterUserId } });
+    const requesterCandidate = await this.prisma.candidateProfile.findUnique({ where: { userId: requesterUserId } });
+
+    const currentUser = await this.prisma.user.findUnique({ where: { id: userId } });
+    const currentCandidate = await this.prisma.candidateProfile.findUnique({ where: { userId } });
 
     await this.prisma.candidateEmployerFollow.deleteMany({
       where: {
@@ -218,6 +349,19 @@ export class FollowService {
         status: 'PENDING',
       },
     });
+
+    // Send email notification to requester
+    if (requesterUser?.email) {
+      this.emailService
+        .sendFollowRejectedEmail({
+          toEmail: requesterUser.email,
+          recipientName: requesterCandidate?.fullName || requesterUser.email || 'Candidate',
+          rejectorName: currentCandidate?.fullName || currentUser?.email || 'A Candidate',
+        })
+        .catch((err) => {
+          this.logger.error('Failed to send follow rejected email:', err);
+        });
+    }
 
     return { success: true, message: 'Connection request rejected' };
   }

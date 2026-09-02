@@ -54,7 +54,7 @@ export default function CandidatesListClient({
         .then((data) => {
           setCandidates(data.items ?? []);
           setTotal(data.total ?? 0);
-          setPageSize(data.pageSize ?? 12);
+          setPageSize(data.pageSize ?? initialPageSize);
           setError(null);
         })
         .catch((err) => {
@@ -85,12 +85,28 @@ export default function CandidatesListClient({
                 <div className="jbs-grid-usrs-thumb">
                   <div className="jbs-grid-yuo jbs-verified">
                     <Link href={`/candidate-detail/${item.id}`}>
-                      <figure>
-                        <img
-                          src={assetUrl(item.profilePhotoUrl) || "/assets/img/avatar.jpg"}
-                          className="img-fluid circle"
-                          alt=""
-                        />
+                      <figure style={{ overflow: "hidden", borderRadius: "50%", background: "#f8fafc" }}>
+                        {item.profilePhotoUrl ? (
+                          <img
+                            src={assetUrl(item.profilePhotoUrl)}
+                            className="img-fluid circle"
+                            alt={item.fullName}
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          />
+                        ) : (
+                          <div
+                            className="d-flex align-items-center justify-content-center w-100 h-100 text-secondary"
+                            style={{
+                              backgroundColor: "#e2e8f0",
+                              color: "#64748b",
+                              minHeight: "80px",
+                              minWidth: "80px",
+                              borderRadius: "50%",
+                            }}
+                          >
+                            <i className="fa-solid fa-user fa-2xl text-secondary opacity-75"></i>
+                          </div>
+                        )}
                       </figure>
                     </Link>
                   </div>

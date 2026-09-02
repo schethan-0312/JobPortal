@@ -1066,4 +1066,122 @@ export class EmailService {
       this.logger.error('Failed to send new candidate package notification', e);
     }
   }
+
+  async sendFollowRequestEmail(opts: {
+    toEmail: string;
+    recipientName: string;
+    requesterName: string;
+    requesterHeadline?: string | null;
+    requesterProfileUrl: string;
+    dashboardRequestsUrl: string;
+  }) {
+    const transporter = this.getTransporter();
+    if (!transporter) return;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
+
+    const content = `
+      <p style="font-size: 16px; color: #333;">Hi <strong>${opts.recipientName}</strong>, 👋</p>
+      <p style="font-size: 15px; color: #333;"><strong>${opts.requesterName}</strong> (${opts.requesterHeadline || 'Candidate on JobStock'}) has sent you a connection / follow request!</p>
+      
+      <div style="padding: 16px; background-color: #f8fafc; border-radius: 8px; border-left: 4px solid #0b8260; margin: 20px 0;">
+        <p style="margin: 0 0 6px 0; font-size: 15px; font-weight: bold; color: #1a202c;">🤝 Expand your professional network</p>
+        <p style="margin: 0; font-size: 14px; color: #4a5568;">Accepting this request allows you to connect, view each other's career updates, and collaborate.</p>
+      </div>
+      
+      <p style="font-size: 14px; color: #555;">You can accept or decline this request directly from your candidate dashboard.</p>
+    `;
+
+    const html = this.wrapInTemplate(
+      `🤝 New Follow Request from ${opts.requesterName}`,
+      content,
+      { text: '👉 Review & Accept Request', url: opts.dashboardRequestsUrl }
+    );
+
+    try {
+      await transporter.sendMail({
+        from: `"JobStock Network" <${from}>`,
+        to: opts.toEmail,
+        subject: `🤝 ${opts.requesterName} sent you a follow request on JobStock`,
+        html,
+      });
+      this.logger.log(`Follow request email sent to ${opts.toEmail} from ${opts.requesterName}`);
+    } catch (e) {
+      this.logger.error(`Failed to send follow request email to ${opts.toEmail}`, e);
+    }
+  }
+
+  async sendFollowAcceptedEmail(opts: {
+    toEmail: string;
+    recipientName: string;
+    acceptorName: string;
+    acceptorProfileUrl: string;
+  }) {
+    const transporter = this.getTransporter();
+    if (!transporter) return;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
+
+    const content = `
+      <p style="font-size: 16px; color: #333;">Hi <strong>${opts.recipientName}</strong>, 👋</p>
+      <p style="font-size: 15px; color: #333;">Great news! <strong>${opts.acceptorName}</strong> accepted your follow request on JobStock. 🎉</p>
+      
+      <div style="padding: 16px; background-color: #f0fdf4; border-radius: 8px; border-left: 4px solid #16a34a; margin: 20px 0;">
+        <p style="margin: 0; font-size: 14px; color: #15803d; font-weight: bold;">🎉 You are now connected with ${opts.acceptorName}!</p>
+      </div>
+      
+      <p style="font-size: 14px; color: #555;">You can now view each other's activity, profiles, and stay in touch.</p>
+    `;
+
+    const html = this.wrapInTemplate(
+      `🎉 ${opts.acceptorName} accepted your follow request!`,
+      content,
+      { text: '👉 View Connected Profile', url: opts.acceptorProfileUrl }
+    );
+
+    try {
+      await transporter.sendMail({
+        from: `"JobStock Network" <${from}>`,
+        to: opts.toEmail,
+        subject: `🎉 ${opts.acceptorName} accepted your follow request on JobStock`,
+        html,
+      });
+      this.logger.log(`Follow accepted email sent to ${opts.toEmail} for ${opts.acceptorName}`);
+    } catch (e) {
+      this.logger.error(`Failed to send follow accepted email to ${opts.toEmail}`, e);
+    }
+  }
+
+  async sendFollowRejectedEmail(opts: {
+    toEmail: string;
+    recipientName: string;
+    rejectorName: string;
+  }) {
+    const transporter = this.getTransporter();
+    if (!transporter) return;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+    const content = `
+      <p style="font-size: 16px; color: #333;">Hi <strong>${opts.recipientName}</strong>,</p>
+      <p style="font-size: 15px; color: #333;">Your follow request to <strong>${opts.rejectorName}</strong> was not accepted at this time.</p>
+      <p style="font-size: 14px; color: #555;">Don't worry, there are thousands of other candidates and companies to connect with on JobStock!</p>
+    `;
+
+    const html = this.wrapInTemplate(
+      `Update on your follow request on JobStock`,
+      content,
+      { text: '👉 Explore More Candidates', url: `${frontendUrl}/candidates` }
+    );
+
+    try {
+      await transporter.sendMail({
+        from: `"JobStock Network" <${from}>`,
+        to: opts.toEmail,
+        subject: `Update on your connection request on JobStock`,
+        html,
+      });
+      this.logger.log(`Follow rejected email sent to ${opts.toEmail}`);
+    } catch (e) {
+      this.logger.error(`Failed to send follow rejected email to ${opts.toEmail}`, e);
+    }
+  }
 }
