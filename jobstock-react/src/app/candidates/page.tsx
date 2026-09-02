@@ -5,6 +5,7 @@ import LoginModal from "@/components/LoginModal";
 import Pagination from "@/components/jobs/Pagination";
 import FilterModal from "@/components/jobs/FilterModal";
 import SortingBar from "@/components/jobs/SortingBar";
+import CityLocationInput from "@/components/CityLocationInput";
 import CandidatesListClient from "./CandidatesListClient";
 import { assetUrl } from "@/lib/api";
 
@@ -114,9 +115,12 @@ export default async function CandidatesGridPage({
             <div className="col-12">
               
               {/* Candidate Search Form */}
-              <div className="card mb-4 border-0 shadow-sm rounded-4">
-                <div className="card-body p-4">
-                  <form action="/candidates" method="GET" className="row g-3 align-items-end">
+              <div
+                className="card mb-4 border-0 shadow-sm rounded-4"
+                style={{ overflow: "visible", position: "relative", zIndex: 50 }}
+              >
+                <div className="card-body p-4" style={{ overflow: "visible" }}>
+                  <form action="/candidates" method="GET" className="row g-3 align-items-end" style={{ overflow: "visible" }}>
                     {params.sortBy && <input type="hidden" name="sortBy" value={params.sortBy} />}
                     {params.pageSize && <input type="hidden" name="pageSize" value={params.pageSize} />}
                     <div className={hasFilters ? "col-lg-5 col-md-5 col-12" : "col-lg-5 col-md-5 col-12"}>
@@ -134,12 +138,10 @@ export default async function CandidatesGridPage({
                     <div className={hasFilters ? "col-lg-4 col-md-4 col-12" : "col-lg-5 col-md-5 col-12"}>
                       <div className="form-group mb-0">
                         <label className="form-label text-dark fw-medium">Location</label>
-                        <input
-                          type="text"
+                        <CityLocationInput
                           name="location"
-                          className="form-control rounded-3 py-2"
-                          placeholder="e.g. New York, Remote"
                           defaultValue={params.location || ""}
+                          placeholder="e.g. Bangalore, Mumbai, Remote"
                         />
                       </div>
                     </div>

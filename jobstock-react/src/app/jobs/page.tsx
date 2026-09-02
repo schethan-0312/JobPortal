@@ -5,8 +5,6 @@ import LoginModal from "@/components/LoginModal";
 import JobFilters from "@/components/jobs/JobFilters";
 import SortingBar from "@/components/jobs/SortingBar";
 import Pagination from "@/components/jobs/Pagination";
-import FindJobCta from "@/components/jobs/FindJobCta";
-import JobSubscribeForm from "@/components/jobs/JobSubscribeForm";
 import QuickApplyButton from "@/components/jobs/QuickApplyButton";
 import SaveBookmarkButton from "@/components/jobs/SaveBookmarkButton";
 import { assetUrl } from "@/lib/api";
@@ -162,12 +160,9 @@ export default async function JobsGridPage({
               >
                 <i className="fa-solid fa-filter"></i> Filter Search
               </button>
-              <div className="bg-white rounded mb-3">
+              <div className="bg-white rounded mb-3" style={{ overflow: "visible", position: "relative", zIndex: 10 }}>
                 <JobFilters variant="full" />
               </div>
-
-              {/* Job Alert Box / Subscribe */}
-              <JobSubscribeForm />
             </div>
             {/* Sidebar End */}
 
@@ -266,8 +261,6 @@ export default async function JobsGridPage({
         </div>
       </section>
       {/* All List Wrap */}
-
-      <FindJobCta />
 
       <LoginModal />
 

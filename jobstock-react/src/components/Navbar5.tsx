@@ -92,58 +92,22 @@ export default function Navbar5() {
                     style={{ display: openDropdown === "candidates" ? "block" : undefined }}
                   >
                     <li>
-                      {user ? (
-                        <Link href="/jobs" className="sub-menu-item" onClick={closeMobileNav}>
-                          View Jobs
-                        </Link>
-                      ) : (
-                        <a
-                          href="#!"
-                          className="sub-menu-item"
-                          data-bs-toggle="modal"
-                          data-bs-target="#login"
-                          onClick={closeMobileNav}
-                        >
-                          View Jobs
-                        </a>
-                      )}
+                      <Link href="/jobs" className="sub-menu-item" onClick={closeMobileNav}>
+                        View Jobs
+                      </Link>
                     </li>
                     <li>
-                      {user ? (
-                        <Link href="/candidates" className="sub-menu-item" onClick={closeMobileNav}>
-                          View Candidates
-                        </Link>
-                      ) : (
-                        <a
-                          href="#!"
-                          className="sub-menu-item"
-                          data-bs-toggle="modal"
-                          data-bs-target="#login"
-                          onClick={closeMobileNav}
-                        >
-                          View Candidates
-                        </a>
-                      )}
+                      <Link href="/candidates" className="sub-menu-item" onClick={closeMobileNav}>
+                        View Candidates
+                      </Link>
                     </li>
                   </ul>
                 </li>
 
                 <li>
-                  {user ? (
-                    <Link href="/employers" className="sub-menu-item" onClick={closeMobileNav}>
-                      Employers
-                    </Link>
-                  ) : (
-                    <a
-                      href="#!"
-                      className="sub-menu-item"
-                      data-bs-toggle="modal"
-                      data-bs-target="#login"
-                      onClick={closeMobileNav}
-                    >
-                      Employers
-                    </a>
-                  )}
+                  <Link href="/employers" className="sub-menu-item" onClick={closeMobileNav}>
+                    Companies
+                  </Link>
                 </li>
 
                 <li className={`parent-parent-menu-item ${openDropdown === "pages" ? "active" : ""}`}>

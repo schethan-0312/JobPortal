@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
+import CityLocationInput from "@/components/CityLocationInput";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError, assetUrl } from "@/lib/api";
 import { Toaster, toast } from "react-hot-toast";
@@ -72,7 +73,7 @@ export default function EmployerCandidateSearchPage() {
   ) {
     e?.preventDefault();
     setStatus("loading");
-        try {
+    try {
       const searchLocation = overrides ? overrides.location : location;
       const searchSkill = overrides ? overrides.skill : skill;
       const searchMinExperience = overrides ? overrides.minExperience : minExperience;
@@ -168,16 +169,16 @@ export default function EmployerCandidateSearchPage() {
           </div>
 
           <div className="dashboard-widg-bar d-block">
-            <div className="card mb-4">
+            <div className="card mb-4" style={{ overflow: "visible", position: "relative", zIndex: 30 }}>
               <div className="card-header">
                 <h4>Search the Candidate Pool</h4>
                 <p className="text-muted mb-0 mt-1">
                   Proactively find and reach out to candidates — ranked by recently-active profiles first.
                 </p>
               </div>
-              <div className="card-body">
+              <div className="card-body" style={{ overflow: "visible" }}>
                 <form onSubmit={runSearch}>
-                  <div className="row g-3 align-items-end">
+                  <div className="row g-3 align-items-end" style={{ overflow: "visible" }}>
                     <div className="col-md-3">
                       <label className="form-label">Skill</label>
                       <input
@@ -190,12 +191,11 @@ export default function EmployerCandidateSearchPage() {
                     </div>
                     <div className="col-md-3">
                       <label className="form-label">Location</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="e.g. Remote, Bengaluru"
+                      <CityLocationInput
                         value={location}
-                        onChange={(e) => setLocation(e.target.value)}
+                        onChange={setLocation}
+                        placeholder="e.g. Bangalore, Mumbai, Remote"
+                        className="form-control"
                       />
                     </div>
                     <div className="col-md-3">
@@ -233,7 +233,7 @@ export default function EmployerCandidateSearchPage() {
                 <h4>{status === "loading" ? "Searching..." : `${total} Candidate${total !== 1 ? "s" : ""} Found`}</h4>
               </div>
               <div className="card-body">
-                                {status === "idle" && results.length === 0 && (
+                {status === "idle" && results.length === 0 && (
                   <p className="text-muted mb-0">No candidates match these filters. Try broadening your search.</p>
                 )}
 

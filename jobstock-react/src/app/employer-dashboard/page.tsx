@@ -45,18 +45,6 @@ export default function EmployerDashboardPage() {
   const [jobs, setJobs] = useState<EmployerJob[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
 
-  async function startAdminChat() {
-    try {
-      const admin = await api.get<{id: string}>("/messages/support-admin");
-      if (admin && admin.id) {
-        router.push(`/employer-messages?newChat=${admin.id}`);
-      }
-    } catch (err) {
-      toast.error("Support admin is currently unavailable.");
-    }
-  }
-
-  
   useEffect(() => {
     if (!loading && (!user || user.role !== "EMPLOYER")) {
       router.push("/");
@@ -115,16 +103,14 @@ export default function EmployerDashboardPage() {
           },
         }}
       />
-
       <div className="dashboard-wrap bg-light">
         <EmployerSidebar active="dashboard" />
 
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
-              <div className="col-xl-12 col-12 col-lg-12 col-md-12 d-flex justify-content-between align-items-center">
-                <div>
-                  <h1 className="mb-1 fs-3 fw-medium">Employer Dashboard</h1>
+              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
+                <h1 className="mb-1 fs-3 fw-medium">Employer Dashboard</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
                     <li className="breadcrumb-item text-muted">
@@ -139,76 +125,126 @@ export default function EmployerDashboardPage() {
                       </a>
                     </li>
                   </ol>
-                  </nav>
-                </div>
-                <div>
-                  <button onClick={startAdminChat} className="btn btn-primary">
-                    <i className="fa-solid fa-headset me-2"></i> Chat with Support
-                  </button>
-                </div>
+                </nav>
               </div>
             </div>
           </div>
 
           <div className="dashboard-widg-bar d-block">
-
-              
-              {/* Row Start */}
-              <div className="row align-items-center gx-4 gy-4 mb-4">
-                {ctrs.map((item) => (
-                  <div className="col-xl-3 col-lg-6 col-md-6 col-sm-6" key={item.title}>
-                    <div className="dash-wrap-bloud">
-                      <div className="dash-wrap-bloud-icon">
-                        <div className={`bloud-icon text-${item.class} bg-${item.class} bg-opacity-05`}>
-                          <i className={item.icon}></i>
-                        </div>
-                      </div>
-                      <div className="dash-wrap-bloud-caption">
-                        <div className="dash-wrap-bloud-content">
-                          <h5 className="ctr">{item.number}</h5>
-                          <p>{item.title}</p>
-                        </div>
+            {/* Stats Row */}
+            <div className="row align-items-center gx-4 gy-4 mb-4">
+              {ctrs.map((item) => (
+                <div className="col-xl-3 col-lg-6 col-md-6 col-sm-6" key={item.title}>
+                  <div className="dash-wrap-bloud">
+                    <div className="dash-wrap-bloud-icon">
+                      <div className={`bloud-icon text-${item.class} bg-${item.class} bg-opacity-05`}>
+                        <i className={item.icon}></i>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-              {/* Row End */}
-
-              {/* Row Start */}
-              <div className="row gx-4 gy-4 mb-4">
-                <div className="col-xl-8 col-lg-12 col-md-12 col-sm-12">
-                  <div className="card d-none d-lg-block">
-                    <div className="card-header">
-                      <h4 className="mb-0">Overview</h4>
-                    </div>
-                    <div className="card-body">
-                      <p className="text-muted">You have posted {jobs.length} job{jobs.length !== 1 ? "s" : ""}, {activeJobs} currently active, with {totalApplicants} total applicants.</p>
+                    <div className="dash-wrap-bloud-caption">
+                      <div className="dash-wrap-bloud-content">
+                        <h5 className="ctr">{item.number}</h5>
+                        <p>{item.title}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
+              ))}
+            </div>
 
-                <div className="col-xl-4 col-lg-12 col-md-12 col-sm-12">
-                  <div className="card">
-                    <div className="card-header">
-                      <h4>Notifications</h4>
-                    </div>
+            {/* Overview and Notifications Row */}
+            <div className="row gx-4 gy-4 mb-4">
+              <div className="col-xl-8 col-lg-12 col-md-12 col-sm-12">
+                <div className="card d-none d-lg-block">
+                  <div className="card-header">
+                    <h4 className="mb-0">Overview</h4>
+                  </div>
+                  <div className="card-body">
+                    <p className="text-muted">
+                      You have posted {jobs.length} job{jobs.length !== 1 ? "s" : ""}, {activeJobs} currently active, with {totalApplicants} total applicants.
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-                    <div className="ground-list ground-list-hove">
-                      {dataLoading && <p className="p-3 text-muted">Loading...</p>}
-                      {!dataLoading && notifications.length === 0 && <p className="p-3 text-muted">No notifications yet.</p>}
-                      {notifications.map((n) => (
-                        <div className="ground ground-single-list" key={n.id}>
-                          <a href="JavaScript:Void(0);">
-                            <div className={`btn-circle-40 text-${n.isRead ? "info" : "warning"} bg-${n.isRead ? "info" : "warning"} bg-opacity-05`}>
-                              <i className="fas fa-bell"></i>
+              <div className="col-xl-4 col-lg-12 col-md-12 col-sm-12">
+                <div className="card">
+                  <div className="card-header">
+                    <h4>Notifications</h4>
+                  </div>
+
+                  <div className="ground-list ground-list-hove">
+                    {dataLoading && <p className="p-3 text-muted">Loading...</p>}
+                    {!dataLoading && notifications.length === 0 && <p className="p-3 text-muted">No notifications yet.</p>}
+                    {notifications.map((n) => (
+                      <div className="ground ground-single-list" key={n.id}>
+                        <a href="JavaScript:Void(0);">
+                          <div className={`btn-circle-40 text-${n.isRead ? "info" : "warning"} bg-${n.isRead ? "info" : "warning"} bg-opacity-05`}>
+                            <i className="fas fa-bell"></i>
+                          </div>
+                        </a>
+                        <div className="ground-content">
+                          <h6>
+                            <a href="JavaScript:Void(0);">{n.title}</a>
+                          </h6>
+                          <span className="small">{timeAgo(n.createdAt)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Posted Jobs */}
+            <div className="row">
+              <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
+                <div className="card">
+                  <div className="card-header">
+                    <h6 className="mb-0">Recent Posted Jobs</h6>
+                  </div>
+                  <div className="card-body">
+                    {dataLoading && <p className="text-muted">Loading...</p>}
+                    {!dataLoading && jobs.length === 0 && <p className="text-muted">You haven&apos;t posted any jobs yet.</p>}
+                    <div className="row justify-content-start gx-3 gy-4">
+                      {jobs.map((item) => (
+                        <div className="col-xl-12 col-lg-12 col-md-12" key={item.id}>
+                          <div className="jbs-list-box border">
+                            <div className="jbs-list-head">
+                              <div className="jbs-list-head-thunner">
+                                <div className="jbs-list-emp-thumb jbs-verified">
+                                  <a href={`/job-detail/${item.slug}`}>
+                                    <figure>
+                                      <img src="/assets/img/l-1.png" className="img-fluid" alt="" />
+                                    </figure>
+                                  </a>
+                                </div>
+                                <div className="jbs-list-job-caption">
+                                  <div className="jbs-job-title-wrap">
+                                    <h4>
+                                      <a href={`/job-detail/${item.slug}`} className="jbs-job-title">
+                                        {item.title}
+                                      </a>
+                                    </h4>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="jbs-list-applied-users">
+                                <span className={`text-sm-muted text-light bg-${item.status === "OPEN" ? "green" : "red"} label`}>
+                                  {item._count?.applications ?? 0} Applicants
+                                </span>
+                              </div>
+                              <div className="jbs-list-postedinfo">
+                                <p className="m-0 text-sm-muted">
+                                  <strong>Posted:</strong>
+                                  <span className="text-success">{new Date(item.createdAt).toLocaleDateString()}</span>
+                                </p>
+                                <p className="m-0 text-sm-muted">
+                                  <strong>Status:</strong>
+                                  <span className={item.status === "OPEN" ? "text-success" : "text-danger"}>{item.status}</span>
+                                </p>
+                              </div>
                             </div>
-                          </a>
-                          <div className="ground-content">
-                            <h6>
-                              <a href="JavaScript:Void(0);">{n.title}</a>
-                            </h6>
-                            <span className="small">{timeAgo(n.createdAt)}</span>
                           </div>
                         </div>
                       ))}
@@ -216,69 +252,8 @@ export default function EmployerDashboardPage() {
                   </div>
                 </div>
               </div>
-              {/* Row End */}
-
-              {/* Header Wrap */}
-              <div className="row">
-                <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
-                  <div className="card">
-                    <div className="card-header">
-                      <h6 className="mb-0">Recent Posted Jobs</h6>
-                    </div>
-                    <div className="card-body">
-                      {dataLoading && <p className="text-muted">Loading...</p>}
-                      {!dataLoading && jobs.length === 0 && <p className="text-muted">You haven&apos;t posted any jobs yet.</p>}
-                      {/* Start All List */}
-                      <div className="row justify-content-start gx-3 gy-4">
-                        {jobs.map((item) => (
-                          <div className="col-xl-12 col-lg-12 col-md-12" key={item.id}>
-                            <div className="jbs-list-box border">
-                              <div className="jbs-list-head">
-                                <div className="jbs-list-head-thunner">
-                                  <div className="jbs-list-emp-thumb jbs-verified">
-                                    <a href={`/job-detail/${item.slug}`}>
-                                      <figure>
-                                        <img src="/assets/img/l-1.png" className="img-fluid" alt="" />
-                                      </figure>
-                                    </a>
-                                  </div>
-                                  <div className="jbs-list-job-caption">
-                                    <div className="jbs-job-title-wrap">
-                                      <h4>
-                                        <a href={`/job-detail/${item.slug}`} className="jbs-job-title">
-                                          {item.title}
-                                        </a>
-                                      </h4>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="jbs-list-applied-users">
-                                  <span className={`text-sm-muted text-light bg-${item.status === "OPEN" ? "green" : "red"} label`}>{item._count?.applications ?? 0} Applicants</span>
-                                </div>
-                                <div className="jbs-list-postedinfo">
-                                  <p className="m-0 text-sm-muted">
-                                    <strong>Posted:</strong>
-                                    <span className="text-success">{new Date(item.createdAt).toLocaleDateString()}</span>
-                                  </p>
-                                  <p className="m-0 text-sm-muted">
-                                    <strong>Status:</strong>
-                                    <span className={item.status === "OPEN" ? "text-success" : "text-danger"}>{item.status}</span>
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      {/* End All Job List */}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {/* Header Wrap */}
             </div>
-
-          {/* footer removed */}
+          </div>
         </div>
       </div>
     </>

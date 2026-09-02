@@ -6,6 +6,7 @@ import Navbar7 from "@/components/Navbar7";
 import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar";
 import UploadResumeModal from "@/components/candidate-dashboard/UploadResumeModal";
 import VerifyEmailModal from "@/components/candidate-dashboard/VerifyEmailModal";
+import CityLocationInput from "@/components/CityLocationInput";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError, assetUrl, uploadFile } from "@/lib/api";
 import { Toaster, toast } from "react-hot-toast";
@@ -421,11 +422,11 @@ export default function CandidateProfilePage() {
               {/* Card Row End */}
 
               {/* Card Row */}
-              <div className="card">
+              <div className="card" style={{ overflow: "visible" }}>
                 <div className="card-header">
                   <h4>Contact Detail</h4>
                 </div>
-                <div className="card-body">
+                <div className="card-body" style={{ overflow: "visible" }}>
                   <div className="row">
 
                     <div className="col-xl-6 col-lg-6 col-md-12">
@@ -458,7 +459,13 @@ export default function CandidateProfilePage() {
                     <div className="col-xl-6 col-lg-6 col-md-12">
                       <div className="form-group">
                         <label>Location</label>
-                        <input type="text" className="form-control" value={location} onChange={(e) => setLocation(e.target.value)} />
+                        <CityLocationInput
+                          value={location}
+                          onChange={setLocation}
+                          placeholder="e.g. Bangalore, Mumbai, Remote"
+                          className="form-control"
+                          openDirection="up"
+                        />
                       </div>
                     </div>
 
