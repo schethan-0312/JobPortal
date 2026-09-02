@@ -83,6 +83,39 @@ export class EmailService {
     }
   }
 
+  async sendNewBlogPost(email: string, blogTitle: string, blogSlug: string) {
+    if (!this.transporter) return;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+
+    const htmlContent = `
+      <p style="font-size: 16px; color: #333;">Hi there! 👋</p>
+      <p style="font-size: 16px; color: #333;">We just published an exciting new blog post that we think you'll love! 📝✨</p>
+      <div style="padding: 20px; background-color: #f8f9fa; border-radius: 8px; border-left: 5px solid #0b8260; margin: 25px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <h3 style="margin: 0 0 10px 0; color: #0b8260; font-size: 20px;">📌 ${blogTitle}</h3>
+        <p style="margin: 0; font-size: 15px; color: #555;">Check out the latest insights, tips, and updates straight from the JobStock team.</p>
+      </div>
+      <p style="font-size: 15px; color: #333;">Click the button below to dive in and read the full article.</p>
+    `;
+
+    const mailOptions = {
+      from: `"JobStock News" <${from}>`,
+      to: email,
+      subject: `📰 New Blog Post: ${blogTitle}`,
+      text: `Hi there,\n\nWe just published a new blog post: "${blogTitle}".\n\nRead it here: ${frontendUrl}/blog/${blogSlug}\n\nBest regards,\nThe JobStock Team`,
+      html: this.wrapInTemplate('📰 New Blog Published!', htmlContent, {
+        text: 'Read the Blog Post 🚀',
+        url: `${frontendUrl}/blog/${blogSlug}`
+      }),
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      this.logger.error(`Failed to send new blog post email to ${email}`, error);
+    }
+  }
+
   async sendAdminNotification(subscriberEmail: string) {
     if (!this.transporter) {
       this.logger.warn('EmailService is not configured. Cannot send admin notification.');
@@ -289,6 +322,54 @@ export class EmailService {
       await transporter.sendMail({ from: `"JobStock Admin" <${from}>`, to: email, subject, html });
     } catch (e) {
       this.logger.error('Failed to send employer verification email', e);
+    }
+  }
+  async sendCandidateReopened(email: string, candidateName: string) {
+    const transporter = this.getTransporter();
+    if (!transporter) return;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+
+    const html = this.wrapInTemplate(
+      '🎉 Account Reopened',
+      `<p style="font-size: 16px; color: #333;">Great news, <strong>${candidateName}</strong>! Your account has been <strong>successfully reopened</strong> by our admin team! 🎊</p>
+       <p style="font-size: 15px; color: #333;">Your suspension has been lifted, and you once again have full access to your candidate dashboard.</p>
+       <div style="padding: 20px; background-color: #f0fdf4; border-radius: 8px; border-left: 5px solid #0b8260; margin: 25px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+         <p style="margin: 0; font-size: 15px; color: #166534;">✅ <strong>You can now resume applying for jobs, taking skill assessments, and managing your account!</strong></p>
+       </div>
+       <p style="color: #555; font-size: 15px;">Welcome back to JobStock! 🌟</p>`,
+      { text: '👉 Go to Dashboard', url: `${frontendUrl}/candidate-dashboard` }
+    );
+
+    try {
+      await transporter.sendMail({ from: `"JobStock Admin" <${from}>`, to: email, subject: '🎉 Your Candidate Account is Reopened!', html });
+    } catch (e) {
+      this.logger.error('Failed to send reopened email', e);
+    }
+  }
+
+  async sendCandidateSuspended(email: string, candidateName: string, reason?: string) {
+    const transporter = this.getTransporter();
+    if (!transporter) return;
+    const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
+    const adminEmail = process.env.EMAIL_USERNAME || process.env.SMTP_USER || 'support@jobstock.com';
+
+    const reasonHtml = reason ? `<p style="font-size: 15px; color: #333;"><strong>Reason:</strong> ${reason}</p>` : '';
+
+    const html = this.wrapInTemplate(
+      '🚨 Account Suspended',
+      `<p style="font-size: 15px; color: #333;">Hi <strong>${candidateName}</strong>,</p>
+       <p style="font-size: 15px; color: #333;">Your candidate account has been suspended.</p>
+       <p style="font-size: 15px; color: #333;">You will not be able to apply for jobs or access premium features during this time. ⛔</p>
+       ${reasonHtml}
+       <p style="font-size: 15px; color: #333; margin-top: 20px;"><strong>Next steps:</strong> Please contact our admin team for further information regarding your suspension at: <br/>
+       <a href="mailto:${adminEmail}" style="color: #0b8260; font-weight: bold;">${adminEmail}</a> 📧</p>`
+    );
+
+    try {
+      await transporter.sendMail({ from: `"JobStock Admin" <${from}>`, to: email, subject: '🚫 Account Suspended', html });
+    } catch (e) {
+      this.logger.error('Failed to send suspended email', e);
     }
   }
 

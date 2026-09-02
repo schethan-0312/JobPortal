@@ -173,7 +173,7 @@ export default function AdminBackgroundJobsPage() {
                               <td className="small">
                                 {r.completedAt
                                   ? `${Math.round((new Date(r.completedAt).getTime() - new Date(r.startedAt).getTime()) / 1000)}s`
-                                  : "â€”"}
+                                  : "—"}
                               </td>
                               <td className="small text-danger">{r.detail ?? ""}</td>
                             </tr>
@@ -185,14 +185,6 @@ export default function AdminBackgroundJobsPage() {
                 )}
               </div>
             ))}
-          </div>
-
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
           </div>
         </div>
       </div>

@@ -38,6 +38,14 @@ export class AdminService {
       },
     });
 
+    await this.prisma.verificationHistoryEntry.create({
+      data: {
+        employerId,
+        adminId: adminUserId,
+        decision: dto.decision as any,
+      },
+    });
+
     await this.notifications.create(
       employer.userId,
       'Company verification update',

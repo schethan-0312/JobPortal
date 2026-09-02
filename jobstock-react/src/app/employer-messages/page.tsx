@@ -367,11 +367,26 @@ function EmployerMessagesContent() {
             </div>
           </div>
           <div className="dashboard-widg-bar d-block">
+            <style>{`
+              .chat-sidebar {
+                flex-shrink: 0;
+              }
+              @media (min-width: 768px) {
+                .chat-sidebar {
+                  width: 320px !important;
+                }
+              }
+              @media (max-width: 767px) {
+                .chat-sidebar {
+                  width: 100% !important;
+                }
+              }
+            `}</style>
             <div className="row justify-content-center">
               <div className="col-xl-11 col-lg-12 col-md-12" style={{}}>
-                                <div className="d-flex bg-white rounded-3 overflow-hidden shadow-sm border mx-auto" style={{ height: "calc(100vh - 200px)", minHeight: "550px", maxWidth: "1150px" }}>
+                <div className="d-flex bg-white rounded-3 overflow-hidden shadow-sm border mx-auto" style={{ height: "calc(100vh - 200px)", minHeight: "550px", maxWidth: "1150px" }}>
                   {/* Sidebar */}
-                  <div className={`border-end d-flex flex-column ${mobileShowChat ? "d-none d-md-flex" : "d-flex w-100"}`} style={{ width: mobileShowChat ? "320px" : "100%", flexShrink: 0 }}>
+                  <div className={`border-end d-flex flex-column chat-sidebar ${mobileShowChat ? "d-none d-md-flex" : "d-flex w-100"}`}>
                     <div className="p-3 border-bottom bg-light">
                       <h6 className="m-0 fw-semibold">Recent Chats</h6>
                     </div>

@@ -87,69 +87,66 @@ export default async function BlogDetailPage({
       <section className="py-5" style={{ backgroundColor: '#F9F7F1' }}>
         <div className="container" style={{ maxWidth: '1200px' }}>
           
-          {/* Top Hero Section */}
-          <div className="row mb-5" style={{ paddingLeft: 'calc(25% + 15px)' }}>
-            <div className="col-lg-12">
-              {/* Breadcrumbs */}
-              <div className="blog-breadcrumb mb-4" style={{ fontSize: '0.9rem', color: '#7a766c' }}>
-                <a href="/">Home</a> / <a href="/blog">Blog</a> {post.category && <> / <span style={{ color: '#2E4A3D', fontWeight: '500' }}>{post.category}</span></>}
-              </div>
-
-              {/* Meta Tags */}
-              <div className="d-flex align-items-center gap-3 mb-4 text-uppercase fw-bold" style={{ fontSize: '0.75rem', letterSpacing: '1px', color: '#7a766c' }}>
-                {post.category && <span className="badge bg-white text-dark px-3 py-2 rounded-pill" style={{ border: '1px solid #d4d1c9' }}>{post.category}</span>}
-                <span>{article.date}</span>
-                {post.readTimeMinutes && (
-                  <>
-                    <span style={{ fontSize: '4px' }}>&#9679;</span>
-                    <span>{post.readTimeMinutes} MIN READ</span>
-                  </>
-                )}
-              </div>
-
-              {/* Title & Excerpt */}
-              <h1 className="serif-font fw-bold mb-4" style={{ fontSize: '3.2rem', lineHeight: '1.2' }}>
-                {article.title}
-              </h1>
-              {post.excerpt && (
-                <p className="mb-4" style={{ color: '#5c5a53', fontSize: '1.25rem', lineHeight: '1.7', fontWeight: '300' }}>
-                  {post.excerpt}
-                </p>
-              )}
-
-              {/* Author Info */}
-              <div className="d-flex align-items-center gap-3 mt-4">
-                <div className="d-flex align-items-center justify-content-center text-white rounded-circle fs-5 fw-bold shadow-sm" style={{ width: '50px', height: '50px', backgroundColor: '#1a1f1a' }}>
-                  {(post.customAuthorName || post.author.email).charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <h6 className="mb-0 fw-bold" style={{ color: '#2E4A3D', fontSize: '1rem' }}>{(post.customAuthorName || post.author.email.split('@')[0])}</h6>
-                  <p className="text-muted small mb-0" style={{ fontSize: '0.8rem' }}>{post.customAuthorName ? "Author" : "Writer & Contributor"}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Cover Image */}
-          {article.img && (
-            <div className="row justify-content-center mb-5">
-              <div className="col-lg-12">
-                <div style={{ height: '500px', width: '100%', borderRadius: '16px', overflow: 'hidden' }}>
-                  <img src={article.img} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Two Column Layout for Content & TOC */}
+          {/* Two Column Layout for Entire Page */}
           <div className="row position-relative">
             {/* Left Sidebar (Sticky TOC) */}
-            <div className="col-lg-3 d-none d-lg-block" style={{ position: 'sticky', top: '100px', alignSelf: 'flex-start', height: 'max-content' }}>
+            <div className="col-lg-3 d-none d-lg-block">
               <TableOfContents selector=".post-content" />
             </div>
 
             {/* Right Column (Main Content) */}
             <div className="col-lg-9 col-md-12 pe-lg-5">
+              
+              {/* Top Hero Section (Now inside the right column) */}
+              <div className="mb-5">
+                {/* Breadcrumbs */}
+                <div className="blog-breadcrumb mb-4" style={{ fontSize: '0.9rem', color: '#7a766c' }}>
+                  <a href="/">Home</a> / <a href="/blog">Blog</a> {post.category && <> / <span style={{ color: '#2E4A3D', fontWeight: '500' }}>{post.category}</span></>}
+                </div>
+
+                {/* Meta Tags */}
+                <div className="d-flex align-items-center gap-3 mb-4 text-uppercase fw-bold" style={{ fontSize: '0.75rem', letterSpacing: '1px', color: '#7a766c' }}>
+                  {post.category && <span className="badge bg-white text-dark px-3 py-2 rounded-pill" style={{ border: '1px solid #d4d1c9' }}>{post.category}</span>}
+                  <span>{article.date}</span>
+                  {post.readTimeMinutes && (
+                    <>
+                      <span style={{ fontSize: '4px' }}>&#9679;</span>
+                      <span>{post.readTimeMinutes} MIN READ</span>
+                    </>
+                  )}
+                </div>
+
+                {/* Title & Excerpt */}
+                <h1 className="serif-font fw-bold mb-4" style={{ fontSize: '3.2rem', lineHeight: '1.2' }}>
+                  {article.title}
+                </h1>
+                {post.excerpt && (
+                  <p className="mb-4" style={{ color: '#5c5a53', fontSize: '1.25rem', lineHeight: '1.7', fontWeight: '300' }}>
+                    {post.excerpt}
+                  </p>
+                )}
+
+                {/* Author Info */}
+                <div className="d-flex align-items-center gap-3 mt-4">
+                  <div className="d-flex align-items-center justify-content-center text-white rounded-circle fs-5 fw-bold shadow-sm" style={{ width: '50px', height: '50px', backgroundColor: '#1a1f1a' }}>
+                    {(post.customAuthorName || post.author.email).charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h6 className="mb-0 fw-bold" style={{ color: '#2E4A3D', fontSize: '1rem' }}>{(post.customAuthorName || post.author.email.split('@')[0])}</h6>
+                    <p className="text-muted small mb-0" style={{ fontSize: '0.8rem' }}>{post.customAuthorName ? "Author" : "Writer & Contributor"}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Cover Image */}
+              {article.img && (
+                <div className="mb-5">
+                  <div style={{ height: '500px', width: '100%', borderRadius: '16px', overflow: 'hidden' }}>
+                    <img src={article.img} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                </div>
+              )}
+
               {/* Gallery Moved Above Content */}
               {post.images && post.images.length > 0 && (
                 <div className="post-images mb-5">

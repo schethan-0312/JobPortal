@@ -30,7 +30,6 @@ export class AdminBackgroundJobsController {
   }
 
   @Post(':jobName/run')
-  @AdminRoles(AdminRole.SUPER_ADMIN)
   runNow(@CurrentUser() user: AuthenticatedUser, @Param('jobName') jobName: string) {
     return this.backgroundJobsService.runNow(jobName, `manual:${user.email}`);
   }

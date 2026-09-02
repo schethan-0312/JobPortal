@@ -104,7 +104,7 @@ export default function AdminSystemConfigPage() {
                       onChange={(e) => setConfig({ ...config, maintenanceMode: e.target.checked })}
                     />
                     <label className="form-check-label" htmlFor="maintenanceMode">
-                      <strong>Maintenance Mode</strong> â€” when on, all non-admin API requests are blocked
+                      <strong>Maintenance Mode</strong> — when on, all non-admin API requests are blocked
                     </label>
                   </div>
 
@@ -129,7 +129,7 @@ export default function AdminSystemConfigPage() {
                       onChange={(e) => setConfig({ ...config, registrationEnabled: e.target.checked })}
                     />
                     <label className="form-check-label" htmlFor="registrationEnabled">
-                      <strong>Registration Enabled</strong> â€” turn off to temporarily block new signups
+                      <strong>Registration Enabled</strong> — turn off to temporarily block new signups
                     </label>
                   </div>
 
@@ -161,14 +161,6 @@ export default function AdminSystemConfigPage() {
                 </div>
               </div>
             )}
-          </div>
-
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
           </div>
         </div>
       </div>

@@ -1,0 +1,1 @@
+﻿const bcrypt = require('bcrypt'); console.log('admin@gmail.com (admin):', bcrypt.compareSync('admin', '$2b$12$UxDN.zDGkFhUmWGopMJvZ.s.MdZdOSueLKX3GTBCR3s.IOco.fij.')); console.log('admin@gmail.com (123456):', bcrypt.compareSync('123456', '$2b$12$UxDN.zDGkFhUmWGopMJvZ.s.MdZdOSueLKX3GTBCR3s.IOco.fij.'));

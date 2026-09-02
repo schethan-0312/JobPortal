@@ -182,7 +182,7 @@ export default function AdminSupportPage() {
                                 {t.status}
                               </span>
                             </td>
-                            <td className="small">{t.assignedAdmin?.email ?? "â€”"}</td>
+                            <td className="small">{t.assignedAdmin?.email ?? "—"}</td>
                             <td className="small">{t._count.messages}</td>
                             <td className="small text-muted">{new Date(t.updatedAt).toLocaleString()}</td>
                           </tr>
@@ -191,14 +191,6 @@ export default function AdminSupportPage() {
                     </table>
                   </div>
                 )}
-              </div>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
               </div>
             </div>
           </div>

@@ -17,6 +17,8 @@ export default function AdminProfilePage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [isCurrentPasswordVerified, setIsCurrentPasswordVerified] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
 
   const [photoLoading, setPhotoLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -27,10 +29,34 @@ export default function AdminProfilePage() {
     }
   }, [loading, user, router]);
 
+  async function handleVerifyPassword(e: React.FormEvent) {
+    e.preventDefault();
+    setPasswordError(null);
+    setPasswordLoading(true);
+    try {
+      await api.post("/auth/verify-password", { currentPassword });
+      setIsCurrentPasswordVerified(true);
+    } catch (err) {
+      Swal.fire({
+        title: "Error",
+        text: err instanceof ApiError ? err.message : "Incorrect current password",
+        icon: "error",
+        confirmButtonColor: "#d33",
+      });
+    } finally {
+      setPasswordLoading(false);
+    }
+  }
+
   async function handlePasswordSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      setPasswordError("Passwords do not match");
+      Swal.fire({
+        title: "Error",
+        text: "Passwords do not match",
+        icon: "error",
+        confirmButtonColor: "#d33",
+      });
       return;
     }
     setPasswordError(null);
@@ -46,8 +72,14 @@ export default function AdminProfilePage() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+      setIsCurrentPasswordVerified(false);
     } catch (err) {
-      setPasswordError(err instanceof ApiError ? err.message : "Failed to change password");
+      Swal.fire({
+        title: "Error",
+        text: err instanceof ApiError ? err.message : "Failed to change password",
+        icon: "error",
+        confirmButtonColor: "#d33",
+      });
     } finally {
       setPasswordLoading(false);
     }
@@ -172,48 +204,61 @@ export default function AdminProfilePage() {
                     <h5 className="mb-0">Change Password</h5>
                   </div>
                   <div className="card-body">
-                    <form onSubmit={handlePasswordSubmit}>
-                      {passwordError && (
-                        <div className="alert alert-danger py-2">{passwordError}</div>
-                      )}
-                      
-                      <div className="mb-3">
-                        <label className="form-label">Current Password</label>
-                        <input 
-                          type="password" 
-                          className="form-control" 
-                          value={currentPassword}
-                          onChange={e => setCurrentPassword(e.target.value)}
-                          required
-                        />
-                      </div>
-                      
-                      <div className="mb-3">
-                        <label className="form-label">New Password</label>
-                        <input 
-                          type="password" 
-                          className="form-control" 
-                          value={newPassword}
-                          onChange={e => setNewPassword(e.target.value)}
-                          required
-                        />
-                      </div>
-                      
-                      <div className="mb-4">
-                        <label className="form-label">Confirm New Password</label>
-                        <input 
-                          type="password" 
-                          className="form-control" 
-                          value={confirmPassword}
-                          onChange={e => setConfirmPassword(e.target.value)}
-                          required
-                        />
-                      </div>
-                      
-                      <button type="submit" className="btn btn-primary" disabled={passwordLoading}>
-                        {passwordLoading ? "Updating..." : "Update Password"}
-                      </button>
-                    </form>
+                    {!isCurrentPasswordVerified ? (
+                      <form onSubmit={handleVerifyPassword}>
+                        <div className="mb-3">
+                          <label className="form-label">Current Password</label>
+                          <div className="input-group">
+                            <input 
+                              type={showCurrentPassword ? "text" : "password"} 
+                              className="form-control" 
+                              value={currentPassword}
+                              onChange={e => setCurrentPassword(e.target.value)}
+                              required
+                            />
+                            <button 
+                              className="btn btn-outline-secondary" 
+                              type="button" 
+                              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                            >
+                              <i className={`fa-solid ${showCurrentPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
+                            </button>
+                          </div>
+                        </div>
+                        <button type="submit" className="btn btn-primary" disabled={passwordLoading}>
+                          {passwordLoading ? "Verifying..." : "Verify"}
+                        </button>
+                      </form>
+                    ) : (
+                      <form onSubmit={handlePasswordSubmit}>
+                        
+                        <div className="mb-3">
+                          <label className="form-label">New Password</label>
+                          <input 
+                            type="password" 
+                            className="form-control" 
+                            value={newPassword}
+                            onChange={e => setNewPassword(e.target.value)}
+                            required
+                          />
+                        </div>
+                        
+                        <div className="mb-4">
+                          <label className="form-label">Confirm New Password</label>
+                          <input 
+                            type="password" 
+                            className="form-control" 
+                            value={confirmPassword}
+                            onChange={e => setConfirmPassword(e.target.value)}
+                            required
+                          />
+                        </div>
+                        
+                        <button type="submit" className="btn btn-success" disabled={passwordLoading}>
+                          {passwordLoading ? "Updating..." : "Update Password"}
+                        </button>
+                      </form>
+                    )}
                   </div>
                 </div>
               </div>

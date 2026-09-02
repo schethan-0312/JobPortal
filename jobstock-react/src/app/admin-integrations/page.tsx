@@ -106,7 +106,7 @@ export default function AdminIntegrationsPage() {
                 style={{ fontSize: "1.1rem" }}
               >
                 <i className="fa-solid fa-triangle-exclamation"></i>
-                Razorpay: {razorpay.detail.startsWith("LIVE") ? "LIVE MODE â€” real money" : "TEST MODE"}
+                Razorpay: {razorpay.detail.startsWith("LIVE") ? "LIVE MODE — real money" : "TEST MODE"}
               </div>
             )}
 
@@ -130,14 +130,6 @@ export default function AdminIntegrationsPage() {
                 ))}
               </div>
             )}
-          </div>
-
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
           </div>
         </div>
       </div>

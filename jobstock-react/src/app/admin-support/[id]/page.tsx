@@ -200,14 +200,6 @@ export default function AdminSupportDetailPage() {
               </>
             )}
           </div>
-
-          <div className="row">
-            <div className="col-md-12">
-              <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </>

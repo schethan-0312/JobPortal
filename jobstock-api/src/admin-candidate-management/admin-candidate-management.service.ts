@@ -3,12 +3,14 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { AuditLogService } from '../audit-log/audit-log.service.js';
 import { AuditTargetType, Role } from '../../generated/prisma/enums.js';
 import { SuspendUserDto } from './dto/suspend-user.dto.js';
+import { EmailService } from '../email/email.service.js';
 
 @Injectable()
 export class AdminCandidateManagementService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLog: AuditLogService,
+    private readonly emailService: EmailService,
   ) {}
 
   async list(params: { search?: string; suspended?: boolean; page: number; pageSize: number }) {
@@ -105,7 +107,10 @@ export class AdminCandidateManagementService {
   }
 
   async suspend(actorId: string, userId: string, dto: SuspendUserDto, ip?: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const user = await this.prisma.user.findUnique({ 
+      where: { id: userId },
+      include: { candidateProfile: true }
+    });
     if (!user || user.role !== Role.CANDIDATE) {
       throw new NotFoundException('Candidate not found');
     }
@@ -124,11 +129,20 @@ export class AdminCandidateManagementService {
       ipAddress: ip,
     });
 
+    try {
+      await this.emailService.sendCandidateSuspended(user.email, user.candidateProfile?.fullName || 'Candidate', dto.reason);
+    } catch (error) {
+      console.error('Failed to send suspension email to candidate:', error);
+    }
+
     return { success: true };
   }
 
   async unsuspend(actorId: string, userId: string, ip?: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const user = await this.prisma.user.findUnique({ 
+      where: { id: userId },
+      include: { candidateProfile: true }
+    });
     if (!user || user.role !== Role.CANDIDATE) {
       throw new NotFoundException('Candidate not found');
     }
@@ -145,6 +159,12 @@ export class AdminCandidateManagementService {
       targetId: userId,
       ipAddress: ip,
     });
+
+    try {
+      await this.emailService.sendCandidateReopened(user.email, user.candidateProfile?.fullName || 'Candidate');
+    } catch (error) {
+      console.error('Failed to send reopened email to candidate:', error);
+    }
 
     return { success: true };
   }
