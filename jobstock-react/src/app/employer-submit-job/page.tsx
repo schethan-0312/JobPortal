@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
 import { useAuth } from "@/lib/auth-context";
@@ -90,7 +90,7 @@ function SearchableSelect({
   loading,
   searchPlaceholder = "Search...",
   onRetry,
-  errorMsg
+  errorMsg,
 }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -103,95 +103,77 @@ function SearchableSelect({
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
-  const filteredOptions = options.filter(option =>
-    option.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredOptions = options.filter((opt) =>
+    opt.toLowerCase().includes(searchQuery.toLowerCase().trim())
   );
 
   return (
     <div className="form-group position-relative" ref={containerRef}>
-      <label className="form-label fw-medium d-flex justify-content-between">
-        <span>{label}</span>
-        {errorMsg && (
-          <button
-            type="button"
-            className="btn btn-link p-0 text-danger border-0 small font-weight-medium"
-            style={{ fontSize: "11px", textDecoration: "none" }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onRetry?.();
-            }}
-          >
-            <i className="fa-solid fa-arrows-rotate me-1"></i>Retry
-          </button>
-        )}
-      </label>
-      
+      <label className="form-label fw-medium">{label}</label>
       <div
-        className="form-control d-flex align-items-center justify-content-between"
-        style={{
-          cursor: disabled ? "not-allowed" : "pointer",
-          backgroundColor: disabled ? "#f8f9fa" : "#fff",
-          opacity: disabled ? 0.7 : 1,
-          userSelect: "none"
-        }}
+        className={`form-select d-flex align-items-center justify-content-between ${
+          disabled ? "bg-light text-muted" : "bg-white"
+        }`}
+        style={{ cursor: disabled ? "not-allowed" : "pointer" }}
         onClick={() => {
-          if (!disabled && !loading) {
+          if (!disabled) {
             setIsOpen(!isOpen);
             setSearchQuery("");
           }
         }}
       >
-        <span className="text-truncate d-flex align-items-center gap-2">
-          {loading && (
-            <span
-              className="spinner-border spinner-border-sm text-primary"
-              style={{ width: "14px", height: "14px" }}
-              role="status"
-              aria-hidden="true"
-            ></span>
-          )}
-          <span style={{ color: !value && !loading ? "#9ea8b6" : "inherit" }}>
-            {loading
-              ? "Loading..."
-              : value || (disabled ? disabledPlaceholder : placeholder)}
-          </span>
+        <span className={value ? "text-dark" : "text-muted"}>
+          {disabled
+            ? disabledPlaceholder || placeholder
+            : value || (loading ? "Loading..." : placeholder)}
         </span>
-        <i className="fa-solid fa-chevron-down text-muted" style={{ fontSize: "10px" }}></i>
+        {loading ? (
+          <span className="spinner-border spinner-border-sm text-secondary" role="status"></span>
+        ) : (
+          <i className={`fa-solid fa-chevron-${isOpen ? "up" : "down"} text-muted fs-8`}></i>
+        )}
       </div>
+
+      {errorMsg && (
+        <div className="d-flex align-items-center justify-content-between mt-1">
+          <small className="text-danger">{errorMsg}</small>
+          {onRetry && (
+            <button
+              type="button"
+              className="btn btn-link btn-sm p-0 text-primary"
+              onClick={onRetry}
+            >
+              Retry
+            </button>
+          )}
+        </div>
+      )}
 
       {isOpen && !disabled && (
         <div
-          className="position-absolute w-100 bg-white border rounded shadow mt-1"
-          style={{
-            maxHeight: "260px",
-            overflowY: "auto",
-            zIndex: 1050,
-            left: 0,
-            top: "100%"
-          }}
+          className="position-absolute start-0 end-0 bg-white border rounded shadow-lg p-2 mt-1"
+          style={{ zIndex: 1050, maxHeight: "250px", overflowY: "auto" }}
         >
-          <div className="p-2 border-bottom sticky-top bg-white">
+          <div className="mb-2">
             <input
               type="text"
-              className="form-control form-control-sm w-100"
-              style={{
-                height: "36px !important",
-                minHeight: "36px !important",
-                padding: "4px 8px !important",
-                fontSize: "13px !important"
-              }}
+              className="form-control form-control-sm"
               placeholder={searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               autoFocus
+              onClick={(e) => e.stopPropagation()}
             />
           </div>
-          <div className="list-group list-group-flush" style={{ maxHeight: "200px", overflowY: "auto" }}>
+
+          <div className="list-group list-group-flush">
             {filteredOptions.length === 0 ? (
-              <div className="p-3 text-muted text-center small">No matches found</div>
+              <div className="p-2 text-center text-muted small">No results found</div>
             ) : (
               filteredOptions.map((opt) => (
                 <button
@@ -217,9 +199,15 @@ function SearchableSelect({
   );
 }
 
-export default function EmployerSubmitJobPage() {
+function EmployerSubmitJobContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
+
+  const searchParams = useSearchParams();
+  const editId = searchParams.get('id');
+  const [fetchingJob, setFetchingJob] = useState(!!editId);
+  const [savingDraft, setSavingDraft] = useState(false);
+
   const alertRef = useRef<HTMLDivElement>(null);
 
   const todayStr = new Date().toLocaleDateString("en-CA");
@@ -262,13 +250,10 @@ export default function EmployerSubmitJobPage() {
   const [openings, setOpenings] = useState("1");
   const [applicationDeadline, setApplicationDeadline] = useState("");
 
-  // 8. Publishing
-  const [status, setStatus] = useState("OPEN");
-  const [publishDate, setPublishDate] = useState("");
-  const [isFeatured, setIsFeatured] = useState(false);
-
+  // Validation errors state
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
-    
+
   // Location selection states (CountriesNow API)
   const [countries, setCountries] = useState<string[]>([]);
   const [states, setStates] = useState<string[]>([]);
@@ -372,7 +357,7 @@ export default function EmployerSubmitJobPage() {
       if (json.error) {
         throw new Error(json.msg || "Failed to load cities");
       }
-      const cityNames = json.data.sort();
+      const cityNames = (json.data || []).sort();
       setCityCache((prev) => ({ ...prev, [cacheKey]: cityNames }));
       setCities(cityNames);
     } catch (err: any) {
@@ -409,6 +394,9 @@ export default function EmployerSubmitJobPage() {
     setCity("");
     setStates([]);
     setCities([]);
+    if (errors.country) {
+      setErrors((prev) => ({ ...prev, country: "" }));
+    }
   };
 
   const handleStateChange = (newState: string) => {
@@ -448,12 +436,83 @@ export default function EmployerSubmitJobPage() {
     })();
   }, [user]);
 
+  
+  // Fetch job details for editing
+  useEffect(() => {
+    if (!editId || !user || user.role !== 'EMPLOYER') {
+      setFetchingJob(false);
+      return;
+    }
+    
+    (async () => {
+      try {
+        setFetchingJob(true);
+        // We find the job by looking at the employer's jobs
+        const myJobs: any[] = (await api.get('/jobs/mine')) as any[];
+        const job = myJobs.find((j: any) => j.id === editId);
+        
+        if (job) {
+          setTitle(job.title || '');
+          setSummary(job.summary || '');
+          setCategory(job.category || 'Web & Application');
+          setJobRole(job.jobRole || '');
+          setJobType(job.jobType || 'FULL_TIME');
+          setDescription(job.description || '');
+          setResponsibilities(job.responsibilities || '');
+          
+          let parsedSkills: string[] = [];
+          if (Array.isArray(job.skills)) {
+            parsedSkills = job.skills;
+          } else if (typeof job.skills === 'string') {
+            try {
+              parsedSkills = JSON.parse(job.skills);
+            } catch (e) {
+              const str = job.skills as string;
+              parsedSkills = str.startsWith('{') 
+                ? str.slice(1, -1).split(',').map(s => s.trim()).filter(Boolean)
+                : str.split(',').map(s => s.trim()).filter(Boolean);
+            }
+          }
+          setSkills(parsedSkills);
+
+          setMinExperience(job.minExperience != null ? String(job.minExperience) : '');
+          setMaxExperience(job.maxExperience != null ? String(job.maxExperience) : '');
+          setMinQualification(job.minQualification || "Bachelor's Degree");
+          setSpecialization(job.specialization || '');
+          setSalaryMin(job.salaryMin != null ? String(job.salaryMin) : '');
+          setSalaryMax(job.salaryMax != null ? String(job.salaryMax) : '');
+          setCurrency(job.currency || 'INR');
+          setSalaryPeriod(job.salaryPeriod || 'MONTHLY');
+          setCountry(job.country || 'India');
+          setState(job.state || '');
+          setCity(job.city || '');
+          setWorkMode(job.workMode || 'IN_OFFICE');
+          setOpenings(job.openings ? String(job.openings) : '1');
+          if (job.applicationDeadline) {
+            setApplicationDeadline(new Date(job.applicationDeadline).toISOString().split('T')[0]);
+          }
+        } else {
+          toast.error('Job not found or you do not have permission to edit it.');
+          router.push('/employer-jobs');
+        }
+      } catch (err) {
+        toast.error('Failed to load job details');
+        router.push('/employer-jobs');
+      } finally {
+        setFetchingJob(false);
+      }
+    })();
+  }, [editId, user, router]);
+
   // Skill management helpers
   const handleAddSkill = () => {
     const trimmed = skillInput.trim();
     if (trimmed && !skills.includes(trimmed)) {
       setSkills([...skills, trimmed]);
       setSkillInput("");
+      if (errors.skills) {
+        setErrors((prev) => ({ ...prev, skills: "" }));
+      }
     }
   };
 
@@ -461,53 +520,119 @@ export default function EmployerSubmitJobPage() {
     setSkills(skills.filter((s) => s !== skillToRemove));
   };
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-        
-    // Front-end validations
+  function validateForm(isDraft: boolean, currentSkills: string[] = skills): boolean {
+    const newErrors: Record<string, string> = {};
+
+    // 1. Basic Job Details
     if (!title.trim()) {
-      toast.error("Please enter a Job Title.");
-      scrollToTop();
-      return;
-    }
-    if (!description.trim() || description.trim().length < 20) {
-      toast.error("Please enter a Job Description with at least 20 characters.");
-      scrollToTop();
-      return;
+      newErrors.title = "Job Title is required.";
+    } else if (title.trim().length < 3) {
+      newErrors.title = "Job Title must be at least 3 characters.";
     }
 
-    if (salaryMin && salaryMax && Number(salaryMin) > Number(salaryMax)) {
-      toast.error("Minimum Salary cannot be greater than Maximum Salary.");
-      scrollToTop();
-      return;
+    if (!isDraft) {
+      if (!category.trim()) {
+      newErrors.category = "Please select a Job Category.";
     }
 
+    if (!jobType.trim()) {
+      newErrors.jobType = "Please select a Job Type.";
+    }
+
+    // 2. Job Description
+    if (!description.trim()) {
+      newErrors.description = "Job Description is required.";
+    } else if (description.trim().length < 20) {
+      newErrors.description = `Job Description must be at least 20 characters (currently ${description.trim().length}).`;
+    }
+
+    // 3. Skills
+    if (currentSkills.length === 0) {
+      newErrors.skills = "Please add at least one Required Skill (type and click Add Skill or press Enter).";
+    }
+
+    // 3. Experience
+    if (minExperience && (Number(minExperience) < 0 || Number(minExperience) > 50)) {
+      newErrors.minExperience = "Minimum experience must be between 0 and 50 years.";
+    }
+    if (maxExperience && (Number(maxExperience) < 0 || Number(maxExperience) > 50)) {
+      newErrors.maxExperience = "Maximum experience must be between 0 and 50 years.";
+    }
     if (minExperience && maxExperience && Number(minExperience) > Number(maxExperience)) {
-      toast.error("Minimum Experience cannot be greater than Maximum Experience.");
+      newErrors.maxExperience = "Maximum Experience cannot be less than Minimum Experience.";
+    }
+
+    // 5. Salary
+    if (salaryMin && Number(salaryMin) < 0) {
+      newErrors.salaryMin = "Minimum Salary cannot be negative.";
+    }
+    if (salaryMax && Number(salaryMax) < 0) {
+      newErrors.salaryMax = "Maximum Salary cannot be negative.";
+    }
+    if (salaryMin && salaryMax && Number(salaryMin) > Number(salaryMax)) {
+      newErrors.salaryMax = "Maximum Salary cannot be less than Minimum Salary.";
+    }
+
+    // Location
+    if (workMode !== "REMOTE" && !country.trim()) {
+      newErrors.country = "Please select a Country for on-site or hybrid work.";
+    }
+
+    // 6. Job Openings
+    if (!openings || Number(openings) < 1 || Number(openings) > 1000) {
+      newErrors.openings = "Number of Openings must be between 1 and 1000.";
+    }
+
+    if (applicationDeadline) {
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      if (new Date(applicationDeadline) < startOfToday) {
+        newErrors.applicationDeadline = "Application Deadline cannot be a date in the past.";
+      }
+    }
+    }
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      const firstErrorMessage = Object.values(newErrors)[0];
+      toast.error(firstErrorMessage);
+      scrollToTop();
+      return false;
+    }
+
+    return true;
+  }
+
+  async function handleSubmit(e: React.FormEvent, isDraft: boolean) {
+    e.preventDefault();
+
+    // Check employer verification
+    if (!isDraft && employer && employer.status !== "VERIFIED") {
+      toast.error("Your employer account is not verified yet. Only verified employers can post live jobs.");
       scrollToTop();
       return;
     }
 
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
+    // Auto-add pending skill input
+    let finalSkills = [...skills];
+    const pendingSkill = skillInput.trim();
+    if (pendingSkill && !finalSkills.includes(pendingSkill)) {
+      finalSkills.push(pendingSkill);
+      setSkills(finalSkills);
+      setSkillInput("");
+    }
 
-    if (applicationDeadline && new Date(applicationDeadline) < startOfToday) {
-      toast.error("Application Deadline cannot be a date in the past.");
-      scrollToTop();
+    // Validate all fields
+    if (!validateForm(isDraft, finalSkills)) {
       return;
     }
 
-    if (publishDate && new Date(publishDate) < startOfToday) {
-      toast.error("Publish Date cannot be a date in the past.");
-      scrollToTop();
-      return;
-    }
+    const calculatedLocation = [city, state, country].filter(Boolean).join(", ").trim() || (workMode === "REMOTE" ? "Remote" : "India");
 
-    const calculatedLocation = [city, state, country].filter(Boolean).join(", ").trim() || "Remote / Various";
-
-    setSubmitting(true);
+    if (isDraft) setSavingDraft(true); else setSubmitting(true);
     try {
-      await api.post("/jobs", {
+      const payload = {
         // 1. Basic Job Details
         title: title.trim(),
         summary: summary.trim() || undefined,
@@ -520,7 +645,7 @@ export default function EmployerSubmitJobPage() {
         responsibilities: responsibilities.trim() || undefined,
 
         // 3. Skills & Experience
-        skills,
+        skills: finalSkills,
         minExperience: minExperience ? Number(minExperience) : undefined,
         maxExperience: maxExperience ? Number(maxExperience) : undefined,
 
@@ -543,37 +668,25 @@ export default function EmployerSubmitJobPage() {
         openings: openings ? Number(openings) : 1,
         applicationDeadline: applicationDeadline ? new Date(applicationDeadline).toISOString() : undefined,
 
-        // 8. Publishing
-        status,
-        publishDate: publishDate ? new Date(publishDate).toISOString() : undefined,
-        isFeatured,
-      });
+        // Automatic publishing
+        status: isDraft ? 'DRAFT' : 'OPEN',
+      };
 
-      toast.success("Job posted successfully!");
-      // Reset form
-      setTitle("");
-      setSummary("");
-      setJobRole("");
-      setDescription("");
-      setResponsibilities("");
-      setSkills([]);
-      setMinExperience("");
-      setMaxExperience("");
-      setSpecialization("");
-      setSalaryMin("");
-      setSalaryMax("");
-      setState("");
-      setCity("");
-      setApplicationDeadline("");
-      setPublishDate("");
-      setIsFeatured(false);
-      setStatus("OPEN");
-      scrollToTop();
+      if (editId) {
+        await api.put(`/jobs/${editId}`, payload);
+        toast.success(isDraft ? 'Draft updated successfully!' : 'Job updated successfully!');
+      } else {
+        await api.post("/jobs", payload);
+        toast.success(isDraft ? 'Draft saved successfully!' : 'Job posted successfully!');
+      }
+      
+      // Reset form & redirect to employer jobs
+      router.push("/employer-jobs");
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Failed to post job.");
+      toast.error(err instanceof ApiError ? err.message : "Failed to save job. Please check all fields.");
       scrollToTop();
     } finally {
-      setSubmitting(false);
+      setSubmitting(false); setSavingDraft(false);
     }
   }
 
@@ -582,6 +695,20 @@ export default function EmployerSubmitJobPage() {
   }
 
   const notVerified = employer && employer.status !== "VERIFIED";
+
+  
+  if (fetchingJob) {
+    return (
+      <div className="dashboard-wrap bg-light">
+        <EmployerSidebar active="submit-job" />
+        <div className="dashboard-content d-flex align-items-center justify-content-center" style={{ minHeight: "50vh" }}>
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading job...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -598,72 +725,20 @@ export default function EmployerSubmitJobPage() {
           box-shadow: none !important;
           box-sizing: border-box !important;
           vertical-align: middle !important;
-          display: block !important;
-          width: 100% !important;
-          line-height: 1.4 !important;
+        }
+        .form-control.is-invalid,
+        .form-select.is-invalid {
+          border-color: #dc3545 !important;
         }
         textarea.form-control {
           height: auto !important;
-          min-height: 90px !important;
+          min-height: auto !important;
           max-height: none !important;
         }
-        .form-group {
-          margin-bottom: 1.25rem !important;
-        }
-        .form-group label,
-        .form-label {
-          display: block !important;
-          margin-bottom: 6px !important;
+        .form-group label {
+          margin-bottom: 0.4rem !important;
           font-size: 13px !important;
-          font-weight: 500 !important;
-          color: #333333 !important;
-          line-height: 1.2 !important;
-          min-height: 18px !important;
-        }
-        .input-group {
-          display: flex !important;
-          flex-wrap: nowrap !important;
-          align-items: stretch !important;
-          width: 100% !important;
-        }
-        .input-group .form-control {
-          flex: 1 1 auto !important;
-          width: 1% !important;
-          min-width: 0 !important;
-          border-top-right-radius: 0 !important;
-          border-bottom-right-radius: 0 !important;
-        }
-        .input-group .btn {
-          height: 50px !important;
-          flex: 0 0 auto !important;
-          white-space: nowrap !important;
-          line-height: 1.2 !important;
-          border-top-left-radius: 0 !important;
-          border-bottom-left-radius: 0 !important;
-        }
-        .switch-align-box {
-          height: 50px !important;
-          display: flex !important;
-          align-items: center !important;
-          border: 1px solid #e7edf1 !important;
-          border-radius: 6px !important;
-          padding: 0 1rem 0 3.2rem !important;
-          position: relative !important;
-          background-color: #fff !important;
-          margin: 0 !important;
-        }
-        .switch-align-box .form-check-input {
-          position: absolute !important;
-          left: 0.9rem !important;
-          top: 50% !important;
-          transform: translateY(-50%) !important;
-          margin: 0 !important;
-          cursor: pointer !important;
-          float: none !important;
-        }
-        .switch-align-box .form-check-label {
-          margin-left: 0 !important;
-          cursor: pointer !important;
+          color: #1e293b !important;
         }
       `}</style>
 
@@ -692,7 +767,7 @@ export default function EmployerSubmitJobPage() {
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
               <div className="col-xl-12 col-lg-12 col-md-12">
-                <h1 className="mb-1 fs-3 fw-medium">Post a Job</h1>
+                <h1 className="mb-1 fs-3 fw-medium">{editId ? "Edit Job" : "Post a Job"}</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
                     <li className="breadcrumb-item text-muted">
@@ -702,9 +777,7 @@ export default function EmployerSubmitJobPage() {
                       <a href="#">Dashboard</a>
                     </li>
                     <li className="breadcrumb-item">
-                      <a href="#" className="text-main">
-                        Post Job
-                      </a>
+                      <a href="#" className="text-main">{editId ? "Edit Job" : "Post Job"}</a>
                     </li>
                   </ol>
                 </nav>
@@ -716,30 +789,35 @@ export default function EmployerSubmitJobPage() {
             <div ref={alertRef} style={{ scrollMarginTop: "110px" }}>
               {!employerLoading && notVerified && (
                 <div className="alert alert-warning">
-                  Your employer account status is <strong>{employer?.status}</strong>. Only VERIFIED employers can post live jobs. You can still fill out this form, but submission requires account verification.
+                  Your employer account status is <strong>{employer?.status}</strong>. Only VERIFIED employers can post live jobs. You can still save it as a Draft.
                 </div>
               )}
-                                        </div>
+            </div>
 
-            <form onSubmit={handleSubmit}>
+            <form noValidate>
               {/* 1. Basic Job Details */}
-              <div className="card mb-4">
-                <div className="card-header bg-white py-3">
+              <div className="card mb-4 shadow-sm border-0 rounded-3">
+                <div className="card-header bg-white py-3 border-bottom">
                   <h4 className="mb-0 fs-5 text-dark fw-semibold">1. Basic Job Details</h4>
                 </div>
-                <div className="card-body">
+                <div className="card-body p-4">
                   <div className="row g-3">
                     <div className="col-xl-12 col-lg-12 col-md-12">
                       <div className="form-group">
-                        <label className="form-label fw-medium">Job Title <span className="text-danger">*</span></label>
+                        <label className="form-label fw-medium">
+                          Job Title <span className="text-danger">*</span>
+                        </label>
                         <input
                           type="text"
-                          className="form-control"
+                          className={`form-control ${errors.title ? "is-invalid" : ""}`}
                           placeholder="e.g. Senior Full Stack Engineer"
                           value={title}
-                          onChange={(e) => setTitle(e.target.value)}
-                          required
+                          onChange={(e) => {
+                            setTitle(e.target.value);
+                            if (errors.title) setErrors((prev) => ({ ...prev, title: "" }));
+                          }}
                         />
+                        {errors.title && <small className="text-danger d-block mt-1">{errors.title}</small>}
                       </div>
                     </div>
 
@@ -758,11 +836,16 @@ export default function EmployerSubmitJobPage() {
 
                     <div className="col-xl-4 col-lg-4 col-md-12">
                       <div className="form-group">
-                        <label className="form-label fw-medium">Job Category <span className="text-danger">*</span></label>
+                        <label className="form-label fw-medium">
+                          Job Category <span className="text-danger">*</span>
+                        </label>
                         <select
-                          className="form-select"
+                          className={`form-select ${errors.category ? "is-invalid" : ""}`}
                           value={category}
-                          onChange={(e) => setCategory(e.target.value)}
+                          onChange={(e) => {
+                            setCategory(e.target.value);
+                            if (errors.category) setErrors((prev) => ({ ...prev, category: "" }));
+                          }}
                         >
                           {categoryOptions.map((cat) => (
                             <option key={cat} value={cat}>
@@ -770,6 +853,7 @@ export default function EmployerSubmitJobPage() {
                             </option>
                           ))}
                         </select>
+                        {errors.category && <small className="text-danger d-block mt-1">{errors.category}</small>}
                       </div>
                     </div>
 
@@ -788,11 +872,16 @@ export default function EmployerSubmitJobPage() {
 
                     <div className="col-xl-4 col-lg-4 col-md-12">
                       <div className="form-group">
-                        <label className="form-label fw-medium">Job Type <span className="text-danger">*</span></label>
+                        <label className="form-label fw-medium">
+                          Job Type <span className="text-danger">*</span>
+                        </label>
                         <select
-                          className="form-select"
+                          className={`form-select ${errors.jobType ? "is-invalid" : ""}`}
                           value={jobType}
-                          onChange={(e) => setJobType(e.target.value)}
+                          onChange={(e) => {
+                            setJobType(e.target.value);
+                            if (errors.jobType) setErrors((prev) => ({ ...prev, jobType: "" }));
+                          }}
                         >
                           {jobTypeOptions.map((opt) => (
                             <option key={opt.value} value={opt.value}>
@@ -800,6 +889,7 @@ export default function EmployerSubmitJobPage() {
                             </option>
                           ))}
                         </select>
+                        {errors.jobType && <small className="text-danger d-block mt-1">{errors.jobType}</small>}
                       </div>
                     </div>
                   </div>
@@ -807,29 +897,36 @@ export default function EmployerSubmitJobPage() {
               </div>
 
               {/* 2. Job Description */}
-              <div className="card mb-4">
-                <div className="card-header bg-white py-3">
+              <div className="card mb-4 shadow-sm border-0 rounded-3">
+                <div className="card-header bg-white py-3 border-bottom">
                   <h4 className="mb-0 fs-5 text-dark fw-semibold">2. Job Description</h4>
                 </div>
-                <div className="card-body">
+                <div className="card-body p-4">
                   <div className="row g-3">
                     <div className="col-xl-12 col-lg-12 col-md-12">
                       <div className="form-group">
-                        <label className="form-label fw-medium">Full Job Description <span className="text-danger">*</span></label>
+                        <label className="form-label fw-medium">
+                          Full Job Description <span className="text-danger">*</span>
+                        </label>
                         <textarea
-                          className="form-control"
+                          className={`form-control ${errors.description ? "is-invalid" : ""}`}
                           rows={6}
-                          placeholder="Detailed description of the position, expectations, and work environment..."
+                          placeholder="Detailed description of the position, expectations, and work environment (min 20 characters)..."
                           value={description}
-                          onChange={(e) => setDescription(e.target.value)}
-                          required
+                          onChange={(e) => {
+                            setDescription(e.target.value);
+                            if (errors.description) setErrors((prev) => ({ ...prev, description: "" }));
+                          }}
                         ></textarea>
+                        {errors.description && (
+                          <small className="text-danger d-block mt-1">{errors.description}</small>
+                        )}
                       </div>
                     </div>
 
                     <div className="col-xl-12 col-lg-12 col-md-12">
                       <div className="form-group">
-                        <label className="form-label fw-medium">Roles & Responsibilities</label>
+                        <label className="form-label fw-medium">Roles &amp; Responsibilities</label>
                         <textarea
                           className="form-control"
                           rows={4}
@@ -844,20 +941,22 @@ export default function EmployerSubmitJobPage() {
               </div>
 
               {/* 3. Skills & Experience */}
-              <div className="card mb-4">
-                <div className="card-header bg-white py-3">
-                  <h4 className="mb-0 fs-5 text-dark fw-semibold">3. Skills & Experience</h4>
+              <div className="card mb-4 shadow-sm border-0 rounded-3">
+                <div className="card-header bg-white py-3 border-bottom">
+                  <h4 className="mb-0 fs-5 text-dark fw-semibold">3. Skills &amp; Experience</h4>
                 </div>
-                <div className="card-body">
+                <div className="card-body p-4">
                   <div className="row g-3">
                     <div className="col-xl-12 col-lg-12 col-md-12">
                       <div className="form-group">
-                        <label className="form-label fw-medium">Required Skills</label>
+                        <label className="form-label fw-medium">
+                          Required Skills <span className="text-danger">*</span>
+                        </label>
                         <div className="input-group mb-2">
                           <input
                             type="text"
-                            className="form-control"
-                            placeholder="Type a skill and click Add (e.g. React, Node.js, PostgreSQL)"
+                            className={`form-control ${errors.skills ? "is-invalid" : ""}`}
+                            placeholder="Type a skill and click Add Skill (e.g. React, Node.js, Python)"
                             value={skillInput}
                             onChange={(e) => setSkillInput(e.target.value)}
                             onKeyDown={(e) => {
@@ -869,22 +968,24 @@ export default function EmployerSubmitJobPage() {
                           />
                           <button
                             type="button"
-                            className="btn btn-outline-secondary"
+                            className="btn btn-main px-4 fw-medium"
                             onClick={handleAddSkill}
                           >
                             Add Skill
                           </button>
                         </div>
+                        {errors.skills && <small className="text-danger d-block mt-1">{errors.skills}</small>}
                         {skills.length > 0 && (
                           <div className="d-flex flex-wrap gap-2 mt-2">
                             {skills.map((skill) => (
-                              <span key={skill} className="badge bg-primary text-white p-2 d-flex align-items-center gap-1">
+                              <span key={skill} className="badge bg-light-main text-main border p-2 d-flex align-items-center gap-1.5 fs-7">
                                 {skill}
                                 <button
                                   type="button"
-                                  className="btn-close btn-close-white ms-1"
+                                  className="btn-close ms-1"
                                   style={{ fontSize: "0.65rem" }}
                                   onClick={() => handleRemoveSkill(skill)}
+                                  title="Remove skill"
                                 ></button>
                               </span>
                             ))}
@@ -898,13 +999,19 @@ export default function EmployerSubmitJobPage() {
                         <label className="form-label fw-medium">Minimum Experience (Years)</label>
                         <input
                           type="number"
-                          className="form-control"
+                          className={`form-control ${errors.minExperience ? "is-invalid" : ""}`}
                           placeholder="e.g. 2"
                           min="0"
                           max="50"
                           value={minExperience}
-                          onChange={(e) => setMinExperience(e.target.value)}
+                          onChange={(e) => {
+                            setMinExperience(e.target.value);
+                            if (errors.minExperience) setErrors((prev) => ({ ...prev, minExperience: "" }));
+                          }}
                         />
+                        {errors.minExperience && (
+                          <small className="text-danger d-block mt-1">{errors.minExperience}</small>
+                        )}
                       </div>
                     </div>
 
@@ -913,13 +1020,19 @@ export default function EmployerSubmitJobPage() {
                         <label className="form-label fw-medium">Maximum Experience (Years)</label>
                         <input
                           type="number"
-                          className="form-control"
+                          className={`form-control ${errors.maxExperience ? "is-invalid" : ""}`}
                           placeholder="e.g. 5"
                           min="0"
                           max="50"
                           value={maxExperience}
-                          onChange={(e) => setMaxExperience(e.target.value)}
+                          onChange={(e) => {
+                            setMaxExperience(e.target.value);
+                            if (errors.maxExperience) setErrors((prev) => ({ ...prev, maxExperience: "" }));
+                          }}
                         />
+                        {errors.maxExperience && (
+                          <small className="text-danger d-block mt-1">{errors.maxExperience}</small>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -927,11 +1040,11 @@ export default function EmployerSubmitJobPage() {
               </div>
 
               {/* 4. Education & Qualification */}
-              <div className="card mb-4">
-                <div className="card-header bg-white py-3">
-                  <h4 className="mb-0 fs-5 text-dark fw-semibold">4. Education & Qualification</h4>
+              <div className="card mb-4 shadow-sm border-0 rounded-3">
+                <div className="card-header bg-white py-3 border-bottom">
+                  <h4 className="mb-0 fs-5 text-dark fw-semibold">4. Education &amp; Qualification</h4>
                 </div>
-                <div className="card-body">
+                <div className="card-body p-4">
                   <div className="row g-3">
                     <div className="col-xl-6 col-lg-6 col-md-12">
                       <div className="form-group">
@@ -952,11 +1065,11 @@ export default function EmployerSubmitJobPage() {
 
                     <div className="col-xl-6 col-lg-6 col-md-12">
                       <div className="form-group">
-                        <label className="form-label fw-medium">Specialization</label>
+                        <label className="form-label fw-medium">Specialization / Degree Stream</label>
                         <input
                           type="text"
                           className="form-control"
-                          placeholder="e.g. Computer Science, Information Technology, Finance"
+                          placeholder="e.g. Computer Science, Information Technology"
                           value={specialization}
                           onChange={(e) => setSpecialization(e.target.value)}
                         />
@@ -967,39 +1080,49 @@ export default function EmployerSubmitJobPage() {
               </div>
 
               {/* 5. Salary & Location */}
-              <div className="card mb-4">
-                <div className="card-header bg-white py-3">
-                  <h4 className="mb-0 fs-5 text-dark fw-semibold">5. Salary & Location</h4>
+              <div className="card mb-4 shadow-sm border-0 rounded-3">
+                <div className="card-header bg-white py-3 border-bottom">
+                  <h4 className="mb-0 fs-5 text-dark fw-semibold">5. Salary &amp; Location</h4>
                 </div>
-                <div className="card-body">
+                <div className="card-body p-4">
                   <div className="row g-3">
-                    <div className="col-xl-3 col-lg-3 col-md-6">
+                    <div className="col-xl-6 col-lg-6 col-md-12">
                       <div className="form-group">
                         <label className="form-label fw-medium">Minimum Salary</label>
                         <input
                           type="number"
-                          className="form-control"
-                          placeholder="e.g. 50000"
+                          className={`form-control ${errors.salaryMin ? "is-invalid" : ""}`}
+                          placeholder="e.g. 500000"
+                          min="0"
                           value={salaryMin}
-                          onChange={(e) => setSalaryMin(e.target.value)}
+                          onChange={(e) => {
+                            setSalaryMin(e.target.value);
+                            if (errors.salaryMin) setErrors((prev) => ({ ...prev, salaryMin: "" }));
+                          }}
                         />
+                        {errors.salaryMin && <small className="text-danger d-block mt-1">{errors.salaryMin}</small>}
                       </div>
                     </div>
 
-                    <div className="col-xl-3 col-lg-3 col-md-6">
+                    <div className="col-xl-6 col-lg-6 col-md-12">
                       <div className="form-group">
                         <label className="form-label fw-medium">Maximum Salary</label>
                         <input
                           type="number"
-                          className="form-control"
-                          placeholder="e.g. 100000"
+                          className={`form-control ${errors.salaryMax ? "is-invalid" : ""}`}
+                          placeholder="e.g. 1200000"
+                          min="0"
                           value={salaryMax}
-                          onChange={(e) => setSalaryMax(e.target.value)}
+                          onChange={(e) => {
+                            setSalaryMax(e.target.value);
+                            if (errors.salaryMax) setErrors((prev) => ({ ...prev, salaryMax: "" }));
+                          }}
                         />
+                        {errors.salaryMax && <small className="text-danger d-block mt-1">{errors.salaryMax}</small>}
                       </div>
                     </div>
 
-                    <div className="col-xl-3 col-lg-3 col-md-6">
+                    <div className="col-xl-6 col-lg-6 col-md-12">
                       <div className="form-group">
                         <label className="form-label fw-medium">Currency</label>
                         <select
@@ -1016,7 +1139,7 @@ export default function EmployerSubmitJobPage() {
                       </div>
                     </div>
 
-                    <div className="col-xl-3 col-lg-3 col-md-6">
+                    <div className="col-xl-6 col-lg-6 col-md-12">
                       <div className="form-group">
                         <label className="form-label fw-medium">Salary Period</label>
                         <select
@@ -1024,9 +1147,9 @@ export default function EmployerSubmitJobPage() {
                           value={salaryPeriod}
                           onChange={(e) => setSalaryPeriod(e.target.value)}
                         >
-                          {salaryPeriodOptions.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
+                          {salaryPeriodOptions.map((period) => (
+                            <option key={period.value} value={period.value}>
+                              {period.label}
                             </option>
                           ))}
                         </select>
@@ -1041,68 +1164,48 @@ export default function EmployerSubmitJobPage() {
                         options={countries}
                         placeholder="Select Country"
                         loading={countriesLoading}
-                        errorMsg={countriesError}
+                        errorMsg={countriesError || errors.country}
                         onRetry={fetchCountries}
                         searchPlaceholder="Search country..."
                       />
                     </div>
 
                     <div className="col-xl-4 col-lg-4 col-md-12">
-                      {!statesLoading && country && states.length === 0 ? (
-                        <div className="form-group">
-                          <label className="form-label fw-medium">State</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Enter State"
-                            value={state}
-                            onChange={(e) => setState(e.target.value)}
-                          />
-                        </div>
-                      ) : (
-                        <SearchableSelect
-                          label="State"
-                          value={state}
-                          onChange={handleStateChange}
-                          options={states}
-                          placeholder="Select State"
-                          disabledPlaceholder="Select Country First"
-                          disabled={!country}
-                          loading={statesLoading}
-                          errorMsg={statesError}
-                          onRetry={() => fetchStates(country)}
-                          searchPlaceholder="Search state..."
-                        />
-                      )}
+                      <SearchableSelect
+                        label="State"
+                        value={state}
+                        onChange={handleStateChange}
+                        options={states}
+                        placeholder="Select State"
+                        disabledPlaceholder="Select a country first"
+                        disabled={!country}
+                        loading={statesLoading}
+                        errorMsg={statesError}
+                        onRetry={() => fetchStates(country)}
+                        searchPlaceholder="Search state..."
+                      />
                     </div>
 
                     <div className="col-xl-4 col-lg-4 col-md-12">
-                      {!citiesLoading && ((state && cities.length === 0) || (country && states.length === 0 && !statesLoading && cities.length === 0)) ? (
-                        <div className="form-group">
-                          <label className="form-label fw-medium">City</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Enter City"
-                            value={city}
-                            onChange={(e) => setCity(e.target.value)}
-                          />
-                        </div>
-                      ) : (
-                        <SearchableSelect
-                          label="City"
-                          value={city}
-                          onChange={setCity}
-                          options={cities}
-                          placeholder="Select City"
-                          disabledPlaceholder="Select State First"
-                          disabled={!state && !(country && states.length === 0 && !statesLoading)}
-                          loading={citiesLoading}
-                          errorMsg={citiesError}
-                          onRetry={() => fetchCities(country, state)}
-                          searchPlaceholder="Search city..."
-                        />
-                      )}
+                      <SearchableSelect
+                        label="City"
+                        value={city}
+                        onChange={setCity}
+                        options={cities}
+                        placeholder="Select City"
+                        disabledPlaceholder={
+                          !country
+                            ? "Select a country first"
+                            : !state
+                            ? "Select a state first"
+                            : "Select City"
+                        }
+                        disabled={!country || !state}
+                        loading={citiesLoading}
+                        errorMsg={citiesError}
+                        onRetry={() => fetchCities(country, state)}
+                        searchPlaceholder="Search city..."
+                      />
                     </div>
 
                     <div className="col-xl-12 col-lg-12 col-md-12">
@@ -1126,23 +1229,29 @@ export default function EmployerSubmitJobPage() {
               </div>
 
               {/* 6. Job Openings */}
-              <div className="card mb-4">
-                <div className="card-header bg-white py-3">
+              <div className="card mb-4 shadow-sm border-0 rounded-3">
+                <div className="card-header bg-white py-3 border-bottom">
                   <h4 className="mb-0 fs-5 text-dark fw-semibold">6. Job Openings</h4>
                 </div>
-                <div className="card-body">
+                <div className="card-body p-4">
                   <div className="row g-3">
                     <div className="col-xl-6 col-lg-6 col-md-12">
                       <div className="form-group">
-                        <label className="form-label fw-medium">Number of Openings</label>
+                        <label className="form-label fw-medium">
+                          Number of Openings <span className="text-danger">*</span>
+                        </label>
                         <input
                           type="number"
-                          className="form-control"
+                          className={`form-control ${errors.openings ? "is-invalid" : ""}`}
                           min="1"
                           max="1000"
                           value={openings}
-                          onChange={(e) => setOpenings(e.target.value)}
+                          onChange={(e) => {
+                            setOpenings(e.target.value);
+                            if (errors.openings) setErrors((prev) => ({ ...prev, openings: "" }));
+                          }}
                         />
+                        {errors.openings && <small className="text-danger d-block mt-1">{errors.openings}</small>}
                       </div>
                     </div>
 
@@ -1151,11 +1260,17 @@ export default function EmployerSubmitJobPage() {
                         <label className="form-label fw-medium">Application Deadline</label>
                         <input
                           type="date"
-                          className="form-control"
+                          className={`form-control ${errors.applicationDeadline ? "is-invalid" : ""}`}
                           min={todayStr}
                           value={applicationDeadline}
-                          onChange={(e) => setApplicationDeadline(e.target.value)}
+                          onChange={(e) => {
+                            setApplicationDeadline(e.target.value);
+                            if (errors.applicationDeadline) setErrors((prev) => ({ ...prev, applicationDeadline: "" }));
+                          }}
                         />
+                        {errors.applicationDeadline && (
+                          <small className="text-danger d-block mt-1">{errors.applicationDeadline}</small>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1163,12 +1278,12 @@ export default function EmployerSubmitJobPage() {
               </div>
 
               {/* 7. Company Information */}
-              <div className="card mb-4">
-                <div className="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+              <div className="card mb-4 shadow-sm border-0 rounded-3">
+                <div className="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                   <h4 className="mb-0 fs-5 text-dark fw-semibold">7. Company Information</h4>
-                  <span className="badge bg-info text-dark">Auto-Loaded</span>
+                  <span className="badge bg-light-main text-main border">Auto-Loaded</span>
                 </div>
-                <div className="card-body">
+                <div className="card-body p-4">
                   {employerLoading ? (
                     <div className="spinner-border text-primary" role="status">
                       <span className="visually-hidden">Loading employer info...</span>
@@ -1180,7 +1295,7 @@ export default function EmployerSubmitJobPage() {
                           <img
                             src={employer.logoUrl}
                             alt={employer.companyName}
-                            className="rounded circle"
+                            className="rounded-circle"
                             style={{ width: "60px", height: "60px", objectFit: "cover" }}
                           />
                         ) : (
@@ -1192,7 +1307,7 @@ export default function EmployerSubmitJobPage() {
                           </div>
                         )}
                         <div>
-                          <h5 className="mb-1 text-dark font-weight-bold">{employer.companyName}</h5>
+                          <h5 className="mb-1 text-dark fw-bold">{employer.companyName}</h5>
                           <span className="badge bg-success me-2">{employer.status}</span>
                           {employer.industry && (
                             <span className="badge bg-secondary me-2">{employer.industry}</span>
@@ -1225,50 +1340,24 @@ export default function EmployerSubmitJobPage() {
                 </div>
               </div>
 
-              {/* 8. Publishing Options */}
-              <div className="card mb-4">
-                <div className="card-header bg-white py-3">
-                  <h4 className="mb-0 fs-5 text-dark fw-semibold">8. Publishing Options</h4>
-                </div>
-                <div className="card-body">
-                  <div className="row g-3">
-                    <div className="col-xl-6 col-lg-6 col-md-12">
-                      <div className="form-group">
-                        <label className="form-label fw-medium">Job Status</label>
-                        <select
-                          className="form-select"
-                          value={status}
-                          onChange={(e) => setStatus(e.target.value)}
-                        >
-                          <option value="OPEN">Publish Immediately (OPEN)</option>
-                          <option value="DRAFT">Save as Draft (DRAFT)</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="col-xl-6 col-lg-6 col-md-12">
-                      <div className="form-group">
-                        <label className="form-label fw-medium">Publish Date</label>
-                        <input
-                          type="date"
-                          className="form-control"
-                          min={todayStr}
-                          value={publishDate}
-                          onChange={(e) => setPublishDate(e.target.value)}
-                        />
-                      </div>
-                    </div>
-
-                    
-                  </div>
-                </div>
-              </div>
-
-              {/* Submit Button */}
+              {/* Submit Buttons */}
               <div className="row mb-5">
-                <div className="col-lg-12 col-md-12">
-                  <button type="submit" className="btn btn-main px-5 py-3 fs-6 font-weight-medium" disabled={submitting}>
-                    {submitting ? "Posting Job..." : "Submit Job Listing"}
+                <div className="col-lg-12 col-md-12 d-flex gap-3">
+                  <button
+                    type="button"
+                    className="btn btn-main px-5 py-3 fs-6 fw-medium"
+                    disabled={submitting || savingDraft}
+                    onClick={(e) => handleSubmit(e, false)}
+                  >
+                    {submitting ? "Publishing..." : editId ? "Publish Updates" : "Publish Job Listing"}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary px-5 py-3 fs-6 fw-medium ms-3"
+                    disabled={submitting || savingDraft}
+                    onClick={(e) => handleSubmit(e, true)}
+                  >
+                    {savingDraft ? "Saving..." : "Save as Draft"}
                   </button>
                 </div>
               </div>
@@ -1279,5 +1368,23 @@ export default function EmployerSubmitJobPage() {
         </div>
       </div>
     </>
+  );
+}
+
+
+
+export default function EmployerSubmitJobPage() {
+  return (
+    <Suspense fallback={
+      <div className="dashboard-wrap bg-light">
+        <div className="dashboard-content d-flex align-items-center justify-content-center" style={{ minHeight: "50vh" }}>
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+    }>
+      <EmployerSubmitJobContent />
+    </Suspense>
   );
 }
