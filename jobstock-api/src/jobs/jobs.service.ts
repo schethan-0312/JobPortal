@@ -302,6 +302,46 @@ export class JobsService {
     });
   }
 
+  async update(userId: string, jobId: string, dto: CreateJobDto) {
+    const employer = await this.prisma.employer.findUnique({ where: { userId } });
+    if (!employer) {
+      throw new NotFoundException('Employer profile not found');
+    }
+    const job = await this.prisma.job.findUnique({ where: { id: jobId } });
+    if (!job || job.employerId !== employer.id) {
+      throw new NotFoundException('Job not found or unauthorized');
+    }
+    return this.prisma.job.update({
+      where: { id: jobId },
+      data: {
+        title: dto.title,
+        summary: dto.summary,
+        category: dto.category,
+        jobRole: dto.jobRole,
+        jobType: dto.jobType,
+        description: dto.description,
+        responsibilities: dto.responsibilities,
+        skills: dto.skills,
+        minExperience: dto.minExperience,
+        maxExperience: dto.maxExperience,
+        minQualification: dto.minQualification,
+        specialization: dto.specialization,
+        salaryMin: dto.salaryMin,
+        salaryMax: dto.salaryMax,
+        currency: dto.currency,
+        salaryPeriod: dto.salaryPeriod,
+        location: dto.location,
+        country: dto.country,
+        state: dto.state,
+        city: dto.city,
+        workMode: dto.workMode,
+        openings: dto.openings,
+        applicationDeadline: dto.applicationDeadline,
+        status: dto.status,
+      }
+    });
+  }
+
   async updateStatus(userId: string, jobId: string, dto: UpdateJobStatusDto) {
     const employer = await this.prisma.employer.findUnique({ where: { userId } });
     if (!employer) {

@@ -278,8 +278,10 @@ function SignupForm() {
 
     const newErrors: Record<string, string> = {};
 
-    if (/\d/.test(fullName)) {
-      newErrors.fullName = "Full name cannot contain numbers.";
+    if (!fullName.trim()) {
+      newErrors.fullName = "Full name is required.";
+    } else if (!/^[a-zA-Z\s]+$/.test(fullName)) {
+      newErrors.fullName = "Full name can only contain letters and spaces.";
     }
 
     const invalidEmailChars = /[!#$%^&*]/;
@@ -294,6 +296,16 @@ function SignupForm() {
 
     if (!isEmailVerified) {
       newErrors.email = "Please verify your email address before registering.";
+    }
+
+    if (!password) {
+      newErrors.password = "Password is required.";
+    } else if (password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters long.";
+    } else if (!/[A-Z]/.test(password)) {
+      newErrors.password = "Password must contain at least one uppercase letter.";
+    } else if (!/\d/.test(password)) {
+      newErrors.password = "Password must contain at least one number.";
     }
 
     if (password !== confirmPassword) {
