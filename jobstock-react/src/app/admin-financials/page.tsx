@@ -350,6 +350,10 @@ export default function AdminFinancialsPage() {
               <div className="modal-body">
                 <p className="text-muted small">
                   This calls Razorpay's real refund API for {refundTarget.user.email}&apos;s payment. This cannot be undone.
+                  <br /><br />
+                  <strong className="text-danger">
+                    Note: A 5% platform fee ({formatMoney(Math.floor(refundTarget.amountInPaisa * 0.05))}) will be deducted from the original amount. The user will receive {formatMoney(refundTarget.amountInPaisa - Math.floor(refundTarget.amountInPaisa * 0.05))}.
+                  </strong>
                 </p>
                 <div className="form-group mb-3">
                   <label className="form-label">Reason (required)</label>
