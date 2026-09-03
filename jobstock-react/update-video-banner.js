@@ -1,4 +1,6 @@
+const fs = require('fs');
 
+const code = `
 "use client";
 
 import React from "react";
@@ -6,7 +8,7 @@ import React from "react";
 export default function VideoBanner() {
   return (
     <section className="platform-overview-section">
-      <style>{`
+      <style>{\`
         .platform-overview-section {
           padding: 100px 0;
           background-color: #f7fbfa; /* Soft very light teal/gray */
@@ -155,7 +157,7 @@ export default function VideoBanner() {
             display: none; /* Hide decorative background on mobile for cleaner look */
           }
         }
-      `}</style>
+      \`}</style>
 
       <div className="po-bg-shape-2"></div>
       <div className="po-bg-shape-1"></div>
@@ -220,3 +222,7 @@ export default function VideoBanner() {
     </section>
   );
 }
+`;
+
+fs.writeFileSync('src/components/home/VideoBanner.tsx', code);
+console.log('Successfully wrote VideoBanner.tsx');
