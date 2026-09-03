@@ -115,28 +115,28 @@ export default function Footer() {
         <div>
           <div className="container">
             {/* Brand Header Row */}
-            <div className="row align-items-center justify-content-between pb-4 mb-4 footer-top-border gy-3">
+            <div className="row align-items-center justify-content-between pb-3 mb-3 footer-top-border gy-2">
               <div className="col-lg-5 col-md-6">
                 <Link href="/">
                   <img
                     src="/assets/img/logo-light.png"
-                    className="img-footer mb-2"
-                    style={{ height: "38px", width: "auto" }}
+                    className="img-footer mb-1.5"
+                    style={{ height: "30px", width: "auto" }}
                     alt="JobStock"
                   />
                 </Link>
-                <p className="m-0 text-sm" style={{ color: "rgba(255, 255, 255, 0.85)", lineHeight: 1.6, fontSize: "0.925rem" }}>
+                <p className="m-0 text-sm" style={{ color: "rgba(255, 255, 255, 0.85)", lineHeight: 1.4, fontSize: "0.85rem" }}>
                   Find the right opportunities, connect with top companies, and build your career with JobStock.
                 </p>
               </div>
               <div className="col-lg-5 col-md-6 text-md-end">
-                <p className="small mb-2" style={{ color: "rgba(255, 255, 255, 0.85)", fontSize: "0.875rem" }}>
-                  <i className="fa-solid fa-location-dot me-2" style={{ color: "#5df0c2" }}></i> #176 jp nagar, banglore
+                <p className="small mb-1.5" style={{ color: "rgba(255, 255, 255, 0.85)", fontSize: "0.825rem" }}>
+                  <i className="fa-solid fa-location-dot me-1.5" style={{ color: "#5df0c2" }}></i> #176 jp nagar, banglore
                   <span className="mx-2" style={{ opacity: 0.5 }}>|</span>
-                  <i className="fa-solid fa-envelope me-2" style={{ color: "#5df0c2" }}></i> gtech@gmail.com
+                  <i className="fa-solid fa-envelope me-1.5" style={{ color: "#5df0c2" }}></i> gtech@gmail.com
                 </p>
                 <div className="foot-socials d-inline-block">
-                  <ul className="mb-0 p-0 d-flex gap-2 justify-content-md-end" style={{ listStyle: "none" }}>
+                  <ul className="mb-0 p-0 d-flex gap-1.5 justify-content-md-end" style={{ listStyle: "none" }}>
                     <li>
                       <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                         <i className="fa-brands fa-facebook"></i>
@@ -175,9 +175,9 @@ export default function Footer() {
                 </h4>
                 <div className={`footer-menu-container ${expandedSections.seekers ? 'expanded' : ''}`}>
                   <ul className="footer-menu">
-                    <li><SmartFooterLink href="/jobs" label="Find Jobs" candidateOnly={true} /></li>
-                    <li><SmartFooterLink href="/jobs" label="Quick Apply" candidateOnly={true} /></li>
-                    <li><SmartFooterLink href="/employers" label="Explore Employers" candidateOnly={true} /></li>
+                    <li><SmartFooterLink href="/jobs" label="Find Jobs" /></li>
+                    <li><SmartFooterLink href="/candidates" label="Explore Candidates" /></li>
+                    <li><SmartFooterLink href="/employers" label="Explore Companies" /></li>
                     <li><SmartFooterLink href="/candidate-saved-jobs" label="Saved Jobs" requiredRole="CANDIDATE" /></li>
                     <li><SmartFooterLink href="/candidate-applied-jobs" label="Applied Jobs" requiredRole="CANDIDATE" /></li>
                     <li><SmartFooterLink href="/candidate-profile" label="My Profile" requiredRole="CANDIDATE" /></li>
@@ -259,7 +259,7 @@ export default function Footer() {
             background-color: #145758 !important;
             color: #ffffff !important;
             font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
-            padding: 45px 0 20px !important;
+            padding: 24px 0 12px !important;
           }
           .footer-top-border {
             border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -269,10 +269,10 @@ export default function Footer() {
           }
           :global(h4.widget-title) {
             color: #ffffff !important;
-            font-size: 1.05rem !important;
+            font-size: 0.95rem !important;
             font-weight: 700 !important;
-            letter-spacing: 0.3px !important;
-            margin-bottom: 14px !important;
+            letter-spacing: 0.2px !important;
+            margin-bottom: 8px !important;
           }
           :global(.footer-menu) {
             list-style: none !important;
@@ -280,11 +280,11 @@ export default function Footer() {
             margin: 0 !important;
           }
           :global(.footer-menu li) {
-            margin-top: 8px !important;
+            margin-top: 4px !important;
           }
           :global(.footer-menu li a) {
             color: rgba(255, 255, 255, 0.85) !important;
-            font-size: 0.925rem !important;
+            font-size: 0.85rem !important;
             font-weight: 500 !important;
             text-decoration: none !important;
             transition: all 0.2s ease !important;
@@ -294,8 +294,8 @@ export default function Footer() {
             padding-left: 3px !important;
           }
           :global(.foot-socials ul li a) {
-            width: 36px !important;
-            height: 36px !important;
+            width: 32px !important;
+            height: 32px !important;
             border-radius: 50% !important;
             background-color: rgba(255, 255, 255, 0.12) !important;
             color: #ffffff !important;
@@ -305,6 +305,7 @@ export default function Footer() {
             text-decoration: none !important;
             transition: all 0.2s ease !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            font-size: 0.85rem !important;
           }
           :global(.foot-socials ul li a:hover) {
             background-color: #5df0c2 !important;
@@ -312,12 +313,12 @@ export default function Footer() {
             transform: translateY(-2px) !important;
           }
           :global(.footer-bottom) {
-            padding: 16px 0 0 !important;
+            padding: 10px 0 0 !important;
           }
           .footer-nav-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 2rem;
+            gap: 1.5rem;
             width: 100%;
           }
           .footer-menu-container {
@@ -326,33 +327,33 @@ export default function Footer() {
           @media (max-width: 991px) {
             .footer-nav-grid {
               grid-template-columns: repeat(2, minmax(0, 1fr));
-              gap: 1.5rem;
+              gap: 1.25rem;
             }
           }
           @media (max-width: 767px) {
             footer.custom-theme-footer {
-              padding: 30px 0 15px !important;
+              padding: 20px 0 10px !important;
             }
             .footer-top-border {
-              padding-bottom: 1.5rem !important;
-              margin-bottom: 1.5rem !important;
+              padding-bottom: 1rem !important;
+              margin-bottom: 1rem !important;
               text-align: center;
             }
             .footer-top-border .text-md-end {
               text-align: center !important;
-              margin-top: 10px;
+              margin-top: 8px;
             }
             .footer-top-border .justify-content-md-end {
               justify-content: center !important;
             }
             .footer-nav-grid {
               grid-template-columns: 1fr !important;
-              gap: 0.5rem !important;
+              gap: 0.25rem !important;
             }
             .footer-widget {
               border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-              padding-bottom: 8px !important;
-              margin-bottom: 8px !important;
+              padding-bottom: 6px !important;
+              margin-bottom: 6px !important;
             }
             .footer-widget:last-child {
               border-bottom: none !important;
@@ -361,7 +362,7 @@ export default function Footer() {
             }
             :global(h4.widget-title) {
               margin-bottom: 0 !important;
-              padding: 10px 0 !important;
+              padding: 6px 0 !important;
               cursor: pointer !important;
               user-select: none;
             }
@@ -376,10 +377,10 @@ export default function Footer() {
             .footer-menu-container.expanded {
               max-height: 400px;
               opacity: 1;
-              padding-bottom: 10px;
+              padding-bottom: 8px;
             }
             :global(.chevron-icon) {
-              font-size: 0.9rem !important;
+              font-size: 0.85rem !important;
               transition: transform 0.3s ease, color 0.3s ease !important;
               color: rgba(255, 255, 255, 0.5) !important;
               display: inline-block !important;
@@ -390,11 +391,11 @@ export default function Footer() {
             }
             :global(.footer-bottom) {
               text-align: center;
-              margin-top: 1.5rem !important;
+              margin-top: 1rem !important;
             }
             :global(.footer-bottom .text-md-end) {
               text-align: center !important;
-              margin-top: 5px;
+              margin-top: 4px;
             }
           }
           @media (min-width: 768px) {
@@ -410,16 +411,16 @@ export default function Footer() {
         `}</style>
 
         {/* Bottom Footer */}
-        <div className="footer-bottom mt-4 border-top border-white border-opacity-15 pt-3">
+        <div className="footer-bottom mt-3 border-top border-white border-opacity-15 pt-2">
           <div className="container">
-            <div className="row align-items-center justify-content-between gy-2">
+            <div className="row align-items-center justify-content-between gy-1">
               <div className="col-xl-6 col-lg-6 col-md-6">
-                <p className="mb-0" style={{ color: "rgba(255, 255, 255, 0.85)", fontSize: "0.875rem" }}>
+                <p className="mb-0" style={{ color: "rgba(255, 255, 255, 0.85)", fontSize: "0.825rem" }}>
                   &copy; {new Date().getFullYear()} <strong style={{ color: "#ffffff" }}>JobStock</strong>. All rights reserved.
                 </p>
               </div>
               <div className="col-xl-6 col-lg-6 col-md-6 text-md-end">
-                <p className="mb-0" style={{ color: "rgba(255, 255, 255, 0.85)", fontSize: "0.875rem" }}>
+                <p className="mb-0" style={{ color: "rgba(255, 255, 255, 0.85)", fontSize: "0.825rem" }}>
                   Designed &amp; Built for Career Growth
                 </p>
               </div>

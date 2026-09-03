@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { JobsService } from './jobs.service.js';
 import { CreateJobDto } from './dto/create-job.dto.js';
 import { UpdateJobStatusDto } from './dto/update-job-status.dto.js';
@@ -58,6 +58,17 @@ export class JobsController {
   @Get(':slug')
   findBySlug(@Param('slug') slug: string) {
     return this.jobsService.findBySlug(slug);
+  }
+
+  @Put(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EMPLOYER)
+  update(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body() dto: CreateJobDto,
+  ) {
+    return this.jobsService.update(user.userId, id, dto);
   }
 
   @Patch(':id/status')

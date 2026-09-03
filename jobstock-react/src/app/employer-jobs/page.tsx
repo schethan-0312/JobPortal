@@ -221,15 +221,32 @@ export default function EmployerJobsPage() {
 
                               {/* Column 4: Action Buttons (3 cols - Close/Reopen + Delete) */}
                               <div className="col-xl-3 col-lg-3 col-md-2 col-sm-4 d-flex justify-content-end align-items-center gap-2">
+                                <a
+                                  href={`/employer-submit-job?id=${item.id}`}
+                                  className="btn btn-sm btn-outline-primary px-3 fw-medium"
+                                >
+                                  Edit
+                                </a>
+
                                 <button
                                   type="button"
                                   className={`btn btn-sm px-3 fw-medium ${
-                                    item.status === "OPEN" ? "btn-outline-warning" : "btn-outline-success"
+                                    item.status === "OPEN" 
+                                      ? "btn-outline-warning" 
+                                      : item.status === "DRAFT"
+                                      ? "btn-outline-success"
+                                      : "btn-outline-success"
                                   }`}
                                   disabled={updatingId === item.id || deletingId === item.id}
                                   onClick={() => toggleStatus(item)}
                                 >
-                                  {updatingId === item.id ? "..." : item.status === "OPEN" ? "Close" : "Reopen"}
+                                  {updatingId === item.id 
+                                    ? "..." 
+                                    : item.status === "OPEN" 
+                                    ? "Close" 
+                                    : item.status === "DRAFT"
+                                    ? "Publish"
+                                    : "Reopen"}
                                 </button>
 
                                 <button

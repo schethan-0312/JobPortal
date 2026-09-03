@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
+import CityLocationInput from "@/components/CityLocationInput";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError, assetUrl, uploadFile } from "@/lib/api";
 import { Toaster, toast } from "react-hot-toast";
@@ -321,11 +322,11 @@ export default function EmployerProfilePage() {
             {/* Form */}
             <form onSubmit={handleSave}>
               {/* Basic Detail Card */}
-              <div className="card shadow-sm border-0 rounded-4 mb-4">
+              <div className="card shadow-sm border-0 rounded-4 mb-4" style={{ overflow: "visible" }}>
                 <div className="card-header bg-white py-3 border-bottom">
                   <h4 className="mb-0 fw-bold">Basic Detail</h4>
                 </div>
-                <div className="card-body p-4">
+                <div className="card-body p-4" style={{ overflow: "visible" }}>
                   <div className="row g-3">
                     <div className="col-xl-6 col-lg-6 col-md-12">
                       <div className="form-group">
@@ -363,12 +364,11 @@ export default function EmployerProfilePage() {
                     <div className="col-xl-6 col-lg-6 col-md-12">
                       <div className="form-group">
                         <label className="fw-medium mb-1">Location / Headquarter</label>
-                        <input
-                          type="text"
-                          className="form-control"
+                        <CityLocationInput
                           value={location}
-                          onChange={(e) => setLocation(e.target.value)}
+                          onChange={setLocation}
                           placeholder="e.g. Bangalore, India"
+                          className="form-control"
                         />
                       </div>
                     </div>

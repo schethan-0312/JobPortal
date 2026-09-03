@@ -3,6 +3,7 @@
 import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { JOB_CATEGORIES } from "@/lib/job-categories";
+import CityLocationInput from "@/components/CityLocationInput";
 
 function JobFiltersInner({ variant = "simple" }: { variant?: "full" | "simple" }) {
   const router = useRouter();
@@ -20,10 +21,10 @@ function JobFiltersInner({ variant = "simple" }: { variant?: "full" | "simple" }
     setJobType(searchParams.get("jobType") || "");
   }, [searchParams]);
 
-  function applyFilters(newCategory = category, newJobType = jobType) {
+  function applyFilters(newCategory = category, newJobType = jobType, newLocation = location) {
     const params = new URLSearchParams();
     if (search.trim()) params.set("search", search.trim());
-    if (location.trim()) params.set("location", location.trim());
+    if (newLocation.trim()) params.set("location", newLocation.trim());
     if (newCategory) params.set("category", newCategory);
     if (newJobType) params.set("jobType", newJobType);
 
@@ -53,7 +54,12 @@ function JobFiltersInner({ variant = "simple" }: { variant?: "full" | "simple" }
   }
 
   return (
-    <div className="sidebar-widgets collapse show miz_show" id="search_open" data-bs-parent="#search_open">
+    <div
+      className="sidebar-widgets collapse show miz_show"
+      id="search_open"
+      data-bs-parent="#search_open"
+      style={{ overflow: "visible", position: "relative" }}
+    >
       <div className="sidebar_header d-flex align-items-center justify-content-between px-4 py-3 br-bottom">
         <h4 className="fs-bold fs-5 mb-0">Search Filter</h4>
         <div className="ssh-header">
@@ -68,8 +74,8 @@ function JobFiltersInner({ variant = "simple" }: { variant?: "full" | "simple" }
         </div>
       </div>
 
-      <div className="search-inner">
-        <div className="filter-search-box px-4 pt-3">
+      <div className="search-inner" style={{ overflow: "visible", position: "relative" }}>
+        <div className="filter-search-box px-4 pt-3" style={{ overflow: "visible", position: "relative" }}>
           <div className="form-group mb-3">
             <label className="fw-medium text-dark text-sm mb-1">Keywords</label>
             <input
@@ -85,15 +91,13 @@ function JobFiltersInner({ variant = "simple" }: { variant?: "full" | "simple" }
           </div>
           <div className="form-group mb-3">
             <label className="fw-medium text-dark text-sm mb-1">Location</label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="City, State, or Remote..."
+            <CityLocationInput
               value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") applyFilters();
+              onChange={(val) => {
+                setLocation(val);
               }}
+              placeholder="e.g. Bangalore, Mumbai, Remote"
+              className="form-control"
             />
           </div>
         </div>

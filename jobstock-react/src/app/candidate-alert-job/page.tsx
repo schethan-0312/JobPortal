@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Navbar7 from "@/components/Navbar7";
 import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar";
 import UploadResumeModal from "@/components/candidate-dashboard/UploadResumeModal";
+import CityLocationInput from "@/components/CityLocationInput";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError } from "@/lib/api";
 import { Toaster, toast } from "react-hot-toast";
@@ -23,7 +24,7 @@ export default function CandidateAlertJobPage() {
 
   const [alerts, setAlerts] = useState<JobAlert[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
-    const [removingId, setRemovingId] = useState<string | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
 
   const [keyword, setKeyword] = useState("");
   const [category, setCategory] = useState("");
@@ -43,7 +44,7 @@ export default function CandidateAlertJobPage() {
 
   async function loadAlerts() {
     setDataLoading(true);
-        try {
+    try {
       const list = await api.get<JobAlert[]>("/candidates/job-alerts");
       setAlerts(list);
     } catch (err) {
@@ -57,7 +58,7 @@ export default function CandidateAlertJobPage() {
     e.preventDefault();
     if (!keyword.trim() && !category.trim() && !location.trim()) return;
     setCreating(true);
-        try {
+    try {
       const created = await api.post<JobAlert>("/candidates/job-alerts", {
         keyword: keyword.trim() || undefined,
         category: category.trim() || undefined,
@@ -76,7 +77,7 @@ export default function CandidateAlertJobPage() {
 
   async function handleDelete(id: string) {
     setRemovingId(id);
-        try {
+    try {
       await api.delete(`/candidates/job-alerts/${id}`);
       setAlerts((prev) => prev.filter((a) => a.id !== id));
     } catch (err) {
@@ -130,19 +131,41 @@ export default function CandidateAlertJobPage() {
           </div>
 
           <div className="dashboard-widg-bar d-block">
-
             
             {/* Header Wrap */}
             <div className="row">
               <div className="col-12 col-xl-12 col-lg-12 col-md-12 col-sm-12">
-                <div className="card">
-                  <div className="card-header">
+                <div className="card" style={{ overflow: "visible", position: "relative", zIndex: 30 }}>
+                  <div className="card-header" style={{ overflow: "visible" }}>
                     <form onSubmit={handleCreate} className="_mp-inner-content elior w-100">
-                      <div className="_mp-inner-first d-flex gap-2 flex-wrap">
-                        <input type="text" className="form-control" placeholder="Keyword" value={keyword} onChange={(e) => setKeyword(e.target.value)} style={{ maxWidth: 180 }} />
-                        <input type="text" className="form-control" placeholder="Category" value={category} onChange={(e) => setCategory(e.target.value)} style={{ maxWidth: 180 }} />
-                        <input type="text" className="form-control" placeholder="Location" value={location} onChange={(e) => setLocation(e.target.value)} style={{ maxWidth: 180 }} />
-                        <button type="submit" className="btn btn-main" disabled={creating}>{creating ? "Adding..." : "Add Alert"}</button>
+                      <div className="_mp-inner-first d-flex gap-2 flex-wrap align-items-center" style={{ overflow: "visible" }}>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Keyword"
+                          value={keyword}
+                          onChange={(e) => setKeyword(e.target.value)}
+                          style={{ maxWidth: 180 }}
+                        />
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Category"
+                          value={category}
+                          onChange={(e) => setCategory(e.target.value)}
+                          style={{ maxWidth: 180 }}
+                        />
+                        <div style={{ width: "200px", maxWidth: "100%" }}>
+                          <CityLocationInput
+                            value={location}
+                            onChange={setLocation}
+                            placeholder="e.g. Bangalore, Mumbai"
+                            className="form-control"
+                          />
+                        </div>
+                        <button type="submit" className="btn btn-main" disabled={creating}>
+                          {creating ? "Adding..." : "Add Alert"}
+                        </button>
                       </div>
                     </form>
                   </div>
@@ -188,14 +211,11 @@ export default function CandidateAlertJobPage() {
                 </div>
               </div>
             </div>
-            {/* Header Wrap */}
 
           </div>
 
           {/* footer removed */}
-
         </div>
-
       </div>
 
       <UploadResumeModal />
