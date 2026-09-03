@@ -50,7 +50,7 @@ const PRIVACY_FIELDS_META = [
   { key: "contactInformation", label: "Contact Information", type: "textarea" },
   { key: "grievanceRedressal", label: "Grievance Redressal", type: "textarea" },
   { key: "privacyPolicyVersion", label: "Privacy Policy Version", type: "text" },
-  { key: "lastUpdatedDate", label: "Last Updated Date", type: "text" },
+  { key: "lastUpdatedDate", label: "Last Updated Date", type: "date" },
 ];
 
 const TERMS_FIELDS_META = [
@@ -71,7 +71,7 @@ const TERMS_FIELDS_META = [
   { key: "governingLawDisputeResolution", label: "Governing Law & Dispute Resolution", type: "textarea" },
   { key: "changesToTerms", label: "Changes to Terms", type: "textarea" },
   { key: "contactInformation", label: "Contact Information", type: "textarea" },
-  { key: "effectiveDateLastUpdated", label: "Effective Date / Last Updated", type: "text" },
+  { key: "effectiveDateLastUpdated", label: "Effective Date / Last Updated", type: "date" },
 ];
 
 const COOKIE_FIELDS_META = [
@@ -90,7 +90,7 @@ const COOKIE_FIELDS_META = [
   { key: "changesToCookiePolicy", label: "Changes to Cookie Policy", type: "textarea" },
   { key: "contactInformation", label: "Contact Information", type: "textarea" },
   { key: "cookiePolicyVersion", label: "Cookie Policy Version", type: "text" },
-  { key: "effectiveDateLastUpdated", label: "Effective Date / Last Updated", type: "text" },
+  { key: "effectiveDateLastUpdated", label: "Effective Date / Last Updated", type: "date" },
 ];
 
 export default function AdminLegalEditPage() {
@@ -179,7 +179,6 @@ export default function AdminLegalEditPage() {
   function validatePrivacyFields(): boolean {
     const errs: Record<string, string> = {};
 
-    // Title validation
     if (!title.trim()) {
       errs.title = "Title is required.";
     } else if (title.length < 2) {
@@ -205,16 +204,12 @@ export default function AdminLegalEditPage() {
           errs[f.key] = "Last Updated Date cannot exceed 50 characters.";
         }
       } else if (f.key === "contactInformation") {
-        if (!value.trim()) {
-          errs[f.key] = "Contact Information is required.";
-        } else if (value.length > 2000) {
+        if (value.trim().length > 2000) {
           errs[f.key] = "Contact Information cannot exceed 2000 characters.";
         }
       } else {
-        if (!value.trim()) {
-          errs[f.key] = `${f.label} is required.`;
-        } else if (value.length > 10000) {
-          errs[f.key] = `${f.label} cannot exceed 10,000 characters.`;
+        if (value.trim().length > 500) {
+          errs[f.key] = `${f.label} cannot exceed 500 characters.`;
         }
       }
     });
@@ -226,7 +221,6 @@ export default function AdminLegalEditPage() {
   function validateTermsFields(): boolean {
     const errs: Record<string, string> = {};
 
-    // Title validation
     if (!title.trim()) {
       errs.title = "Title is required.";
     } else if (title.length < 2) {
@@ -244,16 +238,12 @@ export default function AdminLegalEditPage() {
           errs[f.key] = "Effective Date / Last Updated cannot exceed 50 characters.";
         }
       } else if (f.key === "contactInformation") {
-        if (!value.trim()) {
-          errs[f.key] = "Contact Information is required.";
-        } else if (value.length > 2000) {
+        if (value.trim().length > 2000) {
           errs[f.key] = "Contact Information cannot exceed 2000 characters.";
         }
       } else {
-        if (!value.trim()) {
-          errs[f.key] = `${f.label} is required.`;
-        } else if (value.length > 10000) {
-          errs[f.key] = `${f.label} cannot exceed 10,000 characters.`;
+        if (value.trim().length > 500) {
+          errs[f.key] = `${f.label} cannot exceed 500 characters.`;
         }
       }
     });
@@ -265,7 +255,6 @@ export default function AdminLegalEditPage() {
   function validateCookieFields(): boolean {
     const errs: Record<string, string> = {};
 
-    // Title validation
     if (!title.trim()) {
       errs.title = "Title is required.";
     } else if (title.length < 2) {
@@ -291,16 +280,12 @@ export default function AdminLegalEditPage() {
           errs[f.key] = "Effective Date / Last Updated cannot exceed 50 characters.";
         }
       } else if (f.key === "contactInformation") {
-        if (!value.trim()) {
-          errs[f.key] = "Contact Information is required.";
-        } else if (value.length > 2000) {
+        if (value.trim().length > 2000) {
           errs[f.key] = "Contact Information cannot exceed 2000 characters.";
         }
       } else {
-        if (!value.trim()) {
-          errs[f.key] = `${f.label} is required.`;
-        } else if (value.length > 10000) {
-          errs[f.key] = `${f.label} cannot exceed 10,000 characters.`;
+        if (value.trim().length > 500) {
+          errs[f.key] = `${f.label} cannot exceed 500 characters.`;
         }
       }
     });
@@ -577,9 +562,9 @@ export default function AdminLegalEditPage() {
                           ? 50
                           : f.key === "contactInformation"
                           ? 2000
-                          : 10000;
+                          : 500;
                       return (
-                        <div className={f.type === "text" ? "col-md-6" : "col-12"} key={f.key}>
+                        <div className={(f.type === "text" || f.type === "date") ? "col-md-6" : "col-12"} key={f.key}>
                           <div className="d-flex justify-content-between align-items-center mb-1">
                             <label className="form-label small fw-semibold text-dark mb-0">{f.label}</label>
                             <span className={`small ${value.length > maxLen ? "text-danger fw-bold" : "text-muted"}`}>
@@ -605,7 +590,7 @@ export default function AdminLegalEditPage() {
                             />
                           ) : (
                             <input
-                              type="text"
+                              type={f.type}
                               className={`form-control ${validationErrors[f.key] ? "is-invalid" : ""}`}
                               value={value}
                               onChange={(e) => {
@@ -637,9 +622,9 @@ export default function AdminLegalEditPage() {
                           ? 50
                           : f.key === "contactInformation"
                           ? 2000
-                          : 10000;
+                          : 500;
                       return (
-                        <div className={f.type === "text" ? "col-md-6" : "col-12"} key={f.key}>
+                        <div className={(f.type === "text" || f.type === "date") ? "col-md-6" : "col-12"} key={f.key}>
                           <div className="d-flex justify-content-between align-items-center mb-1">
                             <label className="form-label small fw-semibold text-dark mb-0">{f.label}</label>
                             <span className={`small ${value.length > maxLen ? "text-danger fw-bold" : "text-muted"}`}>
@@ -665,7 +650,7 @@ export default function AdminLegalEditPage() {
                             />
                           ) : (
                             <input
-                              type="text"
+                              type={f.type}
                               className={`form-control ${validationErrors[f.key] ? "is-invalid" : ""}`}
                               value={value}
                               onChange={(e) => {
@@ -699,9 +684,9 @@ export default function AdminLegalEditPage() {
                           ? 50
                           : f.key === "contactInformation"
                           ? 2000
-                          : 10000;
+                          : 500;
                       return (
-                        <div className={f.type === "text" ? "col-md-6" : "col-12"} key={f.key}>
+                        <div className={(f.type === "text" || f.type === "date") ? "col-md-6" : "col-12"} key={f.key}>
                           <div className="d-flex justify-content-between align-items-center mb-1">
                             <label className="form-label small fw-semibold text-dark mb-0">{f.label}</label>
                             <span className={`small ${value.length > maxLen ? "text-danger fw-bold" : "text-muted"}`}>
@@ -727,7 +712,7 @@ export default function AdminLegalEditPage() {
                             />
                           ) : (
                             <input
-                              type="text"
+                              type={f.type}
                               className={`form-control ${validationErrors[f.key] ? "is-invalid" : ""}`}
                               value={value}
                               onChange={(e) => {

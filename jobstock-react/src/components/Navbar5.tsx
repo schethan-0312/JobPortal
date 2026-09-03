@@ -173,12 +173,17 @@ export default function Navbar5() {
                     </li>
                     <li>
                       <Link href="/privacy" className="sub-menu-item" onClick={closeMobileNav}>
-                        Terms &amp; Privacy
+                        Privacy and Policies
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/terms" className="sub-menu-item" onClick={closeMobileNav}>
+                        Terms and Condition
                       </Link>
                     </li>
                     <li>
                       <Link href="/faq" className="sub-menu-item" onClick={closeMobileNav}>
-                        FAQ&apos;s
+                        FAQ's
                       </Link>
                     </li>
                     <li>
