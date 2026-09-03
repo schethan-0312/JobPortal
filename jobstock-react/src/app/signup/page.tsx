@@ -165,7 +165,7 @@ function SearchableSelect({
 }
 
 function SignupForm() {
-  const { register, googleLogin } = useAuth();
+  const { register, googleLogin, logout } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const refCode = searchParams?.get("ref") || undefined;
@@ -324,17 +324,39 @@ function SignupForm() {
     submittingRef.current = true;
     setErrors({});
     setSubmitting(true);
-    try {
-      const user = await register({
-        fullName,
-        email,
-        password,
-        role,
-        location: role === "EMPLOYER" ? location : undefined,
-        referralCode: referralCode.trim() || undefined,
-      });
-      router.push(user.role === "CANDIDATE" ? "/candidate-dashboard" : "/employer-dashboard");
-    } catch (err) {
+      try {
+        const user = await register({
+          fullName,
+          email,
+          password,
+          role,
+          location: role === "EMPLOYER" ? location : undefined,
+          referralCode: referralCode.trim() || undefined,
+        });
+        
+        logout();
+        
+        await Swal.fire({
+          title: "Registration Successful",
+          text: "Your account has been created. Please log in to continue.",
+          icon: "success",
+          confirmButtonColor: "#0b8260",
+          customClass: {
+            popup: 'elite-popup',
+            title: 'elite-title',
+            confirmButton: 'elite-confirm'
+          }
+        });
+        
+        router.push("/");
+        
+        setTimeout(() => {
+          const loginBtn = document.querySelector<HTMLElement>('[data-bs-target="#login"]');
+          if (loginBtn) {
+            loginBtn.click();
+          }
+        }, 500);
+      } catch (err) {
       let msg = "Registration failed. Please try again.";
       if (err instanceof ApiError) {
         msg = Array.isArray(err.body && (err.body as { message?: string[] }).message)

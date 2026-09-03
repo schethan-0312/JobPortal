@@ -116,10 +116,10 @@ function SearchableSelect({
     <div className="form-group position-relative" ref={containerRef}>
       <label className="form-label fw-medium">{label}</label>
       <div
-        className={`form-select d-flex align-items-center justify-content-between ${
+        className={`form-control d-flex align-items-center justify-content-between ${
           disabled ? "bg-light text-muted" : "bg-white"
         }`}
-        style={{ cursor: disabled ? "not-allowed" : "pointer" }}
+        style={{ cursor: disabled ? "not-allowed" : "pointer", height: "auto", minHeight: "48px" }}
         onClick={() => {
           if (!disabled) {
             setIsOpen(!isOpen);

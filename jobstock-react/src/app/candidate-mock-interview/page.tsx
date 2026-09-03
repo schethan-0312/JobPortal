@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Navbar7 from "@/components/Navbar7";
 import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar";
@@ -120,6 +120,28 @@ export default function CandidateMockInterviewPage() {
     setStage("idle");
   }
 
+  // Camera access setup for the interview stage
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [camError, setCamError] = useState(false);
+
+  useEffect(() => {
+    if (stage === "interview") {
+      navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+        .then((stream) => {
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+          }
+        })
+        .catch(() => setCamError(true));
+    } else {
+      // Cleanup camera when not in interview stage
+      if (videoRef.current?.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    }
+  }, [stage]);
+
   return (
     <>
       <Navbar7 />
@@ -166,7 +188,9 @@ export default function CandidateMockInterviewPage() {
                           value={jobRole}
                           onChange={(e) => setJobRole(e.target.value)}
                           required
-                          minLength={2}
+                          minLength={3}
+                          pattern="^[A-Za-z\s\-]+$"
+                          title="Please enter a valid job role (letters and spaces only, no numbers or special characters)"
                         />
                       </div>
                     </div>
@@ -184,12 +208,35 @@ export default function CandidateMockInterviewPage() {
 
             {(stage === "interview" || stage === "submitting") && interview && (
               <div className="card mb-4">
-                <div className="card-header">
-                  <h4>{interview.jobRole} Mock Interview</h4>
-                  <p className="text-muted mb-0 mt-1">Answer each question in your own words, then submit for feedback.</p>
+                <div className="card-header d-flex justify-content-between align-items-center">
+                  <div>
+                    <h4>{interview.jobRole} Mock Interview</h4>
+                    <p className="text-muted mb-0 mt-1">Answer each question in your own words, then submit for feedback.</p>
+                  </div>
+                  <div className="d-none d-md-block">
+                    {camError ? (
+                      <div className="bg-dark text-white d-flex align-items-center justify-content-center rounded" style={{ height: 100, width: 150, fontSize: '0.8rem' }}>
+                        Camera Denied
+                      </div>
+                    ) : (
+                      <video ref={videoRef} autoPlay playsInline muted className="rounded shadow-sm" style={{ height: 100, width: 150, objectFit: 'cover', transform: 'scaleX(-1)' }} />
+                    )}
+                  </div>
                 </div>
                 <div className="card-body">
                   {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
+                  
+                  {/* Mobile Camera Preview */}
+                  <div className="d-block d-md-none mb-4 text-center">
+                    {camError ? (
+                      <div className="bg-dark text-white d-flex align-items-center justify-content-center rounded mx-auto" style={{ height: 120, width: 180, fontSize: '0.8rem' }}>
+                        Camera Denied
+                      </div>
+                    ) : (
+                      <video ref={videoRef} autoPlay playsInline muted className="rounded shadow-sm mx-auto" style={{ height: 120, width: 180, objectFit: 'cover', transform: 'scaleX(-1)' }} />
+                    )}
+                  </div>
+
                   {interview.questions.map((q, qi) => (
                     <div key={qi} className="mb-4">
                       <p className="fw-medium mb-2">
@@ -198,9 +245,14 @@ export default function CandidateMockInterviewPage() {
                       <textarea
                         className="form-control"
                         rows={3}
-                        placeholder="Type your answer here..."
+                        placeholder="Type your answer here... (Copy/Paste disabled)"
                         value={answers[qi]}
                         onChange={(e) => updateAnswer(qi, e.target.value)}
+                        onCopy={(e) => e.preventDefault()}
+                        onPaste={(e) => e.preventDefault()}
+                        onCut={(e) => e.preventDefault()}
+                        onContextMenu={(e) => e.preventDefault()}
+                        autoComplete="off"
                       />
                     </div>
                   ))}

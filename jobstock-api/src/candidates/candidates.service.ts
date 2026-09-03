@@ -110,6 +110,18 @@ export class CandidatesService {
         },
       });
 
+      // Keep the root CandidateProfile in sync for search and short listings
+      if (dto.resumeUrl !== undefined || dto.skills !== undefined || dto.experienceYears !== undefined) {
+        await tx.candidateProfile.update({
+          where: { id: profile.id },
+          data: {
+            ...(dto.resumeUrl !== undefined && { resumeUrl: dto.resumeUrl }),
+            ...(dto.skills !== undefined && { skills: dto.skills }),
+            ...(dto.experienceYears !== undefined && { experienceYears: dto.experienceYears }),
+          }
+        });
+      }
+
       if (dto.educations) {
         await tx.education.deleteMany({ where: { resumeId: resume.id } });
         if (dto.educations.length > 0) {

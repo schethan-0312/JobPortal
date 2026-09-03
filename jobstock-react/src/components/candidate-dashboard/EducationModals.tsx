@@ -161,25 +161,25 @@ export default function EducationModals({
                   <div className="row mb-3">
                     <label className="col-md-12 col-form-label">Education Title</label>
                     <div className="col-md-12">
-                      <input type="text" className="form-control" value={eduTitle} onChange={(e) => setEduTitle(e.target.value)} required />
+                      <input type="text" className="form-control" maxLength={100} value={eduTitle} onChange={(e) => setEduTitle(e.target.value)} required />
                     </div>
                   </div>
                   <div className="row mb-3">
                     <label className="col-md-12 col-form-label">Academy Name</label>
                     <div className="col-md-12">
-                      <input type="text" className="form-control" value={eduAcademy} onChange={(e) => setEduAcademy(e.target.value)} required />
+                      <input type="text" className="form-control" maxLength={100} value={eduAcademy} onChange={(e) => setEduAcademy(e.target.value)} required />
                     </div>
                   </div>
                   <div className="row mb-3">
                     <label className="col-md-12 col-form-label">Passing year</label>
                     <div className="col-md-12">
-                      <input type="text" className="form-control" placeholder="e.g. 2012" value={eduYear} onChange={(e) => setEduYear(e.target.value)} required />
+                      <input type="text" className="form-control" placeholder="e.g. 2012" maxLength={20} value={eduYear} onChange={(e) => setEduYear(e.target.value)} required />
                     </div>
                   </div>
                   <div className="row mb-3">
-                    <label className="col-md-12 col-form-label">Description (optional)</label>
+                    <label className="col-md-12 col-form-label">Description</label>
                     <div className="col-md-12">
-                      <textarea className="form-control ht-80" value={eduDesc} onChange={(e) => setEduDesc(e.target.value)}></textarea>
+                      <textarea className="form-control ht-80" maxLength={1000} value={eduDesc} onChange={(e) => setEduDesc(e.target.value)} required></textarea>
                     </div>
                   </div>
                   <div className="row mb-3">
@@ -208,31 +208,31 @@ export default function EducationModals({
                   <div className="row mb-3">
                     <label className="col-md-12 col-form-label">Job Title</label>
                     <div className="col-md-12">
-                      <input type="text" className="form-control" value={expTitle} onChange={(e) => setExpTitle(e.target.value)} required />
+                      <input type="text" className="form-control" maxLength={100} value={expTitle} onChange={(e) => setExpTitle(e.target.value)} required />
                     </div>
                   </div>
                   <div className="row mb-3">
                     <label className="col-md-12 col-form-label">Company Name</label>
                     <div className="col-md-12">
-                      <input type="text" className="form-control" value={expCompany} onChange={(e) => setExpCompany(e.target.value)} required />
+                      <input type="text" className="form-control" maxLength={100} value={expCompany} onChange={(e) => setExpCompany(e.target.value)} required />
                     </div>
                   </div>
                   <div className="row mb-3">
                     <label className="col-md-12 col-form-label">Start Date</label>
                     <div className="col-md-12">
-                      <input type="text" className="form-control" placeholder="e.g. Jan 2018" value={expStart} onChange={(e) => setExpStart(e.target.value)} />
+                      <input type="text" className="form-control" placeholder="e.g. Jan 2018" maxLength={50} value={expStart} onChange={(e) => setExpStart(e.target.value)} required />
                     </div>
                   </div>
                   <div className="row mb-3">
                     <label className="col-md-12 col-form-label">End Date</label>
                     <div className="col-md-12">
-                      <input type="text" className="form-control" placeholder="e.g. Present" value={expEnd} onChange={(e) => setExpEnd(e.target.value)} />
+                      <input type="text" className="form-control" placeholder="e.g. Present" maxLength={50} value={expEnd} onChange={(e) => setExpEnd(e.target.value)} required />
                     </div>
                   </div>
                   <div className="row mb-3">
-                    <label className="col-md-12 col-form-label">Description (optional)</label>
+                    <label className="col-md-12 col-form-label">Description</label>
                     <div className="col-md-12">
-                      <textarea className="form-control ht-80" value={expDesc} onChange={(e) => setExpDesc(e.target.value)}></textarea>
+                      <textarea className="form-control ht-80" maxLength={2000} value={expDesc} onChange={(e) => setExpDesc(e.target.value)} required></textarea>
                     </div>
                   </div>
                   <div className="row mb-3">
@@ -261,19 +261,19 @@ export default function EducationModals({
                   <div className="row mb-3">
                     <label className="col-md-12 col-form-label">Title</label>
                     <div className="col-md-12">
-                      <input type="text" className="form-control" value={certTitle} onChange={(e) => setCertTitle(e.target.value)} required />
+                      <input type="text" className="form-control" maxLength={100} value={certTitle} onChange={(e) => setCertTitle(e.target.value)} required />
                     </div>
                   </div>
                   <div className="row mb-3">
                     <label className="col-md-12 col-form-label">Year</label>
                     <div className="col-md-12">
-                      <input type="text" className="form-control" placeholder="e.g. 2021" value={certYear} onChange={(e) => setCertYear(e.target.value)} required />
+                      <input type="text" className="form-control" placeholder="e.g. 2021" maxLength={20} value={certYear} onChange={(e) => setCertYear(e.target.value)} required />
                     </div>
                   </div>
                   <div className="row mb-3">
-                    <label className="col-md-12 col-form-label">Description (optional)</label>
+                    <label className="col-md-12 col-form-label">Description</label>
                     <div className="col-md-12">
-                      <textarea className="form-control ht-80" value={certDesc} onChange={(e) => setCertDesc(e.target.value)}></textarea>
+                      <textarea className="form-control ht-80" maxLength={1000} value={certDesc} onChange={(e) => setCertDesc(e.target.value)} required></textarea>
                     </div>
                   </div>
                   <div className="row mb-3">
@@ -302,19 +302,19 @@ export default function EducationModals({
                   <div className="row mb-3">
                     <label className="col-md-12 col-form-label">Project Title</label>
                     <div className="col-md-12">
-                      <input type="text" className="form-control" value={projTitle} onChange={(e) => setProjTitle(e.target.value)} required />
+                      <input type="text" className="form-control" maxLength={100} value={projTitle} onChange={(e) => setProjTitle(e.target.value)} required />
                     </div>
                   </div>
                   <div className="row mb-3">
                     <label className="col-md-12 col-form-label">Link</label>
                     <div className="col-md-12">
-                      <input type="text" className="form-control" placeholder="e.g. https://github.com/..." value={projLink} onChange={(e) => setProjLink(e.target.value)} />
+                      <input type="url" className="form-control" placeholder="e.g. https://github.com/..." maxLength={300} value={projLink} onChange={(e) => setProjLink(e.target.value)} required />
                     </div>
                   </div>
                   <div className="row mb-3">
-                    <label className="col-md-12 col-form-label">Description (optional)</label>
+                    <label className="col-md-12 col-form-label">Description</label>
                     <div className="col-md-12">
-                      <textarea className="form-control ht-80" value={projDesc} onChange={(e) => setProjDesc(e.target.value)}></textarea>
+                      <textarea className="form-control ht-80" maxLength={2000} value={projDesc} onChange={(e) => setProjDesc(e.target.value)} required></textarea>
                     </div>
                   </div>
                   <div className="row mb-3">

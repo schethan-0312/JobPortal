@@ -223,7 +223,7 @@ export default function CandidateSkillAssessmentPage() {
               </div>
             )}
 
-            {stage === "result" && result && (
+            {stage === "result" && result && quiz && (
               <div className="card mb-4">
                 <div className="card-header">
                   <h4>{result.skill} &mdash; Result</h4>
@@ -249,7 +249,57 @@ export default function CandidateSkillAssessmentPage() {
                   <p className="text-muted mb-4">
                     {Math.round((result.score / result.totalQuestions) * 100)}% score &mdash; 70% required to pass
                   </p>
-                  <button type="button" className="btn btn-outline-main" onClick={resetToStart}>
+                  
+                  <div className="text-start mt-5">
+                    <h5 className="mb-4">Assessment Answers Review</h5>
+                    {quiz.questions.map((q, qi) => {
+                      const userAns = selectedAnswers[qi];
+                      const correctAns = result.correctAnswers[qi];
+                      const isCorrect = userAns === correctAns;
+                      
+                      return (
+                        <div key={qi} className="mb-4 pb-3 border-bottom">
+                          <p className="fw-medium mb-2">
+                            {qi + 1}. {q.question}
+                            {isCorrect ? (
+                              <span className="badge bg-success ms-2"><i className="fa-solid fa-check me-1"></i>Correct</span>
+                            ) : (
+                              <span className="badge bg-danger ms-2"><i className="fa-solid fa-xmark me-1"></i>Incorrect</span>
+                            )}
+                          </p>
+                          {q.options.map((opt, oi) => {
+                            let itemClass = "form-check mb-1";
+                            let textClass = "";
+                            if (oi === correctAns) {
+                              itemClass += " bg-success bg-opacity-10 rounded p-1";
+                              textClass = "text-success fw-bold";
+                            } else if (oi === userAns && oi !== correctAns) {
+                              itemClass += " bg-danger bg-opacity-10 rounded p-1";
+                              textClass = "text-danger";
+                            }
+                            
+                            return (
+                              <div className={itemClass} key={oi}>
+                                <input
+                                  className="form-check-input"
+                                  type="radio"
+                                  disabled
+                                  checked={oi === userAns || oi === correctAns}
+                                />
+                                <label className={`form-check-label ${textClass}`}>
+                                  {opt} 
+                                  {oi === correctAns && " (Correct Answer)"}
+                                  {oi === userAns && oi !== correctAns && " (Your Answer)"}
+                                </label>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <button type="button" className="btn btn-outline-main mt-4" onClick={resetToStart}>
                     Take Another Assessment
                   </button>
                 </div>

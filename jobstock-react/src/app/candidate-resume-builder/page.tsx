@@ -49,7 +49,11 @@ export default function CandidateResumeBuilderPage() {
   const router = useRouter();
 
   const [targetRole, setTargetRole] = useState("");
-  const [rawBackground, setRawBackground] = useState("");
+  const [bgSummary, setBgSummary] = useState("");
+  const [bgSkills, setBgSkills] = useState("");
+  const [bgExperience, setBgExperience] = useState("");
+  const [bgEducation, setBgEducation] = useState("");
+
   const [status, setStatus] = useState<"idle" | "generating" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   
@@ -178,6 +182,32 @@ export default function CandidateResumeBuilderPage() {
     return null;
   }
 
+  useEffect(() => {
+    const savedResume = sessionStorage.getItem("builder_resume");
+    if (savedResume) setResume(JSON.parse(savedResume));
+    
+    const savedSum = sessionStorage.getItem("builder_sum");
+    if (savedSum) setBgSummary(savedSum);
+    const savedExp = sessionStorage.getItem("builder_exp");
+    if (savedExp) setBgExperience(savedExp);
+    const savedEdu = sessionStorage.getItem("builder_edu");
+    if (savedEdu) setBgEducation(savedEdu);
+    const savedSki = sessionStorage.getItem("builder_ski");
+    if (savedSki) setBgSkills(savedSki);
+  }, []);
+
+  useEffect(() => {
+    if (resume) sessionStorage.setItem("builder_resume", JSON.stringify(resume));
+    else sessionStorage.removeItem("builder_resume");
+  }, [resume]);
+
+  useEffect(() => {
+    sessionStorage.setItem("builder_sum", bgSummary);
+    sessionStorage.setItem("builder_exp", bgExperience);
+    sessionStorage.setItem("builder_edu", bgEducation);
+    sessionStorage.setItem("builder_ski", bgSkills);
+  }, [bgSummary, bgExperience, bgEducation, bgSkills]);
+
   async function handleUploadForBuilder(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -190,14 +220,28 @@ export default function CandidateResumeBuilderPage() {
       const { url } = await uploadFile<{ url: string }>("/uploads/document?save=false", file);
       const parsedData = await api.post<any>("/resume-parser/parse", { resumeUrl: url });
       
-      const extractedText = `
-Summary: ${parsedData.about || parsedData.summary || ''}
-Skills: ${(parsedData.skills || []).join(', ')}
-Experience: ${(parsedData.experiences || []).map((exp: any) => `${exp.title} at ${exp.company} (${exp.startDate}): ${exp.description}`).join('\n')}
-Education: ${(parsedData.educations || []).map((ed: any) => `${ed.title} at ${ed.academy} (${ed.year})`).join('\n')}
-      `.trim();
+      const sum = parsedData.about || parsedData.summary || '';
+      const ski = (parsedData.skills || []).join(', ');
+      const exp = (parsedData.experiences || []).map((exp: any) => `${exp.title} at ${exp.company} (${exp.startDate || ''} - ${exp.endDate || ''}):\n${exp.description}`).join('\n\n');
+      const edu = (parsedData.educations || []).map((ed: any) => `${ed.title} at ${ed.academy} (${ed.year || ''}):\n${ed.description || ''}`).join('\n\n');
+      const proj = (parsedData.projects || []).map((p: any) => `${p.title} (${p.link || ''}):\n${p.description}`).join('\n\n');
+      const cert = (parsedData.certifications || []).map((c: any) => `${c.title} (${c.year || ''}):\n${c.description}`).join('\n\n');
       
-      setRawBackground(extractedText);
+      setBgSummary(sum);
+      setBgSkills(ski);
+      setBgExperience([exp, proj, cert].filter(Boolean).join('\n\n'));
+      setBgEducation(edu);
+
+      const extractedText = `
+Full Name: ${parsedData.fullName || 'Not provided'}
+Headline: ${parsedData.headline || 'Not provided'}
+Summary: ${sum}
+Skills: ${ski}
+Experience: ${exp}
+Education: ${edu}
+Projects: ${proj}
+Certifications: ${cert}
+      `.trim();
 
       const data = await api.post<BuiltResume>("/resume-builder/generate", {
         rawBackground: extractedText,
@@ -217,6 +261,20 @@ Education: ${(parsedData.educations || []).map((ed: any) => `${ed.title} at ${ed
     setResume(null);
     setStatus("generating");
     try {
+      const rawBackground = `
+Summary:
+${bgSummary}
+
+Skills:
+${bgSkills}
+
+Experience:
+${bgExperience}
+
+Education:
+${bgEducation}
+      `.trim();
+
       const data = await api.post<BuiltResume>("/resume-builder/generate", {
         rawBackground,
         targetRole: targetRole || undefined,
@@ -333,20 +391,60 @@ Education: ${(parsedData.educations || []).map((ed: any) => `${ed.title} at ${ed
                       />
                     </div>
                   </div>
+                  
                   <div className="row mb-3">
-                    <label className="col-xl-2 col-md-12 col-form-label fw-bold">Or Paste Background</label>
+                    <label className="col-xl-2 col-md-12 col-form-label fw-bold">Summary</label>
                     <div className="col-xl-7 col-md-12">
                       <textarea
                         className="form-control"
-                        rows={8}
-                        placeholder="e.g. I worked at X for 2 years as a... I have a degree in... My key achievements were..."
-                        value={rawBackground}
-                        onChange={(e) => setRawBackground(e.target.value)}
-                        minLength={20}
+                        rows={3}
+                        placeholder="e.g. Results-driven marketing manager with 5+ years of experience..."
+                        value={bgSummary}
+                        onChange={(e) => setBgSummary(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="row mb-3">
+                    <label className="col-xl-2 col-md-12 col-form-label fw-bold">Experience / Projects</label>
+                    <div className="col-xl-7 col-md-12">
+                      <textarea
+                        className="form-control"
+                        rows={5}
+                        placeholder="e.g. Marketing Manager at XYZ Corp (2020-Present): Increased sales by 20%..."
+                        value={bgExperience}
+                        onChange={(e) => setBgExperience(e.target.value)}
                         required
                       />
                     </div>
                   </div>
+
+                  <div className="row mb-3">
+                    <label className="col-xl-2 col-md-12 col-form-label fw-bold">Education</label>
+                    <div className="col-xl-7 col-md-12">
+                      <textarea
+                        className="form-control"
+                        rows={3}
+                        placeholder="e.g. BS in Marketing from University of ABC, 2019"
+                        value={bgEducation}
+                        onChange={(e) => setBgEducation(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="row mb-4">
+                    <label className="col-xl-2 col-md-12 col-form-label fw-bold">Skills</label>
+                    <div className="col-xl-7 col-md-12">
+                      <textarea
+                        className="form-control"
+                        rows={2}
+                        placeholder="e.g. SEO, Content Marketing, Google Analytics"
+                        value={bgSkills}
+                        onChange={(e) => setBgSkills(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
                   <div className="row">
                     <div className="col-xl-12 col-md-12 offset-xl-2 d-flex gap-3 align-items-center flex-wrap">
                       <button type="submit" className="btn btn-main" disabled={status === "generating"}>

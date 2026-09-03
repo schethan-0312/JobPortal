@@ -5,9 +5,11 @@ import RecordProfileView from "@/components/RecordProfileView";
 import CandidateFollowHeader from "@/components/CandidateFollowHeader";
 import { api, ApiError, assetUrl } from "@/lib/api";
 import Navbar5 from "@/components/Navbar5";
+import ContactCandidateForm from "@/components/ContactCandidateForm";
 
 interface CandidateProfile {
   id: string;
+  userId?: string;
   fullName: string;
   headline?: string;
   location?: string;
@@ -262,28 +264,14 @@ export default async function CandidateDetailPage({
                       <h4 className="sidefr-usr-title">Contact {candidate.fullName}</h4>
                     </div>
                     <div className="sidefr-usr-body">
-                      <form>
-                        <div className="form-group">
-                          <input type="text" className="form-control" placeholder="Your Name" />
-                        </div>
-                        <div className="form-group">
-                          <input type="email" className="form-control" placeholder="Email Address" />
-                        </div>
-                        <div className="form-group">
-                          <input type="text" className="form-control" placeholder="Phone." />
-                        </div>
-                        <div className="form-group">
-                          <input type="text" className="form-control" placeholder="Subject" />
-                        </div>
-                        <div className="form-group">
-                          <textarea className="form-control" placeholder="Your Message"></textarea>
-                        </div>
-                        <div className="form-group m-0">
-                          <a href={`/employer-messages?newChat=${candidate.id}`} className="btn btn-main fw-medium full-width d-block text-center text-white">
-                            <i className="fa-regular fa-comment-dots me-2"></i> Message {candidate.fullName}
-                          </a>
-                        </div>
-                      </form>
+                      {candidate.userId ? (
+                        <ContactCandidateForm 
+                          candidateUserId={candidate.userId} 
+                          candidateName={candidate.fullName} 
+                        />
+                      ) : (
+                        <p className="text-muted text-center py-4">Cannot message this candidate.</p>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -142,11 +142,11 @@ export default function Navbar8() {
             </div>
           </div>
         ))}
-        <div className="ntf-list-groups-single">
-          <Link href="/employer-dashboard" className="ntf-more" onClick={() => setShowNotifications(false)}>
-            View All Notifications
-          </Link>
-        </div>
+          <div className="ntf-list-groups-single" style={{ textAlign: "center" }}>
+            <Link href="/employer-dashboard" className="ntf-more text-main font-weight-bold" style={{ display: "block", padding: "10px", pointerEvents: "auto", cursor: "pointer" }} onClick={() => { setShowNotifications(false); setShowMobileNotifications(false); }}>
+              View All Notifications
+            </Link>
+          </div>
       </div>
     </>
   );

@@ -138,18 +138,27 @@ function EmployerMessagesContent() {
               const cp = tempMsgs[0].senderId === user.userId ? tempMsgs[0].receiver : tempMsgs[0].sender;
               if (cp) handleSelectConversation(cp);
             } else {
-              try {
-                const candidateData = await api.get<any>(`/candidates/${newChatId}`);
-                const dummyCp: MessageUser = {
-                  id: newChatId,
-                  email: candidateData.user?.email || "Candidate",
-                  role: "CANDIDATE",
-                  candidateProfile: { fullName: candidateData.fullName, profilePhotoUrl: candidateData.profilePhotoUrl }
-                };
-                handleSelectConversation(dummyCp);
-              } catch {
-                toast.error("Could not load the requested candidate chat.");
-              }
+                try {
+                  const candidateData = await api.get<any>(`/candidates/${newChatId}`);
+                  const dummyCp: MessageUser = {
+                    id: newChatId,
+                    email: candidateData.user?.email || "Candidate",
+                    role: "CANDIDATE",
+                    candidateProfile: { fullName: candidateData.fullName, profilePhotoUrl: candidateData.profilePhotoUrl }
+                  };
+                  const dummyConv: ConversationMessage = {
+                    id: 'dummy',
+                    senderId: user.userId,
+                    receiverId: dummyCp.id,
+                    body: '',
+                    createdAt: new Date().toISOString(),
+                    receiver: dummyCp
+                  };
+                  setConversations([dummyConv, ...convs]);
+                  handleSelectConversation(dummyCp);
+                } catch {
+                  toast.error("Could not load the requested candidate chat.");
+                }
             }
           }
         } else if (convs.length > 0) {
@@ -491,7 +500,7 @@ function EmployerMessagesContent() {
                             <button type="button" title="Attach File" className="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center text-muted" style={{ width: "40px", height: "40px", padding: 0 }} onClick={() => fileInputRef.current?.click()} disabled={uploadingMedia}><i className="fa-solid fa-paperclip" style={{ fontSize: "16px" }}></i></button>
                             <button type="button" title={isRecording ? "Stop Recording" : "Voice Note"} className={`btn btn-sm rounded-circle d-flex align-items-center justify-content-center ${isRecording ? "btn-danger text-white" : "btn-light text-muted"}`} style={{ width: "40px", height: "40px", padding: 0 }} onClick={handleVoiceToggle} disabled={uploadingMedia}><i className={`fa-solid ${isRecording ? "fa-stop" : "fa-microphone"}`} style={{ fontSize: "16px" }}></i></button>
                           </div>
-                          <input type="text" className="form-control bg-light px-4 mx-1" placeholder={isRecording ? "🔴 Recording... tap stop to send" : uploadingMedia ? "Uploading..." : "Type a message..."} value={replyText} onChange={(e) => handleTyping(e.target.value)} disabled={isRecording || uploadingMedia} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSend(); } }} style={{ height: "48px", borderRadius: "24px", border: 'none', flex: 1, minWidth: 0, boxShadow: 'none' }} />
+                          <input type="text" className="form-control bg-light px-4 mx-1" placeholder={isRecording ? "Recording... tap stop to send" : uploadingMedia ? "Uploading..." : "Type a message..."} value={replyText} onChange={(e) => handleTyping(e.target.value)} disabled={isRecording || uploadingMedia} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSend(); } }} style={{ height: "48px", borderRadius: "24px", border: 'none', flex: 1, minWidth: 0, boxShadow: 'none' }} />
                           <button type="button" className="btn btn-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{ flexShrink: 0, width: '48px', height: '48px' }} disabled={sending || uploadingMedia || isRecording || !replyText.trim()} onClick={handleSend}><i className="fa-solid fa-paper-plane" style={{ fontSize: "18px" }}></i></button>
                         </div>
                       </>

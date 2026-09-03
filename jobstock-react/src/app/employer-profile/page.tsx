@@ -87,6 +87,19 @@ export default function EmployerProfilePage() {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
+    
+    if (!companyName.trim() || !location?.trim() || !industry?.trim() || !website?.trim() || !description?.trim()) {
+      toast.error("Please fill out all basic details (Company Name, Website, Location, Industry, and About).");
+      scrollToTop();
+      return;
+    }
+
+    if (!profile?.gstCertificateUrl || !profile?.incorporationCertUrl || !profile?.signatoryIdUrl) {
+      toast.error("Please upload all compliance documents for verification.");
+      scrollToTop();
+      return;
+    }
+
     setSaving(true);
     try {
       const updated = await api.patch<EmployerProfile>("/employers/me", {
@@ -330,13 +343,14 @@ export default function EmployerProfilePage() {
                   <div className="row g-3">
                     <div className="col-xl-6 col-lg-6 col-md-12">
                       <div className="form-group">
-                        <label className="fw-medium mb-1">Company Name</label>
+                        <label className="fw-medium mb-1">Company Name <span className="text-danger">*</span></label>
                         <input
                           type="text"
                           className="form-control"
                           value={companyName}
                           onChange={(e) => setCompanyName(e.target.value)}
                           placeholder="e.g. Acme Technologies"
+                          required
                         />
                       </div>
                     </div>
@@ -350,51 +364,53 @@ export default function EmployerProfilePage() {
 
                     <div className="col-xl-6 col-lg-6 col-md-12">
                       <div className="form-group">
-                        <label className="fw-medium mb-1">Website</label>
+                        <label className="fw-medium mb-1">Website <span className="text-danger">*</span></label>
                         <input
                           type="text"
                           className="form-control"
-                          value={website}
+                          value={website || ""}
                           onChange={(e) => setWebsite(e.target.value)}
-                          placeholder="https://example.com"
+                          placeholder="e.g. https://www.acme.com"
+                          required
                         />
                       </div>
                     </div>
 
                     <div className="col-xl-6 col-lg-6 col-md-12">
-                      <div className="form-group">
-                        <label className="fw-medium mb-1">Location / Headquarter</label>
+                      <div className="form-group" style={{ position: "relative" }}>
+                        <label className="fw-medium mb-1">Location / Headquarter <span className="text-danger">*</span></label>
                         <CityLocationInput
                           value={location}
-                          onChange={setLocation}
-                          placeholder="e.g. Bangalore, India"
-                          className="form-control"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="col-xl-6 col-lg-6 col-md-12">
-                      <div className="form-group">
-                        <label className="fw-medium mb-1">Industry</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          value={industry}
-                          onChange={(e) => setIndustry(e.target.value)}
-                          placeholder="e.g. Software & IT, Finance"
+                          onChange={(val) => setLocation(val)}
+                          placeholder="e.g. Bangalore, Karnataka, India"
                         />
                       </div>
                     </div>
 
                     <div className="col-xl-12 col-lg-12 col-md-12">
                       <div className="form-group">
-                        <label className="fw-medium mb-1">About Company</label>
+                        <label className="fw-medium mb-1">Industry <span className="text-danger">*</span></label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={industry || ""}
+                          onChange={(e) => setIndustry(e.target.value)}
+                          placeholder="e.g. Software, Healthcare"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="col-xl-12 col-lg-12 col-md-12">
+                      <div className="form-group">
+                        <label className="fw-medium mb-1">About Company <span className="text-danger">*</span></label>
                         <textarea
                           className="form-control"
-                          rows={3}
-                          value={description}
+                          rows={4}
+                          value={description || ""}
                           onChange={(e) => setDescription(e.target.value)}
-                          placeholder="Brief overview of your company, mission, and what you do..."
+                          placeholder="Write a brief overview of your company..."
+                          required
                         ></textarea>
                       </div>
                     </div>

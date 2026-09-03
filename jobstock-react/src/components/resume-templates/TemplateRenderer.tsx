@@ -192,10 +192,10 @@ export default function TemplateRenderer({
             <textarea
               className="editable-textarea exp-bullets"
               rows={exp.bullets.length + 1}
-              value={exp.bullets.join("\n")}
+              value={exp.bullets.map(b => b.trim().startsWith('•') ? b : `• ${b}`).join("\n")}
               onChange={(e) => {
                 const newExp = [...resume.experience];
-                newExp[i].bullets = e.target.value.split("\n");
+                newExp[i].bullets = e.target.value.split("\n").map(b => b.replace(/^•\s*/, ''));
                 setResume({ ...resume, experience: newExp });
               }}
             />

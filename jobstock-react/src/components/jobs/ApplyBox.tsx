@@ -41,7 +41,15 @@ export default function ApplyBox({ jobId }: { jobId: string }) {
     );
   }
 
-  if (!user || user.role !== "CANDIDATE") {
+  if (user && user.role === "EMPLOYER") {
+    return (
+      <div className="d-flex align-items-center flex-wrap gap-2">
+        <span className="text-muted">Employers cannot apply for jobs.</span>
+      </div>
+    );
+  }
+
+  if (!user) {
     return (
       <div className="d-flex align-items-center flex-wrap gap-2">
         <span className="text-sm-muted">Log in as a candidate to apply.</span>

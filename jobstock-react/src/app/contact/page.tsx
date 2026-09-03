@@ -17,6 +17,22 @@ export default function ContactPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!name.trim()) {
+      setErrorMsg("Please enter your name.");
+      setStatus("error");
+      return;
+    }
+    if (!email.trim() || !/^\S+@\S+\.\S+$/.test(email)) {
+      setErrorMsg("Please enter a valid email address.");
+      setStatus("error");
+      return;
+    }
+    if (!message.trim() || message.trim().length < 10) {
+      setErrorMsg("Please enter a message of at least 10 characters.");
+      setStatus("error");
+      return;
+    }
+    
     setStatus("submitting");
     setErrorMsg(null);
     try {

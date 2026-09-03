@@ -174,7 +174,7 @@ export default function CandidateResumePage() {
             </div>
           </div>
 
-          <div className="dashboard-widg-bar d-block">
+          <form className="dashboard-widg-bar d-block" onSubmit={handleSaveFullProfile}>
 
             {isDraft && (
               <div className="alert alert-warning d-flex align-items-center">
@@ -208,25 +208,25 @@ export default function CandidateResumePage() {
                   <div className="col-xl-6 col-lg-6 col-md-6">
                     <div className="form-group">
                       <label>Experience (years)</label>
-                      <input type="number" className="form-control" value={experienceYears} onChange={(e) => setExperienceYears(e.target.value)} />
+                      <input type="number" min="0" max="50" className="form-control" value={experienceYears} onChange={(e) => setExperienceYears(e.target.value)} />
                     </div>
                   </div>
                   <div className="col-xl-6 col-lg-6 col-md-6">
                     <div className="form-group">
                       <label>Skills (comma separated)</label>
-                      <input type="text" className="form-control" value={skillsInput} onChange={(e) => setSkillsInput(e.target.value)} />
+                      <input type="text" maxLength={500} className="form-control" value={skillsInput} onChange={(e) => setSkillsInput(e.target.value)} />
                     </div>
                   </div>
                   <div className="col-xl-6 col-lg-6 col-md-6">
                     <div className="form-group">
                       <label>Languages (comma separated)</label>
-                      <input type="text" className="form-control" value={languagesInput} onChange={(e) => setLanguagesInput(e.target.value)} />
+                      <input type="text" maxLength={500} className="form-control" value={languagesInput} onChange={(e) => setLanguagesInput(e.target.value)} />
                     </div>
                   </div>
                   <div className="col-xl-12 col-lg-12 col-md-12">
                     <div className="form-group">
                       <label>Summary</label>
-                      <textarea className="form-control ht-80" value={summary} onChange={(e) => setSummary(e.target.value)}></textarea>
+                      <textarea className="form-control ht-80" maxLength={2000} value={summary} onChange={(e) => setSummary(e.target.value)}></textarea>
                     </div>
                   </div>
                 </div>
@@ -517,9 +517,8 @@ export default function CandidateResumePage() {
             <div className="row mt-4 mb-5">
               <div className="col-12 text-end">
                 <button 
-                  type="button" 
+                  type="submit" 
                   className="btn btn-lg btn-main px-5" 
-                  onClick={() => handleSaveFullProfile()} 
                   disabled={saving}
                 >
                   {saving ? "Saving Resume..." : "Save Resume"}
@@ -527,7 +526,7 @@ export default function CandidateResumePage() {
               </div>
             </div>
 
-          </div>
+          </form>
 
           {/* footer removed */}
         </div>
