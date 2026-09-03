@@ -4,6 +4,7 @@ import LoginModal from "@/components/LoginModal";
 import Link from "next/link";
 import styles from "./AboutUs.module.css";
 import HeroSlider from "./HeroSlider";
+import FeaturedJobs from "@/components/home/FeaturedJobs";
 
 const features = [
   {
@@ -30,6 +31,9 @@ export default function AboutUsPage() {
 
       {/* Impressive Sliding Hero Section */}
       <HeroSlider />
+      <FeaturedJobs />
+
+
 
       {/* Story & Mission Section */}
       <section className={styles.storySection}>
