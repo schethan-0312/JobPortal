@@ -1,115 +1,7 @@
-"use client";
+const fs = require('fs');
+let code = fs.readFileSync('src/components/Footer.tsx', 'utf8');
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { api } from "@/lib/api";
-import { useAuth } from "@/lib/auth-context";
-import RoleMismatchModal from "./RoleMismatchModal";
-
-interface PublicStats {
-  totalJobs: number;
-  totalCandidates: number;
-  totalVerifiedEmployers: number;
-  totalApplications: number;
-}
-
-export default function Footer() {
-  const { user } = useAuth();
-  const router = useRouter();
-  const [stats, setStats] = useState<PublicStats | null>(null);
-  const [mismatchRole, setMismatchRole] = useState<"CANDIDATE" | "EMPLOYER" | null>(null);
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    seekers: false,
-    employers: false,
-    tools: false,
-    company: false,
-  });
-
-  const toggleSection = (section: string) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  };
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const data = await api.get<PublicStats>("/stats", { auth: false });
-        setStats(data);
-      } catch {
-        // fail silently if stats unavailable
-      }
-    })();
-  }, []);
-
-  const openLoginModal = () => {
-    const loginModalBtn = document.querySelector<HTMLElement>('[data-bs-target="#login"]');
-    if (loginModalBtn) {
-      loginModalBtn.click();
-    } else {
-      router.push("/signup");
-    }
-  };
-
-  const handleLinkClick = (
-    e: React.MouseEvent,
-    href: string,
-    requiredRole?: "CANDIDATE" | "EMPLOYER",
-    candidateOnly?: boolean
-  ) => {
-    if (user?.role === "EMPLOYER" && (requiredRole === "CANDIDATE" || candidateOnly)) {
-      e.preventDefault();
-      setMismatchRole("CANDIDATE");
-      return;
-    }
-
-    if (user?.role === "CANDIDATE" && requiredRole === "EMPLOYER") {
-      e.preventDefault();
-      setMismatchRole("EMPLOYER");
-      return;
-    }
-
-    if (!user && requiredRole) {
-      e.preventDefault();
-      openLoginModal();
-      return;
-    }
-  };
-
-  function SmartFooterLink({
-    href,
-    label,
-    requiredRole,
-    candidateOnly,
-  }: {
-    href: string;
-    label: string;
-    requiredRole?: "CANDIDATE" | "EMPLOYER";
-    candidateOnly?: boolean;
-  }) {
-    const isEmployerBlocked = user?.role === "EMPLOYER" && (requiredRole === "CANDIDATE" || candidateOnly);
-    const isCandidateBlocked = user?.role === "CANDIDATE" && requiredRole === "EMPLOYER";
-    const isLoggedOutBlocked = !user && !!requiredRole;
-
-    if (isEmployerBlocked || isCandidateBlocked || isLoggedOutBlocked) {
-      return (
-        <a
-          href={href}
-          onClick={(e) => handleLinkClick(e, href, requiredRole, candidateOnly)}
-          data-bs-toggle={!user ? "modal" : undefined}
-          data-bs-target={!user ? "#login" : undefined}
-        >
-          {label}
-        </a>
-      );
-    }
-
-    return <Link href={href}>{label}</Link>;
-  }
-
-  return (
+const newFooterReturn = `  return (
     <>
       <footer className="footer custom-theme-footer position-relative" style={{ backgroundColor: '#134e4a', overflow: 'hidden', padding: '60px 0 20px', color: '#a8c6c4' }}>
         
@@ -232,7 +124,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <style jsx>{`
+        <style jsx>{\`
           .footer-widget .widget-title {
             color: #ffffff;
             font-size: 0.8rem;
@@ -276,7 +168,7 @@ export default function Footer() {
             color: #ffffff;
             background-color: rgba(255,255,255,0.1);
           }
-        `}</style>
+        \`}</style>
       </footer>
 
       <RoleMismatchModal
@@ -287,4 +179,20 @@ export default function Footer() {
       />
     </>
   );
+}`;
+
+const matchStart = code.indexOf('  return (\n    <>\n      <footer');
+if(matchStart === -1) {
+  const backupMatch = code.indexOf('  return (\r\n    <>\r\n      <footer');
+  if(backupMatch !== -1) {
+    code = code.substring(0, backupMatch) + newFooterReturn;
+    fs.writeFileSync('src/components/Footer.tsx', code);
+    console.log('Successfully wrote Footer.tsx');
+  } else {
+    console.log('Match failed for Footer.tsx');
+  }
+} else {
+  code = code.substring(0, matchStart) + newFooterReturn;
+  fs.writeFileSync('src/components/Footer.tsx', code);
+  console.log('Successfully wrote Footer.tsx');
 }

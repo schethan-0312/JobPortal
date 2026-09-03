@@ -1,4 +1,5 @@
-"use client";
+const fs = require('fs');
+const newCode = `\"use client\";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -46,7 +47,7 @@ export default function FeaturesProcess() {
 
   return (
     <section className="timeline-section">
-      <style>{`
+      <style>{\`
         .timeline-section {
           padding: 80px 0;
           background-color: #fff;
@@ -370,19 +371,19 @@ export default function FeaturesProcess() {
           .step-number { margin: 0 auto 20px; }
           .stats-box { flex-direction: column; text-align: center; gap: 30px; }
         }
-      `}</style>
+      \`}</style>
 
       <div className="container">
         <div className="header-content">
           <div className="toggle-tabs">
             <button 
-              className={`toggle-btn ${activeTab === 'seekers' ? 'active' : ''}`}
+              className={\`toggle-btn \${activeTab === 'seekers' ? 'active' : ''}\`}
               onClick={() => setActiveTab('seekers')}
             >
               For Job Seekers
             </button>
             <button 
-              className={`toggle-btn ${activeTab === 'employers' ? 'active' : ''}`}
+              className={\`toggle-btn \${activeTab === 'employers' ? 'active' : ''}\`}
               onClick={() => setActiveTab('employers')}
             >
               For Employers
@@ -603,7 +604,7 @@ export default function FeaturesProcess() {
         <div className="cta-section">
           <h3 className="cta-title">Ready to start your journey?</h3>
           <div className="cta-buttons">
-            <Link href="/signup" className="btn-green-solid">
+            <Link href="/register" className="btn-green-solid">
               Create Free Account
             </Link>
             <Link href="/jobs" className="btn-outline-gray">
@@ -615,3 +616,7 @@ export default function FeaturesProcess() {
     </section>
   );
 }
+`;
+
+fs.writeFileSync('src/components/home/FeaturesProcess.tsx', newCode);
+console.log('Successfully wrote FeaturesProcess.tsx');

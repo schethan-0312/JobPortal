@@ -1,126 +1,11 @@
-"use client";
+const fs = require('fs');
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { api, assetUrl } from "@/lib/api";
+let code = fs.readFileSync('src/components/home/FeaturedJobs.tsx', 'utf8');
 
-interface Employer {
-  companyName: string;
-  logoUrl?: string | null;
-}
-
-interface Job {
-  id: string;
-  title: string;
-  slug: string;
-  location?: string;
-  jobType?: string;
-  salaryMin?: number | null;
-  salaryMax?: number | null;
-  employer?: Employer;
-  createdAt?: string;
-}
-
-interface JobsResponse {
-  items: Job[];
-}
-
-
-function getTimeAgo(dateString?: string) {
-  if (!dateString) return "Recently";
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffTime = Math.abs(now.getTime() - date.getTime());
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return "Today";
-  if (diffDays === 1) return "1 day ago";
-  return `${diffDays} days ago`;
-}
-
-function formatAmount(val: number): { text: string; unit: "L" | "k" | "" } {
-  if (val >= 100000) {
-    const lakh = val / 100000;
-    const formatted = Number.isInteger(lakh) ? lakh.toString() : parseFloat(lakh.toFixed(2)).toString();
-    return { text: formatted, unit: "L" };
-  }
-  if (val >= 1000) {
-    const k = Math.round(val / 100) / 10;
-    const formatted = Number.isInteger(k) ? k.toString() : parseFloat(k.toFixed(1)).toString();
-    return { text: `${formatted}k`, unit: "k" };
-  }
-  return { text: val.toString(), unit: "" };
-}
-
-function formatSalary(job: Job) {
-  const { salaryMin, salaryMax } = job;
-  if (!salaryMin && !salaryMax) return "Not disclosed";
-
-  if (salaryMin && salaryMax) {
-    const minObj = formatAmount(salaryMin);
-    const maxObj = formatAmount(salaryMax);
-
-    if (minObj.unit === "L" && maxObj.unit === "L") {
-      return `₹${minObj.text} - ${maxObj.text} LPA`;
-    }
-    if (minObj.unit === "k" && maxObj.unit === "k") {
-      return `₹${minObj.text} - ${maxObj.text} PA`;
-    }
-    return `₹${minObj.text} - ${maxObj.text} LPA`;
-  }
-
-  if (salaryMin) {
-    const minObj = formatAmount(salaryMin);
-    if (minObj.unit === "L") return `₹${minObj.text} LPA`;
-    return `₹${minObj.text} PA`;
-  }
-
-  if (salaryMax) {
-    const maxObj = formatAmount(salaryMax);
-    if (maxObj.unit === "L") return `Up to ₹${maxObj.text} LPA`;
-    return `Up to ₹${maxObj.text} PA`;
-  }
-
-  return "Not disclosed";
-}
-
-export default function FeaturedJobs() {
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [loaded, setLoaded] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const nextSlide = () => {
-    if (currentIndex < Math.max(0, jobs.length - 3)) {
-      setCurrentIndex(currentIndex + 1);
-    }
-  };
-
-  const prevSlide = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-    }
-  };
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const data = await api.get<JobsResponse>("/jobs?pageSize=15", { auth: false });
-        setJobs(data.items ?? []);
-      } catch {
-        setJobs([]);
-      } finally {
-        setLoaded(true);
-      }
-    })();
-  }, []);
-
-  if (loaded && jobs.length === 0) {
-    return null;
-  }
-
-    return (
+const newReturnBlock = `  return (
     <section className="py-5 bg-white position-relative">
       <div className="container py-2">
-        <style>{`
+        <style>{\`
           .f-job-card {
             border: 1px solid #e9ecef;
             border-radius: 12px;
@@ -263,7 +148,7 @@ export default function FeaturedJobs() {
             background-color: #2e8b57;
             color: white;
           }
-        `}</style>
+        \`}</style>
 
         {/* Heading */}
         <div className="text-center mb-4">
@@ -277,13 +162,13 @@ export default function FeaturedJobs() {
 
         {/* Controls */}
         <div className="d-flex justify-content-end mb-3">
-          <button className="f-slider-btn" onClick={prevSlide} disabled={currentIndex === 0} style={{ opacity: currentIndex === 0 ? 0.5 : 1, cursor: currentIndex === 0 ? 'default' : 'pointer' }}><i className="fa-solid fa-chevron-left"></i></button>
-          <button className="f-slider-btn" onClick={nextSlide} disabled={currentIndex >= Math.max(0, jobs.length - 3)} style={{ opacity: currentIndex >= Math.max(0, jobs.length - 3) ? 0.5 : 1, cursor: currentIndex >= Math.max(0, jobs.length - 3) ? 'default' : 'pointer' }}><i className="fa-solid fa-chevron-right"></i></button>
+          <button className="f-slider-btn"><i className="fa-solid fa-chevron-left"></i></button>
+          <button className="f-slider-btn"><i className="fa-solid fa-chevron-right"></i></button>
         </div>
 
         {/* Jobs Grid */}
         <div className="row g-4">
-          {jobs.slice(currentIndex, currentIndex + 3).map((item) => (
+          {jobs.slice(0, 3).map((item) => (
             <div className="col-xl-4 col-lg-4 col-md-6 col-sm-12" key={item.id}>
               <div className="f-job-card">
                 <div className="f-job-gradient">
@@ -297,7 +182,7 @@ export default function FeaturedJobs() {
                 </div>
                 <div className="f-job-content">
                   <div className="f-job-title text-truncate">
-                    <Link href={`/job-detail/${item.slug}`} className="text-dark text-decoration-none">
+                    <Link href={\`/job-detail/\${item.slug}\`} className="text-dark text-decoration-none">
                       {item.title}
                     </Link>
                   </div>
@@ -313,11 +198,14 @@ export default function FeaturedJobs() {
                   
                   <div className="f-job-footer">
                     <div className="f-job-posted">
-                      Posted: <strong>{getTimeAgo(item.createdAt)}</strong>
+                      Posted: <strong>1 day ago</strong>
                     </div>
                     <div>
-                      <Link href={`/job-detail/${item.slug}`} className="f-btn-apply text-decoration-none">
-                        View Details
+                      <button className="f-btn-save">
+                        <i className="fa-solid fa-bookmark me-1"></i> Save
+                      </button>
+                      <Link href={\`/job-detail/\${item.slug}\`} className="f-btn-apply text-decoration-none">
+                        <i className="fa-solid fa-bolt me-1"></i> Quick Apply
                       </Link>
                     </div>
                   </div>
@@ -336,4 +224,10 @@ export default function FeaturedJobs() {
       </div>
     </section>
   );
-}
+}`;
+
+const returnRegex = /return \(\s*<section[\s\S]*?\);\n\}/;
+code = code.replace(returnRegex, newReturnBlock);
+
+fs.writeFileSync('src/components/home/FeaturedJobs.tsx', code);
+console.log('Successfully updated FeaturedJobs.tsx');

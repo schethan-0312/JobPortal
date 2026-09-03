@@ -1,4 +1,6 @@
-"use client";
+const fs = require('fs');
+
+const newCode = `"use client";
 
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
@@ -52,7 +54,7 @@ export default function CallToAction() {
                         maxHeight: "380px",
                         objectFit: "cover",
                       }}
-                      onError={(e) => { (e.target as HTMLImageElement).src = '/assets/img/team-1.jpg'; }}
+                      onError={(e) => { (e.target).src = '/assets/img/team-1.jpg'; }}
                     />
                   </div>
                 </div>
@@ -129,3 +131,7 @@ export default function CallToAction() {
     </section>
   );
 }
+`;
+
+fs.writeFileSync('src/components/home/CallToAction.tsx', newCode);
+console.log('Successfully wrote CallToAction.tsx');
