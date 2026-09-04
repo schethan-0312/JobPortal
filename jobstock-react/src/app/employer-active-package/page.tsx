@@ -117,6 +117,9 @@ export default function EmployerActivePackagePage() {
       estimatedRefund = Math.max(0, (activeSub.package.priceInPaisa - deduction) / 100);
     }
 
+    // 5% platform fee
+    estimatedRefund = Math.floor(estimatedRefund * 0.95);
+
     // Eligible if within 7 days
     if (diffTime <= 7 * 24 * 60 * 60 * 1000) {
       isRefundEligible = true;
@@ -396,8 +399,11 @@ export default function EmployerActivePackagePage() {
                   </div>
                   <h5 className="fw-bold mb-3">Are you sure you want to cancel?</h5>
                   <p className="text-muted mb-3">
-                    Your estimated refund is <strong>{estimatedRefund.toLocaleString("en-IN", { style: "currency", currency: "INR" })}</strong>
-                    {!hasUsage ? " (full refund since no features were used)." : " (calculated based on unused time)."}
+                    Your estimated refund is <strong>{estimatedRefund.toLocaleString("en-IN", { style: "currency", currency: "INR" })}</strong>.
+                    <br/><br/>
+                    <strong className="text-danger">
+                      Note: A 5% platform fee has been deducted from your refund amount.
+                    </strong>
                   </p>
                   <p className="text-muted mb-0 small">
                     <i className="fa-solid fa-circle-info me-1"></i>

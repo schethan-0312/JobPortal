@@ -175,9 +175,11 @@ export class AdminFinancialsService {
     }
 
     const razorpay = this.getRazorpayClient();
-    const refundAmount = dto.amountInPaisa ?? order.amountInPaisa;
-    if (refundAmount > order.amountInPaisa) {
-      throw new BadRequestException('Refund amount cannot exceed the original transaction amount');
+    const platformFee = Math.floor(order.amountInPaisa * 0.05);
+    const maxRefund = order.amountInPaisa - platformFee;
+    const refundAmount = dto.amountInPaisa ?? maxRefund;
+    if (refundAmount > maxRefund) {
+      throw new BadRequestException(`Refund amount cannot exceed max allowed (${maxRefund / 100}) after 5% platform fee`);
     }
 
     let refund: { id: string };
@@ -199,7 +201,23 @@ export class AdminFinancialsService {
     const updated = await this.prisma.order.update({
       where: { id: orderId },
       data: { status: 'REFUNDED' },
+      include: { package: true }
     });
+
+    if (updated.package?.audience === 'EMPLOYER') {
+      const employer = await this.prisma.employer.findUnique({ where: { userId: updated.userId } });
+      if (employer) {
+        const activeSub = await this.prisma.employerPackageSubscription.findFirst({
+          where: { employerId: employer.id, packageId: updated.packageId, status: 'ACTIVE' },
+        });
+        if (activeSub) {
+          await this.prisma.employerPackageSubscription.update({
+            where: { id: activeSub.id },
+            data: { status: 'REFUNDED', expiresAt: new Date() },
+          });
+        }
+      }
+    }
 
     await this.auditLog.log({
       adminId,

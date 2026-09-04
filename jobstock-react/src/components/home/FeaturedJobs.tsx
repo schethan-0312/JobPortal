@@ -105,10 +105,6 @@ export default function FeaturedJobs() {
     })();
   }, []);
 
-  if (loaded && jobs.length === 0) {
-    return null;
-  }
-
     return (
     <section className="py-5 bg-white position-relative">
       <div className="container py-2">
@@ -267,64 +263,90 @@ export default function FeaturedJobs() {
           </p>
         </div>
 
-        {/* Controls */}
-        <div className="d-flex justify-content-end mb-3">
-          <button className="f-slider-btn" onClick={prevSlide} disabled={currentIndex === 0} style={{ opacity: currentIndex === 0 ? 0.5 : 1, cursor: currentIndex === 0 ? 'default' : 'pointer' }}><i className="fa-solid fa-chevron-left"></i></button>
-          <button className="f-slider-btn" onClick={nextSlide} disabled={currentIndex >= Math.max(0, jobs.length - 3)} style={{ opacity: currentIndex >= Math.max(0, jobs.length - 3) ? 0.5 : 1, cursor: currentIndex >= Math.max(0, jobs.length - 3) ? 'default' : 'pointer' }}><i className="fa-solid fa-chevron-right"></i></button>
-        </div>
-
-        {/* Jobs Grid */}
-        <div className="row g-4">
-          {jobs.slice(currentIndex, currentIndex + 3).map((item) => (
-            <div className="col-xl-4 col-lg-4 col-md-6 col-sm-12" key={item.id}>
-              <div className="f-job-card">
-                <div className="f-job-gradient">
-                  <div className="f-job-logo-wrapper">
-                    <img
-                      src={assetUrl(item.employer?.logoUrl) || "/assets/img/l-1.png"}
-                      alt={item.employer?.companyName || "Employer"}
-                      style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-                    />
-                  </div>
-                </div>
-                <div className="f-job-content">
-                  <div className="f-job-title text-truncate">
-                    <Link href={`/job-detail/${item.slug}`} className="text-dark text-decoration-none">
-                      {item.title}
-                    </Link>
-                  </div>
-                  <div className="f-job-company text-truncate">
-                    {item.employer?.companyName ?? "Verified Company"}
-                  </div>
-                  <div className="f-job-location text-truncate">
-                    <i className="fa-solid fa-location-dot"></i>
-                    {item.location ?? "Remote"}
-                  </div>
-                  
-                  <div className="f-job-divider"></div>
-                  
-                  <div className="f-job-footer">
-                    <div className="f-job-posted">
-                      Posted: <strong>{getTimeAgo(item.createdAt)}</strong>
-                    </div>
-                    <div>
-                      <Link href={`/job-detail/${item.slug}`} className="f-btn-apply text-decoration-none">
-                        View Details
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
+        {/* Loading state */}
+        {!loaded && (
+          <div className="text-center py-5">
+            <div className="spinner-border text-success" role="status">
+              <span className="visually-hidden">Loading...</span>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
 
-        {/* View all jobs button */}
-        <div className="text-start">
-          <Link href="/jobs" className="f-view-all text-decoration-none">
-            View all jobs
-          </Link>
-        </div>
+        {/* No jobs empty state */}
+        {loaded && jobs.length === 0 && (
+          <div className="text-center py-5">
+            <div style={{ fontSize: '3.5rem', marginBottom: '16px', opacity: 0.3 }}>
+              <i className="fa-solid fa-briefcase"></i>
+            </div>
+            <h5 className="fw-semibold text-muted mb-2">No Jobs Added Yet</h5>
+            <p className="text-muted" style={{ fontSize: '0.95rem' }}>
+              Stay tuned! Employers will be posting new opportunities soon.
+            </p>
+          </div>
+        )}
+
+        {/* Controls — only show when jobs exist */}
+        {loaded && jobs.length > 0 && (
+          <>
+            <div className="d-flex justify-content-end mb-3">
+              <button className="f-slider-btn" onClick={prevSlide} disabled={currentIndex === 0} style={{ opacity: currentIndex === 0 ? 0.5 : 1, cursor: currentIndex === 0 ? 'default' : 'pointer' }}><i className="fa-solid fa-chevron-left"></i></button>
+              <button className="f-slider-btn" onClick={nextSlide} disabled={currentIndex >= Math.max(0, jobs.length - 3)} style={{ opacity: currentIndex >= Math.max(0, jobs.length - 3) ? 0.5 : 1, cursor: currentIndex >= Math.max(0, jobs.length - 3) ? 'default' : 'pointer' }}><i className="fa-solid fa-chevron-right"></i></button>
+            </div>
+
+            {/* Jobs Grid */}
+            <div className="row g-4">
+              {jobs.slice(currentIndex, currentIndex + 3).map((item) => (
+                <div className="col-xl-4 col-lg-4 col-md-6 col-sm-12" key={item.id}>
+                  <div className="f-job-card">
+                    <div className="f-job-gradient">
+                      <div className="f-job-logo-wrapper">
+                        <img
+                          src={assetUrl(item.employer?.logoUrl) || "/assets/img/l-1.png"}
+                          alt={item.employer?.companyName || "Employer"}
+                          style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                        />
+                      </div>
+                    </div>
+                    <div className="f-job-content">
+                      <div className="f-job-title text-truncate">
+                        <Link href={`/job-detail/${item.slug}`} className="text-dark text-decoration-none">
+                          {item.title}
+                        </Link>
+                      </div>
+                      <div className="f-job-company text-truncate">
+                        {item.employer?.companyName ?? "Verified Company"}
+                      </div>
+                      <div className="f-job-location text-truncate">
+                        <i className="fa-solid fa-location-dot"></i>
+                        {item.location ?? "Remote"}
+                      </div>
+                      
+                      <div className="f-job-divider"></div>
+                      
+                      <div className="f-job-footer">
+                        <div className="f-job-posted">
+                          Posted: <strong>{getTimeAgo(item.createdAt)}</strong>
+                        </div>
+                        <div>
+                          <Link href={`/job-detail/${item.slug}`} className="f-btn-apply text-decoration-none">
+                            View Details
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* View all jobs button */}
+            <div className="text-start">
+              <Link href="/jobs" className="f-view-all text-decoration-none">
+                View all jobs
+              </Link>
+            </div>
+          </>
+        )}
       </div>
     </section>
   );

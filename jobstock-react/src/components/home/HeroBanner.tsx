@@ -10,6 +10,13 @@ interface PublicStats {
   totalApplications: number;
 }
 
+function formatStat(n: number | undefined): string {
+  if (n === undefined || n === null) return "0";
+  if (n >= 100000) return `${(n / 100000).toFixed(0)}L+`;
+  if (n >= 1000) return `${(n / 1000).toFixed(0)}k+`;
+  return `${n}`;
+}
+
 export default function HeroBanner() {
   const [stats, setStats] = useState<PublicStats | null>(null);
 
@@ -23,151 +30,185 @@ export default function HeroBanner() {
       }
     })();
   }, []);
+
+  const activeJobs = stats ? formatStat(stats.totalJobs) : "0";
+  const verifiedCompanies = stats ? formatStat(stats.totalVerifiedEmployers) : "0";
+  const talents = stats ? formatStat(stats.totalCandidates) : "0";
+
   return (
-    <div
-      className="image-cover hero-header position-relative py-5"
-      style={{ background: "url(/assets/img/4268.jpg) no-repeat", backgroundSize: "cover", backgroundPosition: "center" }}
-      data-overlay="7"
-    >
-      <div className="position-absolute bottom-0 start-0 end-0 d-none d-md-block">
-        <img src="/assets/img/banner-curve.svg" className="img-fluid w-100" alt="SVG" />
-      </div>
-      <div className="container position-relative z-9 pt-lg-4 pt-md-3">
-        <div className="row justify-content-between align-items-center gy-4">
-          <div className="col-xl-6 col-lg-6 col-md-12 col-sm-12 text-center text-lg-start">
-            <h1 className="hero-title mb-3 fw-bold text-white">Real Jobs, Real People, Real Success</h1>
-            <p className="hero-desc fs-5 text-white-50 mb-4">
-              Getting a new job is never easy. Check what new jobs we have in store for you on
-              JobStock.
+    <div className="hero-banner-main position-relative">
+      <div className="container position-relative z-2">
+        <div className="row">
+          <div className="col-xl-9 col-lg-10 col-md-12">
+            
+            {/* Main Headline */}
+            <h1 className="hero-headline fw-bold text-white mb-3">
+              Real Jobs,Real<br />
+              People,Real Success
+            </h1>
+
+            {/* Sub-headline */}
+            <p className="hero-subtext text-white-50 mb-4 pb-2" style={{ maxWidth: "580px", lineHeight: 1.6 }}>
+              Getting a new job is never easy. Check what new jobs we have in store for you on JobStock.
             </p>
-            {stats && (
-              <div className="lios-vrst mt-4">
-                <ul className="d-flex flex-wrap justify-content-center justify-content-lg-start gap-3 list-unstyled p-0 m-0">
-                  <li className="stat-card">
-                    <div className="lios-parts p-2">
-                      <h2 className="mb-0 text-white">
-                        <span className="ctr">{stats.totalJobs}</span>
-                      </h2>
-                      <h6 className="small text-white-50 mb-0">Active Jobs</h6>
-                    </div>
-                  </li>
-                  <li className="stat-card">
-                    <div className="lios-parts p-2">
-                      <h2 className="mb-0 text-white">
-                        <span className="ctr">{stats.totalVerifiedEmployers}</span>
-                      </h2>
-                      <h6 className="small text-white-50 mb-0">Verified Companies</h6>
-                    </div>
-                  </li>
-                  <li className="stat-card">
-                    <div className="lios-parts p-2">
-                      <h2 className="mb-0 text-white">
-                        <span className="ctr">{stats.totalCandidates}</span>
-                      </h2>
-                      <h6 className="small text-white-50 mb-0">Talents</h6>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-            )}
-          </div>
 
-          <div className="col-xl-5 col-lg-5 col-md-12 col-sm-12">
-            <div className="hero-search-wrap bg-white p-3 p-sm-4 rounded-4 shadow-lg">
-              <div className="hero-search mb-3">
-                <h2 className="fs-4 fw-bold mb-0 text-dark text-center text-sm-start">
-                  Grow Your Career with <span className="text-main">JobStock</span>
-                </h2>
-              </div>
-              <form action="/jobs" method="GET" className="hero-search-content verticle-space">
-                <div className="row g-3">
-                  <div className="col-12">
-                    <div className="form-group mb-0">
-                      <div className="input-with-icon position-relative">
-                        <input
-                          type="text"
-                          name="search"
-                          className="form-control border rounded-3 py-2 px-3"
-                          placeholder="Search Job Keywords.."
-                          style={{ height: "48px" }}
-                        />
-                        <img
-                          src="/assets/img/pin.svg"
-                          width={18}
-                          alt=""
-                          className="position-absolute end-0 top-50 translate-middle-y me-3 pointer-events-none opacity-50"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="col-12 col-sm-6">
-                    <div className="form-group mb-0">
-                      <label className="small fw-medium text-secondary mb-1">Job Category</label>
-                      <select name="category" className="form-control rounded-3 py-2" style={{ height: "44px" }}>
-                        <option value="">All Categories</option>
-                        <option value="Software">Software & Application</option>
-                        <option value="Banking">Banking</option>
-                        <option value="Health">Health & Medical</option>
-                        <option value="Mobile">Mobile & App</option>
-                        <option value="Education">Education</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="col-12 col-sm-6">
-                    <div className="form-group mb-0">
-                      <label className="small fw-medium text-secondary mb-1">Job Type</label>
-                      <select name="jobType" className="form-control rounded-3 py-2" style={{ height: "44px" }}>
-                        <option value="">All Type</option>
-                        <option value="Full Time">Full Time</option>
-                        <option value="Part Time">Part Time</option>
-                        <option value="Contractor">Contractor</option>
-                        <option value="Freelance">Freelance</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="col-12 mt-3">
-                    <div className="form-group mb-0">
-                      <button
-                        type="submit"
-                        className="btn w-100 fw-semibold rounded-3 py-2"
-                        style={{
-                          backgroundColor: "#37a481",
-                          color: "#ffffff",
-                          borderColor: "#37a481",
-                          height: "48px",
-                          fontSize: "1rem",
-                        }}
-                      >
-                        <i className="fa-solid fa-magnifying-glass me-2"></i>Search Jobs
-                      </button>
-                    </div>
-                  </div>
+            {/* Search Bar */}
+            <div className="hero-search-bar-wrap mb-5">
+              <form action="/jobs" method="GET" className="hero-horizontal-form">
+                
+                {/* Search Keyword */}
+                <div className="search-field keyword-field">
+                  <i className="fa-solid fa-magnifying-glass text-muted ms-2 me-2"></i>
+                  <input
+                    type="text"
+                    name="search"
+                    className="form-control border-0 shadow-none bg-transparent hero-keyword-input"
+                    placeholder="Search Job Keywords.."
+                  />
                 </div>
+
+                {/* Submit Button */}
+                <div className="search-btn-field">
+                  <button type="submit" className="btn search-submit-btn">
+                    Search Jobs
+                  </button>
+                </div>
+
               </form>
             </div>
+
+            {/* Stats Row */}
+            <div className="hero-stats-row d-flex flex-wrap align-items-center gap-4 gap-md-5">
+              <div className="hero-stat-item">
+                <h3 className="hero-stat-number text-white fw-bold mb-0">{activeJobs}</h3>
+                <span className="hero-stat-label text-white-50 text-uppercase fw-semibold">Active Jobs</span>
+              </div>
+              <div className="hero-stat-item">
+                <h3 className="hero-stat-number text-white fw-bold mb-0">{verifiedCompanies}</h3>
+                <span className="hero-stat-label text-white-50 text-uppercase fw-semibold">Verified Companies</span>
+              </div>
+              <div className="hero-stat-item">
+                <h3 className="hero-stat-number text-white fw-bold mb-0">{talents}</h3>
+                <span className="hero-stat-label text-white-50 text-uppercase fw-semibold">Talents</span>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
+
       <style jsx>{`
-        .hero-title {
-          font-size: clamp(1.8rem, 4vw, 2.75rem);
-          line-height: 1.25;
+        .hero-banner-main {
+          background-image: linear-gradient(rgba(40, 78, 73, 0.78), rgba(84, 126, 120, 0.78)), url(/assets/img/4268.jpg);
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+          padding: 160px 0 110px;
         }
-        .hero-desc {
-          font-size: clamp(1rem, 2vw, 1.25rem);
+
+        .hero-headline {
+          font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+          line-height: 1.18;
+          letter-spacing: -0.5px;
         }
-        .stat-card {
-          min-width: 100px;
+        .hero-subtext {
+          font-size: clamp(0.95rem, 1.8vw, 1.15rem);
         }
-        @media (max-width: 576px) {
-          .stat-card {
-            flex: 1 1 calc(33.333% - 12px);
-            text-align: center;
+        
+        .hero-search-bar-wrap {
+          max-width: 620px;
+        }
+
+        .hero-horizontal-form {
+          background: #ffffff;
+          border-radius: 16px;
+          padding: 7px 8px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+        }
+
+        .search-field {
+          display: flex;
+          align-items: center;
+          flex: 1;
+        }
+
+        .keyword-field {
+          flex: 1;
+          padding-left: 6px;
+        }
+
+        .hero-keyword-input {
+          font-size: 0.95rem;
+          color: #1e293b;
+          height: 44px;
+        }
+
+        .hero-keyword-input::placeholder {
+          color: #94a3b8;
+          font-size: 0.92rem;
+        }
+
+        .search-btn-field {
+          flex-shrink: 0;
+        }
+
+        .search-submit-btn {
+          background-color: #38a581;
+          color: #ffffff;
+          border: none;
+          border-radius: 12px;
+          padding: 0 26px;
+          height: 46px;
+          font-size: 0.95rem;
+          font-weight: 600;
+          transition: all 0.2s ease;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          white-space: nowrap;
+        }
+
+        .search-submit-btn:hover {
+          background-color: #2e8b6b;
+          color: #ffffff;
+          transform: translateY(-1px);
+        }
+
+        .hero-stat-number {
+          font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+          line-height: 1.1;
+          letter-spacing: -0.5px;
+        }
+
+        .hero-stat-label {
+          font-size: 0.72rem;
+          letter-spacing: 0.8px;
+        }
+
+        @media (max-width: 767px) {
+          .hero-banner-main {
+            padding: 130px 0 80px;
           }
-          .hero-search-wrap {
-            padding: 1.25rem !important;
+          .hero-horizontal-form {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 12px;
+            border-radius: 16px;
+            gap: 10px;
+          }
+          .hero-horizontal-form .search-field {
+            width: 100%;
+            padding-left: 0;
+          }
+          .hero-horizontal-form .search-btn-field {
+            width: 100%;
+            margin-top: 4px;
+          }
+          .search-submit-btn {
+            width: 100%;
           }
         }
       `}</style>

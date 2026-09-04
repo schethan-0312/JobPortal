@@ -459,6 +459,8 @@ export class PackagesService {
         refundAmount = Math.floor(order.amountInPaisa * 0.90); // 10% deduction
       }
     }
+    // 5% platform fee
+    refundAmount = Math.floor(refundAmount * 0.95);
 
     if (order.gatewayRef && order.gatewayRef !== 'dev-simulated') {
       const razorpay = this.getRazorpayClient();
@@ -471,13 +473,30 @@ export class PackagesService {
       }
     }
 
-    return this.prisma.order.update({
+    const updated = await this.prisma.order.update({
       where: { id: orderId },
       data: { 
         status: 'REFUNDED',
         refundedAmountInPaisa: refundAmount
       },
     });
+
+    if (order.package.audience === 'EMPLOYER') {
+      const employer = await this.prisma.employer.findUnique({ where: { userId } });
+      if (employer) {
+        const activeSub = await this.prisma.employerPackageSubscription.findFirst({
+          where: { employerId: employer.id, packageId: order.packageId, status: 'ACTIVE' },
+        });
+        if (activeSub) {
+          await this.prisma.employerPackageSubscription.update({
+            where: { id: activeSub.id },
+            data: { status: 'REFUNDED', expiresAt: new Date() },
+          });
+        }
+      }
+    }
+
+    return updated;
   }
 
   async getActiveSubscription(userId: string) {
@@ -557,6 +576,9 @@ export class PackagesService {
       const deduction = Math.round(costPerDay * daysUsed);
       refundAmount = Math.max(0, order.amountInPaisa - deduction);
     }
+
+    // 5% platform fee
+    refundAmount = Math.floor(refundAmount * 0.95);
 
     if (refundAmount <= 0) {
       throw new BadRequestException('Calculated refund amount is zero or negative due to time used.');
