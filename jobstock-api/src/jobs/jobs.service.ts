@@ -58,7 +58,7 @@ export class JobsService {
       throw new ForbiddenException('Publish Date cannot be in the past');
     }
     if (dto.applicationDeadline && new Date(dto.applicationDeadline) < startOfToday) {
-      throw new ForbiddenException('Application Deadline cannot be in the past');
+      throw new ForbiddenException('Application Deadline cannot be a date in the past');
     }
     if (dto.expiryDate && new Date(dto.expiryDate) < startOfToday) {
       throw new ForbiddenException('Expiry Date cannot be in the past');
@@ -194,6 +194,7 @@ export class JobsService {
               userId: candInfo.userId,
               title: `New Job from ${emp?.companyName || 'Company'}`,
               body: `${emp?.companyName || 'Company'} just posted: "${job.title}". Click to view & apply!`,
+              actionUrl: `/job/${job.slug}`,
             },
           }).catch(() => {});
         }
@@ -310,6 +311,12 @@ export class JobsService {
     const job = await this.prisma.job.findUnique({ where: { id: jobId } });
     if (!job || job.employerId !== employer.id) {
       throw new NotFoundException('Job not found or unauthorized');
+    }
+    
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    if (dto.applicationDeadline && new Date(dto.applicationDeadline) < startOfToday) {
+      throw new ForbiddenException('Application Deadline cannot be a date in the past');
     }
     return this.prisma.job.update({
       where: { id: jobId },

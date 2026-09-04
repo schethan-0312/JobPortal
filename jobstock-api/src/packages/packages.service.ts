@@ -57,6 +57,22 @@ export class PackagesService {
     verifiedRecruiterBadgeEnabled?: boolean;
     isActive?: boolean;
   }) {
+    if (data.priceInPaisa < 0) {
+      throw new BadRequestException('Price cannot be negative');
+    }
+    if (data.duration !== undefined && data.duration <= 0) {
+      throw new BadRequestException('Duration must be positive');
+    }
+    if (data.postJobLimit !== undefined && data.postJobLimit < 0) {
+      throw new BadRequestException('Post job limit cannot be negative');
+    }
+    if (data.applicantViewLimit !== undefined && data.applicantViewLimit < 0) {
+      throw new BadRequestException('Applicant view limit cannot be negative');
+    }
+    if (data.jobSeekerViewLimit !== undefined && data.jobSeekerViewLimit < 0) {
+      throw new BadRequestException('Job seeker view limit cannot be negative');
+    }
+
     const pkg = await this.prisma.package.create({
       data: {
         name: data.name,
@@ -187,6 +203,22 @@ export class PackagesService {
       isActive?: boolean;
     },
   ) {
+    if (data.priceInPaisa !== undefined && data.priceInPaisa < 0) {
+      throw new BadRequestException('Price cannot be negative');
+    }
+    if (data.duration !== undefined && data.duration <= 0) {
+      throw new BadRequestException('Duration must be positive');
+    }
+    if (data.postJobLimit !== undefined && data.postJobLimit < 0) {
+      throw new BadRequestException('Post job limit cannot be negative');
+    }
+    if (data.applicantViewLimit !== undefined && data.applicantViewLimit < 0) {
+      throw new BadRequestException('Applicant view limit cannot be negative');
+    }
+    if (data.jobSeekerViewLimit !== undefined && data.jobSeekerViewLimit < 0) {
+      throw new BadRequestException('Job seeker view limit cannot be negative');
+    }
+
     return this.prisma.package.update({
       where: { id },
       data: {

@@ -65,6 +65,56 @@ const workModeOptions = [
   { value: "HYBRID", label: "Hybrid" },
 ];
 
+const fallbackCitiesByState: Record<string, string[]> = {
+  Karnataka: [
+    "Bengaluru", "Bangalore", "Mysore", "Mysuru", "Hassan", "Mangalore", "Mangaluru",
+    "Hubli", "Hubballi", "Dharwad", "Belgaum", "Belagavi", "Davanagere", "Shimoga",
+    "Shivamogga", "Tumkur", "Tumakuru", "Gulbarga", "Kalaburagi", "Bellary", "Ballari",
+    "Udupi", "Bidar", "Hospet", "Hosapete", "Chitradurga", "Kolar", "Mandya", "Chikkamagaluru"
+  ],
+  Maharashtra: [
+    "Mumbai", "Pune", "Nagpur", "Thane", "Nashik", "Aurangabad", "Chhatrapati Sambhajinagar",
+    "Solapur", "Amravati", "Kolhapur", "Navi Mumbai", "Sangli", "Jalgaon", "Akola", "Latur"
+  ],
+  "Tamil Nadu": [
+    "Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Tiruppur",
+    "Erode", "Vellore", "Tirunelveli", "Thanjavur", "Tuticorin", "Nagercoil"
+  ],
+  Telangana: [
+    "Hyderabad", "Warangal", "Nizamabad", "Khammam", "Karimnagar", "Ramagundam"
+  ],
+  "Andhra Pradesh": [
+    "Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Kurnool", "Rajahmundry",
+    "Tirupati", "Kakinada", "Eluru", "Anantapur"
+  ],
+  Kerala: [
+    "Thiruvananthapuram", "Kochi", "Cochin", "Kozhikode", "Calicut", "Thrissur",
+    "Kollam", "Palakkad", "Kannur", "Alappuzha", "Kottayam"
+  ],
+  Delhi: [
+    "New Delhi", "North Delhi", "South Delhi", "East Delhi", "West Delhi", "Central Delhi"
+  ],
+  Gujarat: [
+    "Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar", "Jamnagar", "Gandhinagar", "Junagadh"
+  ],
+  "Uttar Pradesh": [
+    "Lucknow", "Kanpur", "Noida", "Greater Noida", "Ghaziabad", "Agra", "Varanasi",
+    "Prayagraj", "Allahabad", "Meerut", "Bareilly", "Aligarh", "Moradabad"
+  ],
+  "West Bengal": [
+    "Kolkata", "Howrah", "Durgapur", "Asansol", "Siliguri", "Kharagpur", "Bardhaman"
+  ],
+  Rajasthan: [
+    "Jaipur", "Jodhpur", "Udaipur", "Kota", "Bikaner", "Ajmer", "Bhilwara", "Alwar"
+  ],
+  Punjab: [
+    "Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Bathinda", "Mohali"
+  ],
+  Haryana: [
+    "Gurugram", "Gurgaon", "Faridabad", "Panipat", "Ambala", "Karnal", "Hisar", "Rohtak"
+  ]
+};
+
 interface SearchableSelectProps {
   label: string;
   value: string;
@@ -77,6 +127,7 @@ interface SearchableSelectProps {
   searchPlaceholder?: string;
   onRetry?: () => void;
   errorMsg?: string | null;
+  allowCustom?: boolean;
 }
 
 function SearchableSelect({
@@ -91,6 +142,7 @@ function SearchableSelect({
   searchPlaceholder = "Search...",
   onRetry,
   errorMsg,
+  allowCustom = true,
 }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -111,6 +163,12 @@ function SearchableSelect({
   const filteredOptions = options.filter((opt) =>
     opt.toLowerCase().includes(searchQuery.toLowerCase().trim())
   );
+
+  const trimmedQuery = searchQuery.trim();
+  const showCustomOption =
+    allowCustom &&
+    trimmedQuery.length > 0 &&
+    !options.some((opt) => opt.toLowerCase() === trimmedQuery.toLowerCase());
 
   return (
     <div className="form-group position-relative" ref={containerRef}>
@@ -166,13 +224,34 @@ function SearchableSelect({
               placeholder={searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && trimmedQuery) {
+                  e.preventDefault();
+                  onChange(trimmedQuery);
+                  setIsOpen(false);
+                }
+              }}
               autoFocus
               onClick={(e) => e.stopPropagation()}
             />
           </div>
 
           <div className="list-group list-group-flush">
-            {filteredOptions.length === 0 ? (
+            {showCustomOption && (
+              <button
+                type="button"
+                className="list-group-item list-group-item-action text-start border-0 py-2 px-3 small text-primary fw-medium"
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  onChange(trimmedQuery);
+                  setIsOpen(false);
+                }}
+              >
+                <i className="fa-solid fa-plus me-1"></i> Use &quot;{trimmedQuery}&quot;
+              </button>
+            )}
+
+            {filteredOptions.length === 0 && !showCustomOption ? (
               <div className="p-2 text-center text-muted small">No results found</div>
             ) : (
               filteredOptions.map((opt) => (
@@ -180,7 +259,7 @@ function SearchableSelect({
                   key={opt}
                   type="button"
                   className={`list-group-item list-group-item-action text-start border-0 py-2 px-3 small ${
-                    opt.toLowerCase() === value.toLowerCase() ? "active bg-primary text-white" : ""
+                    opt.toLowerCase() === (value || "").toLowerCase() ? "active bg-primary text-white" : ""
                   }`}
                   style={{ cursor: "pointer" }}
                   onClick={() => {
@@ -244,6 +323,7 @@ function EmployerSubmitJobContent() {
   const [country, setCountry] = useState("India");
   const [state, setState] = useState("");
   const [city, setCity] = useState("");
+  const [locations, setLocations] = useState<string[]>([]);
   const [workMode, setWorkMode] = useState("IN_OFFICE");
 
   // 6. Job Openings
@@ -335,7 +415,14 @@ function EmployerSubmitJobContent() {
       return;
     }
     const cacheKey = `${countryName}_${stateName}`;
-    if (cityCache[cacheKey]) {
+
+    // Instant local fallback if available
+    const instantFallback = fallbackCitiesByState[stateName] || [];
+    if (instantFallback.length > 0) {
+      setCities(instantFallback);
+    }
+
+    if (cityCache[cacheKey] && cityCache[cacheKey].length > 0) {
       setCities(cityCache[cacheKey]);
       return;
     }
@@ -350,21 +437,27 @@ function EmployerSubmitJobContent() {
         },
         body: JSON.stringify({ country: countryName, state: stateName }),
       });
-      if (!response.ok) {
-        throw new Error("Failed to fetch cities");
+      if (response.ok) {
+        const json = await response.json();
+        if (!json.error && json.data && Array.isArray(json.data) && json.data.length > 0) {
+          const cityNames = json.data.sort();
+          const merged = Array.from(new Set([...cityNames, ...instantFallback])).sort();
+          setCityCache((prev) => ({ ...prev, [cacheKey]: merged }));
+          setCities(merged);
+          return;
+        }
       }
-      const json = await response.json();
-      if (json.error) {
-        throw new Error(json.msg || "Failed to load cities");
-      }
-      const cityNames = (json.data || []).sort();
-      setCityCache((prev) => ({ ...prev, [cacheKey]: cityNames }));
-      setCities(cityNames);
     } catch (err: any) {
-      setCitiesError(err.message || "Failed to load cities");
-      setCities([]);
+      // API error - ignore if instantFallback exists
     } finally {
       setCitiesLoading(false);
+    }
+
+    if (instantFallback.length > 0) {
+      setCities(instantFallback);
+      setCitiesError(null);
+    } else {
+      setCitiesError("Please type your city name manually if not listed");
     }
   };
 
@@ -486,6 +579,14 @@ function EmployerSubmitJobContent() {
           setCountry(job.country || 'India');
           setState(job.state || '');
           setCity(job.city || '');
+          
+          const existingLoc = job.location || '';
+          if (existingLoc.includes(' | ')) {
+            setLocations(existingLoc.split(' | '));
+          } else if (existingLoc && existingLoc !== 'Remote' && existingLoc !== 'India' && existingLoc !== 'Not specified') {
+            setLocations([existingLoc]);
+          }
+
           setWorkMode(job.workMode || 'IN_OFFICE');
           setOpenings(job.openings ? String(job.openings) : '1');
           if (job.applicationDeadline) {
@@ -518,6 +619,19 @@ function EmployerSubmitJobContent() {
 
   const handleRemoveSkill = (skillToRemove: string) => {
     setSkills(skills.filter((s) => s !== skillToRemove));
+  };
+
+  const handleAddLocation = () => {
+    const loc = [city, state, country].filter(Boolean).join(", ").trim();
+    if (loc && !locations.includes(loc)) {
+      setLocations([...locations, loc]);
+      setCity("");
+      setState("");
+    }
+  };
+
+  const handleRemoveLocation = (locToRemove: string) => {
+    setLocations(locations.filter((l) => l !== locToRemove));
   };
 
   function validateForm(isDraft: boolean, currentSkills: string[] = skills): boolean {
@@ -574,8 +688,8 @@ function EmployerSubmitJobContent() {
     }
 
     // Location
-    if (workMode !== "REMOTE" && !country.trim()) {
-      newErrors.country = "Please select a Country for on-site or hybrid work.";
+    if (workMode !== "REMOTE" && locations.length === 0 && !country.trim()) {
+      newErrors.country = "Please select and add a Location for on-site or hybrid work.";
     }
 
     // 6. Job Openings
@@ -628,7 +742,15 @@ function EmployerSubmitJobContent() {
       return;
     }
 
-    const calculatedLocation = [city, state, country].filter(Boolean).join(", ").trim() || (workMode === "REMOTE" ? "Remote" : "India");
+    let finalLocations = [...locations];
+    const currentLoc = [city, state, country].filter(Boolean).join(", ").trim();
+    if (currentLoc && !finalLocations.includes(currentLoc) && locations.length === 0) {
+      finalLocations.push(currentLoc);
+    }
+    
+    const calculatedLocation = finalLocations.length > 0 
+      ? finalLocations.join(" | ") 
+      : (workMode === "REMOTE" ? "Remote" : "India");
 
     if (isDraft) setSavingDraft(true); else setSubmitting(true);
     try {
@@ -1206,6 +1328,33 @@ function EmployerSubmitJobContent() {
                         onRetry={() => fetchCities(country, state)}
                         searchPlaceholder="Search city..."
                       />
+                    </div>
+
+                    <div className="col-xl-12 col-lg-12 col-md-12 mt-3">
+                      <button
+                        type="button"
+                        className="btn btn-main px-4 fw-medium"
+                        onClick={handleAddLocation}
+                      >
+                        Add Location
+                      </button>
+                      
+                      {locations.length > 0 && (
+                        <div className="d-flex flex-wrap gap-2 mt-3">
+                          {locations.map((loc) => (
+                            <span key={loc} className="badge bg-light-main text-main border p-2 d-flex align-items-center gap-1.5 fs-7">
+                              {loc}
+                              <button
+                                type="button"
+                                className="btn-close ms-1"
+                                style={{ fontSize: "0.65rem" }}
+                                onClick={() => handleRemoveLocation(loc)}
+                                title="Remove location"
+                              ></button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div className="col-xl-12 col-lg-12 col-md-12">

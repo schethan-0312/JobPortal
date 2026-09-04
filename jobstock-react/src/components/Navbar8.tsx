@@ -15,6 +15,7 @@ interface NotificationItem {
   id: string;
   title: string;
   body: string;
+  actionUrl?: string;
   isRead: boolean;
 }
 
@@ -130,18 +131,30 @@ export default function Navbar8() {
             </div>
           </div>
         )}
-        {notifications.map((n) => (
-          <div className="ntf-list-groups-single" key={n.id}>
-            <div className={`ntf-list-groups-icon ${n.isRead ? "text-muted" : "text-main"}`}>
-              <i className="fa-solid fa-bell"></i>
+        {notifications.map((n) => {
+          const content = (
+            <>
+              <div className={`ntf-list-groups-icon ${n.isRead ? "text-muted" : "text-main"}`}>
+                <i className="fa-solid fa-bell"></i>
+              </div>
+              <div className="ntf-list-groups-caption">
+                <p className="small mb-0">
+                  <strong>{n.title}</strong> {n.body}
+                </p>
+              </div>
+            </>
+          );
+          
+          return n.actionUrl ? (
+            <Link href={n.actionUrl} className="ntf-list-groups-single d-flex text-decoration-none" key={n.id} onClick={() => setShowNotifications(false)}>
+              {content}
+            </Link>
+          ) : (
+            <div className="ntf-list-groups-single d-flex" key={n.id}>
+              {content}
             </div>
-            <div className="ntf-list-groups-caption">
-              <p className="small mb-0">
-                <strong>{n.title}</strong> {n.body}
-              </p>
-            </div>
-          </div>
-        ))}
+          );
+        })}
           <div className="ntf-list-groups-single" style={{ textAlign: "center" }}>
             <Link href="/employer-dashboard" className="ntf-more text-main font-weight-bold" style={{ display: "block", padding: "10px", pointerEvents: "auto", cursor: "pointer" }} onClick={() => { setShowNotifications(false); setShowMobileNotifications(false); }}>
               View All Notifications

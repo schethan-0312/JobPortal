@@ -12,6 +12,7 @@ interface Notification {
   id: string;
   title: string;
   body: string;
+  actionUrl?: string;
   isRead: boolean;
   createdAt: string;
 }
@@ -185,7 +186,11 @@ export default function EmployerDashboardPage() {
                         </span>
                         <div className="ground-content">
                           <h6>
-                            <span className="cursor-pointer">{n.title}</span>
+                            {n.actionUrl ? (
+                              <a href={n.actionUrl} className="cursor-pointer">{n.title}</a>
+                            ) : (
+                              <span className="cursor-pointer">{n.title}</span>
+                            )}
                           </h6>
                           <span className="small">{timeAgo(n.createdAt)}</span>
                         </div>
