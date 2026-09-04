@@ -32,6 +32,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
         <link rel="stylesheet" href="/assets/css/styles.css?v=1.1" />
         <link rel="stylesheet" href="/assets/css/colors.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
         <link
           href="https://cdn.jsdelivr.net/npm/@mdi/font/css/materialdesignicons.min.css"
           rel="stylesheet"

@@ -111,62 +111,71 @@ export default function Footer() {
 
   return (
     <>
-      <footer className="footer custom-theme-footer position-relative" style={{ backgroundColor: '#134e4a', overflow: 'hidden', padding: '60px 0 20px', color: '#a8c6c4' }}>
-        
-        {/* Massive Watermark */}
-        <div className="position-absolute w-100 text-center" style={{ top: '-30px', left: 0, zIndex: 0, pointerEvents: 'none' }}>
-          <h1 style={{ 
-            fontSize: '15vw', 
-            fontWeight: 900, 
-            color: 'rgba(255,255,255,0.04)', 
-            margin: 0,
-            lineHeight: 1,
-            letterSpacing: '5px'
-          }}>JOBSTOCK</h1>
-        </div>
+      {/* JOBSTOCK Watermark — sits on white bg above the dark footer */}
+      <div style={{
+        backgroundColor: '#ffffff',
+        overflow: 'hidden',
+        lineHeight: 0.85,
+        textAlign: 'center',
+        pointerEvents: 'none',
+        userSelect: 'none',
+      }}>
+        <h1 style={{
+          fontSize: '16vw',
+          fontWeight: 900,
+          color: 'rgba(19, 78, 74, 0.08)',
+          margin: 0,
+          lineHeight: 0.85,
+          letterSpacing: '4px',
+          display: 'block',
+        }}>JOBSTOCK</h1>
+      </div>
+
+      <footer className="footer custom-theme-footer position-relative" style={{ backgroundColor: '#134e4a', overflow: 'hidden', padding: '10px 0 5px', color: '#a8c6c4' }}>
 
         <div className="container position-relative" style={{ zIndex: 1 }}>
-          
-          {/* Header Row: Logo & Contact */}
-          <div className="row align-items-center mb-4">
-            <div className="col-md-6 d-flex align-items-center">
+
+          {/* Top Row: Logo | Tagline | Contact | Socials — all in one line */}
+          <div className="row align-items-center mb-2 pb-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+            {/* Logo */}
+            <div className="col-auto">
               <Link href="/">
-                <img
-                  src="/assets/img/logo-light.png"
-                  style={{ height: "32px", width: "auto" }}
-                  alt="JobStock"
-                />
+                <img src="/assets/img/logo-light.png" style={{ height: '22px', width: 'auto' }} alt="JobStock" />
               </Link>
             </div>
-            <div className="col-md-6 text-md-end mt-3 mt-md-0">
-              <div className="d-inline-flex gap-4 align-items-center flex-wrap" style={{ fontSize: '0.85rem', color: '#a8c6c4' }}>
-                <div><i className="fa-solid fa-location-dot me-2"></i>#176 jp nagar, banglore</div>
-                <div><i className="fa-solid fa-envelope me-2"></i>gtech@gmail.com</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Second Row: Subtitle & Socials */}
-          <div className="row align-items-center mb-5 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-            <div className="col-md-6">
-              <p className="m-0" style={{ color: '#a8c6c4', fontSize: '0.95rem', maxWidth: '450px', lineHeight: 1.6 }}>
-                Find the right opportunities, connect with top companies, and build your career with JobStock.
+            {/* Tagline */}
+            <div className="col">
+              <p className="m-0" style={{ color: '#a8c6c4', fontSize: '0.73rem', lineHeight: 1.3 }}>
+                Find the right opportunities and build your career with JobStock.
               </p>
             </div>
-            <div className="col-md-6 text-md-end mt-4 mt-md-0">
-              <div className="d-inline-flex gap-3">
-                <a href="https://facebook.com" className="social-icon-btn"><i className="fa-brands fa-facebook-f"></i></a>
-                <a href="https://linkedin.com" className="social-icon-btn"><i className="fa-brands fa-linkedin-in"></i></a>
-                <a href="https://twitter.com" className="social-icon-btn"><i className="fa-brands fa-twitter"></i></a>
-                <a href="https://github.com" className="social-icon-btn"><i className="fa-brands fa-github"></i></a>
+            {/* Contact */}
+            <div className="col-auto d-none d-md-flex gap-3 align-items-center" style={{ fontSize: '0.73rem', color: '#a8c6c4' }}>
+              <span><i className="fa-solid fa-location-dot me-1"></i>#176 jp nagar, banglore</span>
+              <span><i className="fa-solid fa-envelope me-1"></i>gtech@gmail.com</span>
+            </div>
+            {/* Socials */}
+            <div className="col-auto">
+              <div className="d-inline-flex gap-2">
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="f-social-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                </a>
+                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="f-social-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+                </a>
+                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="f-social-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </a>
+                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="f-social-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+                </a>
               </div>
             </div>
           </div>
 
-          {/* 4 Equal Navigation Columns Grid */}
-          <div className="row mb-5">
-            {/* Column 1: For Job Seekers */}
-            <div className="col-lg-3 col-md-6 mb-4 mb-lg-0 footer-widget">
+          {/* 4 Navigation Columns */}
+          <div className="row g-1 mb-1">
+            <div className="col-lg-3 col-md-6 footer-widget">
               <h4 className="widget-title">FOR JOB SEEKERS</h4>
               <ul className="footer-menu">
                 <li><SmartFooterLink href="/jobs" label="Find Jobs" /></li>
@@ -178,9 +187,7 @@ export default function Footer() {
                 <li><SmartFooterLink href="/candidate-alert-job" label="Job Alerts" requiredRole="CANDIDATE" /></li>
               </ul>
             </div>
-
-            {/* Column 2: For Employers */}
-            <div className="col-lg-3 col-md-6 mb-4 mb-lg-0 footer-widget">
+            <div className="col-lg-3 col-md-6 footer-widget">
               <h4 className="widget-title">FOR EMPLOYERS</h4>
               <ul className="footer-menu">
                 <li><SmartFooterLink href="/employer-submit-job" label="Post a Job" requiredRole="EMPLOYER" /></li>
@@ -191,9 +198,7 @@ export default function Footer() {
                 <li><SmartFooterLink href="/employer-profile" label="Company Profile" requiredRole="EMPLOYER" /></li>
               </ul>
             </div>
-
-            {/* Column 3: AI & Career Tools */}
-            <div className="col-lg-3 col-md-6 mb-4 mb-lg-0 footer-widget">
+            <div className="col-lg-3 col-md-6 footer-widget">
               <h4 className="widget-title">AI &amp; CAREER TOOLS</h4>
               <ul className="footer-menu">
                 <li><SmartFooterLink href="/candidate-resume-builder" label="AI Resume Builder" requiredRole="CANDIDATE" /></li>
@@ -204,9 +209,7 @@ export default function Footer() {
                 <li><SmartFooterLink href="/candidate-career-navigator" label="Career Navigator" requiredRole="CANDIDATE" /></li>
               </ul>
             </div>
-
-            {/* Column 4: Company */}
-            <div className="col-lg-3 col-md-6 mb-4 mb-lg-0 footer-widget">
+            <div className="col-lg-3 col-md-6 footer-widget">
               <h4 className="widget-title">COMPANY</h4>
               <ul className="footer-menu">
                 <li><SmartFooterLink href="/about-us" label="About Us" /></li>
@@ -220,14 +223,9 @@ export default function Footer() {
           </div>
 
           {/* Bottom Copyright */}
-          <div className="row pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-            <div className="col-md-6">
-              <p className="m-0" style={{ fontSize: '0.8rem', color: '#a8c6c4' }}>&copy; 2026 JobStock. All rights reserved.</p>
-            </div>
-            <div className="col-md-6 text-md-end mt-2 mt-md-0">
-              <p className="m-0" style={{ fontSize: '0.8rem', color: '#a8c6c4' }}>
-                <i className="fa-solid fa-code me-1"></i> Designed &amp; Built for Career Growth
-              </p>
+          <div className="row pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            <div className="col-12 text-center">
+              <p className="m-0" style={{ fontSize: '0.75rem', color: '#a8c6c4' }}>&copy; 2026 JobStock. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -235,10 +233,10 @@ export default function Footer() {
         <style jsx>{`
           .footer-widget .widget-title {
             color: #ffffff;
-            font-size: 0.8rem;
+            font-size: 0.72rem;
             font-weight: 700;
             letter-spacing: 1px;
-            margin-bottom: 25px;
+            margin-bottom: 3px;
             text-transform: uppercase;
           }
           .footer-menu {
@@ -247,31 +245,34 @@ export default function Footer() {
             margin: 0;
           }
           .footer-menu li {
-            margin-bottom: 12px;
+            margin-bottom: 0;
+            padding: 0;
           }
           .footer-menu li :global(a) {
             color: #a8c6c4;
             text-decoration: none;
-            font-size: 0.85rem;
-            transition: all 0.2s ease;
+            font-size: 0.76rem;
+            transition: color 0.2s ease;
+            line-height: 1.15;
+            display: block;
+            padding: 1px 0;
           }
           .footer-menu li :global(a:hover) {
             color: #ffffff;
           }
-          .social-icon-btn {
+          .f-social-btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.25);
             color: #a8c6c4;
             text-decoration: none;
-            font-size: 0.85rem;
             transition: all 0.2s ease;
           }
-          .social-icon-btn:hover {
+          .f-social-btn:hover {
             border-color: #ffffff;
             color: #ffffff;
             background-color: rgba(255,255,255,0.1);

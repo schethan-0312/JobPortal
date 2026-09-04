@@ -1,18 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useAuth } from "@/lib/auth-context";
-
 export default function CallToAction() {
-  const { user } = useAuth();
-
-  const getStartedHref = user
-    ? user.role === "EMPLOYER"
-      ? "/employer-dashboard"
-      : user.role === "ADMIN"
-      ? "/admin-dashboard"
-      : "/candidate-dashboard"
-    : "/signup";
 
   return (
     <section className="py-5 position-relative" style={{ backgroundColor: "#ffffff" }}>
@@ -27,34 +15,41 @@ export default function CallToAction() {
           <div className="row align-items-center justify-content-between gy-4 position-relative" style={{ zIndex: 2 }}>
             {/* Left Side: Image with thick white outline */}
             <div className="col-lg-5 col-md-12 text-center">
-              <div className="position-relative d-inline-block" style={{ maxWidth: "380px" }}>
+              <div className="position-relative d-inline-block" style={{ width: "100%", maxWidth: "360px", padding: "18px" }}>
+                {/* Offset white border */}
                 <div style={{
-                  border: "8px solid #ffffff",
-                  borderRadius: "35px",
-                  padding: "0",
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  border: "6px solid #ffffff",
+                  borderRadius: "45px",
+                  zIndex: 0
+                }}></div>
+                {/* Image Container */}
+                <div style={{
+                  position: "relative",
+                  zIndex: 1,
+                  borderRadius: "30px",
                   overflow: "hidden",
-                  backgroundColor: "#ffffff",
-                  display: "inline-block",
-                  lineHeight: 0
+                  width: "100%",
+                  backgroundColor: "#205c56",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "flex-end"
                 }}>
-                  <div style={{
-                    border: "4px solid #205c56",
-                    borderRadius: "28px",
-                    overflow: "hidden",
-                    lineHeight: 0
-                  }}>
-                    <img
-                      src="/assets/img/bn-1.png"
-                      alt="Career Opportunities"
-                      className="img-fluid w-100"
-                      style={{
-                        borderRadius: "24px",
-                        maxHeight: "380px",
-                        objectFit: "cover",
-                      }}
-                      onError={(e) => { (e.target as HTMLImageElement).src = '/assets/img/team-1.jpg'; }}
-                    />
-                  </div>
+                  <img
+                    src="/img/ai-tools/G.png"
+                    alt="Career Opportunities"
+                    className="img-fluid"
+                    style={{
+                      width: "100%",
+                      objectFit: "cover",
+                      display: "block"
+                    }}
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/assets/img/team-1.jpg'; }}
+                  />
                 </div>
               </div>
             </div>
@@ -90,37 +85,6 @@ export default function CallToAction() {
                     <span className="text-white" style={{ fontSize: '0.95rem' }}>Instant notification alerts and 1-click application submission</span>
                   </li>
                 </ul>
-
-                {/* Two Action Buttons - Kept for functionality as requested */}
-                <div className="d-flex flex-wrap gap-3 mt-4">
-                  <Link
-                    href="/jobs"
-                    className="btn fw-semibold px-4 py-2 d-inline-flex align-items-center justify-content-center"
-                    style={{
-                      backgroundColor: "transparent",
-                      color: "#ffffff",
-                      border: "2px solid #a8c6c4",
-                      borderRadius: "8px",
-                      transition: "all 0.2s ease",
-                    }}
-                  >
-                    Browse Jobs
-                  </Link>
-
-                  <Link
-                    href={getStartedHref}
-                    className="btn fw-semibold px-4 py-2 d-inline-flex align-items-center justify-content-center"
-                    style={{
-                      backgroundColor: "#38a581",
-                      color: "#ffffff",
-                      border: "2px solid #38a581",
-                      borderRadius: "8px",
-                      transition: "all 0.2s ease",
-                    }}
-                  >
-                    Get Started Now
-                  </Link>
-                </div>
               </div>
             </div>
           </div>
