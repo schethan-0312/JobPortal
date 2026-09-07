@@ -15,6 +15,7 @@ interface Notification {
   id: string;
   title: string;
   body: string;
+  actionUrl?: string;
   isRead: boolean;
   createdAt: string;
 }
@@ -302,7 +303,7 @@ export default function CandidateDashboardPage() {
                           <div className={`btn-circle-40 text-${n.isRead ? "info" : "warning"} bg-${n.isRead ? "info" : "warning"} bg-opacity-05`}><i className="fas fa-bell"></i></div>
                         </a>
                         <div className="ground-content">
-                          <h6><a href="JavaScript:Void(0);">{n.title}</a></h6>
+                          <h6>{n.actionUrl ? <a href={n.actionUrl}>{n.title}</a> : <a href="JavaScript:Void(0);">{n.title}</a>}</h6>
                           <span className="small">{timeAgo(n.createdAt)}</span>
                         </div>
                       </div>

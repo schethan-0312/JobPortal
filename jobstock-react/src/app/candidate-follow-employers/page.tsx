@@ -388,13 +388,9 @@ function CandidateFollowEmployersContent() {
                       <div className="d-flex flex-wrap align-items-center gap-2">
                         <button
                           type="button"
-                          className="btn btn-sm rounded-pill fw-medium py-2 px-3.5 border"
-                          style={{
-                            backgroundColor: activeTab === "companies" ? "#126746" : "#f8fafc",
-                            color: activeTab === "companies" ? "#ffffff" : "#334155",
-                            borderColor: activeTab === "companies" ? "#126746" : "#e2e8f0",
-                            transition: "all 0.2s ease",
-                          }}
+                          className={`btn btn-sm rounded-pill fw-medium py-2 px-3 border ${
+                            activeTab === "companies" ? "btn-main text-white" : "bg-white text-dark"
+                          }`}
                           onClick={() => setActiveTab("companies")}
                         >
                           <i className="fa-solid fa-building me-2"></i>Companies ({followedCompanies.length})
@@ -402,13 +398,9 @@ function CandidateFollowEmployersContent() {
 
                         <button
                           type="button"
-                          className="btn btn-sm rounded-pill fw-medium py-2 px-3.5 border"
-                          style={{
-                            backgroundColor: activeTab === "candidates" ? "#126746" : "#f8fafc",
-                            color: activeTab === "candidates" ? "#ffffff" : "#334155",
-                            borderColor: activeTab === "candidates" ? "#126746" : "#e2e8f0",
-                            transition: "all 0.2s ease",
-                          }}
+                          className={`btn btn-sm rounded-pill fw-medium py-2 px-3 border ${
+                            activeTab === "candidates" ? "btn-main text-white" : "bg-white text-dark"
+                          }`}
                           onClick={() => setActiveTab("candidates")}
                         >
                           <i className="fa-solid fa-user-group me-2"></i>Candidates ({followedCandidates.length})
@@ -416,13 +408,9 @@ function CandidateFollowEmployersContent() {
 
                         <button
                           type="button"
-                          className="btn btn-sm rounded-pill fw-medium py-2 px-3.5 border"
-                          style={{
-                            backgroundColor: activeTab === "followers" ? "#126746" : "#f8fafc",
-                            color: activeTab === "followers" ? "#ffffff" : "#334155",
-                            borderColor: activeTab === "followers" ? "#126746" : "#e2e8f0",
-                            transition: "all 0.2s ease",
-                          }}
+                          className={`btn btn-sm rounded-pill fw-medium py-2 px-3 border ${
+                            activeTab === "followers" ? "btn-main text-white" : "bg-white text-dark"
+                          }`}
                           onClick={() => setActiveTab("followers")}
                         >
                           <i className="fa-solid fa-users me-2"></i>Followers ({followersList.length})
@@ -430,13 +418,9 @@ function CandidateFollowEmployersContent() {
 
                         <button
                           type="button"
-                          className="btn btn-sm rounded-pill fw-medium py-2 px-3.5 border"
-                          style={{
-                            backgroundColor: activeTab === "requests" ? "#126746" : "#f8fafc",
-                            color: activeTab === "requests" ? "#ffffff" : "#334155",
-                            borderColor: activeTab === "requests" ? "#126746" : "#e2e8f0",
-                            transition: "all 0.2s ease",
-                          }}
+                          className={`btn btn-sm rounded-pill fw-medium py-2 px-3 border ${
+                            activeTab === "requests" ? "btn-main text-white" : "bg-white text-dark"
+                          }`}
                           onClick={() => setActiveTab("requests")}
                         >
                           <i className="fa-solid fa-user-clock me-2"></i>Requests ({requestsList.length + sentRequestsList.length})
@@ -474,26 +458,18 @@ function CandidateFollowEmployersContent() {
               <div className="d-flex align-items-center gap-2 mb-4">
                 <button
                   type="button"
-                  className="btn btn-sm rounded-pill px-4 py-2 fw-medium border"
-                  style={{
-                    backgroundColor: requestsSubTab === "received" ? "#126746" : "#ffffff",
-                    color: requestsSubTab === "received" ? "#ffffff" : "#334155",
-                    borderColor: requestsSubTab === "received" ? "#126746" : "#e2e8f0",
-                    transition: "all 0.2s ease",
-                  }}
+                  className={`btn btn-sm rounded-pill px-4 py-2 fw-medium border ${
+                    requestsSubTab === "received" ? "btn-main text-white" : "bg-white text-dark"
+                  }`}
                   onClick={() => setRequestsSubTab("received")}
                 >
                   <i className="fa-solid fa-inbox me-1.5"></i>Received Requests ({requestsList.length})
                 </button>
                 <button
                   type="button"
-                  className="btn btn-sm rounded-pill px-4 py-2 fw-medium border"
-                  style={{
-                    backgroundColor: requestsSubTab === "sent" ? "#126746" : "#ffffff",
-                    color: requestsSubTab === "sent" ? "#ffffff" : "#334155",
-                    borderColor: requestsSubTab === "sent" ? "#126746" : "#e2e8f0",
-                    transition: "all 0.2s ease",
-                  }}
+                  className={`btn btn-sm rounded-pill px-4 py-2 fw-medium border ${
+                    requestsSubTab === "sent" ? "btn-main text-white" : "bg-white text-dark"
+                  }`}
                   onClick={() => setRequestsSubTab("sent")}
                 >
                   <i className="fa-solid fa-paper-plane me-1.5"></i>Sent Requests ({sentRequestsList.length})

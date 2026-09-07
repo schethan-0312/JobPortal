@@ -12,6 +12,7 @@ interface Notification {
   id: string;
   title: string;
   body: string;
+  actionUrl?: string;
   isRead: boolean;
   createdAt: string;
 }
@@ -178,14 +179,18 @@ export default function EmployerDashboardPage() {
                     {!dataLoading && notifications.length === 0 && <p className="p-3 text-muted">No notifications yet.</p>}
                     {notifications.map((n) => (
                       <div className="ground ground-single-list" key={n.id}>
-                        <a href="JavaScript:Void(0);">
+                        <span className="d-block cursor-pointer">
                           <div className={`btn-circle-40 text-${n.isRead ? "info" : "warning"} bg-${n.isRead ? "info" : "warning"} bg-opacity-05`}>
                             <i className="fas fa-bell"></i>
                           </div>
-                        </a>
+                        </span>
                         <div className="ground-content">
                           <h6>
-                            <a href="JavaScript:Void(0);">{n.title}</a>
+                            {n.actionUrl ? (
+                              <a href={n.actionUrl} className="cursor-pointer">{n.title}</a>
+                            ) : (
+                              <span className="cursor-pointer">{n.title}</span>
+                            )}
                           </h6>
                           <span className="small">{timeAgo(n.createdAt)}</span>
                         </div>
