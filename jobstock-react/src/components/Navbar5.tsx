@@ -21,12 +21,24 @@ export default function Navbar5() {
 
   return (
     <>
-      <div className="header header-dark head-fixed" style={{ backgroundColor: "#64b1b3" }}>
+      <div
+        className="header header-light head-fixed"
+        style={{
+          backgroundColor: "#ffffff",
+          boxShadow: "0 2px 12px rgba(0, 0, 0, 0.06)",
+          borderBottom: "1px solid #edf2f7",
+        }}
+      >
         <div className="container">
           <nav id="navigation" className="navigation navigation-landscape">
             <div className="nav-header">
-              <Link className="nav-brand" href="/" onClick={closeMobileNav}>
-                <img src="/assets/img/logo-light.png" className="logo" alt="JobStock" />
+              <Link className="nav-brand d-inline-flex align-items-center gap-2 text-decoration-none" href="/" onClick={closeMobileNav}>
+                <div style={{ width: "36px", height: "36px", overflow: "hidden", position: "relative", flexShrink: 0 }}>
+                  <img src="/assets/img/logo.png" alt="JobStock" style={{ height: "36px", width: "auto", position: "absolute", left: 0, top: 0 }} />
+                </div>
+                <span style={{ color: "#0b8260", fontWeight: 800, fontSize: "1.45rem", letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                  Job Stock
+                </span>
               </Link>
               <div
                 className={`nav-toggle ${isMobileOpen ? "open" : ""}`}
@@ -172,6 +184,37 @@ export default function Navbar5() {
       <div className="clearfix"></div>
 
       <style jsx global>{`
+        /* Navbar links text color */
+        .header.header-light .nav-menu > li:not(.list-buttons) > a,
+        .header.header-light .nav-menu > li:not(.list-buttons) > .sub-menu-item,
+        .header.header-light .nav-menu > li:not(.list-buttons) > .home-link {
+          color: #0b8260 !important;
+          font-weight: 600 !important;
+          transition: color 0.2s ease;
+        }
+
+        .header.header-light .nav-menu > li:not(.list-buttons) > a:hover,
+        .header.header-light .nav-menu > li:not(.list-buttons) > a:focus,
+        .header.header-light .nav-menu > li:not(.list-buttons) > a.active,
+        .header.header-light .nav-menu > li:not(.list-buttons) > .sub-menu-item:hover,
+        .header.header-light .nav-menu > li:not(.list-buttons) > .home-link:hover {
+          color: #055f46 !important;
+        }
+
+        /* Register button text strictly white */
+        .header.header-light .nav-menu > li.list-buttons a,
+        .header.header-light .nav-menu > li.list-buttons > a {
+          color: #ffffff !important;
+        }
+
+        .header.header-light .submenu-indicator-chevron {
+          border-color: transparent #0b8260 #0b8260 transparent !important;
+        }
+
+        .header.header-light .nav-toggle span {
+          background-color: #0b8260 !important;
+        }
+
         @media (max-width: 991px) {
           .nav-menus-wrapper {
             position: fixed !important;
@@ -196,7 +239,7 @@ export default function Navbar5() {
             padding: 20px 10px !important;
           }
           .nav-menus-wrapper .nav-menu > li > a {
-            color: #1e293b !important;
+            color: #0b8260 !important;
             padding: 12px 16px !important;
             display: flex !important;
             border-bottom: 1px solid #f1f5f9 !important;

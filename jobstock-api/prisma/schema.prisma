@@ -760,6 +760,7 @@ model Notification {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   title     String
   body      String
+  actionUrl String?
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
 
@@ -832,6 +833,8 @@ model Order {
   razorpayOrderId String?     @unique
   downloadsCount  Int         @default(0)
   refundedAmountInPaisa Int?
+  refundRequested Boolean     @default(false)
+  refundReason    String?
   createdAt       DateTime    @default(now())
 
   @@index([userId, status])
@@ -850,7 +853,9 @@ model EmployerPackageSubscription {
   jobSeekersViewed  Int       @default(0)
   startedAt         DateTime  @default(now())
   expiresAt         DateTime?
-  status            String    @default("ACTIVE") // ACTIVE, UPGRADED, EXPIRED
+  status            String    @default("ACTIVE") // ACTIVE, UPGRADED, EXPIRED, REFUNDED
+  refundRequested   Boolean   @default(false)
+  refundReason      String?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @default(now()) @updatedAt
 

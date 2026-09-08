@@ -1,0 +1,192 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Navbar8 from "@/components/Navbar8";
+import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
+import { useAuth } from "@/lib/auth-context";
+import { api, ApiError } from "@/lib/api";
+import { Toaster, toast } from "react-hot-toast";
+
+interface Package {
+  id: string;
+  name: string;
+  audience: string;
+  priceInPaisa: number;
+  featuresJson: any;
+  postJobLimit?: number;
+  applicantViewLimit?: number;
+  jobSeekerViewLimit?: number;
+  chatEnabled?: boolean;
+  filterShortlistEnabled?: boolean;
+  scheduleInterviewsEnabled?: boolean;
+  companyBrandingEnabled?: boolean;
+  verifiedRecruiterBadgeEnabled?: boolean;
+}
+
+interface Order {
+  id: string;
+  amountInPaisa: number;
+  refundedAmountInPaisa?: number;
+  status: string;
+  gatewayRef: string | null;
+  createdAt: string;
+  refundRequested?: boolean;
+  refundReason?: string;
+  package: Package;
+}
+
+function formatMoney(paisa: number) {
+  return `₹${(paisa / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
+}
+
+export default function EmployerPaymentHistoryPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
+
+  // Refund state
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [refunding, setRefunding] = useState(false);
+  const [refundReason, setRefundReason] = useState("");
+  const [activeOrder, setActiveOrder] = useState<Order | null>(null);
+
+  useEffect(() => {
+    if (!loading && (!user || user.role !== "EMPLOYER")) {
+      router.replace("/");
+    }
+  }, [loading, user, router]);
+
+  const loadOrders = () => {
+    setDataLoading(true);
+    api.get<Order[]>("/packages/orders/mine")
+      .then(setOrders)
+      .catch((err) => toast.error(err instanceof ApiError ? err.message : "Failed to load payment history"))
+      .finally(() => setDataLoading(false));
+  };
+
+  useEffect(() => {
+    if (!user || user.role !== "EMPLOYER") return;
+    loadOrders();
+  }, [user]);
+
+  const handleRefund = async () => {
+    if (!activeOrder) return;
+    if (!refundReason.trim()) {
+      toast.error("Please provide a reason for cancellation.");
+      return;
+    }
+    setRefunding(true);
+    try {
+      const res = await api.post<{success: boolean, message: string}>(`/packages/orders/${activeOrder.id}/request-refund`, { reason: refundReason });
+      toast.success(res.message || "Refund requested successfully!");
+      setShowRefundModal(false);
+      setRefundReason("");
+      loadOrders();
+    } catch (err) {
+      if (err instanceof ApiError) {
+        toast.error(err.message);
+      } else {
+        toast.error("An error occurred while requesting refund.");
+      }
+    } finally {
+      setRefunding(false);
+    }
+  };
+
+  if (loading || !user || user.role !== "EMPLOYER") {
+    return null;
+  }
+
+  return (
+    <>
+      <Toaster position="top-right" />
+      <Navbar8 />
+      <div className="dashboard-wrap bg-light">
+        <EmployerSidebar active="payment-history" />
+        <div className="dashboard-content">
+          <div className="dashboard-tlbar d-block mb-4">
+            <div className="row">
+              <div className="colxl-12 col-lg-12 col-md-12">
+                <h1 className="mb-1 fs-3 fw-medium">Payment History</h1>
+                <nav aria-label="breadcrumb">
+                  <ol className="breadcrumb">
+                    <li className="breadcrumb-item text-muted"><a href="#">Employer</a></li>
+                    <li className="breadcrumb-item"><a href="#" className="text-main">Payment History</a></li>
+                  </ol>
+                </nav>
+              </div>
+            </div>
+          </div>
+          
+          <div className="dashboard-widg-bar d-block">
+            <div className="card">
+              <div className="card-header">
+                <h4>My Transactions</h4>
+              </div>
+              <div className="card-body">
+                {dataLoading && <p className="text-muted">Loading payment history...</p>}
+                {!dataLoading && orders.length === 0 && (
+                  <div className="text-center py-5">
+                    <i className="fa-solid fa-file-invoice-dollar text-muted mb-3" style={{ fontSize: "3rem" }}></i>
+                    <h5 className="text-muted">No payments found.</h5>
+                    <p className="text-muted small">When you purchase a plan, your history will appear here.</p>
+                  </div>
+                )}
+                {!dataLoading && orders.length > 0 && (
+                  <div className="table-responsive">
+                    <table className="table align-middle">
+                      <thead className="table-light">
+                        <tr>
+                          <th>Date & Time</th>
+                          <th>Package Name</th>
+                          <th>Amount</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orders.map((order) => {
+                          return (
+                          <tr key={order.id}>
+                            <td className="small">{new Date(order.createdAt).toLocaleString()}</td>
+                            <td className="fw-medium text-dark">{order.package.name}</td>
+                            <td className="small fw-bold">{formatMoney(order.amountInPaisa)}</td>
+                            <td>
+                              {order.status === "PAID" && (
+                                <span className="badge bg-success">Active / Paid</span>
+                              )}
+                              {order.status === "REFUNDED" && (
+                                <div>
+                                  <span className="badge bg-success mb-1">Refund Completed</span>
+                                  <br/>
+                                  <span className="small text-muted" style={{ fontSize: "0.75rem" }}>
+                                    Refunded: <strong>{formatMoney(Math.floor(order.amountInPaisa * 0.95))}</strong>
+                                    <br/>
+                                    <span style={{ fontSize: "0.65rem" }}>(after 5% platform fee)</span>
+                                  </span>
+                                </div>
+                              )}
+                              {order.status === "PENDING" && (
+                                <span className="badge bg-warning text-dark">Pending</span>
+                              )}
+                              {order.status === "FAILED" && (
+                                <span className="badge bg-danger">Failed</span>
+                              )}
+                            </td>
+                          </tr>
+                        )})}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Refund modal removed as requested */}
+    </>
+  );
+}

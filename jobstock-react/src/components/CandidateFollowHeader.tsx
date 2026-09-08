@@ -13,6 +13,9 @@ interface CandidateProfile {
   skills?: string[];
   experienceYears?: number;
   resumeUrl?: string | null;
+  resume?: {
+    resumeUrl: string | null;
+  } | null;
   profilePhotoUrl?: string | null;
   isVerified?: boolean;
   githubUsername?: string | null;
@@ -33,6 +36,11 @@ export default function CandidateFollowHeader({ candidate, initialCounts }: Foll
   const [followBusy, setFollowBusy] = useState(false);
   const [followersCount, setFollowersCount] = useState(initialCounts.followersCount);
   const [followingCount, setFollowingCount] = useState(initialCounts.followingCount);
+  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    setIsSaved(localStorage.getItem(`saved_cand_${candidate.id}`) === 'true');
+  }, [candidate.id]);
 
   useEffect(() => {
     if (!user) return;
@@ -96,6 +104,18 @@ export default function CandidateFollowHeader({ candidate, initialCounts }: Foll
       toast.error(err instanceof ApiError ? err.message : "Failed to update follow status");
     } finally {
       setFollowBusy(false);
+    }
+  }
+
+  function toggleSave() {
+    const nextState = !isSaved;
+    setIsSaved(nextState);
+    if (nextState) {
+      localStorage.setItem(`saved_cand_${candidate.id}`, 'true');
+      toast.success("Candidate saved successfully!");
+    } else {
+      localStorage.removeItem(`saved_cand_${candidate.id}`);
+      toast.success("Candidate removed from saved list.");
     }
   }
 
@@ -299,8 +319,8 @@ export default function CandidateFollowHeader({ candidate, initialCounts }: Foll
             )}
           </>
         )}
-        {candidate.resumeUrl ? (
-          <a href={candidate.resumeUrl} target="_blank" rel="noreferrer" className="btn btn-main">
+        {(candidate.resume?.resumeUrl || candidate.resumeUrl) ? (
+          <a href={assetUrl(candidate.resume?.resumeUrl || candidate.resumeUrl || "")} target="_blank" rel="noreferrer" className="btn btn-main">
             Download CV
             <i className="fa-solid fa-download ms-2"></i>
           </a>
@@ -309,7 +329,12 @@ export default function CandidateFollowHeader({ candidate, initialCounts }: Foll
             No Resume
           </button>
         )}
-        <button type="button" className="btn btn-outline-main" title="Shortlist Candidate">
+        <button 
+          type="button" 
+          className={`btn ${isSaved ? "btn-main" : "btn-outline-main"}`} 
+          title={isSaved ? "Unsave Candidate" : "Save Candidate"}
+          onClick={toggleSave}
+        >
           <i className="fa-solid fa-bookmark"></i>
         </button>
       </div>

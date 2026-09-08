@@ -1,239 +1,440 @@
-"use client";
+﻿"use client";
 
-import { useState, useRef, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { api } from "@/lib/api";
+
+interface PublicStats {
+  totalJobs: number;
+  totalCandidates: number;
+  totalVerifiedEmployers: number;
+  totalApplications: number;
+}
+
+function formatCount(n: number): string {
+  if (n >= 100000) return `${(n / 100000).toFixed(0)}L+`;
+  if (n >= 1000) return `${(n / 1000).toFixed(0)}k+`;
+  if (n > 0) return `${n}+`;
+  return "10k+"; // fallback
+}
 
 export default function VideoBanner() {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isReady, setIsReady] = useState(false);
-  const playerRef = useRef<any>(null);
+  const [stats, setStats] = useState<PublicStats | null>(null);
 
   useEffect(() => {
-    const initPlayer = () => {
-      if ((window as any).YT && (window as any).YT.Player) {
-        playerRef.current = new (window as any).YT.Player("yt-square-player", {
-          height: "100%",
-          width: "100%",
-          videoId: "LXb3EKWsInQ",
-          playerVars: {
-            autoplay: 0,
-            controls: 1,
-            modestbranding: 1,
-            rel: 0,
-            playsinline: 1,
-          },
-          events: {
-            onReady: () => setIsReady(true),
-            onStateChange: (e: any) => {
-              if (e.data === 1) setIsPlaying(true);
-              else if (e.data === 2 || e.data === 0) setIsPlaying(false);
-            },
-          },
-        });
+    (async () => {
+      try {
+        const data = await api.get<PublicStats>("/stats", { auth: false });
+        setStats(data);
+      } catch {
+        // fail silently — fallback text shown
       }
-    };
-
-    if (!(window as any).YT) {
-      const tag = document.createElement("script");
-      tag.src = "https://www.youtube.com/iframe_api";
-      const firstScriptTag = document.getElementsByTagName("script")[0];
-      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
-      (window as any).onYouTubeIframeAPIReady = initPlayer;
-    } else {
-      initPlayer();
-    }
+    })();
   }, []);
 
-  const togglePlay = () => {
-    if (playerRef.current && isReady) {
-      if (isPlaying) {
-        playerRef.current.pauseVideo();
-        setIsPlaying(false);
-      } else {
-        playerRef.current.playVideo();
-        setIsPlaying(true);
-      }
-    }
-  };
-
-  const skipForward = () => {
-    if (playerRef.current && isReady) {
-      const cur = playerRef.current.getCurrentTime();
-      playerRef.current.seekTo(cur + 10, true);
-    }
-  };
-
-  const skipBackward = () => {
-    if (playerRef.current && isReady) {
-      const cur = playerRef.current.getCurrentTime();
-      playerRef.current.seekTo(Math.max(0, cur - 10), true);
-    }
-  };
-
-  const toggleMute = () => {
-    if (playerRef.current && isReady) {
-      if (isMuted) {
-        playerRef.current.unMute();
-        setIsMuted(false);
-      } else {
-        playerRef.current.mute();
-        setIsMuted(true);
-      }
-    }
-  };
+  const candidateCount = stats ? formatCount(stats.totalCandidates) : "10k+";
 
   return (
-    <section className="py-5 position-relative" style={{ backgroundColor: "#f4f7f9" }}>
-      <div className="container py-4">
-        <div className="row align-items-center justify-content-between gy-4">
-          {/* Left Side: Text Content */}
-          <div className="col-lg-6 col-md-12">
-            <div className="pe-lg-4">
-              <span
-                className="badge px-3 py-2 mb-3 rounded-pill fw-semibold text-uppercase"
-                style={{
-                  backgroundColor: "#e6f4f4",
-                  color: "#145758",
-                  border: "1px solid rgba(20, 87, 88, 0.2)",
-                  fontSize: "0.8rem",
-                  letterSpacing: "1px",
-                }}
-              >
-                <i className="fa-solid fa-circle-play me-2"></i>Platform Overview
-              </span>
+    <section className="vb-section">
+      <style>{`
+        .vb-section {
+          background: #f8fffe;
+          position: relative;
+          overflow: hidden;
+          padding: 80px 0;
+          font-family: var(--primaryfont), sans-serif;
+        }
 
-              <h2 className="video-title fw-bold text-dark mb-3" style={{ lineHeight: 1.25 }}>
-                See How JobStock Accelerates Hiring &amp; Career Growth
-              </h2>
+        .vb-blob {
+          position: absolute;
+          top: -60px;
+          left: -80px;
+          width: 420px;
+          height: 520px;
+          background: linear-gradient(145deg, #134e4a 0%, #38a581 100%);
+          border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+          z-index: 0;
+          opacity: 0.12;
+        }
+        .vb-dots {
+          position: absolute;
+          bottom: 20px;
+          left: 20px;
+          width: 120px;
+          height: 120px;
+          background-image: radial-gradient(circle, #38a581 1.5px, transparent 1.5px);
+          background-size: 18px 18px;
+          opacity: 0.25;
+          z-index: 0;
+        }
+        .vb-dots-right {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          width: 100px;
+          height: 100px;
+          background-image: radial-gradient(circle, #38a581 1.5px, transparent 1.5px);
+          background-size: 18px 18px;
+          opacity: 0.18;
+          z-index: 0;
+        }
 
-              <p className="fs-6 text-muted mb-4" style={{ lineHeight: 1.6 }}>
-                Watch our platform overview video to discover how JobStock connects job seekers with verified employers, featuring automated matching, 1-click applications, and real-time candidate updates.
-              </p>
+        /* Left image */
+        .vb-img-side {
+          position: relative;
+          z-index: 2;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 30px 20px;
+        }
+        .vb-img-wrap {
+          position: relative;
+          width: 100%;
+          max-width: 390px;
+        }
+        .vb-img-accent {
+          position: absolute;
+          top: 16px;
+          left: 16px;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(135deg, #38a581, #134e4a);
+          border-radius: 22px;
+          z-index: 0;
+        }
+        .vb-img-card {
+          position: relative;
+          z-index: 1;
+          width: 100%;
+          border-radius: 22px;
+          overflow: hidden;
+          box-shadow: 0 24px 60px rgba(19,78,74,0.22);
+          animation: vbFloat 4s ease-in-out infinite;
+        }
+        .vb-img-card img {
+          width: 100%;
+          display: block;
+          object-fit: cover;
+        }
 
-              <div className="row g-3 mb-2">
-                <div className="col-sm-6">
-                  <div
-                    className="p-3 rounded-3 d-flex align-items-center gap-3 bg-white shadow-sm"
-                    style={{ border: "1px solid #e2e8f0" }}
-                  >
-                    <div
-                      className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-                      style={{ width: "44px", height: "44px", backgroundColor: "#145758", color: "#ffffff" }}
-                    >
-                      <i className="fa-solid fa-bolt fs-5"></i>
-                    </div>
-                    <div>
-                      <h6 className="fw-bold text-dark mb-0">Fast Matching</h6>
-                      <small className="text-muted">Instant candidate alerts</small>
-                    </div>
-                  </div>
-                </div>
+        /* Floating badge — top right */
+        .vb-badge-live {
+          position: absolute;
+          top: -14px;
+          right: -14px;
+          background: #fff;
+          border-radius: 14px;
+          padding: 8px 14px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          z-index: 3;
+          animation: vbFloat 3.5s ease-in-out infinite;
+        }
+        .vb-badge-live-dot {
+          width: 9px;
+          height: 9px;
+          border-radius: 50%;
+          background: #22c55e;
+          animation: vbPulse 1.5s ease-in-out infinite;
+        }
+        .vb-badge-live-text {
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: #111;
+          white-space: nowrap;
+        }
 
-                <div className="col-sm-6">
-                  <div
-                    className="p-3 rounded-3 d-flex align-items-center gap-3 bg-white shadow-sm"
-                    style={{ border: "1px solid #e2e8f0" }}
-                  >
-                    <div
-                      className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-                      style={{ width: "44px", height: "44px", backgroundColor: "#145758", color: "#ffffff" }}
-                    >
-                      <i className="fa-solid fa-shield-halved fs-5"></i>
-                    </div>
-                    <div>
-                      <h6 className="fw-bold text-dark mb-0">Verified Jobs</h6>
-                      <small className="text-muted">Direct company listings</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        /* Floating stat badge — bottom left — DYNAMIC */
+        .vb-badge-stat {
+          position: absolute;
+          bottom: -14px;
+          left: -14px;
+          background: #134e4a;
+          color: #fff;
+          border-radius: 14px;
+          padding: 9px 14px;
+          box-shadow: 0 8px 24px rgba(19,78,74,0.3);
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          z-index: 3;
+          animation: vbFloat 5s ease-in-out infinite reverse;
+        }
+        .vb-badge-stat-num {
+          font-size: 1.05rem;
+          font-weight: 800;
+          color: #4ade80;
+          line-height: 1;
+        }
+        .vb-badge-stat-label {
+          font-size: 0.68rem;
+          color: #a8c6c4;
+          line-height: 1.3;
+        }
 
-          {/* Right Side: Square Video Player Container */}
-          <div className="col-lg-6 col-md-12 d-flex justify-content-center justify-content-lg-end">
-            <div
-              className="position-relative overflow-hidden rounded-4 w-100 shadow-lg"
-              style={{
-                maxWidth: "460px",
-                aspectRatio: "1 / 1",
-                backgroundColor: "#000000",
-                border: "4px solid #ffffff",
-                boxShadow: "0 20px 40px rgba(0, 0, 0, 0.12)",
-              }}
-            >
-              {/* YouTube Container */}
-              <div id="yt-square-player" className="w-100 h-100"></div>
+        @keyframes vbFloat {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+        @keyframes vbPulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.4); opacity: 0.7; }
+        }
 
-              {/* Custom Control Overlay Bar at Bottom */}
-              <div
-                className="position-absolute bottom-0 start-0 w-100 p-3 d-flex align-items-center justify-content-between"
-                style={{
-                  background: "linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0) 100%)",
-                  zIndex: 10,
-                }}
-              >
-                {/* Left Controls: Rewind 10s, Play/Pause (On/Off), Forward 10s */}
-                <div className="d-flex align-items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={skipBackward}
-                    className="btn btn-sm btn-dark text-white rounded-circle d-flex align-items-center justify-content-center"
-                    style={{ width: "36px", height: "36px", opacity: 0.9 }}
-                    title="Rewind 10 seconds"
-                  >
-                    <i className="fa-solid fa-rotate-left fs-6"></i>
-                  </button>
+        /* Right content */
+        .vb-content {
+          position: relative;
+          z-index: 2;
+          padding-left: 30px;
+        }
+        .vb-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(56,165,129,0.1);
+          color: #38a581;
+          font-size: 0.75rem;
+          font-weight: 700;
+          padding: 5px 12px;
+          border-radius: 20px;
+          border: 1px solid rgba(56,165,129,0.25);
+          margin-bottom: 14px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .vb-tag-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #38a581;
+        }
+        .vb-title {
+          font-size: 2.1rem;
+          font-weight: 800;
+          color: #0d1117;
+          line-height: 1.2;
+          margin-bottom: 14px;
+        }
+        .vb-title span { color: #38a581; }
+        .vb-desc {
+          font-size: 0.88rem;
+          color: #6b7280;
+          line-height: 1.75;
+          margin-bottom: 28px;
+          max-width: 88%;
+        }
 
-                  <button
-                    type="button"
-                    onClick={togglePlay}
-                    className="btn btn-sm rounded-circle d-flex align-items-center justify-content-center border-0 shadow"
-                    style={{
-                      width: "40px",
-                      height: "40px",
-                      backgroundColor: "#145758",
-                      color: "#ffffff",
-                    }}
-                    title={isPlaying ? "Pause (Off)" : "Play (On)"}
-                  >
-                    <i className={`fa-solid ${isPlaying ? "fa-pause" : "fa-play ms-1"} fs-6`}></i>
-                  </button>
+        /* Cards */
+        .vb-cards {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          margin-bottom: 28px;
+        }
+        .vb-card {
+          display: flex;
+          align-items: flex-start;
+          gap: 14px;
+          background: #fff;
+          border: 1px solid #e8f5f0;
+          border-radius: 14px;
+          padding: 14px 18px;
+          max-width: 360px;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+          transition: all 0.25s ease;
+          cursor: default;
+        }
+        .vb-card:hover {
+          border-color: #38a581;
+          box-shadow: 0 8px 28px rgba(56,165,129,0.14);
+          transform: translateX(6px);
+        }
+        .vb-card-icon {
+          width: 38px;
+          height: 38px;
+          min-width: 38px;
+          border-radius: 10px;
+          background: linear-gradient(135deg, #134e4a, #38a581);
+          color: #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 12px rgba(56,165,129,0.3);
+        }
+        .vb-card-title {
+          font-size: 0.92rem;
+          font-weight: 700;
+          color: #111;
+          margin-bottom: 3px;
+        }
+        .vb-card-desc {
+          font-size: 0.73rem;
+          color: #9ca3af;
+          margin: 0;
+          line-height: 1.5;
+        }
 
-                  <button
-                    type="button"
-                    onClick={skipForward}
-                    className="btn btn-sm btn-dark text-white rounded-circle d-flex align-items-center justify-content-center"
-                    style={{ width: "36px", height: "36px", opacity: 0.9 }}
-                    title="Forward 10 seconds"
-                  >
-                    <i className="fa-solid fa-rotate-right fs-6"></i>
-                  </button>
-                </div>
+        .vb-divider {
+          height: 1px;
+          background: linear-gradient(to right, #e5e7eb, transparent);
+          margin-bottom: 20px;
+          max-width: 360px;
+        }
 
-                {/* Right Control: Mute/Unmute */}
-                <div>
-                  <button
-                    type="button"
-                    onClick={toggleMute}
-                    className="btn btn-sm btn-dark text-white rounded-circle d-flex align-items-center justify-content-center"
-                    style={{ width: "36px", height: "36px", opacity: 0.9 }}
-                    title={isMuted ? "Unmute" : "Mute"}
-                  >
-                    <i className={`fa-solid ${isMuted ? "fa-volume-xmark" : "fa-volume-high"} fs-6`}></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+        /* Avatars + count */
+        .vb-bottom {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          flex-wrap: wrap;
+        }
+        .vb-avatars {
+          display: flex;
+          align-items: center;
+        }
+        .vb-avatar {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          border: 2.5px solid #fff;
+          object-fit: cover;
+          margin-right: -10px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+          background: #e5e7eb;
+        }
+        .vb-avatar-badge {
+          margin-left: 18px;
+          background: linear-gradient(135deg, #38a581, #134e4a);
+          color: #fff;
+          font-size: 0.78rem;
+          font-weight: 700;
+          padding: 5px 14px;
+          border-radius: 20px;
+          box-shadow: 0 4px 14px rgba(56,165,129,0.3);
+        }
+        .vb-trusted-text {
+          font-size: 0.75rem;
+          color: #9ca3af;
+          margin-left: 4px;
+        }
 
-      <style jsx>{`
-        .video-title {
-          font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+        @media (max-width: 991px) {
+          .vb-content { padding-left: 0; margin-top: 60px; }
+          .vb-card { max-width: 100%; }
+          .vb-title { font-size: 1.65rem; }
+          .vb-blob { display: none; }
         }
       `}</style>
+
+      <div className="vb-blob"></div>
+      <div className="vb-dots"></div>
+      <div className="vb-dots-right"></div>
+
+      <div className="container position-relative" style={{ zIndex: 2 }}>
+        <div className="row align-items-center">
+
+          {/* LEFT: Image with floating badges */}
+          <div className="col-lg-5">
+            <div className="vb-img-side">
+              <div className="vb-img-wrap">
+                <div className="vb-img-accent"></div>
+                <div className="vb-img-card">
+                  <img
+                    src="/img/ai-tools/Career Counselling.jpg"
+                    alt="Career Growth"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/assets/img/slider-1.jpg';
+                    }}
+                  />
+                </div>
+
+                {/* Floating badge — top right */}
+                <div className="vb-badge-live">
+                  <div className="vb-badge-live-dot"></div>
+                  <span className="vb-badge-live-text">Live Jobs Posted</span>
+                </div>
+
+                {/* Floating DYNAMIC stat badge — bottom left */}
+                <div className="vb-badge-stat">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#4ade80" viewBox="0 0 24 24">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                  <div>
+                    <div className="vb-badge-stat-num">{candidateCount}</div>
+                    <div className="vb-badge-stat-label">Happy<br/>Candidates</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT: Content */}
+          <div className="col-lg-7">
+            <div className="vb-content">
+              <div className="vb-tag">
+                <div className="vb-tag-dot"></div>
+                Platform Overview
+              </div>
+
+              <h2 className="vb-title">
+                See How JobStock<br />
+                <span>Accelerates</span> Hiring &amp;<br />Career Growth
+              </h2>
+
+              <p className="vb-desc">
+                Discover how JobStock connects job seekers with verified employers,
+                featuring automated matching, 1-click applications, and real-time
+                candidate updates — all in one platform.
+              </p>
+
+              <div className="vb-cards">
+                <div className="vb-card">
+                  <div className="vb-card-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="vb-card-title">Fast Matching</div>
+                    <p className="vb-card-desc">Instant candidate alerts based on your specific requirements.</p>
+                  </div>
+                </div>
+                <div className="vb-card">
+                  <div className="vb-card-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="vb-card-title">Verified Jobs</div>
+                    <p className="vb-card-desc">Direct company listings to ensure safe and authentic opportunities.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="vb-divider"></div>
+
+              <div className="vb-bottom">
+                <div className="vb-avatars">
+                  <img src="/assets/img/team-1.jpg" className="vb-avatar" alt="User 1"
+                    onError={(e) => (e.target as HTMLImageElement).style.display = 'none'} />
+                  <img src="/assets/img/team-2.jpg" className="vb-avatar" alt="User 2"
+                    onError={(e) => (e.target as HTMLImageElement).style.display = 'none'} />
+                  <img src="/assets/img/team-3.jpg" className="vb-avatar" alt="User 3"
+                    onError={(e) => (e.target as HTMLImageElement).style.display = 'none'} />
+                  <span className="vb-avatar-badge">{candidateCount}</span>
+                </div>
+                <span className="vb-trusted-text">Trusted by professionals across India</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </section>
   );
 }

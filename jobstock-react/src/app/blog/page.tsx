@@ -7,6 +7,7 @@ import ImageSlider from "@/components/ImageSlider";
 
 export const dynamic = "force-dynamic";
 
+
 interface BlogPost {
   id: string;
   title: string;

@@ -26,12 +26,12 @@ export default function AuthMenu() {
             href="/signup"
             style={{
               backgroundColor: "#37a481",
-              color: "#0e3b3c",
-              borderColor: "rgb(93, 240, 194)",
+              color: "#ffffff",
+              borderColor: "#37a481",
               fontWeight: 600,
             }}
           >
-            <i className="bi bi-person-circle me-2"></i>Register Today
+            <i className="bi bi-person-circle me-2 text-white"></i>Register Today
           </Link>
         </li>
       </ul>

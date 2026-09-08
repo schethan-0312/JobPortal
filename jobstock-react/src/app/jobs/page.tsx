@@ -30,6 +30,8 @@ interface Job {
   location?: string;
   salaryMin?: number | null;
   salaryMax?: number | null;
+  currency?: string | null;
+  salaryPeriod?: string | null;
   jobType?: string;
   status?: string;
   employer?: Employer;
@@ -42,47 +44,23 @@ interface JobsResponse {
   pageSize: number;
 }
 
-function formatAmount(val: number): { text: string; unit: "L" | "k" | "" } {
-  if (val >= 100000) {
-    const lakh = val / 100000;
-    const formatted = Number.isInteger(lakh) ? lakh.toString() : parseFloat(lakh.toFixed(2)).toString();
-    return { text: formatted, unit: "L" };
-  }
-  if (val >= 1000) {
-    const k = Math.round(val / 100) / 10;
-    const formatted = Number.isInteger(k) ? k.toString() : parseFloat(k.toFixed(1)).toString();
-    return { text: `${formatted}k`, unit: "k" };
-  }
-  return { text: val.toString(), unit: "" };
-}
-
 function formatSalary(job: Job) {
-  const { salaryMin, salaryMax } = job;
+  const { salaryMin, salaryMax, currency = "INR", salaryPeriod } = job;
   if (!salaryMin && !salaryMax) return "Not disclosed";
 
-  if (salaryMin && salaryMax) {
-    const minObj = formatAmount(salaryMin);
-    const maxObj = formatAmount(salaryMax);
+  const sym = currency === "USD" ? "$" : currency === "SGD" ? "S$" : "₹";
+  const periodText = salaryPeriod ? ` / ${salaryPeriod.toLowerCase()}` : "";
 
-    if (minObj.unit === "L" && maxObj.unit === "L") {
-      return `₹${minObj.text} - ${maxObj.text} LPA`;
-    }
-    if (minObj.unit === "k" && maxObj.unit === "k") {
-      return `₹${minObj.text} - ${maxObj.text} PA`;
-    }
-    return `₹${minObj.text} - ${maxObj.text} LPA`;
+  if (salaryMin && salaryMax) {
+    return `${sym}${salaryMin.toLocaleString()} - ${sym}${salaryMax.toLocaleString()}${periodText}`;
   }
 
   if (salaryMin) {
-    const minObj = formatAmount(salaryMin);
-    if (minObj.unit === "L") return `₹${minObj.text} LPA`;
-    return `₹${minObj.text} PA`;
+    return `From ${sym}${salaryMin.toLocaleString()}${periodText}`;
   }
 
   if (salaryMax) {
-    const maxObj = formatAmount(salaryMax);
-    if (maxObj.unit === "L") return `Up to ₹${maxObj.text} LPA`;
-    return `Up to ₹${maxObj.text} PA`;
+    return `Up to ${sym}${salaryMax.toLocaleString()}${periodText}`;
   }
 
   return "Not disclosed";
@@ -96,6 +74,8 @@ async function getJobs(params?: Record<string, string | undefined>): Promise<{ j
     if (params?.search) query.set("search", params.search);
     if (params?.jobType) query.set("jobType", params.jobType);
     if (params?.page) query.set("page", params.page);
+    if (params?.sortBy) query.set("sortBy", params.sortBy);
+    if (params?.pageSize) query.set("pageSize", params.pageSize);
     
     const qs = query.toString();
     const url = qs ? `${API_BASE}/jobs?${qs}` : `${API_BASE}/jobs`;

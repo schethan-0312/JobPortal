@@ -23,6 +23,8 @@ interface Order {
   status: string;
   gatewayRef: string | null;
   createdAt: string;
+  refundRequested?: boolean;
+  refundReason?: string;
   package: Package;
 }
 
@@ -36,20 +38,55 @@ export default function CandidatePaymentHistoryPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
 
+  // Refund state
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [refunding, setRefunding] = useState(false);
+  const [refundReason, setRefundReason] = useState("");
+  const [activeOrder, setActiveOrder] = useState<Order | null>(null);
+
   useEffect(() => {
     if (!loading && (!user || user.role !== "CANDIDATE")) {
       router.replace("/");
     }
   }, [loading, user, router]);
 
-  useEffect(() => {
-    if (!user || user.role !== "CANDIDATE") return;
+  const loadOrders = () => {
     setDataLoading(true);
     api.get<Order[]>("/packages/orders/mine")
       .then(setOrders)
       .catch((err) => toast.error(err instanceof ApiError ? err.message : "Failed to load payment history"))
       .finally(() => setDataLoading(false));
+  };
+
+  useEffect(() => {
+    if (!user || user.role !== "CANDIDATE") return;
+    loadOrders();
   }, [user]);
+
+  const handleRequestRefund = async () => {
+    if (!refundReason.trim()) {
+      toast.error("Please provide a reason for refund.");
+      return;
+    }
+    if (!activeOrder) return;
+
+    setRefunding(true);
+    try {
+      const res = await api.post<{success: boolean, message: string}>(`/packages/orders/${activeOrder.id}/request-refund`, { reason: refundReason });
+      toast.success(res.message || "Refund requested successfully!");
+      loadOrders();
+      setShowRefundModal(false);
+      setRefundReason("");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        toast.error(err.message);
+      } else {
+        toast.error("An error occurred while requesting refund.");
+      }
+    } finally {
+      setRefunding(false);
+    }
+  };
 
   const renderFeatures = (featuresJson: any) => {
     let items: string[] = [];
@@ -114,27 +151,28 @@ export default function CandidatePaymentHistoryPage() {
                           <th>Date & Time</th>
                           <th>Package Name</th>
                           <th>Amount</th>
-                          <th>Features Included</th>
                           <th>Status</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {orders.map((order) => (
+                        {orders.map((order) => {
+                          return (
                           <tr key={order.id}>
                             <td className="small">{new Date(order.createdAt).toLocaleString()}</td>
                             <td className="fw-medium text-dark">{order.package.name}</td>
                             <td className="small fw-bold">{formatMoney(order.amountInPaisa)}</td>
-                            <td>{renderFeatures(order.package.featuresJson)}</td>
                             <td>
                               {order.status === "PAID" && (
                                 <span className="badge bg-success">Active / Paid</span>
                               )}
                               {order.status === "REFUNDED" && (
                                 <div>
-                                  <span className="badge bg-secondary mb-1">Cancelled & Refunded</span>
+                                  <span className="badge bg-success mb-1">Refund Completed</span>
                                   <br/>
                                   <span className="small text-muted" style={{ fontSize: "0.75rem" }}>
-                                    Refunded: {order.refundedAmountInPaisa ? formatMoney(order.refundedAmountInPaisa) : "Full Amount"}
+                                    Refunded: <strong>{formatMoney(Math.floor(order.amountInPaisa * 0.95))}</strong>
+                                    <br/>
+                                    <span style={{ fontSize: "0.65rem" }}>(after 5% platform fee)</span>
                                   </span>
                                 </div>
                               )}
@@ -146,7 +184,7 @@ export default function CandidatePaymentHistoryPage() {
                               )}
                             </td>
                           </tr>
-                        ))}
+                        )})}
                       </tbody>
                     </table>
                   </div>
@@ -156,6 +194,7 @@ export default function CandidatePaymentHistoryPage() {
           </div>
         </div>
       </div>
+
     </>
   );
 }

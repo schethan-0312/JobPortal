@@ -17,11 +17,25 @@ interface Job {
   jobType?: string;
   salaryMin?: number | null;
   salaryMax?: number | null;
+  currency?: string | null;
+  salaryPeriod?: string | null;
   employer?: Employer;
+  createdAt?: string;
 }
 
 interface JobsResponse {
   items: Job[];
+}
+
+function getTimeAgo(dateString?: string) {
+  if (!dateString) return "Recently";
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffTime = Math.abs(now.getTime() - date.getTime());
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "1 day ago";
+  return `${diffDays} days ago`;
 }
 
 function formatAmount(val: number): { text: string; unit: "L" | "k" | "" } {
@@ -38,33 +52,24 @@ function formatAmount(val: number): { text: string; unit: "L" | "k" | "" } {
   return { text: val.toString(), unit: "" };
 }
 
+
 function formatSalary(job: Job) {
-  const { salaryMin, salaryMax } = job;
+  const { salaryMin, salaryMax, currency = "INR", salaryPeriod } = job;
   if (!salaryMin && !salaryMax) return "Not disclosed";
 
-  if (salaryMin && salaryMax) {
-    const minObj = formatAmount(salaryMin);
-    const maxObj = formatAmount(salaryMax);
+  const sym = currency === "USD" ? "$" : currency === "SGD" ? "S$" : "₹";
+  const periodText = salaryPeriod ? ` / ${salaryPeriod.toLowerCase()}` : "";
 
-    if (minObj.unit === "L" && maxObj.unit === "L") {
-      return `₹${minObj.text} - ${maxObj.text} LPA`;
-    }
-    if (minObj.unit === "k" && maxObj.unit === "k") {
-      return `₹${minObj.text} - ${maxObj.text} PA`;
-    }
-    return `₹${minObj.text} - ${maxObj.text} LPA`;
+  if (salaryMin && salaryMax) {
+    return `${sym}${salaryMin.toLocaleString()} - ${sym}${salaryMax.toLocaleString()}${periodText}`;
   }
 
   if (salaryMin) {
-    const minObj = formatAmount(salaryMin);
-    if (minObj.unit === "L") return `₹${minObj.text} LPA`;
-    return `₹${minObj.text} PA`;
+    return `From ${sym}${salaryMin.toLocaleString()}${periodText}`;
   }
 
   if (salaryMax) {
-    const maxObj = formatAmount(salaryMax);
-    if (maxObj.unit === "L") return `Up to ₹${maxObj.text} LPA`;
-    return `Up to ₹${maxObj.text} PA`;
+    return `Up to ${sym}${salaryMax.toLocaleString()}${periodText}`;
   }
 
   return "Not disclosed";
@@ -73,12 +78,25 @@ function formatSalary(job: Job) {
 export default function FeaturedJobs() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const nextSlide = () => {
+    if (currentIndex < Math.max(0, jobs.length - 3)) {
+      setCurrentIndex(currentIndex + 1);
+    }
+  };
+
+  const prevSlide = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
 
   useEffect(() => {
     (async () => {
       try {
-        const data = await api.get<JobsResponse>("/jobs?pageSize=4", { auth: false });
-        setJobs((data.items ?? []).slice(0, 4));
+        const data = await api.get<JobsResponse>("/jobs?pageSize=15", { auth: false });
+        setJobs(data.items ?? []);
       } catch {
         setJobs([]);
       } finally {
@@ -87,189 +105,249 @@ export default function FeaturedJobs() {
     })();
   }, []);
 
-  if (loaded && jobs.length === 0) {
-    return null;
-  }
-
-  return (
+    return (
     <section className="py-5 bg-white position-relative">
       <div className="container py-2">
+        <style>{`
+          .f-job-card {
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            background: #fff;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+          }
+          .f-job-gradient {
+            height: 110px;
+            background: linear-gradient(180deg, rgba(60,179,113,0.6) 0%, rgba(255,255,255,0) 100%);
+            position: relative;
+          }
+          .f-job-logo-wrapper {
+            position: absolute;
+            bottom: -25px;
+            left: 20px;
+            width: 70px;
+            height: 70px;
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #eaeaea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+          }
+          .f-job-content {
+            padding: 35px 20px 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+          }
+          .f-job-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 2px;
+          }
+          .f-job-company {
+            font-size: 0.85rem;
+            color: #999;
+            margin-bottom: 4px;
+          }
+          .f-job-location {
+            font-size: 0.85rem;
+            color: #999;
+            margin-bottom: 15px;
+          }
+          .f-job-location i {
+            color: #ff4d4d;
+            margin-right: 4px;
+          }
+          .f-job-divider {
+            height: 1px;
+            background-color: #f0f0f0;
+            margin: auto -20px 15px -20px;
+          }
+          .f-job-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+          .f-job-posted {
+            font-size: 0.85rem;
+            color: #666;
+          }
+          .f-job-posted strong {
+            color: #222;
+          }
+          .f-btn-save {
+            background-color: #f1f1f1;
+            color: #333;
+            border: none;
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+          }
+          .f-btn-save:hover {
+            background-color: #e2e2e2;
+            color: #000;
+          }
+          .f-btn-apply {
+            background-color: #3cb371;
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+          }
+          .f-btn-apply:hover {
+            background-color: #2e8b57;
+            color: #fff;
+          }
+          .f-slider-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #3cb371;
+            color: #fff;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+          .f-slider-btn:hover {
+            background-color: #2e8b57;
+          }
+          .f-view-all {
+            background-color: #3cb371;
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 30px;
+            display: inline-block;
+            text-decoration: none;
+            transition: all 0.2s;
+          }
+          .f-view-all:hover {
+            background-color: #2e8b57;
+            color: white;
+          }
+        `}</style>
+
         {/* Heading */}
-        <div className="row justify-content-center">
-          <div className="col-xl-6 col-lg-7 col-md-10 text-center">
-            <div className="sec-heading center mb-5">
-              <span className="badge bg-main-light text-main fw-semibold px-3 py-2 rounded-pill fs-7 mb-2 d-inline-flex align-items-center gap-1">
-                <i className="fa-solid fa-fire text-danger"></i> Trending Opportunities
-              </span>
-              <h2 className="fw-bold fs-2 text-dark mt-2 mb-3">
-                Featured <span className="text-main">Jobs</span>
-              </h2>
-              <p className="text-muted fs-6 m-0">
-                Explore the latest open roles posted by verified employers on JobStock.
-              </p>
+        <div className="text-center mb-4">
+          <h2 className="fw-bold fs-1 text-dark mb-2">
+            Featured <span style={{ color: '#3cb371' }}>Jobs</span>
+          </h2>
+          <p className="text-muted" style={{ fontSize: '1.1rem' }}>
+            Explore latest opening roles posted by verified employers on JobStock.
+          </p>
+        </div>
+
+        {/* Loading state */}
+        {!loaded && (
+          <div className="text-center py-5">
+            <div className="spinner-border text-success" role="status">
+              <span className="visually-hidden">Loading...</span>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Jobs Grid */}
-        <div className="row justify-content-center g-4">
-          {jobs.slice(0, 4).map((item) => (
-            <div className="col-xl-3 col-lg-4 col-md-6 col-sm-12" key={item.id}>
-              <div className="featured-job-card h-100 d-flex flex-column justify-content-between p-4 rounded-4 bg-white border position-relative transition-all">
-                {/* Top Accent Hover Gradient Bar */}
-                <div className="card-hover-bar"></div>
-
-                <div>
-                  {/* Header: Company Logo & Job Type Badge */}
-                  <div className="d-flex align-items-start justify-content-between mb-3">
-                    <Link href={`/job-detail/${item.slug}`} className="job-logo-wrapper rounded-3 p-2 border d-inline-flex align-items-center justify-content-center bg-white shadow-sm">
-                      <img
-                        src={assetUrl(item.employer?.logoUrl) || "/assets/img/l-1.png"}
-                        className="img-fluid job-logo-img"
-                        alt={item.employer?.companyName || "Employer"}
-                      />
-                    </Link>
-                    <span className="badge job-type-badge rounded-pill px-3 py-2 fw-medium fs-8">
-                      {item.jobType ?? "Full Time"}
-                    </span>
-                  </div>
-
-                  {/* Job Title & Company Name */}
-                  <div className="mb-3">
-                    <h3 className="fs-6 fw-bold mb-1 job-card-title text-truncate">
-                      <Link href={`/job-detail/${item.slug}`} className="text-dark text-decoration-none title-link">
-                        {item.title}
-                      </Link>
-                    </h3>
-                    <p className="text-muted small mb-0 d-flex align-items-center gap-1 text-truncate">
-                      <i className="fa-regular fa-building text-main opacity-75"></i>
-                      {item.employer?.companyName ?? "Verified Company"}
-                    </p>
-                  </div>
-
-                  {/* Metadata Chips: Salary & Location */}
-                  <div className="d-flex flex-wrap gap-2 mb-3">
-                    <span className="badge bg-light text-dark border px-2.5 py-1.5 rounded-2 font-medium small d-inline-flex align-items-center gap-1">
-                      <i className="fa-solid fa-wallet text-success fs-8"></i>
-                      {formatSalary(item)}
-                    </span>
-                    <span className="badge bg-light text-secondary border px-2.5 py-1.5 rounded-2 small d-inline-flex align-items-center gap-1">
-                      <i className="fa-solid fa-location-dot text-danger opacity-75 fs-8"></i>
-                      {item.location ?? "Remote"}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Footer Action Button */}
-                <div className="pt-3 border-top border-light-subtle mt-2">
-                  <Link
-                    href={`/job-detail/${item.slug}`}
-                    className="btn btn-outline-main btn-sm w-100 rounded-pill fw-medium d-flex align-items-center justify-content-center gap-2 apply-btn"
-                  >
-                    View Details <i className="fa-solid fa-arrow-right fs-8 btn-arrow-icon"></i>
-                  </Link>
-                </div>
-              </div>
+        {/* No jobs empty state */}
+        {loaded && jobs.length === 0 && (
+          <div className="text-center py-5">
+            <div style={{ fontSize: '3.5rem', marginBottom: '16px', opacity: 0.3 }}>
+              <i className="fa-solid fa-briefcase"></i>
             </div>
-          ))}
-        </div>
-
-        {/* View All Button */}
-        <div className="row justify-content-center mt-5">
-          <div className="col-lg-12 text-center">
-            <Link href="/jobs" className="btn btn-main btn-md px-5 rounded-pill fw-medium shadow-sm hover-lift">
-              View All Jobs <i className="fa-solid fa-arrow-right ms-2"></i>
-            </Link>
+            <h5 className="fw-semibold text-muted mb-2">No Jobs Added Yet</h5>
+            <p className="text-muted" style={{ fontSize: '0.95rem' }}>
+              Stay tuned! Employers will be posting new opportunities soon.
+            </p>
           </div>
-        </div>
+        )}
+
+        {/* Controls — only show when jobs exist */}
+        {loaded && jobs.length > 0 && (
+          <>
+            <div className="d-flex justify-content-end mb-3">
+              <button className="f-slider-btn" onClick={prevSlide} disabled={currentIndex === 0} style={{ opacity: currentIndex === 0 ? 0.5 : 1, cursor: currentIndex === 0 ? 'default' : 'pointer' }}><i className="fa-solid fa-chevron-left"></i></button>
+              <button className="f-slider-btn" onClick={nextSlide} disabled={currentIndex >= Math.max(0, jobs.length - 3)} style={{ opacity: currentIndex >= Math.max(0, jobs.length - 3) ? 0.5 : 1, cursor: currentIndex >= Math.max(0, jobs.length - 3) ? 'default' : 'pointer' }}><i className="fa-solid fa-chevron-right"></i></button>
+            </div>
+
+            {/* Jobs Grid */}
+            <div className="row g-4">
+              {jobs.slice(currentIndex, currentIndex + 3).map((item) => (
+                <div className="col-xl-4 col-lg-4 col-md-6 col-sm-12" key={item.id}>
+                  <div className="f-job-card">
+                    <div className="f-job-gradient">
+                      <div className="f-job-logo-wrapper">
+                        <img
+                          src={assetUrl(item.employer?.logoUrl) || "/assets/img/l-1.png"}
+                          alt={item.employer?.companyName || "Employer"}
+                          style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                        />
+                      </div>
+                    </div>
+                    <div className="f-job-content">
+                      <div className="f-job-title text-truncate">
+                        <Link href={`/job-detail/${item.slug}`} className="text-dark text-decoration-none">
+                          {item.title}
+                        </Link>
+                      </div>
+                      <div className="f-job-company text-truncate">
+                        {item.employer?.companyName ?? "Verified Company"}
+                      </div>
+                      <div className="f-job-location text-truncate">
+                        <i className="fa-solid fa-location-dot"></i>
+                        {item.location ?? "Remote"}
+                      </div>
+                      
+                      <div className="f-job-divider"></div>
+                      
+                      <div className="f-job-footer">
+                        <div className="f-job-posted">
+                          Posted: <strong>{getTimeAgo(item.createdAt)}</strong>
+                        </div>
+                        <div>
+                          <Link href={`/job-detail/${item.slug}`} className="f-btn-apply text-decoration-none">
+                            View Details
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* View all jobs button */}
+            <div className="text-start">
+              <Link href="/jobs" className="f-view-all text-decoration-none">
+                View all jobs
+              </Link>
+            </div>
+          </>
+        )}
       </div>
-
-      <style jsx>{`
-        .bg-main-light {
-          background-color: rgba(11, 130, 96, 0.08) !important;
-          color: #0b8260 !important;
-        }
-        .fs-7 {
-          font-size: 0.875rem !important;
-        }
-        .fs-8 {
-          font-size: 0.785rem !important;
-        }
-        .featured-job-card {
-          border-color: rgba(0, 0, 0, 0.08) !important;
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
-          overflow: hidden;
-          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
-        }
-        .card-hover-bar {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 4px;
-          background: linear-gradient(90deg, #0b8260, #10b981);
-          border-radius: 1rem 1rem 0 0;
-          opacity: 0;
-          transition: opacity 0.3s ease;
-        }
-        .featured-job-card:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 20px 40px rgba(11, 130, 96, 0.14) !important;
-          border-color: rgba(11, 130, 96, 0.35) !important;
-        }
-        .featured-job-card:hover .card-hover-bar {
-          opacity: 1;
-        }
-        .job-logo-wrapper {
-          width: 52px;
-          height: 52px;
-          transition: transform 0.3s ease, border-color 0.3s ease;
-        }
-        .job-logo-img {
-          max-height: 36px;
-          object-fit: contain;
-        }
-        .featured-job-card:hover .job-logo-wrapper {
-          transform: scale(1.06);
-          border-color: rgba(11, 130, 96, 0.3) !important;
-        }
-        .job-type-badge {
-          background-color: rgba(11, 130, 96, 0.08);
-          color: #0b8260;
-          border: 1px solid rgba(11, 130, 96, 0.2);
-        }
-        .title-link {
-          transition: color 0.2s ease;
-        }
-        .featured-job-card:hover .title-link {
-          color: #0b8260 !important;
-        }
-        .btn-outline-main {
-          color: #0b8260;
-          border-color: rgba(11, 130, 96, 0.3);
-          background-color: rgba(11, 130, 96, 0.04);
-          transition: all 0.3s ease;
-        }
-        .featured-job-card:hover .apply-btn,
-        .btn-outline-main:hover {
-          background-color: #0b8260 !important;
-          color: #ffffff !important;
-          border-color: #0b8260 !important;
-        }
-        .btn-arrow-icon {
-          transition: transform 0.3s ease;
-        }
-        .featured-job-card:hover .btn-arrow-icon {
-          transform: translateX(4px);
-        }
-        .hover-lift {
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .hover-lift:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 10px 24px rgba(11, 130, 96, 0.25) !important;
-        }
-      `}</style>
     </section>
   );
 }

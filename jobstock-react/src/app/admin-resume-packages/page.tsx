@@ -323,6 +323,7 @@ export default function AdminResumePackagesPage() {
                         <label className="form-label small fw-medium">Price*</label>
                         <input
                           type="number"
+                          min="0"
                           className="form-control form-control-sm"
                           placeholder="Example: 999"
                           value={priceInRupees}
@@ -351,6 +352,7 @@ export default function AdminResumePackagesPage() {
                         <label className="form-label small fw-medium">Duration*</label>
                         <input
                           type="number"
+                          min="1"
                           className="form-control form-control-sm"
                           placeholder="Example: 30"
                           value={duration}

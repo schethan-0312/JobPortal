@@ -132,6 +132,18 @@ export default function AdminPackagesPage() {
       setError("Please enter a valid positive duration.");
       return;
     }
+    if (Number(postJobLimit) < 0) {
+      setError("Post Job Limit cannot be negative.");
+      return;
+    }
+    if (Number(applicantViewLimit) < 0) {
+      setError("Applicant View Limit cannot be negative.");
+      return;
+    }
+    if (Number(jobSeekerViewLimit) < 0) {
+      setError("Job Seeker Search Limit cannot be negative.");
+      return;
+    }
 
     const priceInPaisa = Math.round(Number(priceInRupees) * 100);
 
@@ -236,7 +248,7 @@ export default function AdminPackagesPage() {
                     <div className="col-md-6 col-sm-12">
                       <div className="form-group mb-0">
                         <label className="form-label small fw-medium">Price (Rs)*</label>
-                        <input type="number" className="form-control form-control-sm" placeholder="Example: 999" value={priceInRupees} onChange={(e) => setPriceInRupees(e.target.value)} />
+                        <input type="number" min="0" className="form-control form-control-sm" placeholder="Example: 999" value={priceInRupees} onChange={(e) => setPriceInRupees(e.target.value)} />
                       </div>
                     </div>
 
@@ -253,26 +265,26 @@ export default function AdminPackagesPage() {
                     <div className="col-md-6 col-sm-12">
                       <div className="form-group mb-0">
                         <label className="form-label small fw-medium">Duration*</label>
-                        <input type="number" className="form-control form-control-sm" placeholder="Example: 30" value={duration} onChange={(e) => setDuration(e.target.value)} />
+                        <input type="number" min="1" className="form-control form-control-sm" placeholder="Example: 30" value={duration} onChange={(e) => setDuration(e.target.value)} />
                       </div>
                     </div>
 
                     <div className="col-md-4 col-sm-12">
                       <div className="form-group mb-0">
                         <label className="form-label small fw-medium">Post Job Limit</label>
-                        <input type="number" className="form-control form-control-sm" placeholder="Example: 10" value={postJobLimit} onChange={(e) => setPostJobLimit(e.target.value)} />
+                        <input type="number" min="0" className="form-control form-control-sm" placeholder="Example: 10" value={postJobLimit} onChange={(e) => setPostJobLimit(e.target.value)} />
                       </div>
                     </div>
                     <div className="col-md-4 col-sm-12">
                       <div className="form-group mb-0">
                         <label className="form-label small fw-medium">Applicant View Limit</label>
-                        <input type="number" className="form-control form-control-sm" placeholder="Example: 100" value={applicantViewLimit} onChange={(e) => setApplicantViewLimit(e.target.value)} />
+                        <input type="number" min="0" className="form-control form-control-sm" placeholder="Example: 100" value={applicantViewLimit} onChange={(e) => setApplicantViewLimit(e.target.value)} />
                       </div>
                     </div>
                     <div className="col-md-4 col-sm-12">
                       <div className="form-group mb-0">
                         <label className="form-label small fw-medium">Job Seeker Search Limit</label>
-                        <input type="number" className="form-control form-control-sm" placeholder="Example: 50" value={jobSeekerViewLimit} onChange={(e) => setJobSeekerViewLimit(e.target.value)} />
+                        <input type="number" min="0" className="form-control form-control-sm" placeholder="Example: 50" value={jobSeekerViewLimit} onChange={(e) => setJobSeekerViewLimit(e.target.value)} />
                       </div>
                     </div>
 

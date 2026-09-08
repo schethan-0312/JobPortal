@@ -6,8 +6,8 @@ export class NotificationsService {
   constructor(private readonly prisma: PrismaService) {}
 
   /** Internal helper used by other modules (messages, applications, admin) to notify a user */
-  create(userId: string, title: string, body: string) {
-    return this.prisma.notification.create({ data: { userId, title, body } });
+  create(userId: string, title: string, body: string, actionUrl?: string) {
+    return this.prisma.notification.create({ data: { userId, title, body, actionUrl } });
   }
 
   listMine(userId: string) {

@@ -52,7 +52,8 @@ export class JobMatchingService {
       await this.notifications.create(
         follow.follower.id,
         'New Job from ' + employer.companyName,
-        `"${job.title}" was just posted by ${employer.companyName}.`
+        `"${job.title}" was just posted by ${employer.companyName}.`,
+        `/job/${job.slug}`
       );
     }
   }
@@ -73,6 +74,7 @@ export class JobMatchingService {
           alert.userId,
           'New job matches your alert',
           `"${job.title}" in ${job.location} matches your saved job alert.`,
+          `/job/${job.slug}`
         );
         notified.add(alert.userId);
       }
@@ -100,6 +102,7 @@ export class JobMatchingService {
         candidate.userId,
         'New job you might like',
         `"${job.title}" in ${job.location} looks like a match for your profile.`,
+        `/job/${job.slug}`
       );
     }
   }
