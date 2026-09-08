@@ -6,7 +6,7 @@ const sections = [
   {
     title: "Introduction",
     body: [
-      "This Privacy Policy explains what information JobStock collects, how we use it, and the choices you have. By creating an account or using JobStock, you agree to the practices described here.",
+      "This Privacy Policy explains what information Nockree collects, how we use it, and the choices you have. By creating an account or using Nockree, you agree to the practices described here.",
     ],
   },
   {
@@ -26,7 +26,7 @@ const sections = [
   {
     title: "Candidate Information",
     body: [
-      "Candidate profile data (skills, experience, headline, and location) is used to power job matching, AI resume feedback, and search visibility to employers. Your phone number is never shown publicly — employers can only reach you through JobStock's in-app messaging.",
+      "Candidate profile data (skills, experience, headline, and location) is used to power job matching, AI resume feedback, and search visibility to employers. Your phone number is never shown publicly — employers can only reach you through Nockree's in-app messaging.",
     ],
   },
   {
@@ -38,13 +38,13 @@ const sections = [
   {
     title: "Payments",
     body: [
-      "Payments for premium plans are processed by Razorpay. JobStock does not store your card, UPI, or bank details — we only store the confirmation and status of a completed transaction.",
+      "Payments for premium plans are processed by Razorpay. Nockree does not store your card, UPI, or bank details — we only store the confirmation and status of a completed transaction.",
     ],
   },
   {
     title: "Cookies & Local Storage",
     body: [
-      "JobStock uses your browser's local storage to keep you signed in between visits. We do not use third-party advertising or tracking cookies.",
+      "Nockree uses your browser's local storage to keep you signed in between visits. We do not use third-party advertising or tracking cookies.",
     ],
   },
   {

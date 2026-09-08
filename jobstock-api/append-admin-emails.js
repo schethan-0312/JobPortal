@@ -11,7 +11,7 @@ const adminEmails = \
     const transporter = this.getTransporter();
     if (!transporter) return;
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
 
     let subject = 'Job Moderation Update';
     let message = '';
@@ -20,7 +20,7 @@ const adminEmails = \
       subject = '? Your Job is Approved & Live';
       message = \\\
         <p>Good news! Your job listing for <strong>\</strong> has been approved.</p>
-        <p>It is now live on JobStock and visible to candidates.</p>
+        <p>It is now live on Nockree and visible to candidates.</p>
       \\\;
     } else {
       subject = '?? Job Listing Rejected';
@@ -37,7 +37,7 @@ const adminEmails = \
     );
 
     try {
-      await transporter.sendMail({ from: \\\"JobStock Admin" <\>\\\, to: opts.email, subject, html });
+      await transporter.sendMail({ from: \\\"Nockree Admin" <\>\\\, to: opts.email, subject, html });
     } catch (e) {
       this.logger.error('Failed to send job moderation status', e);
     }
@@ -47,7 +47,7 @@ const adminEmails = \
     const transporter = this.getTransporter();
     if (!transporter) return;
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
 
     const html = this.wrapInTemplate(
       'Support Ticket Update',
@@ -58,7 +58,7 @@ const adminEmails = \
     );
 
     try {
-      await transporter.sendMail({ from: \\\"JobStock Support" <\>\\\, to: opts.email, subject: \\\Update on: \\\\, html });
+      await transporter.sendMail({ from: \\\"Nockree Support" <\>\\\, to: opts.email, subject: \\\Update on: \\\\, html });
     } catch (e) {
       this.logger.error('Failed to send support ticket update', e);
     }
@@ -81,7 +81,7 @@ const adminEmails = \
     );
 
     try {
-      await transporter.sendMail({ from: \\\"JobStock Admin" <\>\\\, to: opts.email, subject: \\\Package Activated: \\\\, html });
+      await transporter.sendMail({ from: \\\"Nockree Admin" <\>\\\, to: opts.email, subject: \\\Package Activated: \\\\, html });
     } catch (e) {
       this.logger.error('Failed to send package assignment email', e);
     }
@@ -91,11 +91,11 @@ const adminEmails = \
     const transporter = this.getTransporter();
     if (!transporter) return;
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
 
     const html = this.wrapInTemplate(
       'Admin Invitation',
-      \\\<p>You have been invited to join the JobStock Admin Team.</p>
+      \\\<p>You have been invited to join the Nockree Admin Team.</p>
        <p><strong>Role:</strong> \</p>
        <p><strong>Temporary Password:</strong> \</p>
        <p>Please log in and change your password immediately.</p>\\\,
@@ -103,7 +103,7 @@ const adminEmails = \
     );
 
     try {
-      await transporter.sendMail({ from: \\\"JobStock Admin" <\>\\\, to: opts.email, subject: \\\Invitation to JobStock Admin Team\\\, html });
+      await transporter.sendMail({ from: \\\"Nockree Admin" <\>\\\, to: opts.email, subject: \\\Invitation to Nockree Admin Team\\\, html });
     } catch (e) {
       this.logger.error('Failed to send admin invite', e);
     }
@@ -122,7 +122,7 @@ const adminEmails = \
     );
 
     try {
-      await transporter.sendMail({ from: \\\"JobStock Proctoring" <\>\\\, to: opts.email, subject: \\\Proctoring Notice: \\\\, html });
+      await transporter.sendMail({ from: \\\"Nockree Proctoring" <\>\\\, to: opts.email, subject: \\\Proctoring Notice: \\\\, html });
     } catch (e) {
       this.logger.error('Failed to send proctoring notice', e);
     }
@@ -142,7 +142,7 @@ const adminEmails = \
     );
 
     try {
-      await transporter.sendMail({ from: \\\"JobStock System" <\>\\\, to: adminEmail, subject: \\\[ALERT] \\\\, html });
+      await transporter.sendMail({ from: \\\"Nockree System" <\>\\\, to: adminEmail, subject: \\\[ALERT] \\\\, html });
     } catch (e) {
       this.logger.error('Failed to send admin alert', e);
     }
@@ -169,7 +169,7 @@ const adminEmails = \
 
     try {
       const subjectLine = "\\uD83C\\uDF89 New Employer: " + opts.employerName;
-      await transporter.sendMail({ from: \\\"JobStock Admin" <\>\\\, to: adminEmail, subject: subjectLine, html });
+      await transporter.sendMail({ from: \\\"Nockree Admin" <\>\\\, to: adminEmail, subject: subjectLine, html });
     } catch (e) {
       this.logger.error('Failed to send admin employer alert', e);
     }
@@ -181,7 +181,7 @@ fs.writeFileSync('src/email/email.service.ts', content + adminEmails, 'utf8');
 
 // Replace localhost again in the old wrapInTemplate
 let content2 = fs.readFileSync('src/email/email.service.ts', 'utf8');
-content2 = content2.replace(/http:\/\/localhost:3000/g, 'https://www.jobstock.com');
+content2 = content2.replace(/http:\/\/localhost:3000/g, 'https://www.Nockree.com');
 fs.writeFileSync('src/email/email.service.ts', content2, 'utf8');
 
 console.log('Restored all admin emails!');

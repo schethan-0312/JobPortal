@@ -49,7 +49,7 @@ export default function HeroBanner() {
 
             {/* Sub-headline */}
             <p className="hero-subtext text-white-50 mb-4 pb-2" style={{ maxWidth: "580px", lineHeight: 1.6 }}>
-              Getting a new job is never easy. Check what new jobs we have in store for you on JobStock.
+              Getting a new job is never easy. Check what new jobs we have in store for you on Nockree.
             </p>
 
             {/* Search Bar */}

@@ -1239,7 +1239,7 @@ function CandidateMessagesContent() {
           <div className="row">
             <div className="col-md-12">
               <div className="py-3 text-center text-muted small">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
+                &copy; {new Date().getFullYear()} Nockree. All rights reserved.
               </div>
             </div>
           </div>

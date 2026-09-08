@@ -12,10 +12,10 @@ export default function FindJobCta() {
                 <h2 className="lh-base mb-3 text-light">
                   Find The Perfect Job
                   <br />
-                  on JobStock That is Superb For You
+                  on Nockree That is Superb For You
                 </h2>
                 <p className="fs-6 text-light">
-                  Join thousands of job seekers and employers who trust JobStock to find the right fit, faster.
+                  Join thousands of job seekers and employers who trust Nockree to find the right fit, faster.
                 </p>
               </div>
               <div className="call-action-buttons mt-3">

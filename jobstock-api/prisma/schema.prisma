@@ -1,4 +1,4 @@
-// Prisma schema for JobStock platform
+// Prisma schema for Nockree platform
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {

@@ -37,7 +37,7 @@ const newMethods = `
     );
 
     try {
-      await transporter.sendMail({ from: \`"JobStock Admin" <\${from}>\`, to: opts.email, subject, html });
+      await transporter.sendMail({ from: \`"Nockree Admin" <\${from}>\`, to: opts.email, subject, html });
       this.logger.log(\`Job moderation email sent to \${opts.email} (\${opts.status})\`);
     } catch (e) {
       this.logger.error(\`Failed to send job moderation email\`, e);
@@ -60,7 +60,7 @@ const newMethods = `
     );
 
     try {
-      await transporter.sendMail({ from: \`"JobStock Support" <\${from}>\`, to: opts.email, subject: \`Ticket Update: \${opts.subject}\`, html });
+      await transporter.sendMail({ from: \`"Nockree Support" <\${from}>\`, to: opts.email, subject: \`Ticket Update: \${opts.subject}\`, html });
       this.logger.log(\`Support ticket update sent to \${opts.email}\`);
     } catch (e) {
       this.logger.error(\`Failed to send ticket update email\`, e);
@@ -83,7 +83,7 @@ const newMethods = `
     );
 
     try {
-      await transporter.sendMail({ from: \`"JobStock Billing" <\${from}>\`, to: opts.email, subject: \`Package Activated: \${opts.planName}\`, html });
+      await transporter.sendMail({ from: \`"Nockree Billing" <\${from}>\`, to: opts.email, subject: \`Package Activated: \${opts.planName}\`, html });
     } catch (e) {
       this.logger.error(\`Failed to send package assignment email\`, e);
     }
@@ -97,7 +97,7 @@ const newMethods = `
 
     const html = this.wrapInTemplate(
       'Admin Invitation',
-      \`<p>You have been invited to join the JobStock Admin Team.</p>
+      \`<p>You have been invited to join the Nockree Admin Team.</p>
        <p><strong>Role:</strong> \${opts.role}</p>
        <p><strong>Temporary Password:</strong> \${opts.tempPass}</p>
        <p>Please log in and change your password immediately.</p>\`,
@@ -105,7 +105,7 @@ const newMethods = `
     );
 
     try {
-      await transporter.sendMail({ from: \`"JobStock Admin" <\${from}>\`, to: opts.email, subject: \`Invitation to JobStock Admin Team\`, html });
+      await transporter.sendMail({ from: \`"Nockree Admin" <\${from}>\`, to: opts.email, subject: \`Invitation to Nockree Admin Team\`, html });
     } catch (e) {
       this.logger.error(\`Failed to send admin invite\`, e);
     }
@@ -124,7 +124,7 @@ const newMethods = `
     );
 
     try {
-      await transporter.sendMail({ from: \`"JobStock Proctoring" <\${from}>\`, to: opts.email, subject: \`Proctoring Notice: \${opts.testName}\`, html });
+      await transporter.sendMail({ from: \`"Nockree Proctoring" <\${from}>\`, to: opts.email, subject: \`Proctoring Notice: \${opts.testName}\`, html });
     } catch (e) {
       this.logger.error(\`Failed to send proctoring notice\`, e);
     }
@@ -144,7 +144,7 @@ const newMethods = `
     );
 
     try {
-      await transporter.sendMail({ from: \`"JobStock System" <\${from}>\`, to: adminEmail, subject: \`[ALERT] \${opts.type}\`, html });
+      await transporter.sendMail({ from: \`"Nockree System" <\${from}>\`, to: adminEmail, subject: \`[ALERT] \${opts.type}\`, html });
     } catch (e) {
       this.logger.error(\`Failed to send admin alert\`, e);
     }

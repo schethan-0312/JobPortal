@@ -14,7 +14,7 @@ const newFooterReturn = `  return (
             margin: 0,
             lineHeight: 1,
             letterSpacing: '5px'
-          }}>JOBSTOCK</h1>
+          }}>Nockree</h1>
         </div>
 
         <div className="container position-relative" style={{ zIndex: 1 }}>
@@ -26,7 +26,7 @@ const newFooterReturn = `  return (
                 <img
                   src="/assets/img/logo-light.png"
                   style={{ height: "32px", width: "auto" }}
-                  alt="JobStock"
+                  alt="Nockree"
                 />
               </Link>
             </div>
@@ -42,7 +42,7 @@ const newFooterReturn = `  return (
           <div className="row align-items-center mb-5 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
             <div className="col-md-6">
               <p className="m-0" style={{ color: '#a8c6c4', fontSize: '0.95rem', maxWidth: '450px', lineHeight: 1.6 }}>
-                Find the right opportunities, connect with top companies, and build your career with JobStock.
+                Find the right opportunities, connect with top companies, and build your career with Nockree.
               </p>
             </div>
             <div className="col-md-6 text-md-end mt-4 mt-md-0">
@@ -114,7 +114,7 @@ const newFooterReturn = `  return (
           {/* Bottom Copyright */}
           <div className="row pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
             <div className="col-md-6">
-              <p className="m-0" style={{ fontSize: '0.8rem', color: '#a8c6c4' }}>&copy; 2026 JobStock. All rights reserved.</p>
+              <p className="m-0" style={{ fontSize: '0.8rem', color: '#a8c6c4' }}>&copy; 2026 Nockree. All rights reserved.</p>
             </div>
             <div className="col-md-6 text-md-end mt-2 mt-md-0">
               <p className="m-0" style={{ fontSize: '0.8rem', color: '#a8c6c4' }}>

@@ -2,7 +2,7 @@ import pg from 'pg';
 const { Client } = pg;
 
 const client = new Client({
-  connectionString: 'postgresql://postgres:root@localhost:5000/jobstock?schema=public'
+  connectionString: 'postgresql://postgres:root@localhost:5000/Nockree?schema=public'
 });
 
 async function main() {

@@ -25,25 +25,25 @@ export default function Reviews() {
         <div className="row justify-content-center gx-4 gy-4">
           {reviews.map((item) => (
             <div className="col-xl-4 col-lg-4 col-md-6" key={item.name}>
-              <div className="jobstock-reviews-box">
-                <div className="jobstock-reviews-desc">
+              <div className="Nockree-reviews-box">
+                <div className="Nockree-reviews-desc">
                   <h6 className="review-title-yui">{item.title}</h6>
                   <p>{item.desc}</p>
                 </div>
-                <div className="jobstock-reviews-flex">
-                  <div className="jobstock-reviews-thumb">
-                    <div className="jobstock-reviews-figure">
+                <div className="Nockree-reviews-flex">
+                  <div className="Nockree-reviews-thumb">
+                    <div className="Nockree-reviews-figure">
                       <img src={item.img} className="img-fluid circle" alt="" />
                     </div>
                   </div>
-                  <div className="jobstock-reviews-caption">
-                    <div className="jobstock-reviews-title">
+                  <div className="Nockree-reviews-caption">
+                    <div className="Nockree-reviews-title">
                       <h4>{item.name}</h4>
                     </div>
-                    <div className="jobstock-reviews-designation">
+                    <div className="Nockree-reviews-designation">
                       <span>{item.tag}</span>
                     </div>
-                    <div className="jobstock-reviews-rates">
+                    <div className="Nockree-reviews-rates">
                       <i className="fa-solid fa-star"></i>
                       <i className="fa-solid fa-star"></i>
                       <i className="fa-solid fa-star"></i>

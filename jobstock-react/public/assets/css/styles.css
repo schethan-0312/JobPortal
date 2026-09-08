@@ -1,5 +1,5 @@
 /*
-* Theme Name: JobStock - Job Board & Freelancing Template
+* Theme Name: Nockree - Job Board & Freelancing Template
 * Author: Themez Hub
 * Version: 2.3
 * Last Change: 12 Dec 2024
@@ -13,7 +13,7 @@
 # Homes Banner
 # General Features Design 
 # Detail Page Elements Style
-# jobstock All Features Styles
+# Nockree All Features Styles
 # Inner Page Design
 # Blog Design Start
 # User Dashboard
@@ -6440,7 +6440,7 @@ ul.shorting-list li a:hover, ul.shorting-list li a:focus, ul.shorting-list li a.
     line-height: 1.7;
 }
 /*------------- Agent Contact Box ----------*/
-.jobstock-ct-box {
+.Nockree-ct-box {
     position: relative;
     width: 100%;
     border: 1px solid #e8ecf0;
@@ -6448,15 +6448,15 @@ ul.shorting-list li a:hover, ul.shorting-list li a:focus, ul.shorting-list li a.
     padding:0 0rem;
     background: #ffffff;
 }
-.jobstock-ct-box.no-border {
+.Nockree-ct-box.no-border {
     border:none;
 }
-.jobstock-ct-you1 {
+.Nockree-ct-you1 {
     position: relative;
     width: 100%;
     padding: 2rem 2rem;
 }
-.jobstock-ct-youa {
+.Nockree-ct-youa {
     width: 135px;
     height: 135px;
     border-radius: 50%;
@@ -6464,42 +6464,42 @@ ul.shorting-list li a:hover, ul.shorting-list li a:focus, ul.shorting-list li a.
     padding: 5px;
     margin: 0.5rem auto;
 }
-.jobstock-ct-youb {
+.Nockree-ct-youb {
     display: block;
     position: relative;
     text-align: center;
 }
-.jobstock-ct-youb h4 {
+.Nockree-ct-youb h4 {
     margin: 0;
     font-size: 20px;
 }
-.jobstock-ct-youb p {
+.Nockree-ct-youb p {
     margin: 0;
     font-weight: 500;
     font-size: 13px;
 }
-.jobstock-ct-you2 {
+.Nockree-ct-you2 {
     margin-bottom: 1rem;
     position: relative;
 	padding:0rem 2rem;
     width: 100%;
 }
-.jobstock-ct-you2>* {
+.Nockree-ct-you2>* {
     font-size:35px;
     font-weight: 600;
     color:#e91e63;
 }
-.jobstock-ct-you3, .jobstock-ct-you4{
+.Nockree-ct-you3, .Nockree-ct-you4{
 	position: relative;
 	padding:0rem 2rem;
     width: 100%;
 }
-.jobstock-ct-youc, .jobstock-ct-youd {
+.Nockree-ct-youc, .Nockree-ct-youd {
     position: relative;
     width: 100%;
     margin-bottom: 15px;
 }
-.jobstock-ct-you4 {
+.Nockree-ct-you4 {
     padding:1rem 2rem;
     border-top:1px solid #e8ecf0;
     margin-top: 2rem;
@@ -7139,7 +7139,7 @@ ul.shorting-list li a:hover, ul.shorting-list li a:focus, ul.shorting-list li a.
 }
 
 /*---------------------------------------------
-	jobstock All Features Styles
+	Nockree All Features Styles
 ----------------------------------------------*/
 /*-------------- Category Style --------------*/
 .category-box {
@@ -7485,7 +7485,7 @@ ul.shorting-list li a:hover, ul.shorting-list li a:focus, ul.shorting-list li a.
     align-items: center;
     justify-content: center;
 }
-.vesh-categ-list-content .jobstock-list-098 {
+.vesh-categ-list-content .Nockree-list-098 {
     position: relative;
     display: inline-flex;
     width: 80px;
@@ -7525,8 +7525,8 @@ ul.shorting-list li a:hover, ul.shorting-list li a:focus, ul.shorting-list li a.
 	color:#022f5d;
 }
 
-/*------------------ jobstock Employer Style -----------------*/
-.jobstock-emplr-wrap {
+/*------------------ Nockree Employer Style -----------------*/
+.Nockree-emplr-wrap {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -7534,17 +7534,17 @@ ul.shorting-list li a:hover, ul.shorting-list li a:focus, ul.shorting-list li a.
     border-radius: 6px;
     background: #ffffff;
 }
-.jobstock-list-75 span {
+.Nockree-list-75 span {
     font-weight: 600;
     font-size: 10px;
 }
-.jobstock-emplr-thumb {
+.Nockree-emplr-thumb {
     width:100px;
     height:100px;
 	position: relative;
     margin:3rem auto 1rem;
 }
-.jobstock-emplr-content {
+.Nockree-emplr-content {
     padding: 0 1.2rem 2rem;
     display: flex;
     flex-direction: column;
@@ -7575,32 +7575,32 @@ ul.shorting-list li a:hover, ul.shorting-list li a:focus, ul.shorting-list li a.
     flex-direction: column;
     margin-top: 1.5rem;
 }
-.jobstock-emplr-footer {
+.Nockree-emplr-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding:0.7rem 1.2rem;
     border-top: 1px solid #eaeef2;
 }
-.jobstock-emplr-footer .rlhc-prt-location {
+.Nockree-emplr-footer .rlhc-prt-location {
     font-weight: 500;
     font-size: 12px;
     color: #7a88a8;
     align-items: center;
 }
-.jobstock-emplr-social ul {
+.Nockree-emplr-social ul {
     padding: 0;
     margin: 0;
     display: flex;
     align-items: center;
     justify-content: end;
 }
-.jobstock-emplr-social ul li {
+.Nockree-emplr-social ul li {
     list-style: none;
     margin-left: 12px;
     position: relative;
 }
-.jobstock-emplr-social ul li a {
+.Nockree-emplr-social ul li a {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -7611,7 +7611,7 @@ ul.shorting-list li a:hover, ul.shorting-list li a:focus, ul.shorting-list li a.
     font-size: 12px;
 	color:#617385;
 }
-.jobstock-emplr-wrap:hover a.btn, .jobstock-emplr-wrap:focus a.btn{
+.Nockree-emplr-wrap:hover a.btn, .Nockree-emplr-wrap:focus a.btn{
 	cursor:pointer;
 }
 .count-emplr-25 {
@@ -7783,17 +7783,17 @@ ul.shorting-list li a:hover, ul.shorting-list li a:focus, ul.shorting-list li a.
 }
 
 /*-------------------- Icons List Designs ---------------*/
-.jobstock-icon-box-list {
+.Nockree-icon-box-list {
     position: relative;
     display: flex;
     flex-direction: column;
     width: 100%;
 }
-.jobstock-icon-box-list ul {
+.Nockree-icon-box-list ul {
     padding: 0;
     margin: 0;
 }
-.jobstock-icon-box-list ul li {
+.Nockree-icon-box-list ul li {
     list-style: none;
     display: flex;
     flex-direction: column;
@@ -7802,16 +7802,16 @@ ul.shorting-list li a:hover, ul.shorting-list li a:focus, ul.shorting-list li a.
     width: 100%;
 	margin-bottom:1.5rem;
 }
-.jobstock-icon-box-list ul li:last-child{
+.Nockree-icon-box-list ul li:last-child{
 	margin-bottom:0.5rem;
 }
-.jobstock-icon-box-list ul li .vib-list-wrap21 {
+.Nockree-icon-box-list ul li .vib-list-wrap21 {
     display: flex;
     align-items: flex-start;
     justify-content: flex-start;
     width: 100%;
 }
-.jobstock-icon-box-list ul li .vib-list-icon {
+.Nockree-icon-box-list ul li .vib-list-icon {
     width: 40px;
     height: 40px;
     display: inline-flex;
@@ -7843,7 +7843,7 @@ ul.shorting-list li a:hover, ul.shorting-list li a:focus, ul.shorting-list li a.
 }
 
 /*------------------ Services Box Post Design -------------*/
-.jobstock-posted-box-y78 {
+.Nockree-posted-box-y78 {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -7860,7 +7860,7 @@ ul.shorting-list li a:hover, ul.shorting-list li a:focus, ul.shorting-list li a.
 .serv-ctr-subtitle{
 	margin-bottom:0.5rem;
 }
-.jobstock-posted-box-y78.colored {
+.Nockree-posted-box-y78.colored {
     background: rgba(255,255,255,0.1);
 }
 
@@ -8161,7 +8161,7 @@ div#filTabContent {
     margin: 0.4rem 0.6rem 0.2rem 0;
 }
 /*----------------- Testimonials Design -----------------*/
-.jobstock-reviews-box {
+.Nockree-reviews-box {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -8171,19 +8171,19 @@ div#filTabContent {
     border: 2px solid #f1f3f7;
     border-radius: 10px;
 }
-.jobstock-reviews-flex {
+.Nockree-reviews-flex {
     display: flex;
     align-items: center;
     justify-content: flex-start;
     position: relative;
     width: 100%;
 }
-.jobstock-reviews-thumb {
+.Nockree-reviews-thumb {
     position: relative;
     width: auto;
     display: block;
 }
-.jobstock-reviews-thumb .jobstock-reviews-figure {
+.Nockree-reviews-thumb .Nockree-reviews-figure {
     width: 70px;
     padding: 4px;
     height: 70px;
@@ -8193,7 +8193,7 @@ div#filTabContent {
     border: 2px solid #e1e5ec;
     border-radius: 50%;
 }
-.jobstock-reviews-caption {
+.Nockree-reviews-caption {
     display: flex;
     align-items: flex-start;
     justify-content: flex-start;
@@ -8201,36 +8201,36 @@ div#filTabContent {
     padding-left: 1rem;
     flex: 1;
 }
-.jobstock-reviews-title h4 {
+.Nockree-reviews-title h4 {
     font-size: 16px;
     margin: 0;
     line-height: 1.2;
 }
-.jobstock-reviews-rates {
+.Nockree-reviews-rates {
     display: flex;
     align-items: center;
     margin-top: 2px;
     font-size: 9px;
     color: #ff9800;
 }
-.jobstock-reviews-rates i{
+.Nockree-reviews-rates i{
     margin-right:4px;
 }
-.jobstock-reviews-rates i.deactive {
+.Nockree-reviews-rates i.deactive {
     color: #c7d2dd;
 }
-.jobstock-reviews-desc {
+.Nockree-reviews-desc {
     padding: 1rem 0;
     position: relative;
     display: flex;
     align-items: flex-start;
     flex-direction: column;
 }
-.jobstock-reviews-desc p {
+.Nockree-reviews-desc p {
     font-size: 14px;
     margin: 0;
 }
-.jobstock-reviews-designation {
+.Nockree-reviews-designation {
     font-size: 12px;
     font-weight: 500;
     color: var(--maincolor);
@@ -8296,7 +8296,7 @@ div#filTabContent {
     margin: 0;
     line-height: 1.5;
 }
-.ctr-jobstock-box {
+.ctr-Nockree-box {
     position: relative;
     display: flex;
     width: 100%;
@@ -8304,7 +8304,7 @@ div#filTabContent {
     border:color-mix(in srgb, var(--maincolor), transparent 85%);
     border-radius: 0.4rem;
 }
-.ctr-jobstock-signl {
+.ctr-Nockree-signl {
     display: flex;
     flex-direction: column;
     flex: 0 0 33.333333%;
@@ -8313,15 +8313,15 @@ div#filTabContent {
     text-align: center;
 	border-right: 1px solid color-mix(in srgb, var(--maincolor), transparent 85%);
 }
-.ctr-jobstock-signl:last-child{
+.ctr-Nockree-signl:last-child{
 	border:none;
 }
-.ctr-jobstock-signl-ico {
+.ctr-Nockree-signl-ico {
     font-size: 2rem;
     color:var(--maincolor);
     margin-bottom: 0.5rem;
 }
-.ctr-jobstock-signl-caption p {
+.ctr-Nockree-signl-caption p {
     margin-bottom: 0;
     font-weight: 500;
     font-size: 13px;
@@ -8509,7 +8509,7 @@ span.remove-from-compare {
  Blog Design Start
 ----------------------------------------------*/
 /*------------ Grid Blog Design ------------------*/
-.jobstock-grid-blog {
+.Nockree-grid-blog {
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -8520,33 +8520,33 @@ span.remove-from-compare {
 	background:#ffffff;
     border: 2px solid #f1f3f7;
 }
-.jobstock-grid-blog .jobstock-grid-blog-thumb {
+.Nockree-grid-blog .Nockree-grid-blog-thumb {
     padding: 10px;
     border-radius: 6px;
     overflow: hidden;
     position: relative;
     display: block;
 }
-.jobstock-grid-blog .jobstock-grid-blog-thumb img {
+.Nockree-grid-blog .Nockree-grid-blog-thumb img {
     border-radius: 6px;
     width: 100%;
 }
-.jobstock-grid-blog-body {
+.Nockree-grid-blog-body {
     position: relative;
     display: block;
     padding: 0.5rem 1rem;
 }
-.jobstock-grid-body-header {
+.Nockree-grid-body-header {
     position: relative;
     display: block;
     margin-bottom:10px;
 }
-.jobstock-grid-title,.jobstock-grid-body-middle {
+.Nockree-grid-title,.Nockree-grid-body-middle {
     display: block;
     position: relative;
     width: 100%;
 }
-.jobstock-grid-posted {
+.Nockree-grid-posted {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -8558,15 +8558,15 @@ span.remove-from-compare {
     color: #ffffff;
     margin-bottom: 5px;
 }
-.jobstock-grid-title h4 {
+.Nockree-grid-title h4 {
     font-size: 16px;
     margin: 0;
 }
-.jobstock-grid-body-middle p {
+.Nockree-grid-body-middle p {
     font-size: 14px;
     margin: 0;
 }
-.jobstock-grid-body-footer {
+.Nockree-grid-body-footer {
     padding:2rem 0 1rem;
     position: relative;
     display: flex;
@@ -8574,7 +8574,7 @@ span.remove-from-compare {
     justify-content: center;
     width: 100%;
 }
-.jobstock-grid-body-footer .btn.btn-blog-link {
+.Nockree-grid-body-footer .btn.btn-blog-link {
     height: 50px;
     border-radius: 5px;
     display: flex;
@@ -8586,7 +8586,7 @@ span.remove-from-compare {
     color: #0c3258;
     transition: all ease 0.4s;
 }
-.jobstock-grid-body-footer .btn.btn-blog-link:hover, .jobstock-grid-body-footer .btn.btn-blog-link:focus,.jobstock-grid-body-footer .btn.btn-blog-link:active{
+.Nockree-grid-body-footer .btn.btn-blog-link:hover, .Nockree-grid-body-footer .btn.btn-blog-link:focus,.Nockree-grid-body-footer .btn.btn-blog-link:active{
 	background:var(--maincolor);
 	color:#ffffff;
 }
@@ -10040,7 +10040,7 @@ footer.skin-dark-footer .foot-socials ul li a:hover, footer.skin-dark-footer .fo
 	.hero-content p{
 		font-size:22px;
 	}
-	.jobstock-dash-block_content h4 {
+	.Nockree-dash-block_content h4 {
 		font-size: 35px;
 	}
 	.clios-img{
@@ -10081,7 +10081,7 @@ footer.skin-dark-footer .foot-socials ul li a:hover, footer.skin-dark-footer .fo
 	.vesh-content-title {
 		font-size: 14px;
 	}
-	.jobstock-agent-social ul li {
+	.Nockree-agent-social ul li {
 		margin-left: 5px;
 	}
 	.single-side-rtl-jbs {
@@ -10339,15 +10339,15 @@ footer.skin-dark-footer .foot-socials ul li a:hover, footer.skin-dark-footer .fo
 	.hero-search-content .form-control {
 		border: 2px solid #e2e8ed;
 	}
-	.jobstock-list-prty {
+	.Nockree-list-prty {
 		display: flex;
 		flex-direction: column;
 	}
-	.jobstock-list-prty-figure {
+	.Nockree-list-prty-figure {
 		width: 100%;
 		margin-bottom: 0.8rem;
 	}
-	.jobstock-list-prty-caption {
+	.Nockree-list-prty-caption {
 		padding-left: 0;
 	}
 	.classic-search-box .form-group {
@@ -10358,11 +10358,11 @@ footer.skin-dark-footer .foot-socials ul li a:hover, footer.skin-dark-footer .fo
 		display: flex;
 		margin-bottom: 0.5rem;
 	}
-	.jobstock-list-prty .jobstock-list-prty-caption {
+	.Nockree-list-prty .Nockree-list-prty-caption {
 		flex: auto;
 		width: 100%;
 	}
-	.jobstock-list-middle {
+	.Nockree-list-middle {
 		height: auto;
 		margin-bottom: 0.5rem;
 	}
@@ -10395,10 +10395,10 @@ footer.skin-dark-footer .foot-socials ul li a:hover, footer.skin-dark-footer .fo
 		font-size: 18px;
 		line-height: 1.4;
 	}
-	.ctr-jobstock-box {
+	.ctr-Nockree-box {
 		flex-direction: column;
 	}
-	.ctr-jobstock-signl {
+	.ctr-Nockree-signl {
 		flex: 0 0 100%;
 		width: 100%;
 		border-right: none;

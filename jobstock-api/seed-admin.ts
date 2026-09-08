@@ -13,17 +13,17 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   const newPass = await bcrypt.hash('admin123', 12);
   await prisma.user.upsert({
-    where: { email: 'admin@jobstock.com' },
+    where: { email: 'admin@Nockree.com' },
     update: { passwordHash: newPass, role: 'ADMIN', adminRole: 'SUPER_ADMIN' },
     create: {
-      email: 'admin@jobstock.com',
+      email: 'admin@Nockree.com',
       passwordHash: newPass,
       role: 'ADMIN',
       adminRole: 'SUPER_ADMIN',
       isEmailVerified: true
     }
   });
-  console.log('Restored admin@jobstock.com with password admin123');
+  console.log('Restored admin@Nockree.com with password admin123');
 }
 
 main().catch(console.error).finally(async () => {

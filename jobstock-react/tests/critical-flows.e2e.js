@@ -52,7 +52,7 @@ async function check(name, fn) {
       assert.ok(reg.accessToken && reg.accessToken.length > 20);
     });
 
-    await page.evaluate((token) => localStorage.setItem('jobstock_token', token), reg.accessToken);
+    await page.evaluate((token) => localStorage.setItem('Nockree_token', token), reg.accessToken);
 
     await check('candidate dashboard loads after login (session restored)', async () => {
       const res = await page.goto(WEB + '/candidate-dashboard', { waitUntil: 'networkidle' });

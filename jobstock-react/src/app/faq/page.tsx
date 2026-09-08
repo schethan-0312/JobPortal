@@ -9,11 +9,11 @@ const groups = [
     title: "Getting Started",
     items: [
       {
-        q: "How do I create an account on JobStock?",
+        q: "How do I create an account on Nockree?",
         a: "Click Register Today, choose whether you're a candidate or an employer, and fill in your basic details. You'll be taken straight to your dashboard once you're signed up.",
       },
       {
-        q: "Is JobStock free to use for job seekers?",
+        q: "Is Nockree free to use for job seekers?",
         a: "Yes — browsing jobs, applying, and using core features like your profile and application tracking are free. Optional premium plans unlock extras like priority visibility and unlimited applications.",
       },
       {
@@ -36,7 +36,7 @@ const groups = [
       },
       {
         q: "What are the AI tools for candidates?",
-        a: "JobStock includes a Resume Health Scanner, AI Resume Builder, Skill Assessments, Mock Interviews, a Career Path Navigator, and Smart Job Matching — all available from your dashboard.",
+        a: "Nockree includes a Resume Health Scanner, AI Resume Builder, Skill Assessments, Mock Interviews, a Career Path Navigator, and Smart Job Matching — all available from your dashboard.",
       },
       {
         q: "How do job alerts work?",
@@ -79,8 +79,8 @@ const groups = [
         a: "Yes — visit the Package page from your dashboard at any time to view and purchase a different plan.",
       },
       {
-        q: "Is my payment information stored on JobStock's servers?",
-        a: "No — all payment details are handled directly by Razorpay. JobStock only stores the confirmation of a successful payment.",
+        q: "Is my payment information stored on Nockree's servers?",
+        a: "No — all payment details are handled directly by Razorpay. Nockree only stores the confirmation of a successful payment.",
       },
     ],
   },

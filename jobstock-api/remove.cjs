@@ -19,7 +19,7 @@ const strToFind = \  async sendEmployerVerificationStatus(email: string, company
       message = \\\<p>Your account for <b>\</b> has been suspended. Please contact support.</p>\\\;
     }
     
-    const html = \\\<h2>JobStock Employer Update</h2>\\\ + message;
+    const html = \\\<h2>Nockree Employer Update</h2>\\\ + message;
     
     try {
       await this.transporter.sendMail({ from, to: email, subject, html });

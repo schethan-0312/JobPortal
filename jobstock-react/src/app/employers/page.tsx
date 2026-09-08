@@ -402,7 +402,7 @@ export default function EmployersPage() {
                             minHeight: "40px",
                           }}
                         >
-                          {company.description || "Leading company hiring top talent on JobStock."}
+                          {company.description || "Leading company hiring top talent on Nockree."}
                         </p>
                       </div>
 

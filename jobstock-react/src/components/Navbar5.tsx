@@ -34,10 +34,10 @@ export default function Navbar5() {
             <div className="nav-header">
               <Link className="nav-brand d-inline-flex align-items-center gap-2 text-decoration-none" href="/" onClick={closeMobileNav}>
                 <div style={{ width: "36px", height: "36px", overflow: "hidden", position: "relative", flexShrink: 0 }}>
-                  <img src="/assets/img/logo.png" alt="JobStock" style={{ height: "36px", width: "auto", position: "absolute", left: 0, top: 0 }} />
+                  <img src="/assets/img/logo.png" alt="Nockree" style={{ height: "36px", width: "auto", position: "absolute", left: 0, top: 0 }} />
                 </div>
                 <span style={{ color: "#0b8260", fontWeight: 800, fontSize: "1.45rem", letterSpacing: "0.5px", textTransform: "uppercase" }}>
-                  Job Stock
+                  Nockree
                 </span>
               </Link>
               <div
@@ -259,3 +259,4 @@ export default function Navbar5() {
     </>
   );
 }
+

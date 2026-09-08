@@ -581,7 +581,7 @@ export default function EmployerSubmissionDetailsPage() {
           <div className="row mt-5">
             <div className="col-md-12">
               <div className="py-3 text-center">
-                &copy; {new Date().getFullYear()} JobStock. All rights reserved.
+                &copy; {new Date().getFullYear()} Nockree. All rights reserved.
               </div>
             </div>
           </div>

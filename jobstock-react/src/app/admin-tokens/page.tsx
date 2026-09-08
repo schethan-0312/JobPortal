@@ -631,7 +631,7 @@ export default function AdminTokenUsagePage() {
                                   <tr key={log.id} className="small">
                                     <td>{new Date(log.createdAt).toLocaleString()}</td>
                                     <td className="fw-semibold">{log.name || "Guest"}</td>
-                                    <td>{log.email || "guest@jobstock.com"}</td>
+                                    <td>{log.email || "guest@Nockree.com"}</td>
                                     <td>{featureLabel(log.feature)}</td>
                                     <td>{log.model}</td>
                                     <td>{log.promptTokens.toLocaleString()}</td>

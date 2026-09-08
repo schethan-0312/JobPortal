@@ -3,8 +3,8 @@
  * placeholders). Drives the actual UI end to end and screenshots each key step.
  * Run with: node tests/manual-qa-walkthrough.js
  *
- * Requires: backend on :4000, frontend on :3000, and admin@jobstock.com's password
- * reset to ManualQA2026! via `node jobstock-api/admin-tool.mjs reset-password ...`
+ * Requires: backend on :4000, frontend on :3000, and admin@Nockree.com's password
+ * reset to ManualQA2026! via `node Nockree-api/admin-tool.mjs reset-password ...`
  * for this session only.
  */
 const { chromium } = require("playwright");
@@ -12,7 +12,7 @@ const path = require("path");
 
 const WEB = "http://localhost:3000";
 const SHOTDIR =
-  "C:\\Users\\New\\AppData\\Local\\Temp\\claude\\c--Users-New-Downloads-Jobstock-CakePHP-v1-0-0-Jobstock-CakePHP-v1-0-0\\dda5db0b-e8e0-4574-afa2-d8b2d2674486\\scratchpad\\qa-screens";
+  "C:\\Users\\New\\AppData\\Local\\Temp\\claude\\c--Users-New-Downloads-Nockree-CakePHP-v1-0-0-Nockree-CakePHP-v1-0-0\\dda5db0b-e8e0-4574-afa2-d8b2d2674486\\scratchpad\\qa-screens";
 
 const stamp = Date.now();
 const candidate = {
@@ -192,7 +192,7 @@ async function loginViaModal(page, email, password) {
 
     // ---------- Admin verifies the employer ----------
     log("7. Admin logs in and verifies TechNova Solutions");
-    await loginViaModal(page, "admin@jobstock.com", "ManualQA2026!");
+    await loginViaModal(page, "admin@Nockree.com", "ManualQA2026!");
     console.log("URL after admin login:", page.url());
     await shot(page, "admin-dashboard");
     await page.goto(`${WEB}/admin-employers`, { waitUntil: "load" });

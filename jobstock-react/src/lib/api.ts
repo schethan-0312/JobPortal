@@ -12,15 +12,15 @@ export class ApiError extends Error {
 
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("jobstock_token");
+  return localStorage.getItem("Nockree_token");
 }
 
 export function setToken(token: string | null) {
   if (typeof window === "undefined") return;
   if (token) {
-    localStorage.setItem("jobstock_token", token);
+    localStorage.setItem("Nockree_token", token);
   } else {
-    localStorage.removeItem("jobstock_token");
+    localStorage.removeItem("Nockree_token");
   }
 }
 

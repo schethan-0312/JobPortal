@@ -149,7 +149,7 @@ export default function EmployerPackagePage() {
         amount: rpOrder.amount,
         currency: rpOrder.currency,
         order_id: rpOrder.razorpayOrderId,
-        name: "JobStock",
+        name: "Nockree",
         description: `${pkg.name} package`,
         handler: async (response: RazorpaySuccessResponse) => {
           try {

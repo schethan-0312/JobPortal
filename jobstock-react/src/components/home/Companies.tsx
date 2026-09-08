@@ -15,7 +15,7 @@ export default function Companies() {
             <div className="center mb-4">
               <h5 className="fw-medium lh-lg">
                 Join over 2,000 companies around the world that trust the{" "}
-                <span className="text-main">JobStock</span> platforms
+                <span className="text-main">Nockree</span> platforms
               </h5>
             </div>
           </div>

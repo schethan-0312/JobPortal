@@ -111,7 +111,7 @@ export default function Footer() {
 
   return (
     <>
-      {/* JOBSTOCK Watermark — sits on white bg above the dark footer */}
+      {/* Nockree Watermark — sits on white bg above the dark footer */}
       <div style={{
         backgroundColor: '#ffffff',
         overflow: 'hidden',
@@ -128,7 +128,7 @@ export default function Footer() {
           lineHeight: 0.85,
           letterSpacing: '4px',
           display: 'block',
-        }}>JOBSTOCK</h1>
+        }}>Nockree</h1>
       </div>
 
       <footer className="footer custom-theme-footer position-relative" style={{ backgroundColor: '#134e4a', overflow: 'hidden', padding: '10px 0 5px', color: '#a8c6c4' }}>
@@ -140,13 +140,13 @@ export default function Footer() {
             {/* Logo */}
             <div className="col-auto">
               <Link href="/">
-                <img src="/assets/img/logo-light.png" style={{ height: '22px', width: 'auto' }} alt="JobStock" />
+                <h2 className="logo" style={{ margin: 0, fontWeight: "bold", fontSize: "28px", display: "flex", alignItems: "center", color: "#ffffff" }}>Nockree</h2>
               </Link>
             </div>
             {/* Tagline */}
             <div className="col">
               <p className="m-0" style={{ color: '#a8c6c4', fontSize: '0.73rem', lineHeight: 1.3 }}>
-                Find the right opportunities and build your career with JobStock.
+                Find the right opportunities and build your career with Nockree.
               </p>
             </div>
             {/* Contact */}
@@ -225,7 +225,7 @@ export default function Footer() {
           {/* Bottom Copyright */}
           <div className="row pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
             <div className="col-12 text-center">
-              <p className="m-0" style={{ fontSize: '0.75rem', color: '#a8c6c4' }}>&copy; 2026 JobStock. All rights reserved.</p>
+              <p className="m-0" style={{ fontSize: '0.75rem', color: '#a8c6c4' }}>&copy; 2026 Nockree. All rights reserved.</p>
             </div>
           </div>
         </div>

@@ -249,8 +249,8 @@ export class AdminTokensService {
 
     let resultList = Array.from(userGroupMap.values()).map((item) => {
       const details = item.userId === 'guest'
-        ? { email: 'guest@jobstock.com', name: 'Guest/Unauthenticated' }
-        : userDetailsMap.get(item.userId) || { email: 'unknown@jobstock.com', name: 'Deleted User' };
+        ? { email: 'guest@Nockree.com', name: 'Guest/Unauthenticated' }
+        : userDetailsMap.get(item.userId) || { email: 'unknown@Nockree.com', name: 'Deleted User' };
 
       return {
         ...item,
@@ -293,11 +293,11 @@ export class AdminTokensService {
 
   async getUserDetails(userId: string) {
     const isGuest = userId === 'guest';
-    let userDetails = { email: 'guest@jobstock.com', name: 'Guest/Unauthenticated' };
+    let userDetails = { email: 'guest@Nockree.com', name: 'Guest/Unauthenticated' };
 
     if (!isGuest) {
       const detailsMap = await this.getUsersDetails([userId]);
-      userDetails = detailsMap.get(userId) || { email: 'unknown@jobstock.com', name: 'Deleted User' };
+      userDetails = detailsMap.get(userId) || { email: 'unknown@Nockree.com', name: 'Deleted User' };
     }
 
     const logs = await this.prisma.aiUsageLog.findMany({
@@ -455,8 +455,8 @@ export class AdminTokensService {
 
     const items = logs.map((log) => {
       const details = log.userId
-        ? userDetailsMap.get(log.userId) || { email: 'unknown@jobstock.com', name: 'Deleted User' }
-        : { email: 'guest@jobstock.com', name: 'Guest' };
+        ? userDetailsMap.get(log.userId) || { email: 'unknown@Nockree.com', name: 'Deleted User' }
+        : { email: 'guest@Nockree.com', name: 'Guest' };
 
       const cost = calculateLogCost(log.model, log.promptTokens, log.responseTokens).totalCost;
 
@@ -500,8 +500,8 @@ export class AdminTokensService {
 
     for (const log of logs) {
       const details = log.userId
-        ? userDetailsMap.get(log.userId) || { email: 'unknown@jobstock.com', name: 'Deleted User' }
-        : { email: 'guest@jobstock.com', name: 'Guest' };
+        ? userDetailsMap.get(log.userId) || { email: 'unknown@Nockree.com', name: 'Deleted User' }
+        : { email: 'guest@Nockree.com', name: 'Guest' };
 
       const cost = calculateLogCost(log.model, log.promptTokens, log.responseTokens).totalCost;
       const statusStr = log.success ? 'SUCCESS' : 'FAILED';

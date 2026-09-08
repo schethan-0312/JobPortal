@@ -30,7 +30,7 @@ export interface ResumeScanResult {
 
 export type ScanResponse = ResumeScanResult | { success: boolean; message: string };
 
-const SYSTEM_PROMPT = `You are an expert ATS (Applicant Tracking System) and Senior Technical Recruiter for JobStock.
+const SYSTEM_PROMPT = `You are an expert ATS (Applicant Tracking System) and Senior Technical Recruiter for Nockree.
 You evaluate resumes using advanced semantic understanding. You are provided with:
 1. The extracted text of the candidate's resume.
 2. The target job role or job description.

@@ -12,7 +12,7 @@ interface TableSizeRow {
   total_size_bytes: bigint;
 }
 
-const BACKUP_DIR = process.env.BACKUP_DIR || path.join(process.cwd(), '..', 'jobstock-backups');
+const BACKUP_DIR = process.env.BACKUP_DIR || path.join(process.cwd(), '..', 'Nockree-backups');
 
 @Injectable()
 export class AdminDatabaseService {
@@ -51,7 +51,7 @@ export class AdminDatabaseService {
 
   async triggerBackup(actorId: string, ip?: string) {
     fs.mkdirSync(BACKUP_DIR, { recursive: true });
-    const filename = `jobstock-backup-${new Date().toISOString().replace(/[:.]/g, '-')}.dump`;
+    const filename = `Nockree-backup-${new Date().toISOString().replace(/[:.]/g, '-')}.dump`;
     const filePath = path.join(BACKUP_DIR, filename);
 
     const record = await this.prisma.backupRecord.create({
@@ -151,7 +151,7 @@ export class AdminDatabaseService {
       await tx.user.update({
         where: { id: userId },
         data: {
-          email: `deleted-${userId}@deleted.jobstock`,
+          email: `deleted-${userId}@deleted.Nockree`,
           phoneNumber: null,
           smsOptIn: false,
           whatsappOptIn: false,

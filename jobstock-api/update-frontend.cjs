@@ -1,5 +1,5 @@
 const fs = require('fs');
-let content = fs.readFileSync('../jobstock-react/src/app/admin-employer-directory/[id]/page.tsx', 'utf8');
+let content = fs.readFileSync('../Nockree-react/src/app/admin-employer-directory/[id]/page.tsx', 'utf8');
 
 const target = \<button 
                       className="btn btn-sm btn-danger"
@@ -27,4 +27,4 @@ const replacement = \<button
                     )}\;
 
 content = content.replace(target, replacement);
-fs.writeFileSync('../jobstock-react/src/app/admin-employer-directory/[id]/page.tsx', content);
+fs.writeFileSync('../Nockree-react/src/app/admin-employer-directory/[id]/page.tsx', content);

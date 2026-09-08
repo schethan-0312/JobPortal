@@ -67,7 +67,7 @@ export default function NotificationChannelsCard() {
     <div className="card mb-4">
       <div className="card-header">
         <h4>Notification Channels</h4>
-        <p className="text-muted mb-0 mt-1">Choose how JobStock reaches you beyond the in-app bell.</p>
+        <p className="text-muted mb-0 mt-1">Choose how Nockree reaches you beyond the in-app bell.</p>
       </div>
       <div className="card-body">
         {message && <div className="alert alert-info py-2">{message}</div>}
@@ -75,7 +75,7 @@ export default function NotificationChannelsCard() {
         <div className="d-flex align-items-center justify-content-between border rounded p-3 mb-3">
           <div>
             <div className="fw-medium">Browser push notifications</div>
-            <div className="small text-muted">Instant alerts even when JobStock isn&apos;t open in a tab.</div>
+            <div className="small text-muted">Instant alerts even when Nockree isn&apos;t open in a tab.</div>
           </div>
           <button type="button" className={`btn btn-sm ${pushOn ? "btn-outline-danger" : "btn-main"}`} disabled={busy} onClick={togglePush}>
             {pushOn ? "Turn off" : "Turn on"}

@@ -12,7 +12,7 @@ export class PushService {
     const publicKey = process.env.VAPID_PUBLIC_KEY;
     const privateKey = process.env.VAPID_PRIVATE_KEY;
     if (publicKey && privateKey) {
-      webpush.setVapidDetails('mailto:support@jobstock.app', publicKey, privateKey);
+      webpush.setVapidDetails('mailto:support@Nockree.app', publicKey, privateKey);
       this.configured = true;
     }
   }

@@ -394,7 +394,7 @@ export default function FeaturesProcess() {
             Two <span>Seamless Experiences.</span>
           </h2>
           <p className="timeline-subtitle">
-            Whether you're hunting for your dream role or searching for top talent, JobStock simplifies the process into a clear, transparent journey.
+            Whether you're hunting for your dream role or searching for top talent, Nockree simplifies the process into a clear, transparent journey.
           </p>
         </div>
 
@@ -409,7 +409,7 @@ export default function FeaturesProcess() {
                   <div className="step-number">1</div>
                   <h3 className="step-title">Create Your Identity</h3>
                   <p className="step-desc">
-                    Sign up in under a minute. Build a compelling profile that highlights your skills, experience, and aspirations. Your JobStock profile acts as your digital resume, making applications effortless.
+                    Sign up in under a minute. Build a compelling profile that highlights your skills, experience, and aspirations. Your Nockree profile acts as your digital resume, making applications effortless.
                   </p>
                 </div>
                 <div className="timeline-node"></div>

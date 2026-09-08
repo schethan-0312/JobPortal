@@ -10,11 +10,11 @@ const newVerify = `async sendEmployerVerificationStatus(email: string, companyNa
     const transporter = this.getTransporter();
     if (!transporter) return;
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
-    const adminEmail = process.env.EMAIL_USERNAME || process.env.SMTP_USER || 'support@jobstock.com';
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const adminEmail = process.env.EMAIL_USERNAME || process.env.SMTP_USER || 'support@Nockree.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
 
     let subject = 'Employer Verification Update';
-    let title = 'JobStock Employer Update';
+    let title = 'Nockree Employer Update';
     let message = '';
 
     if (status === 'VERIFIED') {
@@ -51,7 +51,7 @@ const newVerify = `async sendEmployerVerificationStatus(email: string, companyNa
     );
 
     try {
-      await transporter.sendMail({ from: \\`"JobStock Admin" <\${from}>\\`, to: email, subject, html });
+      await transporter.sendMail({ from: \\`"Nockree Admin" <\${from}>\\`, to: email, subject, html });
     } catch (e) {
       this.logger.error('Failed to send employer verification email', e);
     }
@@ -61,7 +61,7 @@ const newVerify = `async sendEmployerVerificationStatus(email: string, companyNa
 content = content.replace(/async sendEmployerVerificationStatus[\s\S]*?catch \(e\) {\s*this\.logger\.error\('Failed to send employer verification email', e\);\s*}\s*}/g, newVerify);
 
 // Fix localhost
-content = content.replace(/http:\/\/localhost:3000/g, 'https://www.jobstock.com');
+content = content.replace(/http:\/\/localhost:3000/g, 'https://www.Nockree.com');
 
 // Replace sendNewEmployerAlert 
 const newAlert = `async sendNewEmployerAlert(opts: { employerName: string }) {
@@ -80,12 +80,12 @@ const newAlert = `async sendNewEmployerAlert(opts: { employerName: string }) {
          <p style="margin: 0; color: #15803d; font-size: 14px;">\\uD83D\\uDD0D Please review their profile to unlock their ability to post jobs.</p>
        </div>
        <p style="color: #666; font-size: 14px;">Keep up the great work! \\uD83C\\uDF1F</p>\\`,
-      { text: '\\uD83D\\uDC49 Review Employer Now', url: \\`\${process.env.FRONTEND_URL || 'https://www.jobstock.com'}/admin-employers\\` }
+      { text: '\\uD83D\\uDC49 Review Employer Now', url: \\`\${process.env.FRONTEND_URL || 'https://www.Nockree.com'}/admin-employers\\` }
     );
 
     try {
       const subjectLine = "\\uD83C\\uDF89 New Employer: " + opts.employerName;
-      await transporter.sendMail({ from: \\`"JobStock Admin" <\${from}>\\`, to: adminEmail, subject: subjectLine, html });
+      await transporter.sendMail({ from: \\`"Nockree Admin" <\${from}>\\`, to: adminEmail, subject: subjectLine, html });
     } catch (e) {
       this.logger.error('Failed to send admin employer alert', e);
     }

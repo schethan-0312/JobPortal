@@ -3,14 +3,14 @@ import { PrismaService } from '../prisma/prisma.service.js';
 
 export const SYSTEM_CONFIG_DEFAULTS = {
   maintenanceMode: false,
-  maintenanceMessage: 'JobStock is currently undergoing scheduled maintenance. Please check back shortly.',
+  maintenanceMessage: 'Nockree is currently undergoing scheduled maintenance. Please check back shortly.',
   registrationEnabled: true,
-  supportEmail: 'support@jobstock.com',
+  supportEmail: 'support@Nockree.com',
   maxJobPostsPerEmployer: 50,
   platformAnnouncement: '',
-  seoDefaultTitle: 'JobStock — Find Your Next Job',
-  seoDefaultDescription: 'JobStock connects verified employers with candidates through smart matching, AI-powered tools, and a streamlined hiring process.',
-  seoRobotsTxt: 'User-agent: *\nAllow: /\nSitemap: https://jobstock.chethancodehub.com/sitemap.xml',
+  seoDefaultTitle: 'Nockree — Find Your Next Job',
+  seoDefaultDescription: 'Nockree connects verified employers with candidates through smart matching, AI-powered tools, and a streamlined hiring process.',
+  seoRobotsTxt: 'User-agent: *\nAllow: /\nSitemap: https://Nockree.chethancodehub.com/sitemap.xml',
   seoGoogleSiteVerification: '',
 } as const;
 

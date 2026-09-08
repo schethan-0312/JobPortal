@@ -1,6 +1,6 @@
 {
-  "name": "JobStock - Job Portal",
-  "short_name": "JobStock",
+  "name": "Nockree - Job Portal",
+  "short_name": "Nockree",
   "description": "Find your career to make a better life",
   "start_url": "/candidate-dashboard",
   "scope": "/",

@@ -1,6 +1,6 @@
 import os
 
-src_dir = r'c:\Users\kisho\OneDrive\Desktop\jpr\JobPortal\jobstock-react\src'
+src_dir = r'c:\Users\kisho\OneDrive\Desktop\jpr\JobPortal\Nockree-react\src'
 blank = '\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=\"'
 patterns = ['\"/assets/img/l-1.png\"', '\"/assets/img/l-4.png\"', '\"/assets/img/user-5.png\"']
 

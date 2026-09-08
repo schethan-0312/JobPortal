@@ -55,7 +55,7 @@ export class GamificationService {
       {
         id: 'first-application',
         title: 'First Application',
-        description: 'Applied to your first job on JobStock',
+        description: 'Applied to your first job on Nockree',
         icon: 'fa-solid fa-paper-plane',
         earned: applicationCount >= 1,
       },

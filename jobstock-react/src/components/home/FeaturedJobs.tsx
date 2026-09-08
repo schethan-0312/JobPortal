@@ -259,7 +259,7 @@ export default function FeaturedJobs() {
             Featured <span style={{ color: '#3cb371' }}>Jobs</span>
           </h2>
           <p className="text-muted" style={{ fontSize: '1.1rem' }}>
-            Explore latest opening roles posted by verified employers on JobStock.
+            Explore latest opening roles posted by verified employers on Nockree.
           </p>
         </div>
 

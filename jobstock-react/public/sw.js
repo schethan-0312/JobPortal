@@ -1,7 +1,7 @@
 // Minimal service worker: caches the app shell for installability/offline start,
 // and displays incoming Web Push notifications. Deliberately no aggressive runtime
 // caching of API responses — job/application data must always be fresh.
-const CACHE_NAME = "jobstock-shell-v3";
+const CACHE_NAME = "Nockree-shell-v3";
 const SHELL_ASSETS = ["/manifest.json"];
 
 self.addEventListener("install", (event) => {
@@ -44,14 +44,14 @@ self.addEventListener("fetch", (event) => {
 
 self.addEventListener("push", (event) => {
   if (!event.data) return;
-  let payload = { title: "JobStock", body: "" };
+  let payload = { title: "Nockree", body: "" };
   try {
     payload = event.data.json();
   } catch {
     payload.body = event.data.text();
   }
   event.waitUntil(
-    self.registration.showNotification(payload.title || "JobStock", {
+    self.registration.showNotification(payload.title || "Nockree", {
       body: payload.body,
       icon: "/assets/img/favicon.png",
       badge: "/assets/img/favicon.png",

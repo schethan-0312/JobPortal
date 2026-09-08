@@ -13,8 +13,11 @@ export default function Navbar6() {
         <div className="container-fluid">
           <nav id="navigation" className="navigation navigation-landscape">
             <div className="nav-header">
-              <Link className="nav-brand" href="/">
-                <img src="/assets/img/logo-light.png" className="logo" alt="JobStock" />
+              <Link className="nav-brand d-inline-flex align-items-center gap-2 text-decoration-none" href="/">
+                <div style={{ width: "36px", height: "36px", overflow: "hidden", position: "relative", flexShrink: 0 }}>
+                  <img src="/assets/img/logo-light.png" className="logo" alt="Nockree" style={{ height: "36px", width: "auto", position: "absolute", left: 0, top: 0 }} />
+                </div>
+                Nockree
               </Link>
               <div className="nav-toggle"></div>
               <div className="mobile_nav">

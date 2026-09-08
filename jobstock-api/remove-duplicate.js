@@ -23,7 +23,7 @@ let content = fs.readFileSync(path, 'utf8');
       message = \<p>Your account for <b>\</b> has been suspended. Please contact support.</p>\;
     }
     
-    const html = \<h2>JobStock Employer Update</h2>\ + message;
+    const html = \<h2>Nockree Employer Update</h2>\ + message;
     
     try {
       await this.transporter.sendMail({ from, to: email, subject, html });
@@ -33,7 +33,7 @@ let content = fs.readFileSync(path, 'utf8');
   }
 */
 
-const oldFuncRegex = /async sendEmployerVerificationStatus\(email: string, companyName: string, status: 'VERIFIED' \| 'REJECTED' \| 'SUSPENDED'\) \{\s*if \(\!this\.transporter\) return;\s*const from = [^]*?<h2>JobStock Employer Update<\/h2>[^]*?Failed to send employer verification email', e\);\s*}\s*}/;
+const oldFuncRegex = /async sendEmployerVerificationStatus\(email: string, companyName: string, status: 'VERIFIED' \| 'REJECTED' \| 'SUSPENDED'\) \{\s*if \(\!this\.transporter\) return;\s*const from = [^]*?<h2>Nockree Employer Update<\/h2>[^]*?Failed to send employer verification email', e\);\s*}\s*}/;
 
 if (oldFuncRegex.test(content)) {
   content = content.replace(oldFuncRegex, '');

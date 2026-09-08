@@ -381,12 +381,12 @@ export default function VideoBanner() {
               </div>
 
               <h2 className="vb-title">
-                See How JobStock<br />
+                See How Nockree<br />
                 <span>Accelerates</span> Hiring &amp;<br />Career Growth
               </h2>
 
               <p className="vb-desc">
-                Discover how JobStock connects job seekers with verified employers,
+                Discover how Nockree connects job seekers with verified employers,
                 featuring automated matching, 1-click applications, and real-time
                 candidate updates — all in one platform.
               </p>

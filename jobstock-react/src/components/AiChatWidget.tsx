@@ -12,7 +12,7 @@ interface ChatMessage {
 export default function AiChatWidget() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: "model", text: "Hi! I'm the JobStock Career Assistant. Ask me about jobs, resumes, interviews, or how to use the platform." },
+    { role: "model", text: "Hi! I'm the Nockree Career Assistant. Ask me about jobs, resumes, interviews, or how to use the platform." },
   ]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -79,7 +79,7 @@ export default function AiChatWidget() {
           >
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <span className="ai-robot-icon-wiggle" style={{ fontSize: "20px" }}>🤖</span>
-              <strong>JobStock Career Assistant</strong>
+              <strong>Nockree Career Assistant</strong>
             </div>
             <button
               onClick={() => setOpen(false)}

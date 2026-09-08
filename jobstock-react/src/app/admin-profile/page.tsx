@@ -97,7 +97,7 @@ export default function AdminProfilePage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/uploads/image`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("jobstock_token")}`,
+          Authorization: `Bearer ${localStorage.getItem("Nockree_token")}`,
         },
         body: formData,
       });

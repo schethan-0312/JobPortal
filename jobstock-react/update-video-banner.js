@@ -182,9 +182,9 @@ export default function VideoBanner() {
           {/* Right Column: Content */}
           <div className="col-lg-6">
             <div className="po-content-wrapper">
-              <h2 className="po-title">See How JobStock Accelerates Hiring & Career Growth</h2>
+              <h2 className="po-title">See How Nockree Accelerates Hiring & Career Growth</h2>
               <p className="po-subtitle">
-                Watch our platform overview video to discover how JobStock connects job seekers with verified employers, featuring automated matching, 1-click applications, and real-time candidate updates.
+                Watch our platform overview video to discover how Nockree connects job seekers with verified employers, featuring automated matching, 1-click applications, and real-time candidate updates.
               </p>
 
               <div className="po-cards-container">

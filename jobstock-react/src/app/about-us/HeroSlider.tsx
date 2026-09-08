@@ -8,7 +8,7 @@ const slides = [
   {
     image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2850&q=80",
     title: "Empowering Careers, Elevating Businesses",
-    subtitle: "JobStock bridges the gap between top talent and industry-leading companies through a secure, intelligent, and transparent platform."
+    subtitle: "Nockree bridges the gap between top talent and industry-leading companies through a secure, intelligent, and transparent platform."
   },
   {
     image: "https://images.unsplash.com/photo-1573164713988-8665fc963095?ixlib=rb-4.0.3&auto=format&fit=crop&w=1469&q=80",

@@ -71,21 +71,21 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
               <div className="row gx-4 gy-4">
                 {posts.map((post) => (
                   <div className="col-xl-4 col-lg-4 col-md-12 col-sm-12" key={post.id}>
-                    <div className="jobstock-grid-blog h-100 d-flex flex-column">
+                    <div className="Nockree-grid-blog h-100 d-flex flex-column">
                       {(() => {
                         const postImages = post.coverImageUrl 
                           ? [post.coverImageUrl, ...post.images.filter(img => img !== post.coverImageUrl)] 
                           : post.images;
                           
                         return postImages.length > 0 ? (
-                          <div className="jobstock-grid-blog-thumb" style={{ borderRadius: '16px 16px 0 0', overflow: 'hidden' }}>
+                          <div className="Nockree-grid-blog-thumb" style={{ borderRadius: '16px 16px 0 0', overflow: 'hidden' }}>
                             <ImageSlider images={postImages} autoScroll={true} height="220px" />
                           </div>
                         ) : null;
                       })()}
-                      <div className="jobstock-grid-blog-body flex-grow-1 d-flex flex-column">
-                        <div className="jobstock-grid-body-header">
-                          <div className="jobstock-grid-posted bg-main d-flex justify-content-between align-items-center w-100 px-3 py-2">
+                      <div className="Nockree-grid-blog-body flex-grow-1 d-flex flex-column">
+                        <div className="Nockree-grid-body-header">
+                          <div className="Nockree-grid-posted bg-main d-flex justify-content-between align-items-center w-100 px-3 py-2">
                             <span className="text-white fw-medium" suppressHydrationWarning>
                               {post.publishedAt
                                 ? new Date(post.publishedAt).toLocaleDateString("en-US", {
@@ -97,13 +97,13 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
                             </span>
                             {post.category && <span className="badge bg-white text-main">{post.category.toUpperCase()}</span>}
                           </div>
-                          <div className="jobstock-grid-title mt-3">
+                          <div className="Nockree-grid-title mt-3">
                             <h4>
                               <Link href={`/blog-detail/${post.slug}`}>{post.title}</Link>
                             </h4>
                           </div>
                         </div>
-                        <div className="jobstock-grid-body-middle flex-grow-1">
+                        <div className="Nockree-grid-body-middle flex-grow-1">
                           <p>{post.excerpt ?? ""}</p>
                           <div className="d-flex justify-content-between text-muted small mt-2">
                             <span><i className="fa-solid fa-user me-1"></i> {post.customAuthorName || post.author.email.split('@')[0]}</span>
@@ -117,7 +117,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
                             </div>
                           )}
                         </div>
-                        <div className="jobstock-grid-body-footer mt-3">
+                        <div className="Nockree-grid-body-footer mt-3">
                           <Link href={`/blog-detail/${post.slug}`} className="btn btn-blog-link">
                             Continue Reading
                           </Link>

@@ -8,7 +8,7 @@ const oldBlock = \
       'New Employer Registration',
       \\\<p style="font-size: 16px; color: #333;"><strong>Congratulations!</strong> You have a new employer registration.</p>
        <div style="padding: 16px; background-color: #f0fdf4; border-left: 4px solid #0b8260; margin: 20px 0;">
-         <p style="margin: 0; font-size: 15px; color: #166534;"><strong>\</strong> has just signed up to use JobStock.</p>
+         <p style="margin: 0; font-size: 15px; color: #166534;"><strong>\</strong> has just signed up to use Nockree.</p>
          <p style="margin: 8px 0 0 0; color: #15803d;">Please review their profile and verify their account so they can start posting jobs.</p>
        </div>\\\,
       { text: 'Review Employer', url: \\\\/admin-employers\\\ }
@@ -55,7 +55,7 @@ content = content.replace(/async sendNewEmployerAlert[\\s\\S]*?catch\\s*\\(e\\)\
     try {
       // Hardcode the emoji string to avoid regex parsing issues, and use unicode escapes to prevent powershell mangling
       const subj = "\\uD83C\\uDF89 New Employer: " + opts.employerName;
-      await transporter.sendMail({ from: \\\"JobStock Admin" <\>\\\, to: adminEmail, subject: subj, html });
+      await transporter.sendMail({ from: \\\"Nockree Admin" <\>\\\, to: adminEmail, subject: subj, html });
     } catch (e) {
       this.logger.error('Failed to send admin employer alert', e);
     }

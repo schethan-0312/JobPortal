@@ -68,11 +68,11 @@ export class EmailService {
 
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
     const mailOptions = {
-      from: `"JobStock" <${from}>`,
+      from: `"Nockree" <${from}>`,
       to: email,
-      subject: 'Thanks for subscribing to JobStock!',
-      text: 'Hi there,\n\nThanks for subscribing to JobStock! We will keep you updated with the latest news and updates.\n\nBest regards,\nThe JobStock Team',
-      html: '<p>Hi there,</p><p>Thanks for subscribing to JobStock! We will keep you updated with the latest news and updates.</p><br><p>Best regards,<br>The JobStock Team</p>',
+      subject: 'Thanks for subscribing to Nockree!',
+      text: 'Hi there,\n\nThanks for subscribing to Nockree! We will keep you updated with the latest news and updates.\n\nBest regards,\nThe Nockree Team',
+      html: '<p>Hi there,</p><p>Thanks for subscribing to Nockree! We will keep you updated with the latest news and updates.</p><br><p>Best regards,<br>The Nockree Team</p>',
     };
 
     try {
@@ -86,23 +86,23 @@ export class EmailService {
   async sendNewBlogPost(email: string, blogTitle: string, blogSlug: string) {
     if (!this.transporter) return;
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
 
     const htmlContent = `
       <p style="font-size: 16px; color: #333;">Hi there! 👋</p>
       <p style="font-size: 16px; color: #333;">We just published an exciting new blog post that we think you'll love! 📝✨</p>
       <div style="padding: 20px; background-color: #f8f9fa; border-radius: 8px; border-left: 5px solid #0b8260; margin: 25px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
         <h3 style="margin: 0 0 10px 0; color: #0b8260; font-size: 20px;">📌 ${blogTitle}</h3>
-        <p style="margin: 0; font-size: 15px; color: #555;">Check out the latest insights, tips, and updates straight from the JobStock team.</p>
+        <p style="margin: 0; font-size: 15px; color: #555;">Check out the latest insights, tips, and updates straight from the Nockree team.</p>
       </div>
       <p style="font-size: 15px; color: #333;">Click the button below to dive in and read the full article.</p>
     `;
 
     const mailOptions = {
-      from: `"JobStock News" <${from}>`,
+      from: `"Nockree News" <${from}>`,
       to: email,
       subject: `📰 New Blog Post: ${blogTitle}`,
-      text: `Hi there,\n\nWe just published a new blog post: "${blogTitle}".\n\nRead it here: ${frontendUrl}/blog/${blogSlug}\n\nBest regards,\nThe JobStock Team`,
+      text: `Hi there,\n\nWe just published a new blog post: "${blogTitle}".\n\nRead it here: ${frontendUrl}/blog/${blogSlug}\n\nBest regards,\nThe Nockree Team`,
       html: this.wrapInTemplate('📰 New Blog Published!', htmlContent, {
         text: 'Read the Blog Post 🚀',
         url: `${frontendUrl}/blog/${blogSlug}`
@@ -128,7 +128,7 @@ export class EmailService {
     if (!adminEmail) return;
 
     const mailOptions = {
-      from: `"JobStock System" <${from}>`,
+      from: `"Nockree System" <${from}>`,
       to: adminEmail,
       subject: 'New Newsletter Subscriber!',
       text: `A new user has subscribed to the newsletter: ${subscriberEmail}`,
@@ -151,11 +151,11 @@ export class EmailService {
 
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
     const mailOptions = {
-      from: `"JobStock Security" <${from}>`,
+      from: `"Nockree Security" <${from}>`,
       to: email,
       subject: 'Password Reset OTP',
-      text: `Hello,\n\nYou requested a password reset for your JobStock account. Your 6-digit One-Time Password (OTP) is:\n\n${otp}\n\nThis OTP is valid for 5 minutes. If you did not request this, please ignore this email.\n\nBest regards,\nThe JobStock Team`,
-      html: `<p>Hello,</p><p>You requested a password reset for your JobStock account. Your 6-digit One-Time Password (OTP) is:</p><h2 style="font-size:32px;letter-spacing:5px;text-align:center;color:#007bff;margin:20px 0;">${otp}</h2><p>This OTP is valid for 5 minutes. If you did not request this, please ignore this email.</p><br><p>Best regards,<br>The JobStock Team</p>`,
+      text: `Hello,\n\nYou requested a password reset for your Nockree account. Your 6-digit One-Time Password (OTP) is:\n\n${otp}\n\nThis OTP is valid for 5 minutes. If you did not request this, please ignore this email.\n\nBest regards,\nThe Nockree Team`,
+      html: `<p>Hello,</p><p>You requested a password reset for your Nockree account. Your 6-digit One-Time Password (OTP) is:</p><h2 style="font-size:32px;letter-spacing:5px;text-align:center;color:#007bff;margin:20px 0;">${otp}</h2><p>This OTP is valid for 5 minutes. If you did not request this, please ignore this email.</p><br><p>Best regards,<br>The Nockree Team</p>`,
     };
 
     try {
@@ -174,11 +174,11 @@ export class EmailService {
 
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
     const mailOptions = {
-      from: `"JobStock Verification" <${from}>`,
+      from: `"Nockree Verification" <${from}>`,
       to: email,
       subject: 'Verify Your Email',
-      text: `Hello,\n\nYour 6-digit One-Time Password (OTP) for JobStock registration is:\n\n${otp}\n\nThis OTP is valid for 5 minutes.\n\nBest regards,\nThe JobStock Team`,
-      html: `<p>Hello,</p><p>Your 6-digit One-Time Password (OTP) for JobStock registration is:</p><h2 style="font-size:32px;letter-spacing:5px;text-align:center;color:#28a745;margin:20px 0;">${otp}</h2><p>This OTP is valid for 5 minutes.</p><br><p>Best regards,<br>The JobStock Team</p>`,
+      text: `Hello,\n\nYour 6-digit One-Time Password (OTP) for Nockree registration is:\n\n${otp}\n\nThis OTP is valid for 5 minutes.\n\nBest regards,\nThe Nockree Team`,
+      html: `<p>Hello,</p><p>Your 6-digit One-Time Password (OTP) for Nockree registration is:</p><h2 style="font-size:32px;letter-spacing:5px;text-align:center;color:#28a745;margin:20px 0;">${otp}</h2><p>This OTP is valid for 5 minutes.</p><br><p>Best regards,<br>The Nockree Team</p>`,
     };
 
     try {
@@ -198,19 +198,19 @@ export class EmailService {
 
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
     
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
     const logoUrl = `${frontendUrl}/assets/img/logo.png`;
     
     const htmlTemplate = `
       <div style="font-family: Arial, sans-serif; color: #333333; line-height: 1.6; margin: 0; padding: 0; background-color: #f4f7f6;">
         <div style="max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden;">
           <div style="background-color: #0b8260; padding: 20px; text-align: center;">
-            <img src="${logoUrl}" alt="JobStock Logo" style="height: 40px; max-width: 100%; filter: brightness(0) invert(1);" />
+            <img src="${logoUrl}" alt="Nockree Logo" style="height: 40px; max-width: 100%; filter: brightness(0) invert(1);" />
           </div>
           <div style="padding: 30px;">
-            <h2 style="color: #0b8260; margin-top: 0;">Welcome to JobStock, ${name}! 🎉</h2>
+            <h2 style="color: #0b8260; margin-top: 0;">Welcome to Nockree, ${name}! 🎉</h2>
             <p>Your registration was completely successful, and we are absolutely thrilled to have you on board.</p>
-            <p>JobStock is your ultimate destination for finding the perfect job or the ideal candidate. We offer a comprehensive suite of tools designed to make your job search or hiring process as smooth and efficient as possible.</p>
+            <p>Nockree is your ultimate destination for finding the perfect job or the ideal candidate. We offer a comprehensive suite of tools designed to make your job search or hiring process as smooth and efficient as possible.</p>
             <p>Here is what you can do next:</p>
             <ul>
               <li>Complete your profile to stand out.</li>
@@ -221,25 +221,25 @@ export class EmailService {
             <a href="${frontendUrl}/login" style="display: inline-block; padding: 10px 20px; background-color: #0b8260; color: #ffffff; text-decoration: none; border-radius: 5px; margin-top: 20px; font-weight: bold;">Get Started Now</a>
           </div>
           <div style="background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 13px; color: #666666; border-top: 1px solid #e9ecef;">
-            <p style="margin: 0 0 10px 0;"><strong>JobStock Job Portal</strong></p>
+            <p style="margin: 0 0 10px 0;"><strong>Nockree Job Portal</strong></p>
             <p style="margin: 0 0 10px 0;">Find your dream job with us. We connect talent with opportunity.</p>
-            <p style="margin: 0 0 10px 0;">Contact Us: support@jobstock.com | <a href="${frontendUrl}" style="color: #0b8260; text-decoration: none;">Visit our website</a></p>
-            <p style="margin: 0;">&copy; ${new Date().getFullYear()} JobStock. All rights reserved.</p>
+            <p style="margin: 0 0 10px 0;">Contact Us: support@Nockree.com | <a href="${frontendUrl}" style="color: #0b8260; text-decoration: none;">Visit our website</a></p>
+            <p style="margin: 0;">&copy; ${new Date().getFullYear()} Nockree. All rights reserved.</p>
           </div>
         </div>
       </div>
     `;
 
     const mailOptions = {
-      from: `"JobStock" <${from}>`,
+      from: `"Nockree" <${from}>`,
       to: email,
-      subject: 'Welcome to JobStock!',
-      text: `Welcome to JobStock, ${name}!\n\nYour registration was completely successful, and we are absolutely thrilled to have you on board.\n\nJobStock is your ultimate destination for finding the perfect job or the ideal candidate.\n\nHere is what you can do next:\n- Complete your profile to stand out.\n- Browse thousands of fresh job listings.\n- Connect with top employers and candidates.\n\nGet Started Now: ${frontendUrl}/login\n\nIf you have any questions or need assistance, feel free to reach out to our support team.\n\nBest regards,\nThe JobStock Team`,
-      html: htmlTemplate.replace(logoUrl, 'cid:jobstocklogo'),
+      subject: 'Welcome to Nockree!',
+      text: `Welcome to Nockree, ${name}!\n\nYour registration was completely successful, and we are absolutely thrilled to have you on board.\n\nNockree is your ultimate destination for finding the perfect job or the ideal candidate.\n\nHere is what you can do next:\n- Complete your profile to stand out.\n- Browse thousands of fresh job listings.\n- Connect with top employers and candidates.\n\nGet Started Now: ${frontendUrl}/login\n\nIf you have any questions or need assistance, feel free to reach out to our support team.\n\nBest regards,\nThe Nockree Team`,
+      html: htmlTemplate.replace(logoUrl, 'cid:Nockreelogo'),
       attachments: [{
         filename: 'logo.png',
         path: path.join(process.cwd(), 'public', 'logo.png'),
-        cid: 'jobstocklogo'
+        cid: 'Nockreelogo'
       }]
     };
 
@@ -254,7 +254,7 @@ export class EmailService {
     const transporter = this.getTransporter();
     if (!transporter) return;
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
 
     const html = this.wrapInTemplate(
       '🎉 Account Reopened',
@@ -263,12 +263,12 @@ export class EmailService {
        <div style="padding: 20px; background-color: #f0fdf4; border-radius: 8px; border-left: 5px solid #0b8260; margin: 25px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
          <p style="margin: 0; font-size: 15px; color: #166534;">✅ <strong>You can now resume posting jobs, viewing candidates, and managing your account!</strong></p>
        </div>
-       <p style="color: #555; font-size: 15px;">Welcome back to JobStock! 🌟</p>`,
+       <p style="color: #555; font-size: 15px;">Welcome back to Nockree! 🌟</p>`,
       { text: '👉 Go to Dashboard', url: `${frontendUrl}/employer-dashboard` }
     );
 
     try {
-      await transporter.sendMail({ from: `"JobStock Admin" <${from}>`, to: email, subject: '🎉 Your Company Account is Reopened!', html });
+      await transporter.sendMail({ from: `"Nockree Admin" <${from}>`, to: email, subject: '🎉 Your Company Account is Reopened!', html });
     } catch (e) {
       this.logger.error('Failed to send reopened email', e);
     }
@@ -278,11 +278,11 @@ export class EmailService {
     const transporter = this.getTransporter();
     if (!transporter) return;
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
-    const adminEmail = process.env.EMAIL_USERNAME || process.env.SMTP_USER || 'support@jobstock.com';
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const adminEmail = process.env.EMAIL_USERNAME || process.env.SMTP_USER || 'support@Nockree.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
 
     let subject = 'Employer Verification Update';
-    let title = 'JobStock Employer Update';
+    let title = 'Nockree Employer Update';
     let message = '';
 
     if (status === 'VERIFIED') {
@@ -319,7 +319,7 @@ export class EmailService {
     );
 
     try {
-      await transporter.sendMail({ from: `"JobStock Admin" <${from}>`, to: email, subject, html });
+      await transporter.sendMail({ from: `"Nockree Admin" <${from}>`, to: email, subject, html });
     } catch (e) {
       this.logger.error('Failed to send employer verification email', e);
     }
@@ -328,7 +328,7 @@ export class EmailService {
     const transporter = this.getTransporter();
     if (!transporter) return;
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
 
     const html = this.wrapInTemplate(
       '🎉 Account Reopened',
@@ -337,12 +337,12 @@ export class EmailService {
        <div style="padding: 20px; background-color: #f0fdf4; border-radius: 8px; border-left: 5px solid #0b8260; margin: 25px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
          <p style="margin: 0; font-size: 15px; color: #166534;">✅ <strong>You can now resume applying for jobs, taking skill assessments, and managing your account!</strong></p>
        </div>
-       <p style="color: #555; font-size: 15px;">Welcome back to JobStock! 🌟</p>`,
+       <p style="color: #555; font-size: 15px;">Welcome back to Nockree! 🌟</p>`,
       { text: '👉 Go to Dashboard', url: `${frontendUrl}/candidate-dashboard` }
     );
 
     try {
-      await transporter.sendMail({ from: `"JobStock Admin" <${from}>`, to: email, subject: '🎉 Your Candidate Account is Reopened!', html });
+      await transporter.sendMail({ from: `"Nockree Admin" <${from}>`, to: email, subject: '🎉 Your Candidate Account is Reopened!', html });
     } catch (e) {
       this.logger.error('Failed to send reopened email', e);
     }
@@ -352,7 +352,7 @@ export class EmailService {
     const transporter = this.getTransporter();
     if (!transporter) return;
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
-    const adminEmail = process.env.EMAIL_USERNAME || process.env.SMTP_USER || 'support@jobstock.com';
+    const adminEmail = process.env.EMAIL_USERNAME || process.env.SMTP_USER || 'support@Nockree.com';
 
     const reasonHtml = reason ? `<p style="font-size: 15px; color: #333;"><strong>Reason:</strong> ${reason}</p>` : '';
 
@@ -367,14 +367,14 @@ export class EmailService {
     );
 
     try {
-      await transporter.sendMail({ from: `"JobStock Admin" <${from}>`, to: email, subject: '🚫 Account Suspended', html });
+      await transporter.sendMail({ from: `"Nockree Admin" <${from}>`, to: email, subject: '🚫 Account Suspended', html });
     } catch (e) {
       this.logger.error('Failed to send suspended email', e);
     }
   }
 
   private wrapInTemplate(title: string, contentHtml: string, cta?: { text: string; url: string }): string {
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
     const ctaHtml = cta
       ? `<div style="text-align: center; margin: 30px 0 10px;">
           <a href="${cta.url}" style="display: inline-block; padding: 14px 28px; background-color: #0b8260; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 15px; box-shadow: 0 2px 4px rgba(11, 130, 96, 0.2);">${cta.text}</a>
@@ -385,7 +385,7 @@ export class EmailService {
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #2d3748; line-height: 1.6; margin: 0; padding: 0; background-color: #f7fafc;">
         <div style="max-width: 600px; margin: 30px auto; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); overflow: hidden; border: 1px solid #e2e8f0;">
           <div style="background: linear-gradient(135deg, #0b8260 0%, #075e45 100%); padding: 24px 30px; text-align: center;">
-            <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 700; letter-spacing: 0.5px;">JobStock</h1>
+            <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 700; letter-spacing: 0.5px;">Nockree</h1>
           </div>
           <div style="padding: 32px 30px;">
             <h2 style="color: #1a202c; font-size: 20px; font-weight: 600; margin-top: 0; margin-bottom: 16px;">${title}</h2>
@@ -393,9 +393,9 @@ export class EmailService {
             ${ctaHtml}
           </div>
           <div style="background-color: #edf2f7; padding: 20px 30px; text-align: center; font-size: 12px; color: #718096; border-top: 1px solid #e2e8f0;">
-            <p style="margin: 0 0 6px 0;"><strong>JobStock Job Portal</strong> — Connecting Talent with Opportunity</p>
-            <p style="margin: 0 0 6px 0;">You received this notification regarding your activity on JobStock.</p>
-            <p style="margin: 0;">&copy; ${new Date().getFullYear()} JobStock. All rights reserved. | <a href="${frontendUrl}" style="color: #0b8260; text-decoration: none;">Visit JobStock</a></p>
+            <p style="margin: 0 0 6px 0;"><strong>Nockree Job Portal</strong> — Connecting Talent with Opportunity</p>
+            <p style="margin: 0 0 6px 0;">You received this notification regarding your activity on Nockree.</p>
+            <p style="margin: 0;">&copy; ${new Date().getFullYear()} Nockree. All rights reserved. | <a href="${frontendUrl}" style="color: #0b8260; text-decoration: none;">Visit Nockree</a></p>
           </div>
         </div>
       </div>
@@ -423,7 +423,7 @@ export class EmailService {
       return;
     }
 
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
     const formattedDate = (opts.appliedAt || new Date()).toLocaleString('en-US', {
       month: 'short',
@@ -472,7 +472,7 @@ export class EmailService {
     try {
       this.logger.log(`Dispatching application confirmation to candidate: ${opts.candidateEmail} for job: "${opts.jobTitle}"`);
       await transporter.sendMail({
-        from: `"JobStock Applications" <${from}>`,
+        from: `"Nockree Applications" <${from}>`,
         to: opts.candidateEmail,
         subject: `Application Sent: ${opts.jobTitle} at ${opts.companyName}`,
         html,
@@ -496,7 +496,7 @@ export class EmailService {
       return;
     }
 
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
 
     let statusTitle = `Application Status: ${opts.newStatus}`;
@@ -530,7 +530,7 @@ export class EmailService {
       messageBody = `
         <p>Dear <strong>${opts.candidateName}</strong>,</p>
         <p>Thank you for taking the time to apply for the <strong>${opts.jobTitle}</strong> position at <strong>${opts.companyName}</strong>. After careful consideration, the hiring team has decided to move forward with other candidates at this time.</p>
-        <p>We encourage you to keep exploring and applying to new opportunities on JobStock.</p>
+        <p>We encourage you to keep exploring and applying to new opportunities on Nockree.</p>
       `;
     } else if (opts.newStatus === 'REVIEWED') {
       statusTitle = `Recruiter Action: Application Reviewed by ${opts.companyName}`;
@@ -560,7 +560,7 @@ export class EmailService {
 
     try {
       await transporter.sendMail({
-        from: `"JobStock Notifications" <${from}>`,
+        from: `"Nockree Notifications" <${from}>`,
         to: opts.candidateEmail,
         subject: `Update: Application for ${opts.jobTitle} at ${opts.companyName} is ${opts.newStatus}`,
         html,
@@ -579,13 +579,13 @@ export class EmailService {
   }) {
     const transporter = this.getTransporter();
     if (!transporter) return;
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
 
     const content = `
       <p>Hi <strong>${opts.candidateName}</strong>,</p>
       <p>This is a confirmation that you have withdrawn your application for the <strong>${opts.jobTitle}</strong> role at <strong>${opts.companyName}</strong>.</p>
-      <p>You can discover and apply for other exciting opportunities anytime on JobStock.</p>
+      <p>You can discover and apply for other exciting opportunities anytime on Nockree.</p>
     `;
 
     const html = this.wrapInTemplate(
@@ -596,7 +596,7 @@ export class EmailService {
 
     try {
       await transporter.sendMail({
-        from: `"JobStock" <${from}>`,
+        from: `"Nockree" <${from}>`,
         to: opts.candidateEmail,
         subject: `Application Withdrawn: ${opts.jobTitle} at ${opts.companyName}`,
         html,
@@ -619,13 +619,13 @@ export class EmailService {
       return;
     }
 
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
     const senderDisplay = opts.senderCompany ? `${opts.senderName} from ${opts.senderCompany}` : opts.senderName;
 
     const content = `
       <p>Hi <strong>${opts.recipientName}</strong>,</p>
-      <p><strong>${senderDisplay}</strong> sent you a new message on JobStock:</p>
+      <p><strong>${senderDisplay}</strong> sent you a new message on Nockree:</p>
       <div style="background-color: #f8fafc; border-left: 4px solid #0b8260; padding: 16px; margin: 20px 0; border-radius: 0 8px 8px 0; font-style: italic; color: #2d3748;">
         "${opts.messageSnippet.length > 250 ? opts.messageSnippet.slice(0, 250) + '...' : opts.messageSnippet}"
       </div>
@@ -640,7 +640,7 @@ export class EmailService {
 
     try {
       await transporter.sendMail({
-        from: `"JobStock Messenger" <${from}>`,
+        from: `"Nockree Messenger" <${from}>`,
         to: opts.recipientEmail,
         subject: `💬 New Message from ${senderDisplay}`,
         html,
@@ -665,7 +665,7 @@ export class EmailService {
       return;
     }
 
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
     const percentage = Math.round((opts.score / opts.totalQuestions) * 100);
 
@@ -692,7 +692,7 @@ export class EmailService {
 
     try {
       await transporter.sendMail({
-        from: `"JobStock Assessments" <${from}>`,
+        from: `"Nockree Assessments" <${from}>`,
         to: opts.candidateEmail,
         subject: `Skill Assessment Result: ${opts.skillName} (${percentage}%)`,
         html,
@@ -716,7 +716,7 @@ export class EmailService {
       return;
     }
 
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
     const stars = '★'.repeat(opts.overallRating) + '☆'.repeat(5 - opts.overallRating);
 
@@ -740,7 +740,7 @@ export class EmailService {
 
     try {
       await transporter.sendMail({
-        from: `"JobStock AI Coach" <${from}>`,
+        from: `"Nockree AI Coach" <${from}>`,
         to: opts.candidateEmail,
         subject: `📊 Mock Interview Feedback: ${opts.jobRole} (${opts.overallRating}/5)`,
         html,
@@ -760,7 +760,7 @@ export class EmailService {
   }) {
     const transporter = this.getTransporter();
     if (!transporter) return;
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
 
     const content = `
@@ -781,7 +781,7 @@ export class EmailService {
 
     try {
       await transporter.sendMail({
-        from: `"JobStock Alerts" <${from}>`,
+        from: `"Nockree Alerts" <${from}>`,
         to: opts.candidateEmail,
         subject: `🔔 Job Alert Active: ${opts.keyword || opts.category || 'Matching Jobs'}`,
         html,
@@ -798,12 +798,12 @@ export class EmailService {
   }) {
     const transporter = this.getTransporter();
     if (!transporter) return;
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
 
     const content = `
       <p>Hi <strong>${opts.candidateName}</strong>,</p>
-      <p>A recruiter from <strong>${opts.companyName}</strong> just viewed your profile on JobStock! 👁️</p>
+      <p>A recruiter from <strong>${opts.companyName}</strong> just viewed your profile on Nockree! 👁️</p>
       <p style="color: #4a5568; font-size: 14px;">Recruiters are actively searching for candidates matching your skill set. Make sure your resume and projects are up-to-date to maximize your chances.</p>
     `;
 
@@ -815,7 +815,7 @@ export class EmailService {
 
     try {
       await transporter.sendMail({
-        from: `"JobStock Activity" <${from}>`,
+        from: `"Nockree Activity" <${from}>`,
         to: opts.candidateEmail,
         subject: `👁️ Recruiter Action: ${opts.companyName} viewed your profile`,
         html,
@@ -844,7 +844,7 @@ export class EmailService {
 
     const content = `
       <p>Hi <strong>${opts.candidateName}</strong>,</p>
-      <p><strong>${opts.companyName}</strong>, a company you follow on JobStock, just posted an exciting new job opportunity! 🚀</p>
+      <p><strong>${opts.companyName}</strong>, a company you follow on Nockree, just posted an exciting new job opportunity! 🚀</p>
       <div style="background-color: #f8fafc; border-left: 4px solid #0b8260; padding: 14px; margin: 20px 0; border-radius: 0 6px 6px 0;">
         <h4 style="margin: 0 0 8px 0; color: #1a202c; font-size: 16px;">💼 ${opts.jobTitle}</h4>
         <p style="margin: 0 0 4px 0; font-size: 14px; color: #4a5568;">🏢 <strong>Company:</strong> ${opts.companyName}</p>
@@ -863,7 +863,7 @@ export class EmailService {
 
     try {
       await transporter.sendMail({
-        from: opts.companyEmail ? `"${opts.companyName} via JobStock" <${from}>` : `"JobStock Updates" <${from}>`,
+        from: opts.companyEmail ? `"${opts.companyName} via Nockree" <${from}>` : `"Nockree Updates" <${from}>`,
         replyTo: opts.companyEmail || from,
         to: opts.candidateEmail,
         subject: `🚀 New Job Opening from ${opts.companyName}: ${opts.jobTitle}`,
@@ -879,7 +879,7 @@ export class EmailService {
   async sendNewJobNotification(email: string, jobTitle: string, companyName: string, location: string, jobSlug: string) {
     if (!this.transporter) return;
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
     
     const subject = `New Job Opening: ${jobTitle} at ${companyName}`;
     const html = `
@@ -891,12 +891,12 @@ export class EmailService {
         <p><b>Location:</b> ${location}</p>
         <br/>
         <a href="${frontendUrl}/job/${jobSlug}" style="display:inline-block;padding:10px 20px;background:#0b8260;color:#fff;text-decoration:none;border-radius:4px;">View Job Details</a>
-        <p><br>Best regards,<br>The JobStock Team</p>
+        <p><br>Best regards,<br>The Nockree Team</p>
       </div>
     `;
     
     try {
-      await this.transporter.sendMail({ from: `"JobStock" <${from}>`, to: email, subject, html });
+      await this.transporter.sendMail({ from: `"Nockree" <${from}>`, to: email, subject, html });
       this.logger.log(`New job notification email sent to ${email}`);
     } catch (e) {
       this.logger.error(`Failed to send new job notification to ${email}`, e);
@@ -910,7 +910,7 @@ export class EmailService {
     const transporter = this.getTransporter();
     if (!transporter) return;
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
 
     let subject = 'Job Moderation Update';
     let message = '';
@@ -919,7 +919,7 @@ export class EmailService {
       subject = '✅ Your Job is Approved & Live';
       message = `
         <p>Good news! Your job listing for <strong>${opts.jobTitle}</strong> has been approved.</p>
-        <p>It is now live on JobStock and visible to candidates.</p>
+        <p>It is now live on Nockree and visible to candidates.</p>
       `;
     } else {
       subject = '⚠️ Job Listing Rejected';
@@ -936,7 +936,7 @@ export class EmailService {
     );
 
     try {
-      await transporter.sendMail({ from: `"JobStock Admin" <${from}>`, to: opts.email, subject, html });
+      await transporter.sendMail({ from: `"Nockree Admin" <${from}>`, to: opts.email, subject, html });
     } catch (e) {
       this.logger.error('Failed to send job moderation status', e);
     }
@@ -946,7 +946,7 @@ export class EmailService {
     const transporter = this.getTransporter();
     if (!transporter) return;
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
 
     const html = this.wrapInTemplate(
       'Support Ticket Update',
@@ -957,7 +957,7 @@ export class EmailService {
     );
 
     try {
-      await transporter.sendMail({ from: `"JobStock Support" <${from}>`, to: opts.email, subject: `Update on: ${opts.subject}`, html });
+      await transporter.sendMail({ from: `"Nockree Support" <${from}>`, to: opts.email, subject: `Update on: ${opts.subject}`, html });
     } catch (e) {
       this.logger.error('Failed to send support ticket update', e);
     }
@@ -982,7 +982,7 @@ export class EmailService {
     );
 
     try {
-      await transporter.sendMail({ from: `"JobStock Admin" <${from}>`, to: opts.email, subject: `Package Activated: ${pName}`, html });
+      await transporter.sendMail({ from: `"Nockree Admin" <${from}>`, to: opts.email, subject: `Package Activated: ${pName}`, html });
     } catch (e) {
       this.logger.error('Failed to send package assignment email', e);
     }
@@ -992,11 +992,11 @@ export class EmailService {
     const transporter = this.getTransporter();
     if (!transporter) return;
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
 
     const html = this.wrapInTemplate(
       'Admin Invitation',
-      `<p>You have been invited to join the JobStock Admin Team.</p>
+      `<p>You have been invited to join the Nockree Admin Team.</p>
        <p><strong>Role:</strong> ${opts.role}</p>
        <p><strong>Temporary Password:</strong> ${opts.tempPass}</p>
        <p>Please log in and change your password immediately.</p>`,
@@ -1004,7 +1004,7 @@ export class EmailService {
     );
 
     try {
-      await transporter.sendMail({ from: `"JobStock Admin" <${from}>`, to: opts.email, subject: `Invitation to JobStock Admin Team`, html });
+      await transporter.sendMail({ from: `"Nockree Admin" <${from}>`, to: opts.email, subject: `Invitation to Nockree Admin Team`, html });
     } catch (e) {
       this.logger.error('Failed to send admin invite', e);
     }
@@ -1023,7 +1023,7 @@ export class EmailService {
     );
 
     try {
-      await transporter.sendMail({ from: `"JobStock Proctoring" <${from}>`, to: opts.email, subject: `Proctoring Notice: ${opts.testName}`, html });
+      await transporter.sendMail({ from: `"Nockree Proctoring" <${from}>`, to: opts.email, subject: `Proctoring Notice: ${opts.testName}`, html });
     } catch (e) {
       this.logger.error('Failed to send proctoring notice', e);
     }
@@ -1043,7 +1043,7 @@ export class EmailService {
     );
 
     try {
-      await transporter.sendMail({ from: `"JobStock System" <${from}>`, to: adminEmail, subject: `[ALERT] ${opts.type}`, html });
+      await transporter.sendMail({ from: `"Nockree System" <${from}>`, to: adminEmail, subject: `[ALERT] ${opts.type}`, html });
     } catch (e) {
       this.logger.error('Failed to send admin alert', e);
     }
@@ -1065,12 +1065,12 @@ export class EmailService {
          <p style="margin: 0; color: #15803d; font-size: 14px;">🔍 Please review their profile to unlock their ability to post jobs.</p>
        </div>
        <p style="color: #666; font-size: 14px;">Keep up the great work! 🌟</p>`,
-      { text: '👉 Review Employer Now', url: `${process.env.FRONTEND_URL || 'https://www.jobstock.com'}/admin-employers` }
+      { text: '👉 Review Employer Now', url: `${process.env.FRONTEND_URL || 'https://www.Nockree.com'}/admin-employers` }
     );
 
     try {
       const subjectLine = "\uD83C\uDF89 New Employer: " + opts.employerName;
-      await transporter.sendMail({ from: `"JobStock Admin" <${from}>`, to: adminEmail, subject: subjectLine, html });
+      await transporter.sendMail({ from: `"Nockree Admin" <${from}>`, to: adminEmail, subject: subjectLine, html });
     } catch (e) {
       this.logger.error('Failed to send admin employer alert', e);
     }
@@ -1080,7 +1080,7 @@ export class EmailService {
     const transporter = this.getTransporter();
     if (!transporter) return;
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
 
     const price = opts.priceInPaisa > 0 ? `₹${(opts.priceInPaisa / 100).toFixed(2)}` : 'FREE';
     const featuresList = opts.features.map(f => `<li style="margin-bottom: 5px;">✅ ${f}</li>`).join('');
@@ -1106,7 +1106,7 @@ export class EmailService {
     );
 
     try {
-      await transporter.sendMail({ from: `"JobStock" <${from}>`, to: opts.email, subject: `🔥 New Premium Package: ${opts.packageName}`, html });
+      await transporter.sendMail({ from: `"Nockree" <${from}>`, to: opts.email, subject: `🔥 New Premium Package: ${opts.packageName}`, html });
     } catch (e) {
       this.logger.error('Failed to send new package notification', e);
     }
@@ -1116,7 +1116,7 @@ export class EmailService {
     const transporter = this.getTransporter();
     if (!transporter) return;
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
 
     const price = opts.priceInPaisa > 0 ? `₹${(opts.priceInPaisa / 100).toFixed(2)}` : 'FREE';
     const featuresList = opts.features.map(f => `<li style="margin-bottom: 5px;">✅ ${f}</li>`).join('');
@@ -1142,7 +1142,7 @@ export class EmailService {
     );
 
     try {
-      await transporter.sendMail({ from: `"JobStock" <${from}>`, to: opts.email, subject: `🔥 New Resume Package: ${opts.packageName}`, html });
+      await transporter.sendMail({ from: `"Nockree" <${from}>`, to: opts.email, subject: `🔥 New Resume Package: ${opts.packageName}`, html });
     } catch (e) {
       this.logger.error('Failed to send new candidate package notification', e);
     }
@@ -1162,7 +1162,7 @@ export class EmailService {
 
     const content = `
       <p style="font-size: 16px; color: #333;">Hi <strong>${opts.recipientName}</strong>, 👋</p>
-      <p style="font-size: 15px; color: #333;"><strong>${opts.requesterName}</strong> (${opts.requesterHeadline || 'Candidate on JobStock'}) has sent you a connection / follow request!</p>
+      <p style="font-size: 15px; color: #333;"><strong>${opts.requesterName}</strong> (${opts.requesterHeadline || 'Candidate on Nockree'}) has sent you a connection / follow request!</p>
       
       <div style="padding: 16px; background-color: #f8fafc; border-radius: 8px; border-left: 4px solid #0b8260; margin: 20px 0;">
         <p style="margin: 0 0 6px 0; font-size: 15px; font-weight: bold; color: #1a202c;">🤝 Expand your professional network</p>
@@ -1180,9 +1180,9 @@ export class EmailService {
 
     try {
       await transporter.sendMail({
-        from: `"JobStock Network" <${from}>`,
+        from: `"Nockree Network" <${from}>`,
         to: opts.toEmail,
-        subject: `🤝 ${opts.requesterName} sent you a follow request on JobStock`,
+        subject: `🤝 ${opts.requesterName} sent you a follow request on Nockree`,
         html,
       });
       this.logger.log(`Follow request email sent to ${opts.toEmail} from ${opts.requesterName}`);
@@ -1203,7 +1203,7 @@ export class EmailService {
 
     const content = `
       <p style="font-size: 16px; color: #333;">Hi <strong>${opts.recipientName}</strong>, 👋</p>
-      <p style="font-size: 15px; color: #333;">Great news! <strong>${opts.acceptorName}</strong> accepted your follow request on JobStock. 🎉</p>
+      <p style="font-size: 15px; color: #333;">Great news! <strong>${opts.acceptorName}</strong> accepted your follow request on Nockree. 🎉</p>
       
       <div style="padding: 16px; background-color: #f0fdf4; border-radius: 8px; border-left: 4px solid #16a34a; margin: 20px 0;">
         <p style="margin: 0; font-size: 14px; color: #15803d; font-weight: bold;">🎉 You are now connected with ${opts.acceptorName}!</p>
@@ -1220,9 +1220,9 @@ export class EmailService {
 
     try {
       await transporter.sendMail({
-        from: `"JobStock Network" <${from}>`,
+        from: `"Nockree Network" <${from}>`,
         to: opts.toEmail,
-        subject: `🎉 ${opts.acceptorName} accepted your follow request on JobStock`,
+        subject: `🎉 ${opts.acceptorName} accepted your follow request on Nockree`,
         html,
       });
       this.logger.log(`Follow accepted email sent to ${opts.toEmail} for ${opts.acceptorName}`);
@@ -1244,20 +1244,20 @@ export class EmailService {
     const content = `
       <p style="font-size: 16px; color: #333;">Hi <strong>${opts.recipientName}</strong>,</p>
       <p style="font-size: 15px; color: #333;">Your follow request to <strong>${opts.rejectorName}</strong> was not accepted at this time.</p>
-      <p style="font-size: 14px; color: #555;">Don't worry, there are thousands of other candidates and companies to connect with on JobStock!</p>
+      <p style="font-size: 14px; color: #555;">Don't worry, there are thousands of other candidates and companies to connect with on Nockree!</p>
     `;
 
     const html = this.wrapInTemplate(
-      `Update on your follow request on JobStock`,
+      `Update on your follow request on Nockree`,
       content,
       { text: '👉 Explore More Candidates', url: `${frontendUrl}/candidates` }
     );
 
     try {
       await transporter.sendMail({
-        from: `"JobStock Network" <${from}>`,
+        from: `"Nockree Network" <${from}>`,
         to: opts.toEmail,
-        subject: `Update on your connection request on JobStock`,
+        subject: `Update on your connection request on Nockree`,
         html,
       });
       this.logger.log(`Follow rejected email sent to ${opts.toEmail}`);

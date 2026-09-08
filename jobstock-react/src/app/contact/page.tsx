@@ -91,7 +91,7 @@ export default function ContactPage() {
                 </div>
                 <div className={styles.infoContent}>
                   <h4>Email Us</h4>
-                  <p>support@jobstock.com<br />sales@jobstock.com</p>
+                  <p>support@Nockree.com<br />sales@Nockree.com</p>
                 </div>
               </div>
 

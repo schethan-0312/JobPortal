@@ -6,7 +6,7 @@ class MockEmailService extends EmailService {
     super(null as any, { get: () => 'test' } as any);
   }
   public getHtml() {
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
     return this['wrapInTemplate'](
       '?? New Resume Package Available!',
       `<p>Hi</p>`,

@@ -8,7 +8,7 @@ const topics = [
   {
     icon: "mdi mdi-account-plus-outline",
     title: "Getting Started",
-    desc: "Creating an account, setting up your profile, and finding your way around JobStock.",
+    desc: "Creating an account, setting up your profile, and finding your way around Nockree.",
     href: "/faq#gettingStarted",
   },
   {

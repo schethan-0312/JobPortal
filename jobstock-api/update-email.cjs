@@ -6,7 +6,7 @@ const newFunc = \
     const transporter = this.getTransporter();
     if (!transporter) return;
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
 
     const html = this.wrapInTemplate(
       '?? Account Reopened',
@@ -15,12 +15,12 @@ const newFunc = \
        <div style="padding: 20px; background-color: #f0fdf4; border-radius: 8px; border-left: 5px solid #0b8260; margin: 25px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
          <p style="margin: 0; font-size: 15px; color: #166534;">? <strong>You can now resume posting jobs, viewing candidates, and managing your account!</strong></p>
        </div>
-       <p style="color: #555; font-size: 15px;">Welcome back to JobStock! ??</p>\\\,
+       <p style="color: #555; font-size: 15px;">Welcome back to Nockree! ??</p>\\\,
       { text: '?? Go to Dashboard', url: \\\\/employer-dashboard\\\ }
     );
 
     try {
-      await transporter.sendMail({ from: \\\"JobStock Admin" <\>\\\, to: email, subject: '?? Your Company Account is Reopened!', html });
+      await transporter.sendMail({ from: \\\"Nockree Admin" <\>\\\, to: email, subject: '?? Your Company Account is Reopened!', html });
     } catch (e) {
       this.logger.error('Failed to send reopened email', e);
     }

@@ -11,14 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: jobstock-api
+        working-directory: Nockree-api
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: jobstock-api/package-lock.json
+          cache-dependency-path: Nockree-api/package-lock.json
       - run: npm ci
       - run: npx prisma generate
       - run: npm run build
@@ -29,14 +29,14 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: jobstock-react
+        working-directory: Nockree-react
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: jobstock-react/package-lock.json
+          cache-dependency-path: Nockree-react/package-lock.json
       - run: npm ci
       - run: npx tsc --noEmit
       - run: npm run build

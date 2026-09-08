@@ -5,7 +5,7 @@ import pg from 'pg';
 import bcrypt from 'bcrypt';
 
 const { Pool } = pg;
-const dbUrl = process.env.DATABASE_URL || 'postgresql://postgres:2014@localhost:5432/jobstock';
+const dbUrl = process.env.DATABASE_URL || 'postgresql://postgres:2014@localhost:5432/Nockree';
 const pool = new Pool({ connectionString: dbUrl });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });

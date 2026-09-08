@@ -70,7 +70,7 @@ export default function ResumePackageCheckoutModal({
         key: rpOrder.keyId,
         amount: rpOrder.amount,
         currency: rpOrder.currency,
-        name: "JobStock Resume Builder",
+        name: "Nockree Resume Builder",
         description: pkg.name,
         order_id: rpOrder.razorpayOrderId,
         handler: async (response: any) => {

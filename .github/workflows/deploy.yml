@@ -15,4 +15,4 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           command_timeout: 30m
-          script: bash /var/www/jobstock/deploy.sh
+          script: bash /var/www/Nockree/deploy.sh

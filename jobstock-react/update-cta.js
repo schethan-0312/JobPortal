@@ -69,7 +69,7 @@ export default function CallToAction() {
                 </h2>
 
                 <p className="fs-6 mb-4" style={{ color: '#a8c6c4', lineHeight: 1.6, fontSize: '1rem', fontWeight: 400 }}>
-                  Whether you're searching for your dream role or hiring qualified professionals, JobStock connects talent with leading employers faster and smarter.
+                  Whether you're searching for your dream role or hiring qualified professionals, Nockree connects talent with leading employers faster and smarter.
                 </p>
 
                 <ul className="list-unstyled mb-0">

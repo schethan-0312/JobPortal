@@ -12,7 +12,7 @@ import NavigationInitializer from "@/components/NavigationInitializer";
 
 
 export const metadata: Metadata = {
-  title: "JobStock - Job Portal",
+  title: "Nockree - Job Portal",
   description: "Find your career to make a better life",
   icons: {
     icon: "/assets/img/favicon.png",

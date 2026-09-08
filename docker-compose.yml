@@ -3,25 +3,25 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: jobstock-postgres
+    container_name: Nockree-postgres
     restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: root
-      POSTGRES_DB: jobstock
+      POSTGRES_DB: Nockree
     ports:
       - "5000:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d jobstock"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d Nockree"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: jobstock-redis
+    container_name: Nockree-redis
     restart: always
     ports:
       - "6379:6379"
@@ -35,14 +35,14 @@ services:
 
   api:
     build:
-      context: ./jobstock-api
+      context: ./Nockree-api
       dockerfile: Dockerfile
-    container_name: jobstock-api
+    container_name: Nockree-api
     restart: always
     ports:
       - "4000:4000"
     environment:
-      - DATABASE_URL=postgresql://postgres:root@postgres:5432/jobstock
+      - DATABASE_URL=postgresql://postgres:root@postgres:5432/Nockree
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=mySecretKey123
       - JWT_EXPIRES_IN=7d
@@ -55,9 +55,9 @@ services:
 
   web:
     build:
-      context: ./jobstock-react
+      context: ./Nockree-react
       dockerfile: Dockerfile
-    container_name: jobstock-web
+    container_name: Nockree-web
     restart: always
     ports:
       - "3000:3000"

@@ -48,9 +48,9 @@ export default function AboutUsPage() {
               </div>
             </div>
             <div className="col-lg-6">
-              <h2 className={styles.sectionTitle}>The JobStock Difference</h2>
+              <h2 className={styles.sectionTitle}>The Nockree Difference</h2>
               <p className={styles.storyText}>
-                Most job portals show the same thing to everyone: endless listings with no way to tell which employers are real. We built JobStock to fix that — every employer is verified before they can post, so candidates only see genuine opportunities.
+                Most job portals show the same thing to everyone: endless listings with no way to tell which employers are real. We built Nockree to fix that — every employer is verified before they can post, so candidates only see genuine opportunities.
               </p>
               <p className={styles.storyText}>
                 We didn't stop there. We integrated cutting-edge AI tools to offer resume scoring, skill assessments, and smart job matching. Our goal is to help candidates put their best foot forward and help employers find the exact right fit, faster.
@@ -70,7 +70,7 @@ export default function AboutUsPage() {
         <div className="container">
           <div className="row justify-content-center mb-5">
             <div className="col-lg-8 text-center">
-              <h2 className={styles.sectionTitle}>Why Choose JobStock?</h2>
+              <h2 className={styles.sectionTitle}>Why Choose Nockree?</h2>
               <p className="text-muted fs-5">Everything you need to land your dream job or hire the perfect candidate, all in one place.</p>
             </div>
           </div>

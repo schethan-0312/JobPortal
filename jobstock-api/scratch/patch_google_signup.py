@@ -1,6 +1,6 @@
 import os
 
-file_path = r'c:\Users\kisho\OneDrive\Desktop\jpr\JobPortal\jobstock-api\src\auth\auth.service.ts'
+file_path = r'c:\Users\kisho\OneDrive\Desktop\jpr\JobPortal\Nockree-api\src\auth\auth.service.ts'
 
 with open(file_path, 'r', encoding='utf-8') as f:
     content = f.read()

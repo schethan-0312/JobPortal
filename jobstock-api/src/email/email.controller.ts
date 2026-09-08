@@ -24,13 +24,13 @@ export class EmailController {
 
     try {
       const info = await transporter.sendMail({
-        from: `"JobStock" <${from}>`,
+        from: `"Nockree" <${from}>`,
         to: targetEmail,
-        subject: 'JobStock Email Test Notification',
-        text: 'This is a test notification from JobStock User Dashboard email system.',
+        subject: 'Nockree Email Test Notification',
+        text: 'This is a test notification from Nockree User Dashboard email system.',
         html: `
           <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-            <h2 style="color: #0b8260;">JobStock Email System Active! ??</h2>
+            <h2 style="color: #0b8260;">Nockree Email System Active! ??</h2>
             <p>Your SMTP credentials are configured correctly and real-time emails are working.</p>
             <p><strong>Sent To:</strong> ${targetEmail}</p>
             <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>

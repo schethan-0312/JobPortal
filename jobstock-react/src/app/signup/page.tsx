@@ -2,7 +2,7 @@
 
 import { Suspense, useRef, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Navbar2 from "@/components/Navbar2";
+import Navbar5 from "@/components/Navbar5";
 import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
 import GoogleAuthButton from "@/components/GoogleAuthButton";
@@ -471,7 +471,7 @@ function SignupForm() {
 
   return (
     <>
-      <Navbar2 />
+      <Navbar5 />
 
       {/* Login Form Start */}
       <section className="gray-simple ">
@@ -485,7 +485,7 @@ function SignupForm() {
                     <div className="form-heads d-block mb-4">
                       <div className="d-flex align-items-center justify-content-start gap-3">
                         <div className="head-caps">
-                          <h4>Create your JobStock profile</h4>
+                          <h4>Create your Nockree profile</h4>
                           <p>Search & apply to jobs from India&apos;s No.1 Job Site</p>
                         </div>
                       </div>
@@ -810,7 +810,7 @@ function SignupForm() {
                             <a href="/privacy" className="text-main">
                               Privacy Policy
                             </a>{" "}
-                            of Jobstock.com
+                            of Nockree.com
                           </label>
                           {errors.agreeTerms && (
                             <div className="text-danger text-sm mt-1">{errors.agreeTerms}</div>
@@ -840,10 +840,10 @@ function SignupForm() {
                   <h2 className="lh-base mb-3 text-light">
                     Find The Perfect Job
                     <br />
-                    on JobStock That is Superb For You
+                    on Nockree That is Superb For You
                   </h2>
                   <p className="fs-6 text-light">
-                    Join thousands of job seekers and employers who trust JobStock to find the right fit, faster.
+                    Join thousands of job seekers and employers who trust Nockree to find the right fit, faster.
                   </p>
                 </div>
               </div>

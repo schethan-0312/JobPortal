@@ -9,11 +9,11 @@ const newBlock = \sync sendEmployerVerificationStatus(email: string, companyNam
     const transporter = this.getTransporter();
     if (!transporter) return;
     const from = (process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.EMAIL_USERNAME || process.env.SMTP_USER)?.trim();
-    const adminEmail = process.env.EMAIL_USERNAME || process.env.SMTP_USER || 'support@jobstock.com';
-    const frontendUrl = process.env.FRONTEND_URL || 'https://www.jobstock.com';
+    const adminEmail = process.env.EMAIL_USERNAME || process.env.SMTP_USER || 'support@Nockree.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://www.Nockree.com';
 
     let subject = 'Employer Verification Update';
-    let title = 'JobStock Employer Update';
+    let title = 'Nockree Employer Update';
     let message = '';
 
     if (status === 'VERIFIED') {
@@ -50,7 +50,7 @@ const newBlock = \sync sendEmployerVerificationStatus(email: string, companyNam
     );
 
     try {
-      await transporter.sendMail({ from: \\\"JobStock Admin" <\>\\\, to: email, subject, html });
+      await transporter.sendMail({ from: \\\"Nockree Admin" <\>\\\, to: email, subject, html });
     } catch (e) {
       this.logger.error('Failed to send employer verification email', e);
     }
