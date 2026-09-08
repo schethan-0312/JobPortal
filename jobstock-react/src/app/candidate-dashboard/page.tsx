@@ -64,9 +64,12 @@ export default function CandidateDashboardPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [recommended, setRecommended] = useState<JobMatch[] | null>(null);
-  const [activePackage, setActivePackage] = useState<{ id: string; orderId: string; name: string; downloads: string } | null>(null);
+  const [activePackage, setActivePackage] = useState<{ id: string; orderId: string; name: string; downloads: string; status: string; amountInPaisa: number; refundRequested?: boolean; createdAt: string } | null>(null);
   const [showPackageModal, setShowPackageModal] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [refunding, setRefunding] = useState(false);
+  const [refundReason, setRefundReason] = useState("");
   
   useEffect(() => {
     if (!loading && (!user || user.role !== "CANDIDATE")) {
@@ -87,13 +90,17 @@ export default function CandidateDashboardPage() {
         setNotifications(notifs.slice(0, 5));
         setApplications(apps.slice(0, 10));
 
-        const resumeOrder = orders.find((o) => o.status === "PAID" && o.package?.audience === "RESUME");
+        const resumeOrder = orders.find((o) => o.package?.audience === "RESUME");
         if (resumeOrder) {
           setActivePackage({
             id: resumeOrder.package.id,
             orderId: resumeOrder.id,
             name: resumeOrder.package.name,
             downloads: "Unlimited Downloads",
+            status: resumeOrder.status,
+            amountInPaisa: resumeOrder.amountInPaisa,
+            refundRequested: resumeOrder.refundRequested,
+            createdAt: resumeOrder.createdAt,
           });
         }
       } catch (err) {
@@ -112,60 +119,29 @@ export default function CandidateDashboardPage() {
       .catch(() => setRecommended([]));
   }, [user]);
 
-  const handleCancelPlan = async () => {
+  const handleRefund = async () => {
     if (!activePackage?.orderId) return;
+    if (!refundReason.trim()) {
+      toast.error("Please provide a reason for refund.");
+      return;
+    }
 
-    const { value: reason } = await Swal.fire({
-      title: 'Cancel Plan',
-      text: 'Are you sure you want to cancel your active plan? Please tell us why.',
-      input: 'textarea',
-      inputPlaceholder: 'Enter your reason here...',
-      showCancelButton: true,
-      confirmButtonText: 'Submit Cancellation',
-      confirmButtonColor: '#dc3545',
-      customClass: {
-        popup: 'elite-popup',
-        title: 'elite-title',
-        confirmButton: 'elite-confirm-btn',
-        cancelButton: 'elite-cancel-btn',
-      },
-      showClass: {
-        popup: 'elite-fadeIn',
-      },
-      hideClass: {
-        popup: 'elite-fadeOut',
-      },
-      inputValidator: (value) => {
-        if (!value) {
-          return 'You need to write something!';
-        }
-      }
-    });
-
-    if (reason) {
-      try {
-        await api.post(`/packages/orders/${activePackage.orderId}/cancel`, { reason });
-        await Swal.fire({
-          icon: 'success',
-          title: 'Plan Cancelled',
-          text: 'You will get the refund within 3 to 4 working days.',
-          confirmButtonColor: '#198754',
-          customClass: {
-            popup: 'elite-popup',
-            title: 'elite-title',
-            confirmButton: 'elite-confirm-btn',
-          },
-          showClass: {
-            popup: 'elite-fadeIn',
-          },
-          hideClass: {
-            popup: 'elite-fadeOut',
-          },
-        });
-        window.location.reload();
-      } catch (err) {
-        toast.error(err instanceof ApiError ? err.message : 'Failed to cancel plan');
-      }
+    setRefunding(true);
+    try {
+      await api.post(`/packages/orders/${activePackage.orderId}/request-refund`, { reason: refundReason });
+      toast.success('Refund request submitted successfully!');
+      setShowRefundModal(false);
+      setRefundReason("");
+      
+      // Update local state to reflect the requested status
+      setActivePackage({
+        ...activePackage,
+        refundRequested: true,
+      });
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : 'Failed to request refund');
+    } finally {
+      setRefunding(false);
     }
   };
 
@@ -317,29 +293,56 @@ export default function CandidateDashboardPage() {
                   </div>
                   <div className="card-body p-4">
                     {activePackage ? (
-                      <div className="d-flex align-items-center justify-content-between">
+                      activePackage.status === "REFUNDED" ? (
                         <div>
-                          <h5 className="fw-bold text-dark mb-1">{activePackage.name}</h5>
-                          <span className="badge bg-success text-white">Active</span>
-                          <div className="text-muted small mt-2">
-                            <i className="fa-solid fa-check text-success me-2"></i>
-                            {activePackage.downloads}
+                          <div className="alert alert-success d-flex align-items-center mb-3" role="alert">
+                            <i className="fa-solid fa-circle-check fs-3 me-3 text-success"></i>
+                            <div>
+                              <h5 className="alert-heading mb-1 fw-bold">Refund Completed</h5>
+                              <p className="mb-0 small">
+                                Your <strong>{activePackage.name}</strong> package was refunded.
+                                <br/>
+                                Refund Amount: <strong>₹{(Math.floor(activePackage.amountInPaisa * 0.95) / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 })}</strong>
+                                <br/>
+                                <span style={{ fontSize: "0.75rem" }}>(after 5% platform fee)</span>
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                        <div className="text-end">
-                          <i className="fa-solid fa-award text-warning mb-2 d-block" style={{ fontSize: "2.5rem" }}></i>
-                          <div className="d-flex flex-column gap-2">
-                            {activePackage.name !== "Pro Resume" && (
-                              <button className="btn btn-sm btn-outline-primary" onClick={() => setShowPackageModal(true)}>
-                                Upgrade Plan
-                              </button>
-                            )}
-                            <button className="btn btn-sm btn-outline-danger" onClick={handleCancelPlan}>
-                              Cancel Plan
+                          <div className="text-center">
+                            <button type="button" className="btn btn-sm btn-main" onClick={() => setShowPackageModal(true)}>
+                              Purchase New Plan
                             </button>
                           </div>
                         </div>
-                      </div>
+                      ) : (
+                        <div className="d-flex align-items-center justify-content-between">
+                          <div>
+                            <h5 className="fw-bold text-dark mb-1">{activePackage.name}</h5>
+                            <span className="badge bg-success text-white">Active</span>
+                            <div className="text-muted small mt-2">
+                              <i className="fa-solid fa-check text-success me-2"></i>
+                              {activePackage.downloads}
+                            </div>
+                          </div>
+                          <div className="text-end">
+                            <i className="fa-solid fa-award text-warning mb-2 d-block" style={{ fontSize: "2.5rem" }}></i>
+                            <div className="d-flex flex-column gap-2">
+                              {activePackage.name !== "Pro Resume" && (
+                                <button className="btn btn-sm btn-outline-primary" onClick={() => setShowPackageModal(true)} disabled={activePackage.refundRequested}>
+                                  Upgrade Plan
+                                </button>
+                              )}
+                              <button 
+                                className={`btn btn-sm ${activePackage.refundRequested ? 'btn-secondary' : 'btn-outline-danger'}`} 
+                                onClick={() => setShowRefundModal(true)}
+                                disabled={activePackage.refundRequested || (Date.now() - new Date(activePackage.createdAt).getTime() > 7 * 24 * 60 * 60 * 1000)}
+                              >
+                                {activePackage.refundRequested ? "Refund Requested" : "Request for Refund"}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )
                     ) : (
                       <div className="text-center">
                         <p className="text-muted mb-3">Upgrade your account to unlock premium templates and unlimited PDF downloads.</p>
@@ -422,6 +425,66 @@ export default function CandidateDashboardPage() {
           window.location.reload();
         }}
       />
+
+      {/* Custom Refund Confirmation Modal */}
+      {showRefundModal && activePackage && (
+        <>
+          <div className="modal-backdrop fade show" style={{ zIndex: 1040 }}></div>
+          <div className="modal fade show d-block" tabIndex={-1} style={{ zIndex: 1050 }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content border-0 shadow">
+                <div className="modal-header bg-danger text-white border-0">
+                  <h5 className="modal-title">Request Refund</h5>
+                  <button type="button" className="btn-close btn-close-white" onClick={() => !refunding && setShowRefundModal(false)}></button>
+                </div>
+                <div className="modal-body p-4 text-center">
+                  <div className="text-warning mb-3" style={{ fontSize: "40px" }}>
+                    <i className="fa-regular fa-circle-question"></i>
+                  </div>
+                  <h5 className="fw-bold mb-3">Are you sure you want to request a refund?</h5>
+                  <p className="text-muted mb-3">
+                    Your estimated refund is <strong>{Math.floor(activePackage.amountInPaisa * 0.95 / 100).toLocaleString("en-IN", { style: "currency", currency: "INR" })}</strong>.
+                    <br/><br/>
+                    <strong className="text-danger">
+                      Note: A 5% platform fee will be deducted from your refund amount.
+                    </strong>
+                  </p>
+                  <div className="mb-3 text-start">
+                    <label className="form-label small fw-bold">Reason for Refund <span className="text-danger">*</span></label>
+                    <textarea 
+                      className="form-control" 
+                      rows={3} 
+                      placeholder="Please provide a valid reason..."
+                      value={refundReason}
+                      onChange={(e) => setRefundReason(e.target.value)}
+                      disabled={refunding}
+                    ></textarea>
+                  </div>
+                  <p className="text-muted mb-0 small text-start">
+                    <i className="fa-solid fa-circle-info me-1"></i>
+                    Your request will be sent to the administrator for approval. Once approved, your package will be cancelled and the refund will be processed within 5 to 7 working days.
+                  </p>
+                </div>
+                <div className="modal-footer border-0 justify-content-center pb-4">
+                  <button type="button" className="btn btn-light px-4" onClick={() => setShowRefundModal(false)} disabled={refunding}>
+                    Keep My Package
+                  </button>
+                  <button type="button" className="btn btn-danger px-4" onClick={handleRefund} disabled={refunding || !refundReason.trim()}>
+                    {refunding ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Processing...
+                      </>
+                    ) : (
+                      "Submit Request"
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }

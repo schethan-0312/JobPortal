@@ -21,7 +21,7 @@ export type EmployerSidebarActive =
   | "chat-admin"
   | "competition"
   | "submissions"
- 
+  | "payment-history"
   | "delete-account";
 
 interface EmployerSidebarProps {
@@ -312,6 +312,11 @@ export default function EmployerSidebar({ active }: EmployerSidebarProps) {
                   <i className="fa-solid fa-headset me-2"></i>Chat with Admin
                   {unreadAdminMessages > 0 && <span className="count-tag">{unreadAdminMessages}</span>}
                 </a>
+              </li>
+              <li className={active === "payment-history" ? "active" : undefined}>
+                <Link href="/employer-payment-history" onClick={() => setIsOpen(false)}>
+                  <i className="fa-solid fa-file-invoice-dollar me-2"></i>Payment History
+                </Link>
               </li>
               <li className={active === "delete-account" ? "active" : undefined}>
                 <Link href="/employer-delete-account" onClick={() => setIsOpen(false)}>

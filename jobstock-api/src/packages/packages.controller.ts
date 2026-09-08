@@ -138,6 +138,21 @@ export class PackagesController {
     return this.packagesService.cancelOrder(user.userId, id, reason);
   }
 
+  @Post('orders/:id/request-refund')
+  @UseGuards(JwtAuthGuard)
+  requestOrderRefund(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body('reason') reason: string,
+  ) {
+    return this.packagesService.requestOrderRefund(user.userId, id, reason);
+  }
+
+  @Post('sync-refunds')
+  async syncRefunds() {
+    return this.packagesService.syncRefunds();
+  }
+
   @Get('active-subscription')
   @UseGuards(JwtAuthGuard)
   getActiveSubscription(@CurrentUser() user: AuthenticatedUser) {
@@ -149,5 +164,15 @@ export class PackagesController {
   @Roles(Role.EMPLOYER)
   refundActiveSubscription(@CurrentUser() user: AuthenticatedUser) {
     return this.packagesService.refundActiveSubscription(user.userId);
+  }
+
+  @Post('request-refund')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EMPLOYER)
+  requestRefundActiveSubscription(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body('reason') reason: string,
+  ) {
+    return this.packagesService.requestRefundActiveSubscription(user.userId, reason);
   }
 }

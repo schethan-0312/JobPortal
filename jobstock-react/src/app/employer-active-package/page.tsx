@@ -29,6 +29,8 @@ interface ActiveSubscription {
   packageId: string;
   package: Package;
   status: string;
+  refundRequested?: boolean;
+  refundReason?: string;
   startedAt: string;
   expiresAt: string | null;
   jobPostsUsed: number;
@@ -44,17 +46,23 @@ export default function EmployerActivePackagePage() {
   const [dataLoading, setDataLoading] = useState(true);
   const [refunding, setRefunding] = useState(false);
   const [showRefundModal, setShowRefundModal] = useState(false);
+  const [refundReason, setRefundReason] = useState("");
   const [now, setNow] = useState(new Date());
 
   const handleRefund = async () => {
+    if (!refundReason.trim()) {
+      toast.error("Please provide a reason for cancellation.");
+      return;
+    }
     setRefunding(true);
     try {
-      const res = await api.post<{success: boolean, refundAmountInPaisa: number, message: string}>("/packages/refund-active", {});
-      toast.success(`Refund of ₹${res.refundAmountInPaisa / 100} processed successfully!`);
-      // Reload active sub (it should become null or show expired)
+      const res = await api.post<{success: boolean, message: string}>("/packages/request-refund", { reason: refundReason });
+      toast.success(res.message || "Refund requested successfully!");
+      // Reload active sub
       const sub = await api.get<ActiveSubscription | null>("/packages/active-subscription");
       setActiveSub(sub);
       setShowRefundModal(false);
+      setRefundReason("");
     } catch (err) {
       if (err instanceof ApiError) {
         toast.error(err.message);
@@ -277,6 +285,20 @@ export default function EmployerActivePackagePage() {
                 </div>
               </div>
             ) : (
+              <>
+                {activeSub.status === 'REFUNDED' && (
+                  <div className="alert alert-success border-0 shadow-sm d-flex align-items-center mb-4 p-4 rounded-4" role="alert">
+                    <i className="fa-solid fa-circle-check fs-2 text-success me-4"></i>
+                    <div>
+                      <h4 className="alert-heading fw-bold mb-2">Refund Completed</h4>
+                      <p className="mb-0 text-muted">
+                        Your refund for the <strong>{activeSub.package.name}</strong> package has been successfully processed by the admin. 
+                        The total package price was <strong>{(activeSub.package.priceInPaisa / 100).toLocaleString("en-IN", { style: "currency", currency: "INR" })}</strong>. 
+                        After deducting a 5% platform fee and any applicable usage charges, the remaining amount has been refunded to your original payment method.
+                      </p>
+                    </div>
+                  </div>
+                )}
               <div className="row g-4">
                 <div className="col-xl-8 col-lg-7">
                   <div className="card active-dashboard-card bg-white h-100">
@@ -354,21 +376,33 @@ export default function EmployerActivePackagePage() {
                       </div>
                       
                       <div className="mt-4 pt-4 border-top text-center">
-                        <button 
-                          className="btn btn-outline-danger btn-sm w-100" 
-                          onClick={() => setShowRefundModal(true)}
-                          disabled={refunding || !isRefundEligible}
-                        >
-                          Cancel & Refund Package
-                        </button>
-                        <p className="text-muted small mt-2 mb-0" style={{ fontSize: "11px" }}>
-                          You can cancel or refund a package within 7 days of purchase. After 7 days, you cannot cancel or refund your amount.
-                        </p>
+                        {activeSub.status === 'REFUNDED' ? (
+                          <button 
+                            className="btn btn-sm w-100 btn-main" 
+                            onClick={() => router.push("/employer-package")}
+                          >
+                            Purchase New Plan
+                          </button>
+                        ) : (
+                          <button 
+                            className={`btn btn-sm w-100 ${activeSub.refundRequested ? 'btn-secondary' : 'btn-outline-danger'}`} 
+                            onClick={() => setShowRefundModal(true)}
+                            disabled={refunding || !isRefundEligible || activeSub.refundRequested}
+                          >
+                            {activeSub.refundRequested ? "Refund Requested" : "Request for Refund"}
+                          </button>
+                        )}
+                        {activeSub.status !== 'REFUNDED' && (
+                          <p className="text-muted small mt-2 mb-0" style={{ fontSize: "11px" }}>
+                            You can cancel or refund a package within 7 days of purchase. After 7 days, you cannot cancel or refund your amount.
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+              </>
             )}
           </div>
 
@@ -390,40 +424,49 @@ export default function EmployerActivePackagePage() {
             <div className="modal-dialog modal-dialog-centered">
               <div className="modal-content border-0 shadow">
                 <div className="modal-header bg-danger text-white border-0">
-                  <h5 className="modal-title">Confirm Cancellation</h5>
+                  <h5 className="modal-title">Request Refund</h5>
                   <button type="button" className="btn-close btn-close-white" onClick={() => !refunding && setShowRefundModal(false)}></button>
                 </div>
                 <div className="modal-body p-4 text-center">
                   <div className="text-warning mb-3" style={{ fontSize: "40px" }}>
                     <i className="fa-regular fa-circle-question"></i>
                   </div>
-                  <h5 className="fw-bold mb-3">Are you sure you want to cancel?</h5>
+                  <h5 className="fw-bold mb-3">Are you sure you want to request a refund?</h5>
                   <p className="text-muted mb-3">
                     Your estimated refund is <strong>{estimatedRefund.toLocaleString("en-IN", { style: "currency", currency: "INR" })}</strong>.
                     <br/><br/>
                     <strong className="text-danger">
-                      Note: A 5% platform fee has been deducted from your refund amount.
+                      Note: A 5% platform fee will be deducted from your refund amount.
                     </strong>
                   </p>
-                  <p className="text-muted mb-0 small">
+                  <div className="mb-3 text-start">
+                    <label className="form-label small fw-bold">Reason for Refund <span className="text-danger">*</span></label>
+                    <textarea 
+                      className="form-control" 
+                      rows={3} 
+                      placeholder="Please provide a valid reason..."
+                      value={refundReason}
+                      onChange={(e) => setRefundReason(e.target.value)}
+                      disabled={refunding}
+                    ></textarea>
+                  </div>
+                  <p className="text-muted mb-0 small text-start">
                     <i className="fa-solid fa-circle-info me-1"></i>
-                    You will receive this amount in your original payment method within <strong>5 to 7 working days</strong>.
-                    <br/><br/>
-                    <strong className="text-danger">You will lose access to all premium features immediately upon cancellation.</strong>
+                    Your request will be sent to the administrator for approval. Once approved, your package will be cancelled and the refund will be processed within 5 to 7 working days.
                   </p>
                 </div>
                 <div className="modal-footer border-0 justify-content-center pb-4">
                   <button type="button" className="btn btn-light px-4" onClick={() => setShowRefundModal(false)} disabled={refunding}>
                     Keep My Package
                   </button>
-                  <button type="button" className="btn btn-danger px-4" onClick={handleRefund} disabled={refunding}>
+                  <button type="button" className="btn btn-danger px-4" onClick={handleRefund} disabled={refunding || !refundReason.trim()}>
                     {refunding ? (
                       <>
                         <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                         Processing...
                       </>
                     ) : (
-                      "Yes, Cancel & Refund"
+                      "Submit Request"
                     )}
                   </button>
                 </div>
