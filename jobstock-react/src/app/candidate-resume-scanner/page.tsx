@@ -136,15 +136,15 @@ export default function CandidateResumeScannerPage() {
         <CandidateSidebar active="resume-scanner" />
 
         <div className="dashboard-content">
-          <div className="dashboard-tlbar d-block mb-4 no-print">
-            <div className="row">
-              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
-                <h1 className="mb-1 fs-3 fw-medium">AI Resume Health Scanner</h1>
+          <div className="dashboard-tlbar d-block mb-4 pt-2 no-print">
+            <div className="row align-items-center">
+              <div className="col-xl-12 col-lg-12 col-md-12">
+                <h1 className="mb-2 fs-2 fw-bold" style={{ color: '#161c1d' }}>AI Resume Health Scanner</h1>
                 <nav aria-label="breadcrumb">
-                  <ol className="breadcrumb">
-                    <li className="breadcrumb-item text-muted"><a href="#">Candidate</a></li>
-                    <li className="breadcrumb-item text-muted"><a href="#">Dashboard</a></li>
-                    <li className="breadcrumb-item"><a href="#" className="text-main">AI Resume Health Scanner</a></li>
+                  <ol className="breadcrumb mb-0" style={{ fontSize: '0.9rem' }}>
+                    <li className="breadcrumb-item text-muted"><a href="#" className="text-decoration-none text-muted">Candidate</a></li>
+                    <li className="breadcrumb-item text-muted"><a href="#" className="text-decoration-none text-muted">Dashboard</a></li>
+                    <li className="breadcrumb-item"><a href="#" className="text-decoration-none fw-medium" style={{ color: '#44a388' }}>AI Resume Health Scanner</a></li>
                   </ol>
                 </nav>
               </div>
@@ -152,91 +152,223 @@ export default function CandidateResumeScannerPage() {
           </div>
 
           <div className="dashboard-widg-bar d-block">
-            <div className="card mb-4 no-print">
-              <div className="card-header">
-                <h4>AI Semantic Evaluation</h4>
-                <p className="text-muted mb-0 mt-1">
-                  Our AI will semantically compare your resume against the target job description to compute detailed matches, detect missing skills, and give concrete suggestions.
-                </p>
-              </div>
-              <div className="card-body">
+            <p className="text-muted mb-4 pe-4 no-print" style={{ fontSize: '0.95rem', lineHeight: '1.6', maxWidth: '800px' }}>
+              Optimize your resume for applicant tracking systems. Our AI analyzes your document against target job descriptions to identify missing keywords and formatting issues.
+            </p>
+            <div className="row gx-5 no-print mb-4">
+              {/* Left Column Form */}
+              <div className="col-xl-7 col-lg-7">
                 {status === "error" && errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
                 
                 <form onSubmit={handleScan}>
                   
-                  <div className="mb-4">
-                    <label className="fw-bold mb-2">1. Choose Resume Source</label>
-                    <ul className="nav nav-pills mb-3">
-                      <li className="nav-item">
-                        <button type="button" className={`nav-link fw-bold me-2 border ${sourceType === "saved" ? "active bg-main text-white border-0" : ""}`} style={sourceType !== "saved" ? { backgroundColor: "#ffffff", color: "#28a745", borderColor: "#28a745" } : {}} onClick={() => setSourceType("saved")}>
-                          <i className="fa-regular fa-file-lines me-2"></i>Analyze Saved Resume
+                  {/* Card 1: Choose Resume Source */}
+                  <div className="card border-0 mb-4" style={{ borderRadius: '0.75rem', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+                    <div className="card-header bg-white border-bottom-0 pt-4 px-4 pb-0 d-flex align-items-center gap-3">
+                      <div style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: '#defaf8', color: '#1b5e54', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>1</div>
+                      <h5 className="fw-bold mb-0" style={{ color: '#275249' }}>Choose Resume Source</h5>
+                    </div>
+                    <div className="card-body p-4">
+                      
+                      <div className="row gx-3 mb-4">
+                        <div className="col-4">
+                          <div 
+                            className="position-relative border rounded p-3 text-center cursor-pointer h-100 d-flex flex-column justify-content-center align-items-center"
+                            style={{ 
+                              cursor: 'pointer',
+                              borderColor: sourceType === "saved" ? '#275249' : '#e1e5e5', 
+                              backgroundColor: sourceType === "saved" ? '#f5faf9' : '#fff',
+                              borderWidth: sourceType === "saved" ? '2px' : '1px'
+                            }}
+                            onClick={() => setSourceType("saved")}
+                          >
+                            {sourceType === "saved" && (
+                              <div className="position-absolute" style={{ top: '6px', right: '6px', color: '#1b5e54' }}>
+                                <i className="fa-solid fa-circle-check"></i>
+                              </div>
+                            )}
+                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#eef5f4', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
+                              <i className="fa-regular fa-folder-open text-secondary"></i>
+                            </div>
+                            <span className="fw-medium text-dark" style={{ fontSize: '0.85rem' }}>Analyze Saved</span>
+                          </div>
+                        </div>
+                        <div className="col-4">
+                          <div 
+                            className="position-relative border rounded p-3 text-center cursor-pointer h-100 d-flex flex-column justify-content-center align-items-center"
+                            style={{ 
+                              cursor: 'pointer',
+                              borderColor: sourceType === "upload" ? '#275249' : '#e1e5e5', 
+                              backgroundColor: sourceType === "upload" ? '#f5faf9' : '#fff',
+                              borderWidth: sourceType === "upload" ? '2px' : '1px'
+                            }}
+                            onClick={() => setSourceType("upload")}
+                          >
+                            {sourceType === "upload" && (
+                              <div className="position-absolute" style={{ top: '6px', right: '6px', color: '#1b5e54' }}>
+                                <i className="fa-solid fa-circle-check"></i>
+                              </div>
+                            )}
+                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#eef5f4', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
+                              <i className="fa-regular fa-file-pdf text-secondary"></i>
+                            </div>
+                            <span className="fw-medium text-dark" style={{ fontSize: '0.85rem' }}>Upload<br/>PDF/DOCX</span>
+                          </div>
+                        </div>
+                        <div className="col-4">
+                          <div 
+                            className="position-relative border rounded p-3 text-center cursor-pointer h-100 d-flex flex-column justify-content-center align-items-center"
+                            style={{ 
+                              cursor: 'pointer',
+                              borderColor: sourceType === "paste" ? '#275249' : '#e1e5e5', 
+                              backgroundColor: sourceType === "paste" ? '#f5faf9' : '#fff',
+                              borderWidth: sourceType === "paste" ? '2px' : '1px'
+                            }}
+                            onClick={() => setSourceType("paste")}
+                          >
+                            {sourceType === "paste" && (
+                              <div className="position-absolute" style={{ top: '6px', right: '6px', color: '#1b5e54' }}>
+                                <i className="fa-solid fa-circle-check"></i>
+                              </div>
+                            )}
+                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#eef5f4', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
+                              <i className="fa-regular fa-clipboard text-secondary"></i>
+                            </div>
+                            <span className="fw-medium text-dark" style={{ fontSize: '0.85rem' }}>Paste Text</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {sourceType === "saved" && (
+                        <div className="alert alert-info border-0 shadow-sm d-flex align-items-start gap-2 mb-0" style={{ backgroundColor: '#eef9f8', color: '#145c50' }}>
+                          <i className="fa-solid fa-circle-info mt-1"></i>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>
+                            Currently selected: Default Profile Resume. This will analyze the structured resume you created in the "My Resume" section. Ensure it is up to date before scanning.
+                          </span>
+                        </div>
+                      )}
+
+                      {sourceType === "upload" && (
+                        <div className="border border-dashed rounded p-4 text-center bg-light shadow-sm mb-0">
+                          <input type="file" className="d-none" ref={fileInputRef} accept=".pdf,.doc,.docx" onChange={handleFileUpload} />
+                          {resumeUrl ? (
+                            <div className="text-success fw-bold"><i className="fa-solid fa-check-circle me-2"></i>File Uploaded Successfully</div>
+                          ) : (
+                            <>
+                              <button type="button" className="btn btn-outline-secondary px-4 rounded-pill" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                                {uploading ? "Uploading..." : "Click to Upload Resume"}
+                              </button>
+                              <div className="small text-muted mt-2">Supports PDF, DOC, DOCX</div>
+                            </>
+                          )}
+                        </div>
+                      )}
+
+                      {sourceType === "paste" && (
+                        <div className="mb-0">
+                          <textarea 
+                            className="form-control bg-light shadow-sm" 
+                            rows={6} 
+                            placeholder="Paste your full resume text here..."
+                            value={pastedText}
+                            onChange={(e) => setPastedText(e.target.value)}
+                            style={{ borderColor: '#e1e5e5' }}
+                          />
+                        </div>
+                      )}
+
+                    </div>
+                  </div>
+
+                  {/* Card 2: Target Job Description */}
+                  <div className="card border-0 mb-4" style={{ borderRadius: '0.75rem', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+                    <div className="card-header bg-white border-bottom-0 pt-4 px-4 pb-0 d-flex align-items-center justify-content-between">
+                      <div className="d-flex align-items-center gap-3">
+                        <div style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: '#defaf8', color: '#1b5e54', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>2</div>
+                        <h5 className="fw-bold mb-0" style={{ color: '#275249' }}>Target Job Description</h5>
+                      </div>
+                    </div>
+                    <div className="card-body p-4">
+                      <div className="position-relative">
+                        <textarea
+                          className="form-control bg-light shadow-sm"
+                          rows={6}
+                          placeholder="Paste the target job description or role requirements here to get tailored keyword matching and semantic gap analysis..."
+                          value={jobDescription}
+                          onChange={(e) => setJobDescription(e.target.value)}
+                          style={{ borderColor: '#e1e5e5', paddingBottom: '30px' }}
+                        />
+                        <div className="position-absolute text-muted" style={{ bottom: '10px', right: '15px', fontSize: '0.7rem' }}>
+                          {jobDescription.length} / 5000 chars
+                        </div>
+                      </div>
+
+                      <div className="d-flex justify-content-end mt-4">
+                        <button type="submit" className="btn fw-medium px-4 py-2" style={{ backgroundColor: '#4dae94', color: '#fff', borderRadius: '2rem' }} disabled={status === "scanning" || (sourceType === "upload" && !resumeUrl) || (sourceType === "paste" && !pastedText)}>
+                          {status === "scanning" ? <><i className="fa-solid fa-circle-notch fa-spin me-2"></i>Scanning...</> : <>Start AI Scan <i className="fa-solid fa-arrow-right ms-2"></i></>}
                         </button>
+                      </div>
+                    </div>
+                  </div>
+
+                </form>
+              </div>
+
+              {/* Right Column (AI Evaluation info) */}
+              <div className="col-xl-5 col-lg-5">
+                
+                {/* Semantic Evaluation Card */}
+                <div className="card border-0 mb-4" style={{ borderRadius: '0.75rem', padding: '1.5rem', background: 'linear-gradient(145deg, #d2ece5 0%, #daf0eb 100%)', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+                  <div className="card-body p-0">
+                    <div className="d-flex align-items-center gap-2 mb-3">
+                      <i className="fa-solid fa-microchip" style={{ color: '#275249', fontSize: '1.1rem' }}></i>
+                      <h6 className="fw-bold mb-0" style={{ color: '#161c1d' }}>AI Semantic Evaluation</h6>
+                    </div>
+                    <p className="mb-4" style={{ fontSize: '0.85rem', lineHeight: '1.6', color: '#275249' }}>
+                      Our AI goes beyond simple keyword matching to deeply understand context and capability.
+                    </p>
+                    
+                    <ul className="list-unstyled d-flex flex-column gap-3 mb-0">
+                      <li className="d-flex align-items-start gap-3">
+                        <i className="fa-solid fa-layer-group mt-1" style={{ color: '#4a5b57', fontSize: '0.8rem' }}></i>
+                        <div>
+                          <div className="fw-bold" style={{ color: '#161c1d', fontSize: '0.85rem' }}>Semantic Matching</div>
+                          <div style={{ color: '#4a5b57', fontSize: '0.75rem', lineHeight: '1.4' }}>Understands synonyms and implied skills.</div>
+                        </div>
                       </li>
-                      <li className="nav-item">
-                        <button type="button" className={`nav-link fw-bold me-2 border ${sourceType === "upload" ? "active bg-main text-white border-0" : ""}`} style={sourceType !== "upload" ? { backgroundColor: "#ffffff", color: "#28a745", borderColor: "#28a745" } : {}} onClick={() => setSourceType("upload")}>
-                          <i className="fa-solid fa-cloud-arrow-up me-2"></i>Upload PDF/DOCX
-                        </button>
+                      <li className="d-flex align-items-start gap-3">
+                        <i className="fa-solid fa-magnifying-glass-chart mt-1" style={{ color: '#4a5b57', fontSize: '0.8rem' }}></i>
+                        <div>
+                          <div className="fw-bold" style={{ color: '#161c1d', fontSize: '0.85rem' }}>Gap Analysis</div>
+                          <div style={{ color: '#4a5b57', fontSize: '0.75rem', lineHeight: '1.4' }}>Identifies crucial missing experiences.</div>
+                        </div>
                       </li>
-                      <li className="nav-item">
-                        <button type="button" className={`nav-link fw-bold me-2 border ${sourceType === "paste" ? "active bg-main text-white border-0" : ""}`} style={sourceType !== "paste" ? { backgroundColor: "#ffffff", color: "#28a745", borderColor: "#28a745" } : {}} onClick={() => setSourceType("paste")}>
-                          <i className="fa-solid fa-paste me-2"></i>Paste Text
-                        </button>
+                      <li className="d-flex align-items-start gap-3">
+                        <i className="fa-solid fa-arrow-trend-up mt-1" style={{ color: '#4a5b57', fontSize: '0.8rem' }}></i>
+                        <div>
+                          <div className="fw-bold" style={{ color: '#161c1d', fontSize: '0.85rem' }}>Actionable Suggestions</div>
+                          <div style={{ color: '#4a5b57', fontSize: '0.75rem', lineHeight: '1.4' }}>Concrete recommendations to improve phrasing.</div>
+                        </div>
                       </li>
                     </ul>
-
-                    {sourceType === "saved" && (
-                      <div className="alert alert-info border-0 shadow-sm">
-                        <i className="fa-solid fa-circle-info me-2"></i>
-                        This will analyze the structured resume you created in the "My Resume" section. Ensure it is up to date before scanning.
-                      </div>
-                    )}
-
-                    {sourceType === "upload" && (
-                      <div className="border rounded p-4 text-center bg-white shadow-sm">
-                        <input type="file" className="d-none" ref={fileInputRef} accept=".pdf,.doc,.docx" onChange={handleFileUpload} />
-                        {resumeUrl ? (
-                          <div className="text-success fw-bold"><i className="fa-solid fa-check-circle me-2"></i>File Uploaded Successfully</div>
-                        ) : (
-                          <>
-                            <button type="button" className="btn btn-outline-primary" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
-                              {uploading ? "Uploading..." : "Click to Upload Resume"}
-                            </button>
-                            <div className="small text-muted mt-2">Supports PDF, DOC, DOCX</div>
-                          </>
-                        )}
-                      </div>
-                    )}
-
-                    {sourceType === "paste" && (
-                      <div>
-                        <textarea 
-                          className="form-control bg-white shadow-sm" 
-                          rows={6} 
-                          placeholder="Paste your full resume text here..."
-                          value={pastedText}
-                          onChange={(e) => setPastedText(e.target.value)}
-                        />
-                      </div>
-                    )}
                   </div>
+                </div>
 
-                  <div className="mb-4">
-                    <label className="fw-bold mb-2">2. Target Job Description</label>
-                    <textarea
-                      className="form-control bg-white shadow-sm"
-                      rows={4}
-                      placeholder="Paste the target job description or role title here to get tailored keyword matching and semantic gap analysis..."
-                      value={jobDescription}
-                      onChange={(e) => setJobDescription(e.target.value)}
-                    />
+                {/* Recent Scans Card */}
+                <div className="card border-0 mb-4" style={{ borderRadius: '0.75rem', padding: '1rem', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+                  <div className="card-header bg-white border-bottom-0 d-flex justify-content-between align-items-center pb-0">
+                    <h6 className="fw-bold mb-0" style={{ color: '#275249' }}>Recent Scans</h6>
+                    <i className="fa-solid fa-clock-rotate-left text-muted" style={{ fontSize: '0.9rem' }}></i>
                   </div>
+                  <div className="card-body p-4 text-center">
+                    <div className="mb-3">
+                      <i className="fa-solid fa-file-magnifying-glass text-muted" style={{ fontSize: '2.5rem', opacity: 0.3 }}></i>
+                    </div>
+                    <div className="fw-medium text-dark" style={{ fontSize: '0.9rem' }}>No recent scans found.</div>
+                    <div className="text-muted" style={{ fontSize: '0.8rem' }}>Your history will appear here.</div>
+                  </div>
+                </div>
 
-                  <div>
-                    <button type="submit" className="btn btn-main btn-lg" disabled={status === "scanning" || (sourceType === "upload" && !resumeUrl) || (sourceType === "paste" && !pastedText)}>
-                      {status === "scanning" ? <><i className="fa-solid fa-circle-notch fa-spin me-2"></i>Scanning...</> : "Scan My Resume"}
-                    </button>
-                  </div>
-                </form>
               </div>
             </div>
 

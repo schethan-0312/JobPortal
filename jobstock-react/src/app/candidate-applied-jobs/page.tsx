@@ -126,18 +126,18 @@ export default function CandidateAppliedJobsPage() {
             {/* Header Wrap */}
             <div className="row">
               <div className="col-12 col-xl-12 col-lg-12 col-md-12 col-sm-12">
-                <div className="card">
-                  <div className="card-header">
-                    <h6 className="mb-0">{applications.length} application{applications.length !== 1 ? "s" : ""}</h6>
+                <div className="card mb-4" style={{ borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}>
+                  <div className="card-header py-4 px-4" style={{ backgroundColor: '#f8fbfb', borderBottom: '1px solid #e5e9ea' }}>
+                    <h6 className="fw-bold mb-0" style={{ fontSize: '1.05rem', color: '#0d362d' }}>{applications.length} application{applications.length !== 1 ? "s" : ""}</h6>
                   </div>
-                  <div className="card-body">
+                  <div className="card-body p-4 bg-white">
                     {dataLoading && <p className="text-muted">Loading...</p>}
                     {!dataLoading && applications.length === 0 && <p className="text-muted">You haven&apos;t applied to any jobs yet.</p>}
                     {/* Start All List */}
                     <div className="row justify-content-start gx-3 gy-4">
                       {applications.map((item) => (
                         <div className="col-xl-12 col-lg-12 col-md-12" key={item.id}>
-                          <div className="jbs-list-box border">
+                          <div className="jbs-list-box h-100" style={{ backgroundColor: '#f8fbfb', borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}>
                             <div className="jbs-list-head">
                               <div className="jbs-list-head-thunner">
                                 <div className="jbs-list-emp-thumb jbs-verified">

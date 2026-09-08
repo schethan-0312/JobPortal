@@ -117,11 +117,11 @@ export default function CandidateCompetitionPage() {
           </div>
 
           <div className="dashboard-widg-bar d-block">
-            <div className="card">
-              <div className="card-header">
-                <h4><i className="fa-solid fa-trophy me-2"></i>Available Competitions</h4>
+            <div className="card mb-4" style={{ borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}>
+              <div className="card-header py-4 px-4" style={{ backgroundColor: '#f8fbfb', borderBottom: '1px solid #e5e9ea' }}>
+                <h6 className="fw-bold mb-0" style={{ fontSize: '1.05rem', color: '#0d362d' }}><i className="fa-solid fa-trophy me-2"></i>Available Competitions</h6>
               </div>
-              <div className="card-body px-4 py-4">
+              <div className="card-body p-4 bg-white">
 
                 {assessments.length === 0 ? (
                   <div className="text-center py-5">
@@ -140,7 +140,7 @@ export default function CandidateCompetitionPage() {
                       const attempt = a.attempts && a.attempts.length > 0 ? a.attempts[0] : null;
                       return (
                         <div key={a.id} className="col-xl-12 col-lg-12 col-md-12">
-                          <div className="jbs-list-box border">
+                          <div className="jbs-list-box h-100" style={{ backgroundColor: '#f8fbfb', borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}>
                             <div className="jbs-list-head">
                               <div className="jbs-list-head-thunner">
                                 <div className="jbs-list-emp-thumb jbs-verified">

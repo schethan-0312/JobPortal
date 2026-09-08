@@ -293,15 +293,15 @@ Education: ${(parsedData.educations || []).map((ed: any) => `${ed.title} at ${ed
         <CandidateSidebar active="resume-builder" />
 
         <div className="dashboard-content">
-          <div className="dashboard-tlbar d-block mb-4 no-print">
-            <div className="row">
-              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
-                <h1 className="mb-1 fs-3 fw-medium">AI Resume Builder</h1>
+          <div className="dashboard-tlbar d-block mb-4 pt-2 no-print">
+            <div className="row align-items-center">
+              <div className="col-xl-6 col-lg-6 col-md-6">
+                <h1 className="mb-2 fs-2 fw-bold" style={{ color: '#161c1d' }}>AI Resume Builder</h1>
                 <nav aria-label="breadcrumb">
-                  <ol className="breadcrumb">
-                    <li className="breadcrumb-item text-muted"><a href="#">Candidate</a></li>
-                    <li className="breadcrumb-item text-muted"><a href="#">Dashboard</a></li>
-                    <li className="breadcrumb-item"><a href="#" className="text-main">AI Resume Builder</a></li>
+                  <ol className="breadcrumb mb-0" style={{ fontSize: '0.9rem' }}>
+                    <li className="breadcrumb-item text-muted"><a href="#" className="text-decoration-none text-muted">Candidate</a></li>
+                    <li className="breadcrumb-item text-muted"><a href="#" className="text-decoration-none text-muted">Dashboard</a></li>
+                    <li className="breadcrumb-item"><a href="#" className="text-decoration-none fw-medium" style={{ color: '#44a388' }}>AI Resume Builder</a></li>
                   </ol>
                 </nav>
               </div>
@@ -309,73 +309,125 @@ Education: ${(parsedData.educations || []).map((ed: any) => `${ed.title} at ${ed
           </div>
 
           <div className="dashboard-widg-bar d-block">
-            <div className="card mb-4 no-print">
-              <div className="card-header">
-                <h4>Tell Us About Your Background</h4>
-                <p className="text-muted mb-0 mt-1">
-                  Write about your work history and education in your own words, or upload your existing resume &mdash; our AI will turn it into a
-                  polished, ATS-friendly resume you can print or save as a PDF.
-                </p>
+            <div className="row gx-5 no-print mb-4">
+              {/* Left Column Form */}
+              <div className="col-xl-7 col-lg-7">
+                <div className="card border-0" style={{ borderRadius: '0.75rem', padding: '1.5rem', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+                  <div className="card-body">
+                    <h4 className="fw-bold mb-3" style={{ color: '#275249' }}>Tell Us About Your Background</h4>
+                    <p className="text-muted mb-4" style={{ fontSize: '0.9rem', lineHeight: '1.6' }}>
+                      Write about your work history and education in your own words, or upload your existing resume &mdash; our AI will turn it into a
+                      polished, ATS-friendly resume you can print or save as a PDF.
+                    </p>
+
+                    {status === "error" && errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
+                    
+                    <form onSubmit={handleGenerate}>
+                      <div className="row mb-4 align-items-start">
+                        <label className="col-xl-3 col-md-12 col-form-label fw-bold text-dark" style={{ fontSize: '0.85rem' }}>Target Role<br className="d-none d-xl-block"/>(optional)</label>
+                        <div className="col-xl-9 col-md-12">
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="e.g. Digital Marketing Manager"
+                            value={targetRole}
+                            onChange={(e) => setTargetRole(e.target.value)}
+                            style={{ borderRadius: '0.5rem', borderColor: '#d0dad7' }}
+                          />
+                        </div>
+                      </div>
+                      <div className="row mb-5 align-items-start">
+                        <label className="col-xl-3 col-md-12 col-form-label fw-bold text-dark" style={{ fontSize: '0.85rem' }}>Or Paste<br className="d-none d-xl-block"/>Background</label>
+                        <div className="col-xl-9 col-md-12">
+                          <textarea
+                            className="form-control"
+                            rows={6}
+                            placeholder="e.g. I worked at X for 2 years as a... I have a degree in... My key achievements were..."
+                            value={rawBackground}
+                            onChange={(e) => setRawBackground(e.target.value)}
+                            minLength={20}
+                            required
+                            style={{ borderRadius: '0.5rem', borderColor: '#d0dad7' }}
+                          />
+                        </div>
+                      </div>
+                      <div className="d-flex gap-3 align-items-center flex-wrap">
+                        <button type="submit" className="btn fw-medium px-4 py-2" style={{ backgroundColor: '#4dae94', color: '#fff', borderRadius: '2rem' }} disabled={status === "generating"}>
+                          {status === "generating" ? (
+                            <><i className="fa-solid fa-spinner fa-spin me-2"></i>Building...</>
+                          ) : "Generate My Resume"}
+                        </button>
+                        <input 
+                          type="file" 
+                          className="d-none" 
+                          ref={fileInputRef} 
+                          accept=".pdf,.doc,.docx"
+                          onChange={handleUploadForBuilder}
+                        />
+                        <button 
+                          type="button" 
+                          className="btn fw-medium px-4 py-2 d-flex align-items-center"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={status === "generating"}
+                          style={{ borderRadius: '2rem', borderColor: '#1b5e54', color: '#1b5e54', background: 'transparent', border: '1px solid' }}
+                        >
+                          {status === "generating" ? (
+                            <><i className="fa-solid fa-spinner fa-spin me-2"></i>Processing...</>
+                          ) : (
+                            <><i className="fa-solid fa-cloud-arrow-up me-2"></i>Upload Resume (PDF / DOCX) Instead</>
+                          )}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
               </div>
-              <div className="card-body">
-                {status === "error" && errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
-                
-                <form onSubmit={handleGenerate}>
-                  <div className="row mb-3">
-                    <label className="col-xl-2 col-md-12 col-form-label fw-bold">Target Role (optional)</label>
-                    <div className="col-xl-7 col-md-12">
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="e.g. Digital Marketing Manager"
-                        value={targetRole}
-                        onChange={(e) => setTargetRole(e.target.value)}
-                      />
+
+              {/* Right Column (AI Readiness & AI Tip) */}
+              <div className="col-xl-5 col-lg-5">
+                {/* AI Readiness Card */}
+                <div className="card border-0 mb-4 position-relative" style={{ borderRadius: '0.75rem', padding: '1.5rem', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+                  <div style={{ position: 'absolute', top: 0, left: '1.5rem', width: '3rem', height: '4px', backgroundColor: '#4dae94', borderRadius: '0 0 4px 4px' }}></div>
+                  <div className="card-body p-0">
+                    <div className="d-flex align-items-center gap-3 mb-3 mt-2">
+                      <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#defaf8', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#185f52' }}>
+                        <i className="fa-solid fa-check-double" style={{ fontSize: '0.85rem' }}></i>
+                      </div>
+                      <h5 className="fw-bold mb-0" style={{ color: '#275249' }}>AI Readiness</h5>
                     </div>
+                    <p className="text-muted mb-4" style={{ fontSize: '0.85rem', lineHeight: '1.6' }}>
+                      Provide more details to improve AI output quality.
+                    </p>
+                    
+                    <ul className="list-unstyled d-flex flex-column gap-3 mb-0">
+                      <li className="d-flex align-items-center gap-2">
+                        <i className={`fa-solid ${rawBackground.length > 20 ? 'fa-check' : 'fa-minus'}`} style={{ color: rawBackground.length > 20 ? '#4dae94' : '#d0dad7', fontSize: '0.8rem' }}></i>
+                        <span className="text-muted" style={{ fontSize: '0.85rem' }}>Basic Info Provided</span>
+                      </li>
+                      <li className="d-flex align-items-center gap-2">
+                        <i className={`fa-solid ${targetRole ? 'fa-check' : 'fa-minus'}`} style={{ color: targetRole ? '#4dae94' : '#d0dad7', fontSize: '0.8rem' }}></i>
+                        <span className="text-muted" style={{ fontSize: '0.85rem' }}>Add Target Role</span>
+                      </li>
+                      <li className="d-flex align-items-center gap-2">
+                        <i className={`fa-solid ${rawBackground.length > 50 ? 'fa-check' : 'fa-minus'}`} style={{ color: rawBackground.length > 50 ? '#4dae94' : '#d0dad7', fontSize: '0.8rem' }}></i>
+                        <span className="text-muted" style={{ fontSize: '0.85rem' }}>Paste Work History</span>
+                      </li>
+                    </ul>
                   </div>
-                  <div className="row mb-3">
-                    <label className="col-xl-2 col-md-12 col-form-label fw-bold">Or Paste Background</label>
-                    <div className="col-xl-7 col-md-12">
-                      <textarea
-                        className="form-control"
-                        rows={8}
-                        placeholder="e.g. I worked at X for 2 years as a... I have a degree in... My key achievements were..."
-                        value={rawBackground}
-                        onChange={(e) => setRawBackground(e.target.value)}
-                        minLength={20}
-                        required
-                      />
+                </div>
+
+                {/* AI Tip Card */}
+                <div className="card border-0" style={{ borderRadius: '0.75rem', padding: '1.5rem', boxShadow: '0 4px 15px rgba(0,0,0,0.02)', background: 'linear-gradient(135deg, #ffffff 0%, #e8f7f5 100%)' }}>
+                  <div className="card-body p-0">
+                    <div className="d-flex align-items-center gap-2 mb-3">
+                      <i className="fa-regular fa-lightbulb" style={{ color: '#f0765c', fontSize: '1.2rem' }}></i>
+                      <h6 className="fw-bold mb-0" style={{ color: '#275249' }}>AI Tip</h6>
                     </div>
+                    <p className="text-muted mb-0" style={{ fontSize: '0.85rem', lineHeight: '1.6' }}>
+                      Don't worry about formatting. Just focus on listing your achievements, numbers, and responsibilities. Our AI will extract the key skills and format them perfectly for ATS systems.
+                    </p>
                   </div>
-                  <div className="row">
-                    <div className="col-xl-12 col-md-12 offset-xl-2 d-flex gap-3 align-items-center flex-wrap">
-                      <button type="submit" className="btn btn-main" disabled={status === "generating"}>
-                        {status === "generating" ? (
-                          <><i className="fa-solid fa-spinner fa-spin me-2"></i>Building Resume...</>
-                        ) : "Generate My Resume"}
-                      </button>
-                      <input 
-                        type="file" 
-                        className="d-none" 
-                        ref={fileInputRef} 
-                        accept=".pdf,.doc,.docx"
-                        onChange={handleUploadForBuilder}
-                      />
-                      <button 
-                        type="button" 
-                        className="btn btn-outline-primary"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={status === "generating"}
-                      >
-                        {status === "generating" ? (
-                          <><i className="fa-solid fa-spinner fa-spin me-2"></i>Processing...</>
-                        ) : (
-                          <><i className="fa-solid fa-cloud-arrow-up me-2"></i>Upload Resume (PDF / DOCX) instead</>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </form>
+                </div>
               </div>
             </div>
 

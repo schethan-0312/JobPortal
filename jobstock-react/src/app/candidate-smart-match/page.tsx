@@ -144,11 +144,11 @@ export default function CandidateSmartMatchPage() {
           </div>
 
           <div className="dashboard-widg-bar d-block">
-            <div className="card">
-              <div className="card-header d-flex justify-content-between align-items-center">
+            <div className="card mb-4" style={{ borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}>
+              <div className="card-header d-flex justify-content-between align-items-center py-4 px-4 flex-wrap gap-3" style={{ backgroundColor: '#f8fbfb', borderBottom: '1px solid #e5e9ea' }}>
                 <div>
-                  <h4>AI-Ranked Jobs For You</h4>
-                  <p className="text-muted mb-0 mt-1">
+                  <h6 className="fw-bold mb-0" style={{ fontSize: '1.05rem', color: '#0d362d' }}>AI-Ranked Jobs For You</h6>
+                  <p className="text-muted mb-0 mt-2" style={{ fontSize: '0.85rem' }}>
                     Matched against your profile's skills, experience, and location &mdash; not just keyword filters.
                   </p>
                 </div>
@@ -156,7 +156,7 @@ export default function CandidateSmartMatchPage() {
                   {status === "loading" ? "Refreshing..." : "Refresh Matches"}
                 </button>
               </div>
-              <div className="card-body">
+              <div className="card-body p-4 bg-white">
                 {status === "error" && errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
                 {status === "loading" && <p className="text-muted mb-0">Finding your best-matching jobs...</p>}
                 {status === "idle" && matches && matches.length === 0 && (
@@ -168,7 +168,7 @@ export default function CandidateSmartMatchPage() {
                   <div className="row">
                     {matches.map((m) => (
                       <div className="col-xl-6 col-md-12 mb-4" key={m.job.id}>
-                        <div className="job-instructor-layout border p-3 h-100">
+                        <div className="job-instructor-layout p-4 h-100" style={{ backgroundColor: '#f8fbfb', borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}>
                           <div className="d-flex justify-content-between align-items-start mb-2">
                             <div>
                               <h5 className="mb-1">

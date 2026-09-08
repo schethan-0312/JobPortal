@@ -280,11 +280,11 @@ function CandidateFollowEmployersContent() {
             <div className="row mb-4 g-3">
               <div className="col-xl-3 col-lg-6 col-md-6 col-sm-12">
                 <div
-                  className={`card border-0 shadow-sm rounded-4 p-3 cursor-pointer ${
-                    activeTab === "companies" ? "border-main border-2 bg-white" : "bg-white"
+                  className={`card p-3 cursor-pointer ${
+                    activeTab === "companies" ? "bg-white" : "bg-white"
                   }`}
                   onClick={() => setActiveTab("companies")}
-                  style={{ cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s" }}
+                  style={{ borderRadius: '0.5rem', border: activeTab === "companies" ? "2px solid #126746" : "1px solid #e5e9ea", cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s" }}
                 >
                   <div className="d-flex align-items-center gap-3">
                     <div
@@ -303,11 +303,11 @@ function CandidateFollowEmployersContent() {
 
               <div className="col-xl-3 col-lg-6 col-md-6 col-sm-12">
                 <div
-                  className={`card border-0 shadow-sm rounded-4 p-3 cursor-pointer ${
-                    activeTab === "candidates" ? "border-main border-2 bg-white" : "bg-white"
+                  className={`card p-3 cursor-pointer ${
+                    activeTab === "candidates" ? "bg-white" : "bg-white"
                   }`}
                   onClick={() => setActiveTab("candidates")}
-                  style={{ cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s" }}
+                  style={{ borderRadius: '0.5rem', border: activeTab === "candidates" ? "2px solid #126746" : "1px solid #e5e9ea", cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s" }}
                 >
                   <div className="d-flex align-items-center gap-3">
                     <div
@@ -326,11 +326,11 @@ function CandidateFollowEmployersContent() {
 
               <div className="col-xl-3 col-lg-6 col-md-6 col-sm-12">
                 <div
-                  className={`card border-0 shadow-sm rounded-4 p-3 cursor-pointer ${
-                    activeTab === "followers" ? "border-main border-2 bg-white" : "bg-white"
+                  className={`card p-3 cursor-pointer ${
+                    activeTab === "followers" ? "bg-white" : "bg-white"
                   }`}
                   onClick={() => setActiveTab("followers")}
-                  style={{ cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s" }}
+                  style={{ borderRadius: '0.5rem', border: activeTab === "followers" ? "2px solid #126746" : "1px solid #e5e9ea", cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s" }}
                 >
                   <div className="d-flex align-items-center gap-3">
                     <div
@@ -349,11 +349,11 @@ function CandidateFollowEmployersContent() {
 
               <div className="col-xl-3 col-lg-6 col-md-6 col-sm-12">
                 <div
-                  className={`card border-0 shadow-sm rounded-4 p-3 cursor-pointer ${
-                    activeTab === "requests" ? "border-main border-2 bg-white" : "bg-white"
+                  className={`card p-3 cursor-pointer ${
+                    activeTab === "requests" ? "bg-white" : "bg-white"
                   }`}
                   onClick={() => setActiveTab("requests")}
-                  style={{ cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s" }}
+                  style={{ borderRadius: '0.5rem', border: activeTab === "requests" ? "2px solid #126746" : "1px solid #e5e9ea", cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s" }}
                 >
                   <div className="d-flex align-items-center gap-3">
                     <div
@@ -381,7 +381,7 @@ function CandidateFollowEmployersContent() {
             {/* Custom Tab Selection & Search Row */}
             <div className="row mb-4">
               <div className="col-12">
-                <div className="card shadow-sm border-0 rounded-4">
+                <div className="card" style={{ borderRadius: '0.5rem', border: '1px solid #e5e9ea' }}>
                   <div className="card-body p-3">
                     <div className="d-flex flex-wrap align-items-center justify-content-between gap-3">
                       {/* Tabs */}
@@ -503,14 +503,14 @@ function CandidateFollowEmployersContent() {
 
             {/* Content Display */}
             {dataLoading ? (
-              <div className="card shadow-sm border-0 rounded-4 p-5 text-center">
+              <div className="card p-5 text-center" style={{ borderRadius: '0.5rem', border: '1px solid #e5e9ea' }}>
                 <div className="spinner-border text-main mx-auto mb-3" role="status">
                   <span className="visually-hidden">Loading...</span>
                 </div>
                 <p className="text-muted mb-0">Loading your network...</p>
               </div>
             ) : displayedList.length === 0 ? (
-              <div className="card shadow-sm border-0 rounded-4 p-5 text-center bg-white">
+              <div className="card p-5 text-center bg-white" style={{ borderRadius: '0.5rem', border: '1px solid #e5e9ea' }}>
                 <div
                   className="rounded-circle bg-light-main mx-auto mb-3 d-flex align-items-center justify-content-center"
                   style={{ width: "70px", height: "70px" }}
@@ -577,8 +577,9 @@ function CandidateFollowEmployersContent() {
                   return (
                     <div className="col-xl-4 col-lg-6 col-md-6 col-12" key={item.id}>
                       <div
-                        className="card h-100 border-0 shadow-sm rounded-4 p-4 d-flex flex-column justify-content-between bg-white position-relative"
+                        className="card h-100 p-4 d-flex flex-column justify-content-between bg-white position-relative"
                         style={{
+                          borderRadius: '0.5rem', border: '1px solid #e5e9ea',
                           transition: "transform 0.2s ease, box-shadow 0.2s ease",
                         }}
                         onMouseEnter={(e) => {

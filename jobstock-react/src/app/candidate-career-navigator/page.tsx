@@ -121,9 +121,9 @@ export default function CandidateCareerNavigatorPage() {
           </div>
 
           <div className="dashboard-widg-bar d-block">
-            <div className="card mb-4 border-0 shadow-sm">
-              <div className="card-header bg-white border-bottom pt-4 pb-3">
-                <h4 className="mb-1 text-dark">Your Personalized Career Roadmap</h4>
+            <div className="card mb-4" style={{ borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}>
+              <div className="card-header pt-4 pb-3" style={{ backgroundColor: '#f8fbfb', borderBottom: '1px solid #e5e9ea' }}>
+                <h4 className="mb-1 fw-bold" style={{ color: '#0d362d' }}>Your Personalized Career Roadmap</h4>
                 <p className="text-muted mb-0">
                   Select your profile data source, and our AI will build a comprehensive, step-by-step roadmap for your future.
                 </p>
@@ -194,10 +194,10 @@ export default function CandidateCareerNavigatorPage() {
             {result && (
               <div className="roadmap-results animation-fade-in">
                 {/* Where You Are Now Section */}
-                <div className="card mb-4 border-0 shadow-sm border-top border-4 border-main">
+                <div className="card mb-4 border-top border-4 border-main" style={{ borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}>
                   <div className="card-body p-4">
                     <div className="d-flex justify-content-between align-items-center mb-4">
-                      <h4 className="mb-0 text-dark"><i className="fa-solid fa-location-dot text-main me-2"></i>Where You Are Now</h4>
+                      <h4 className="mb-0 fw-bold" style={{ color: '#0d362d' }}><i className="fa-solid fa-location-dot text-main me-2"></i>Where You Are Now</h4>
                       <span className="badge bg-light text-dark border px-3 py-2 fs-6">{result.currentCareerLevel}</span>
                     </div>
                     
@@ -243,7 +243,7 @@ export default function CandidateCareerNavigatorPage() {
                   <div className="position-absolute top-0 bottom-0 start-0 border-start border-3 border-main" style={{ left: '20px', zIndex: 0, opacity: 0.2 }}></div>
                   
                   {result.careerPath.map((step, i) => (
-                    <div key={i} className="card border-0 shadow-sm mb-4 position-relative" style={{ zIndex: 1 }}>
+                    <div key={i} className="card mb-4 position-relative" style={{ zIndex: 1, borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}>
                       <div className="position-absolute rounded-circle bg-main border border-4 border-white d-flex align-items-center justify-content-center text-white fw-bold shadow-sm" style={{ width: '44px', height: '44px', left: '-2px', top: '20px' }}>
                         {i + 1}
                       </div>
@@ -288,9 +288,9 @@ export default function CandidateCareerNavigatorPage() {
                 </div>
 
                 {/* Interview Readiness Section */}
-                <div className="card mt-5 border-0 shadow-sm bg-main-light border border-main">
+                <div className="card mt-5 bg-main-light border border-main" style={{ borderRadius: '0.5rem', overflow: 'hidden' }}>
                   <div className="card-body p-4 text-center">
-                    <h4 className="fw-bold mb-3"><i className="fa-solid fa-clipboard-user me-2"></i>Interview Readiness</h4>
+                    <h4 className="fw-bold mb-3" style={{ color: '#0d362d' }}><i className="fa-solid fa-clipboard-user me-2"></i>Interview Readiness</h4>
                     <div className="display-4 fw-bold text-main mb-3">{result.interviewReadiness.score}%</div>
                     <p className="text-muted mb-4">Based on your current profile, here are the topics you should prepare for immediately:</p>
                     <div className="d-flex justify-content-center flex-wrap gap-2">
