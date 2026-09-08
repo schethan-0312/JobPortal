@@ -134,15 +134,15 @@ export default function CandidateSkillAssessmentPage() {
         <CandidateSidebar active="skill-assessment" />
 
         <div className="dashboard-content">
-          <div className="dashboard-tlbar d-block mb-4">
-            <div className="row">
-              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
-                <h1 className="mb-1 fs-3 fw-medium">Skill Assessments</h1>
+          <div className="dashboard-tlbar d-block mb-5 pt-2">
+            <div className="row align-items-center">
+              <div className="col-xl-6 col-lg-6 col-md-6">
+                <h1 className="mb-2 fs-2 fw-bold" style={{ color: '#161c1d' }}>Skill Assessments</h1>
                 <nav aria-label="breadcrumb">
-                  <ol className="breadcrumb">
-                    <li className="breadcrumb-item text-muted"><a href="#">Candidate</a></li>
-                    <li className="breadcrumb-item text-muted"><a href="#">Dashboard</a></li>
-                    <li className="breadcrumb-item"><a href="#" className="text-main">Skill Assessments</a></li>
+                  <ol className="breadcrumb mb-0" style={{ fontSize: '0.9rem' }}>
+                    <li className="breadcrumb-item text-muted"><a href="#" className="text-decoration-none text-muted">Candidate</a></li>
+                    <li className="breadcrumb-item text-muted"><a href="#" className="text-decoration-none text-muted">Dashboard</a></li>
+                    <li className="breadcrumb-item"><a href="#" className="text-decoration-none fw-medium" style={{ color: '#4dae94' }}>Skill Assessments</a></li>
                   </ol>
                 </nav>
               </div>
@@ -151,14 +151,14 @@ export default function CandidateSkillAssessmentPage() {
 
           <div className="dashboard-widg-bar d-block">
             {(stage === "idle" || stage === "starting") && (
-              <div className="card mb-4">
-                <div className="card-header">
-                  <h4>Recommended Skill Assessments</h4>
-                  <p className="text-muted mb-0 mt-1">
+              <div className="card mb-5" style={{ borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}>
+                <div className="card-header py-4 px-4 d-flex align-items-center justify-content-between flex-wrap" style={{ backgroundColor: '#f8fbfb', borderBottom: '1px solid #e5e9ea' }}>
+                  <h6 className="fw-bold mb-0" style={{ fontSize: '1.05rem', color: '#0d362d' }}>Recommended Skill Assessments</h6>
+                  <p className="text-muted mb-0 mt-2 mt-md-0" style={{ fontSize: '0.85rem', maxWidth: '400px', textAlign: 'right', lineHeight: '1.5' }}>
                     Based on your profile, here are some AI-recommended skills you can assess to prove your proficiency.
                   </p>
                 </div>
-                <div className="card-body">
+                <div className="card-body p-4 bg-white">
                   {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
                   {recommendedSkills === null ? (
                     <p className="text-muted">Loading recommendations...</p>
@@ -182,12 +182,12 @@ export default function CandidateSkillAssessmentPage() {
             )}
 
             {(stage === "quiz" || stage === "submitting") && quiz && (
-              <div className="card mb-4">
-                <div className="card-header">
-                  <h4>{quiz.skill} Assessment</h4>
-                  <p className="text-muted mb-0 mt-1">{quiz.totalQuestions} questions &mdash; select one answer each</p>
+              <div className="card mb-5" style={{ borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}>
+                <div className="card-header py-4 px-4" style={{ backgroundColor: '#f8fbfb', borderBottom: '1px solid #e5e9ea' }}>
+                  <h6 className="fw-bold mb-0" style={{ fontSize: '1.05rem', color: '#0d362d' }}>{quiz.skill} Assessment</h6>
+                  <p className="text-muted mb-0 mt-1" style={{ fontSize: '0.85rem' }}>{quiz.totalQuestions} questions &mdash; select one answer each</p>
                 </div>
-                <div className="card-body">
+                <div className="card-body p-4 bg-white">
                   {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
                   {quiz.questions.map((q, qi) => (
                     <div key={qi} className="mb-4 pb-3 border-bottom">
@@ -223,12 +223,12 @@ export default function CandidateSkillAssessmentPage() {
               </div>
             )}
 
-            {stage === "result" && result && quiz && (
-              <div className="card mb-4">
-                <div className="card-header">
-                  <h4>{result.skill} &mdash; Result</h4>
+            {stage === "result" && result && (
+              <div className="card mb-5" style={{ borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}>
+                <div className="card-header py-4 px-4" style={{ backgroundColor: '#f8fbfb', borderBottom: '1px solid #e5e9ea' }}>
+                  <h6 className="fw-bold mb-0" style={{ fontSize: '1.05rem', color: '#0d362d' }}>{result.skill} &mdash; Result</h6>
                 </div>
-                <div className="card-body text-center">
+                <div className="card-body p-5 bg-white text-center">
                   <div
                     className={`badge ${result.passed ? "bg-success" : "bg-danger"} p-3 fs-6 mb-3`}
                     style={{ borderRadius: 50 }}
@@ -249,89 +249,43 @@ export default function CandidateSkillAssessmentPage() {
                   <p className="text-muted mb-4">
                     {Math.round((result.score / result.totalQuestions) * 100)}% score &mdash; 70% required to pass
                   </p>
-                  
-                  <div className="text-start mt-5">
-                    <h5 className="mb-4">Assessment Answers Review</h5>
-                    {quiz.questions.map((q, qi) => {
-                      const userAns = selectedAnswers[qi];
-                      const correctAns = result.correctAnswers[qi];
-                      const isCorrect = userAns === correctAns;
-                      
-                      return (
-                        <div key={qi} className="mb-4 pb-3 border-bottom">
-                          <p className="fw-medium mb-2">
-                            {qi + 1}. {q.question}
-                            {isCorrect ? (
-                              <span className="badge bg-success ms-2"><i className="fa-solid fa-check me-1"></i>Correct</span>
-                            ) : (
-                              <span className="badge bg-danger ms-2"><i className="fa-solid fa-xmark me-1"></i>Incorrect</span>
-                            )}
-                          </p>
-                          {q.options.map((opt, oi) => {
-                            let itemClass = "form-check mb-1";
-                            let textClass = "";
-                            if (oi === correctAns) {
-                              itemClass += " bg-success bg-opacity-10 rounded p-1";
-                              textClass = "text-success fw-bold";
-                            } else if (oi === userAns && oi !== correctAns) {
-                              itemClass += " bg-danger bg-opacity-10 rounded p-1";
-                              textClass = "text-danger";
-                            }
-                            
-                            return (
-                              <div className={itemClass} key={oi}>
-                                <input
-                                  className="form-check-input"
-                                  type="radio"
-                                  disabled
-                                  checked={oi === userAns || oi === correctAns}
-                                />
-                                <label className={`form-check-label ${textClass}`}>
-                                  {opt} 
-                                  {oi === correctAns && " (Correct Answer)"}
-                                  {oi === userAns && oi !== correctAns && " (Your Answer)"}
-                                </label>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <button type="button" className="btn btn-outline-main mt-4" onClick={resetToStart}>
+                  <button type="button" className="btn btn-outline-main" onClick={resetToStart}>
                     Take Another Assessment
                   </button>
                 </div>
               </div>
             )}
 
-            <div className="card">
-              <div className="card-header">
-                <h4>Your Verified Skill Badges</h4>
+            <div className="card mb-4" style={{ borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}>
+              <div className="card-header py-4 px-4" style={{ backgroundColor: '#f8fbfb', borderBottom: '1px solid #e5e9ea' }}>
+                <h6 className="fw-bold mb-0" style={{ fontSize: '1.05rem', color: '#0d362d' }}>Your Verified Skill Badges</h6>
               </div>
-              <div className="card-body">
+              <div className="card-body p-4 bg-white">
                 {history.length === 0 && <p className="text-muted mb-0">No completed assessments yet.</p>}
                 {history.length > 0 && (
                   <div className="row">
                     {history.map((h) => (
-                      <div className="col-md-4 mb-3" key={h.id}>
-                        <div
-                          className={`card h-100 ${h.passed ? "border-success" : "border-secondary"}`}
+                      <div className="col-md-6 mb-3" key={h.id}>
+                        <div 
+                          className="card h-100" 
+                          style={{ backgroundColor: '#f8fbfb', borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}
                         >
-                          <div className="card-body">
-                            <h5 className="mb-1">
-                              {h.passed && <i className="fa-solid fa-award text-success me-2"></i>}
-                              {h.skill}
-                            </h5>
-                            <p className="mb-1">
-                              {h.score}/{h.totalQuestions} ({Math.round((h.score / h.totalQuestions) * 100)}%)
+                          <div className="card-body p-4 d-flex flex-column">
+                            <div className="d-flex justify-content-between align-items-start mb-2">
+                              <h5 className="mb-0 fw-bold" style={{ color: '#0d362d', fontSize: '1.05rem' }}>
+                                {h.passed && <i className="fa-solid fa-award text-success me-2"></i>}
+                                {!h.passed && <i className="fa-solid fa-circle-xmark text-muted me-2"></i>}
+                                {h.skill}
+                              </h5>
+                              <span className={`badge ${h.passed ? "bg-success" : "bg-secondary"}`} style={{ padding: '0.4rem 0.6rem', fontWeight: 500 }}>
+                                {h.passed ? "Passed" : "Not Passed"}
+                              </span>
+                            </div>
+                            <p className="text-muted mb-2 mt-auto" style={{ fontSize: '0.9rem' }}>
+                              <i className="fa-solid fa-bullseye me-1"></i> Score: {h.score}/{h.totalQuestions} ({Math.round((h.score / h.totalQuestions) * 100)}%)
                             </p>
-                            <span className={`badge ${h.passed ? "bg-success" : "bg-secondary"}`}>
-                              {h.passed ? "Passed" : "Not Passed"}
-                            </span>
-                            <div className="small text-muted mt-2">
-                              {new Date(h.completedAt).toLocaleDateString()}
+                            <div className="d-flex align-items-center text-muted" style={{ fontSize: '0.85rem' }}>
+                              <i className="fa-regular fa-calendar me-2"></i> {new Date(h.completedAt).toLocaleDateString()}
                             </div>
                           </div>
                         </div>

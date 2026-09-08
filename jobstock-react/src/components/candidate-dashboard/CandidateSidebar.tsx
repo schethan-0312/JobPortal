@@ -98,6 +98,42 @@ export default function CandidateSidebar({ active }: CandidateSidebarProps) {
             visibility: visible !important;
           }
         }
+        
+        /* Sidebar styling overrides */
+        .dashboard-nav {
+          background-color: #e6f7f4 !important;
+        }
+        .dashboard-inner {
+          margin-top: 1rem;
+        }
+        .dashboard-inner ul li {
+          margin: 0.25rem 1.5rem !important;
+          padding: 0 !important;
+          border: none !important;
+        }
+        .dashboard-inner ul li a {
+          color: #4a6862 !important;
+          font-weight: 500 !important;
+          border-radius: 0.5rem !important;
+          padding: 0.75rem 1rem !important;
+          display: flex !important;
+          align-items: center !important;
+          transition: all 0.2s ease !important;
+        }
+        .dashboard-inner ul li.active a, .dashboard-inner ul li a:hover {
+          background-color: #429e85 !important;
+          color: #ffffff !important;
+        }
+        .dashboard-inner ul li.active a i, .dashboard-inner ul li a:hover i {
+          color: #ffffff !important;
+        }
+        .jbs-tiosk-title a {
+          color: #0d362d !important;
+          font-weight: 600;
+        }
+        .jbs-tiosk-subtitle span {
+          color: #63857d !important;
+        }
       `}</style>
 
       <a

@@ -3,6 +3,7 @@ import * as crypto from 'node:crypto';
 import Razorpay from 'razorpay';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { EmailService } from '../email/email.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import { CreateOrderDto } from './dto/create-order.dto.js';
 import { VerifyRazorpayPaymentDto } from './dto/verify-razorpay-payment.dto.js';
 
@@ -13,6 +14,7 @@ export class PackagesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly emailService: EmailService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   private getRazorpayClient(): Razorpay {
@@ -499,12 +501,105 @@ export class PackagesService {
     return updated;
   }
 
+  async syncRefunds() {
+    const subs = await this.prisma.employerPackageSubscription.findMany({ 
+      where: { refundRequested: true } 
+    });
+    
+    let updatedCount = 0;
+    for (const sub of subs) {
+      const employer = await this.prisma.employer.findUnique({where:{id: sub.employerId}});
+      if (!employer) continue;
+      const order = await this.prisma.order.findFirst({ 
+        where: { 
+          userId: employer.userId, 
+          packageId: sub.packageId, 
+          status: 'PAID' 
+        }, 
+        orderBy: { createdAt: 'desc' } 
+      });
+      
+      if (order && !order.refundRequested) {
+        await this.prisma.order.update({ 
+          where: { id: order.id }, 
+          data: { refundRequested: true, refundReason: sub.refundReason } 
+        });
+        updatedCount++;
+      }
+    }
+    return { success: true, updatedCount };
+  }
+
+  async requestOrderRefund(userId: string, orderId: string, reason: string) {
+    const order = await this.prisma.order.findUnique({ 
+      where: { id: orderId }
+    });
+    if (!order || order.userId !== userId) {
+      throw new NotFoundException('Order not found');
+    }
+    if (order.status !== 'PAID') {
+      throw new BadRequestException('Only PAID transactions can be refunded');
+    }
+
+    if (order.refundRequested) {
+      throw new BadRequestException('Refund has already been requested.');
+    }
+
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const daysSincePurchase = (Date.now() - order.createdAt.getTime()) / msPerDay;
+    if (daysSincePurchase > 7) {
+      throw new BadRequestException('Refunds are only available within 7 days of purchase.');
+    }
+
+    const updatedOrder = await this.prisma.order.update({
+      where: { id: orderId },
+      data: { 
+        refundRequested: true,
+        refundReason: reason
+      },
+      include: { package: true }
+    });
+
+    if (updatedOrder.package?.audience === 'EMPLOYER') {
+      const employer = await this.prisma.employer.findUnique({ where: { userId } });
+      if (employer) {
+        const activeSub = await this.prisma.employerPackageSubscription.findFirst({
+          where: { employerId: employer.id, packageId: updatedOrder.packageId, status: 'ACTIVE' }
+        });
+        if (activeSub) {
+          await this.prisma.employerPackageSubscription.update({
+            where: { id: activeSub.id },
+            data: { refundRequested: true, refundReason: reason } as any
+          });
+        }
+      }
+    }
+
+    // Notify all admins about this refund request
+    try {
+      const admins = await this.prisma.user.findMany({ where: { role: 'ADMIN' }, select: { id: true } });
+      const requestingUser = await this.prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+      for (const admin of admins) {
+        await this.notificationsService.create(
+          admin.id,
+          '💰 Refund Request Received',
+          `${requestingUser?.email ?? 'A user'} has requested a refund. Reason: "${reason}". Review in Admin Financials.`,
+          '/admin-financials'
+        );
+      }
+    } catch (_) {
+      // Notification failure should not block the refund request
+    }
+
+    return { success: true, message: 'Refund requested successfully' };
+  }
+
   async getActiveSubscription(userId: string) {
     const employer = await this.prisma.employer.findUnique({ where: { userId } });
     if (!employer) return null;
 
     let sub = await this.prisma.employerPackageSubscription.findFirst({
-      where: { employerId: employer.id, status: 'ACTIVE' },
+      where: { employerId: employer.id },
       include: { package: true },
       orderBy: { createdAt: 'desc' }
     });
@@ -612,5 +707,79 @@ export class PackagesService {
     });
 
     return { success: true, refundAmountInPaisa: refundAmount, message: 'Refund successful' };
+  }
+
+  async requestRefundActiveSubscription(userId: string, reason: string) {
+    const employer = await this.prisma.employer.findUnique({ where: { userId } });
+    if (!employer) {
+      throw new NotFoundException('Employer not found');
+    }
+
+    const sub = await this.prisma.employerPackageSubscription.findFirst({
+      where: { employerId: employer.id, status: 'ACTIVE' },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (!sub) {
+      throw new BadRequestException('You do not have an active subscription to refund.');
+    }
+
+    if ((sub as any).refundRequested) {
+      throw new BadRequestException('Refund has already been requested.');
+    }
+
+    // Verify refund window using order
+    const order = await this.prisma.order.findFirst({
+      where: { userId, packageId: sub.packageId, status: 'PAID' },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (!order) {
+      throw new BadRequestException('Could not find a valid payment record.');
+    }
+
+    const refundWindowMs = 7 * 24 * 60 * 60 * 1000;
+    if (new Date().getTime() - order.createdAt.getTime() > refundWindowMs) {
+      throw new BadRequestException('Refund window (7 days) has expired.');
+    }
+
+    await this.prisma.employerPackageSubscription.update({
+      where: { id: sub.id },
+      data: { 
+        refundRequested: true,
+        refundReason: reason
+      } as any
+    });
+
+    // Also mark the order as refundRequested so admin transactions table shows it
+    await this.prisma.order.update({
+      where: { id: order.id },
+      data: {
+        refundRequested: true,
+        refundReason: reason
+      }
+    });
+
+    // Notify all admins about this refund request
+    try {
+      const admins = await this.prisma.user.findMany({ where: { role: 'ADMIN' }, select: { id: true } });
+      const requestingUser = await this.prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+      const subWithPackage = await this.prisma.employerPackageSubscription.findUnique({
+        where: { id: sub.id },
+        include: { package: { select: { name: true } } }
+      });
+      for (const admin of admins) {
+        await this.notificationsService.create(
+          admin.id,
+          '💰 Employer Refund Request',
+          `${requestingUser?.email ?? 'An employer'} has requested a refund for the "${subWithPackage?.package?.name ?? 'package'}". Reason: "${reason}". Review in Admin Financials.`,
+          '/admin-financials'
+        );
+      }
+    } catch (_) {
+      // Notification failure should not block the refund request
+    }
+
+    return { success: true, message: 'Refund requested successfully' };
   }
 }

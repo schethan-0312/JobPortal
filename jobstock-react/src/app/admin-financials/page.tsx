@@ -20,6 +20,8 @@ interface Transaction {
   status: string;
   gatewayRef: string | null;
   createdAt: string;
+  refundRequested?: boolean;
+  refundReason?: string;
   user: { email: string; role: string };
   package: { name: string; audience: string };
 }
@@ -49,6 +51,9 @@ interface Subscription {
   jobPostsUsed: number;
   startedAt: string;
   expiresAt: string | null;
+  status: string;
+  refundRequested?: boolean;
+  refundReason?: string;
   employer: { companyName: string; status: string };
   package: { name: string; priceInPaisa: number };
 }
@@ -274,6 +279,14 @@ export default function AdminFinancialsPage() {
                               >
                                 {tx.status}
                               </span>
+                              {tx.refundRequested && tx.status === "PAID" && (
+                                <div className="mt-1">
+                                  <span className="badge bg-warning text-dark">Refund Requested</span>
+                                  <div className="text-muted mt-1" style={{ fontSize: '0.75rem', maxWidth: '150px' }}>
+                                    Reason: {tx.refundReason}
+                                  </div>
+                                </div>
+                              )}
                             </td>
                             <td>
                               {tx.status === "PAID" && (
@@ -308,9 +321,9 @@ export default function AdminFinancialsPage() {
                         <tr>
                           <th>Employer</th>
                           <th>Plan</th>
-                          <th>Job posts used</th>
                           <th>Started</th>
                           <th>Expires</th>
+                          <th>Status</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -318,9 +331,21 @@ export default function AdminFinancialsPage() {
                           <tr key={s.id}>
                             <td className="small">{s.employer.companyName}</td>
                             <td className="small">{s.package.name}</td>
-                            <td className="small">{s.jobPostsUsed}</td>
                             <td className="small">{new Date(s.startedAt).toLocaleDateString()}</td>
                             <td className="small">{s.expiresAt ? new Date(s.expiresAt).toLocaleDateString() : "—"}</td>
+                            <td className="small">
+                              <span className={`badge ${s.status === 'ACTIVE' ? 'bg-success' : 'bg-secondary'}`}>
+                                {s.status}
+                              </span>
+                              {s.refundRequested && s.status === 'ACTIVE' && (
+                                <div className="mt-1">
+                                  <span className="badge bg-warning text-dark">Refund Requested</span>
+                                  <div className="text-muted mt-1" style={{ fontSize: '0.75rem', maxWidth: '150px' }}>
+                                    Reason: {s.refundReason}
+                                  </div>
+                                </div>
+                              )}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -378,7 +403,7 @@ export default function AdminFinancialsPage() {
                 <button
                   type="button"
                   className="btn btn-danger"
-                  disabled={refunding || refundConfirmText !== confirmAmount || refundReason.trim().length < 5}
+                  disabled={refunding || refundConfirmText !== confirmAmount || !refundReason.trim()}
                   onClick={submitRefund}
                 >
                   {refunding ? "Refunding..." : "Confirm Refund"}

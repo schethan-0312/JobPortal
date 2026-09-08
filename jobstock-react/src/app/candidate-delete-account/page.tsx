@@ -105,11 +105,11 @@ export default function CandidateDeleteAccountPage() {
             </div>
           </div>
           <div className="dashboard-widg-bar d-block">
-            <div className="card">
-              <div className="card-header">
-                <h4>Delete Account</h4>
+            <div className="card mb-4" style={{ borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}>
+              <div className="card-header py-4 px-4" style={{ backgroundColor: '#f8fbfb', borderBottom: '1px solid #e5e9ea' }}>
+                <h6 className="fw-bold mb-0" style={{ fontSize: '1.05rem', color: '#0d362d' }}>Delete Account</h6>
               </div>
-              <div className="card-body">
+              <div className="card-body p-4 bg-white">
                                 
                 <form onSubmit={openConfirmModal}>
                   <div className="row mb-3">

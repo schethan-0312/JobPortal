@@ -643,7 +643,7 @@ function CandidateMessagesContent() {
           </div>
 
           <div className="dashboard-widg-bar d-block">
-            <div className="card shadow-sm border-0 rounded-4 overflow-hidden bg-white mb-4">
+            <div className="card mb-4 bg-white" style={{ borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}>
               <div className="dash-msg-wrapper" style={{ minHeight: "600px", height: "70vh", display: "flex" }}>
                 {/* Left Conversations Sidebar */}
                 <div
@@ -651,7 +651,7 @@ function CandidateMessagesContent() {
                   style={{ width: "320px", flexShrink: 0, overflowY: "hidden" }}
                 >
                   {/* Search Bar */}
-                  <div className="p-3 border-bottom bg-light">
+                  <div className="p-3 border-bottom" style={{ backgroundColor: '#f8fbfb' }}>
                     <div className="position-relative">
                       <i
                         className="fa-solid fa-magnifying-glass position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"
@@ -829,8 +829,8 @@ function CandidateMessagesContent() {
                     <>
                       {/* Chat Header */}
                       <div
-                        className="p-3 border-bottom d-flex align-items-center justify-content-between bg-white"
-                        style={{ flexShrink: 0 }}
+                        className="p-3 border-bottom d-flex align-items-center justify-content-between"
+                        style={{ flexShrink: 0, backgroundColor: '#f8fbfb' }}
                       >
                         <div className="d-flex align-items-center gap-3">
                           <img

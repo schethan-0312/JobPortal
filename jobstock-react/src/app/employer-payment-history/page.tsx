@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Navbar7 from "@/components/Navbar7";
-import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar";
+import { useRouter } from "next/navigation";
+import Navbar8 from "@/components/Navbar8";
+import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError } from "@/lib/api";
-import { toast, Toaster } from "react-hot-toast";
-import { useRouter } from "next/navigation";
+import { Toaster, toast } from "react-hot-toast";
 
 interface Package {
   id: string;
@@ -14,6 +14,14 @@ interface Package {
   audience: string;
   priceInPaisa: number;
   featuresJson: any;
+  postJobLimit?: number;
+  applicantViewLimit?: number;
+  jobSeekerViewLimit?: number;
+  chatEnabled?: boolean;
+  filterShortlistEnabled?: boolean;
+  scheduleInterviewsEnabled?: boolean;
+  companyBrandingEnabled?: boolean;
+  verifiedRecruiterBadgeEnabled?: boolean;
 }
 
 interface Order {
@@ -32,7 +40,7 @@ function formatMoney(paisa: number) {
   return `₹${(paisa / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 }
 
-export default function CandidatePaymentHistoryPage() {
+export default function EmployerPaymentHistoryPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -45,7 +53,7 @@ export default function CandidatePaymentHistoryPage() {
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
 
   useEffect(() => {
-    if (!loading && (!user || user.role !== "CANDIDATE")) {
+    if (!loading && (!user || user.role !== "EMPLOYER")) {
       router.replace("/");
     }
   }, [loading, user, router]);
@@ -59,24 +67,23 @@ export default function CandidatePaymentHistoryPage() {
   };
 
   useEffect(() => {
-    if (!user || user.role !== "CANDIDATE") return;
+    if (!user || user.role !== "EMPLOYER") return;
     loadOrders();
   }, [user]);
 
-  const handleRequestRefund = async () => {
+  const handleRefund = async () => {
+    if (!activeOrder) return;
     if (!refundReason.trim()) {
-      toast.error("Please provide a reason for refund.");
+      toast.error("Please provide a reason for cancellation.");
       return;
     }
-    if (!activeOrder) return;
-
     setRefunding(true);
     try {
       const res = await api.post<{success: boolean, message: string}>(`/packages/orders/${activeOrder.id}/request-refund`, { reason: refundReason });
       toast.success(res.message || "Refund requested successfully!");
-      loadOrders();
       setShowRefundModal(false);
       setRefundReason("");
+      loadOrders();
     } catch (err) {
       if (err instanceof ApiError) {
         toast.error(err.message);
@@ -88,32 +95,16 @@ export default function CandidatePaymentHistoryPage() {
     }
   };
 
-  const renderFeatures = (featuresJson: any) => {
-    let items: string[] = [];
-    if (typeof featuresJson === "object" && featuresJson !== null && Array.isArray(featuresJson.features)) {
-      items = featuresJson.features;
-    } else if (Array.isArray(featuresJson)) {
-      items = featuresJson;
-    }
-    return (
-      <ul className="mb-0 ps-3 text-muted small" style={{ listStyleType: "circle" }}>
-        {items.map((f, i) => (
-          <li key={i}>{f}</li>
-        ))}
-      </ul>
-    );
-  };
-
-  if (loading || !user || user.role !== "CANDIDATE") {
+  if (loading || !user || user.role !== "EMPLOYER") {
     return null;
   }
 
   return (
     <>
       <Toaster position="top-right" />
-      <Navbar7 />
+      <Navbar8 />
       <div className="dashboard-wrap bg-light">
-        <CandidateSidebar active="payment-history" />
+        <EmployerSidebar active="payment-history" />
         <div className="dashboard-content">
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
@@ -121,7 +112,7 @@ export default function CandidatePaymentHistoryPage() {
                 <h1 className="mb-1 fs-3 fw-medium">Payment History</h1>
                 <nav aria-label="breadcrumb">
                   <ol className="breadcrumb">
-                    <li className="breadcrumb-item text-muted"><a href="#">Candidate</a></li>
+                    <li className="breadcrumb-item text-muted"><a href="#">Employer</a></li>
                     <li className="breadcrumb-item"><a href="#" className="text-main">Payment History</a></li>
                   </ol>
                 </nav>
@@ -130,11 +121,11 @@ export default function CandidatePaymentHistoryPage() {
           </div>
           
           <div className="dashboard-widg-bar d-block">
-            <div className="card mb-4" style={{ borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}>
-              <div className="card-header py-4 px-4" style={{ backgroundColor: '#f8fbfb', borderBottom: '1px solid #e5e9ea' }}>
-                <h6 className="fw-bold mb-0" style={{ fontSize: '1.05rem', color: '#0d362d' }}>My Transactions</h6>
+            <div className="card">
+              <div className="card-header">
+                <h4>My Transactions</h4>
               </div>
-              <div className="card-body p-4 bg-white">
+              <div className="card-body">
                 {dataLoading && <p className="text-muted">Loading payment history...</p>}
                 {!dataLoading && orders.length === 0 && (
                   <div className="text-center py-5">
@@ -195,6 +186,7 @@ export default function CandidatePaymentHistoryPage() {
         </div>
       </div>
 
+      {/* Refund modal removed as requested */}
     </>
   );
 }

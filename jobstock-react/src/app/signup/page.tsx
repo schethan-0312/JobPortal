@@ -409,7 +409,29 @@ function SignupForm() {
     setSubmitting(true);
     try {
       const user = await googleLogin(credential, role);
-      router.push(user.role === "CANDIDATE" ? "/candidate-dashboard" : "/employer-dashboard");
+      
+      logout();
+      
+      await Swal.fire({
+        title: "Registration Successful",
+        text: "Your account has been created. Please log in to continue.",
+        icon: "success",
+        confirmButtonColor: "#0b8260",
+        customClass: {
+          popup: 'elite-popup',
+          title: 'elite-title',
+          confirmButton: 'elite-confirm'
+        }
+      });
+      
+      router.push("/");
+      
+      setTimeout(() => {
+        const loginBtn = document.querySelector<HTMLElement>('[data-bs-target="#login"]');
+        if (loginBtn) {
+          loginBtn.click();
+        }
+      }, 500);
     } catch (err) {
       let msg = "Google authentication failed. Please try again.";
       if (err instanceof ApiError) {

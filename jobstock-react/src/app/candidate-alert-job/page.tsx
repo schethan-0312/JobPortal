@@ -135,8 +135,8 @@ export default function CandidateAlertJobPage() {
             {/* Header Wrap */}
             <div className="row">
               <div className="col-12 col-xl-12 col-lg-12 col-md-12 col-sm-12">
-                <div className="card" style={{ overflow: "visible", position: "relative", zIndex: 30 }}>
-                  <div className="card-header" style={{ overflow: "visible" }}>
+                <div className="card mb-4" style={{ borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'visible', position: "relative", zIndex: 30 }}>
+                  <div className="card-header py-4 px-4" style={{ backgroundColor: '#f8fbfb', borderBottom: '1px solid #e5e9ea', overflow: "visible" }}>
                     <form onSubmit={handleCreate} className="_mp-inner-content elior w-100">
                       <div className="_mp-inner-first d-flex gap-2 flex-wrap align-items-center" style={{ overflow: "visible" }}>
                         <input
@@ -169,7 +169,7 @@ export default function CandidateAlertJobPage() {
                       </div>
                     </form>
                   </div>
-                  <div className="card-body">
+                  <div className="card-body p-4 bg-white">
                     {dataLoading && <p className="text-muted">Loading...</p>}
                     {!dataLoading && alerts.length === 0 && <p className="text-muted">No job alerts set up yet.</p>}
                     {!dataLoading && alerts.length > 0 && (

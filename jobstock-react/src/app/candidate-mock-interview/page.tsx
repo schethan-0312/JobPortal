@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar7 from "@/components/Navbar7";
 import CandidateSidebar from "@/components/candidate-dashboard/CandidateSidebar";
@@ -120,28 +120,6 @@ export default function CandidateMockInterviewPage() {
     setStage("idle");
   }
 
-  // Camera access setup for the interview stage
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [camError, setCamError] = useState(false);
-
-  useEffect(() => {
-    if (stage === "interview") {
-      navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-        .then((stream) => {
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-          }
-        })
-        .catch(() => setCamError(true));
-    } else {
-      // Cleanup camera when not in interview stage
-      if (videoRef.current?.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach((track) => track.stop());
-      }
-    }
-  }, [stage]);
-
   return (
     <>
       <Navbar7 />
@@ -150,56 +128,56 @@ export default function CandidateMockInterviewPage() {
         <CandidateSidebar active="mock-interview" />
 
         <div className="dashboard-content">
-          <div className="dashboard-tlbar d-block mb-4">
-            <div className="row">
-              <div className="col-xl-12 col-12 col-lg-12 col-md-12">
-                <h1 className="mb-1 fs-3 fw-medium">Mock Interviews</h1>
+          <div className="dashboard-tlbar d-block mb-5 pt-2">
+            <div className="row align-items-center">
+              <div className="col-xl-6 col-lg-6 col-md-6">
+                <h1 className="mb-2 fs-2 fw-bold" style={{ color: '#161c1d' }}>Mock Interviews</h1>
                 <nav aria-label="breadcrumb">
-                  <ol className="breadcrumb">
-                    <li className="breadcrumb-item text-muted"><a href="#">Candidate</a></li>
-                    <li className="breadcrumb-item text-muted"><a href="#">Dashboard</a></li>
-                    <li className="breadcrumb-item"><a href="#" className="text-main">Mock Interviews</a></li>
+                  <ol className="breadcrumb mb-0" style={{ fontSize: '0.9rem' }}>
+                    <li className="breadcrumb-item text-muted"><a href="#" className="text-decoration-none text-muted">Candidate</a></li>
+                    <li className="breadcrumb-item text-muted"><a href="#" className="text-decoration-none text-muted">Dashboard</a></li>
+                    <li className="breadcrumb-item"><a href="#" className="text-decoration-none fw-medium" style={{ color: '#4dae94' }}>Mock Interview</a></li>
                   </ol>
                 </nav>
+              </div>
+              <div className="col-xl-6 col-lg-6 col-md-6 text-md-end mt-4 mt-md-0">
+                <button className="btn px-4 py-2 fw-medium rounded" style={{ backgroundColor: '#0f6e4a', color: '#fff', fontSize: '0.9rem' }} onClick={() => router.back()}>
+                  <i className="fa-solid fa-arrow-left me-2"></i> Back
+                </button>
               </div>
             </div>
           </div>
 
           <div className="dashboard-widg-bar d-block">
             {(stage === "idle" || stage === "starting") && (
-              <div className="card mb-4">
-                <div className="card-header">
-                  <h4>Practice a Mock Interview</h4>
-                  <p className="text-muted mb-0 mt-1">
-                    Get AI-generated interview questions for any job role, answer them in your own words, and
-                    receive honest, specific feedback on each answer.
+              <div className="card mb-5" style={{ borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}>
+                <div className="card-header py-4 px-4 d-flex align-items-center justify-content-between flex-wrap" style={{ backgroundColor: '#f8fbfb', borderBottom: '1px solid #e5e9ea' }}>
+                  <h6 className="fw-bold mb-0" style={{ fontSize: '1.05rem', color: '#0d362d' }}>Practice a Mock Interview</h6>
+                  <p className="text-muted mb-0 mt-2 mt-md-0" style={{ fontSize: '0.85rem', maxWidth: '400px', textAlign: 'right', lineHeight: '1.5' }}>
+                    Get AI-generated interview questions for any job role, answer them in your
+                    own words, and receive honest, specific feedback on each answer.
                   </p>
                 </div>
-                <div className="card-body">
+                <div className="card-body p-4 bg-white">
                   {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
                   <form onSubmit={handleStart}>
-                    <div className="row mb-3">
-                      <label className="col-xl-2 col-md-12 col-form-label">Job Role</label>
-                      <div className="col-xl-7 col-md-12">
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="e.g. Backend Developer, Product Manager"
-                          value={jobRole}
-                          onChange={(e) => setJobRole(e.target.value)}
-                          required
-                          minLength={3}
-                          pattern="^[A-Za-z\s\-]+$"
-                          title="Please enter a valid job role (letters and spaces only, no numbers or special characters)"
-                        />
-                      </div>
+                    <div className="mb-4" style={{ maxWidth: '600px' }}>
+                      <label className="fw-bold mb-2 text-dark" style={{ fontSize: '0.85rem' }}>Job Role</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="e.g. Backend Developer, Product Manager"
+                        value={jobRole}
+                        onChange={(e) => setJobRole(e.target.value)}
+                        required
+                        minLength={2}
+                        style={{ borderColor: '#e1e5e5' }}
+                      />
                     </div>
-                    <div className="row">
-                      <div className="col-xl-12 col-md-12">
-                        <button type="submit" className="btn btn-main" disabled={stage === "starting"}>
-                          {stage === "starting" ? "Generating Questions..." : "Start Mock Interview"}
-                        </button>
-                      </div>
+                    <div>
+                      <button type="submit" className="btn px-4 py-2 fw-medium rounded" style={{ backgroundColor: '#0f6e4a', color: '#fff', fontSize: '0.9rem' }} disabled={stage === "starting"}>
+                        {stage === "starting" ? <><i className="fa-solid fa-spinner fa-spin me-2"></i>Generating...</> : "Start Mock Interview"}
+                      </button>
                     </div>
                   </form>
                 </div>
@@ -207,113 +185,100 @@ export default function CandidateMockInterviewPage() {
             )}
 
             {(stage === "interview" || stage === "submitting") && interview && (
-              <div className="card mb-4">
-                <div className="card-header d-flex justify-content-between align-items-center">
-                  <div>
-                    <h4>{interview.jobRole} Mock Interview</h4>
-                    <p className="text-muted mb-0 mt-1">Answer each question in your own words, then submit for feedback.</p>
-                  </div>
-                  <div className="d-none d-md-block">
-                    {camError ? (
-                      <div className="bg-dark text-white d-flex align-items-center justify-content-center rounded" style={{ height: 100, width: 150, fontSize: '0.8rem' }}>
-                        Camera Denied
-                      </div>
-                    ) : (
-                      <video ref={videoRef} autoPlay playsInline muted className="rounded shadow-sm" style={{ height: 100, width: 150, objectFit: 'cover', transform: 'scaleX(-1)' }} />
-                    )}
-                  </div>
+              <div className="card mb-5" style={{ borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}>
+                <div className="card-header py-4 px-4" style={{ backgroundColor: '#f8fbfb', borderBottom: '1px solid #e5e9ea' }}>
+                  <h6 className="fw-bold mb-0" style={{ fontSize: '1.05rem', color: '#0d362d' }}>{interview.jobRole} Mock Interview</h6>
+                  <p className="text-muted mb-0 mt-1" style={{ fontSize: '0.85rem' }}>Answer each question in your own words, then submit for feedback.</p>
                 </div>
-                <div className="card-body">
+                <div className="card-body p-4 bg-white">
                   {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
-                  
-                  {/* Mobile Camera Preview */}
-                  <div className="d-block d-md-none mb-4 text-center">
-                    {camError ? (
-                      <div className="bg-dark text-white d-flex align-items-center justify-content-center rounded mx-auto" style={{ height: 120, width: 180, fontSize: '0.8rem' }}>
-                        Camera Denied
-                      </div>
-                    ) : (
-                      <video ref={videoRef} autoPlay playsInline muted className="rounded shadow-sm mx-auto" style={{ height: 120, width: 180, objectFit: 'cover', transform: 'scaleX(-1)' }} />
-                    )}
-                  </div>
-
                   {interview.questions.map((q, qi) => (
                     <div key={qi} className="mb-4">
-                      <p className="fw-medium mb-2">
+                      <p className="fw-medium mb-2 text-dark" style={{ fontSize: '0.95rem' }}>
                         {qi + 1}. {q}
                       </p>
                       <textarea
-                        className="form-control"
+                        className="form-control bg-light"
                         rows={3}
-                        placeholder="Type your answer here... (Copy/Paste disabled)"
+                        placeholder="Type your answer here..."
                         value={answers[qi]}
                         onChange={(e) => updateAnswer(qi, e.target.value)}
-                        onCopy={(e) => e.preventDefault()}
-                        onPaste={(e) => e.preventDefault()}
-                        onCut={(e) => e.preventDefault()}
-                        onContextMenu={(e) => e.preventDefault()}
-                        autoComplete="off"
+                        style={{ borderColor: '#e1e5e5' }}
                       />
                     </div>
                   ))}
                   <button
                     type="button"
-                    className="btn btn-main"
+                    className="btn px-4 py-2 fw-medium rounded" style={{ backgroundColor: '#0f6e4a', color: '#fff', fontSize: '0.9rem' }}
                     onClick={handleSubmit}
                     disabled={stage === "submitting"}
                   >
-                    {stage === "submitting" ? "Getting Feedback..." : "Submit for Feedback"}
+                    {stage === "submitting" ? <><i className="fa-solid fa-spinner fa-spin me-2"></i>Getting Feedback...</> : "Submit for Feedback"}
                   </button>
                 </div>
               </div>
             )}
 
             {stage === "result" && result && (
-              <div className="card mb-4">
-                <div className="card-header">
-                  <h4>{result.jobRole} &mdash; Feedback</h4>
+              <div className="card mb-5" style={{ borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}>
+                <div className="card-header py-4 px-4" style={{ backgroundColor: '#f8fbfb', borderBottom: '1px solid #e5e9ea' }}>
+                  <h6 className="fw-bold mb-0" style={{ fontSize: '1.05rem', color: '#0d362d' }}>{result.jobRole} &mdash; Feedback</h6>
                 </div>
-                <div className="card-body">
-                  <div className="text-center mb-4">
-                    <div className="fs-3 text-warning">{ratingStars(result.overallRating)}</div>
-                    <p className="text-muted mb-0">{result.overallSummary}</p>
+                <div className="card-body p-4 bg-white">
+                  <div className="text-center mb-5 p-4 rounded" style={{ backgroundColor: '#fff9e6' }}>
+                    <div className="fs-3 text-warning mb-2">{ratingStars(result.overallRating)}</div>
+                    <p className="text-dark fw-medium mb-0" style={{ fontSize: '0.95rem' }}>{result.overallSummary}</p>
                   </div>
 
                   {result.questions.map((q, qi) => (
-                    <div key={qi} className="mb-4 pb-3 border-bottom">
-                      <p className="fw-medium mb-1">
+                    <div key={qi} className="mb-4 pb-4 border-bottom" style={{ borderColor: '#f0f0f0' }}>
+                      <p className="fw-bold mb-2 text-dark" style={{ fontSize: '0.95rem' }}>
                         {qi + 1}. {q}
                       </p>
-                      <p className="text-muted mb-2 fst-italic">
-                        Your answer: {result.answers[qi] || <em>No answer given</em>}
-                      </p>
-                      <div className="text-warning mb-1">{ratingStars(result.perQuestion[qi]?.rating ?? 0)}</div>
-                      <p className="mb-0">{result.perQuestion[qi]?.feedback}</p>
+                      <div className="p-3 bg-light rounded mb-3">
+                        <p className="text-muted mb-0 fst-italic" style={{ fontSize: '0.9rem' }}>
+                          Your answer: {result.answers[qi] || <em>No answer given</em>}
+                        </p>
+                      </div>
+                      <div className="text-warning mb-1" style={{ fontSize: '0.9rem' }}>{ratingStars(result.perQuestion[qi]?.rating ?? 0)}</div>
+                      <p className="mb-0 text-dark" style={{ fontSize: '0.9rem', lineHeight: '1.6' }}>{result.perQuestion[qi]?.feedback}</p>
                     </div>
                   ))}
 
-                  <button type="button" className="btn btn-outline-main" onClick={resetToStart}>
+                  <button type="button" className="btn px-4 py-2 fw-medium rounded" style={{ border: '1px solid #0f6e4a', color: '#0f6e4a', backgroundColor: 'transparent', fontSize: '0.9rem' }} onClick={resetToStart}>
                     Practice Another Interview
                   </button>
                 </div>
               </div>
             )}
 
-            <div className="card">
-              <div className="card-header">
-                <h4>Your Past Mock Interviews</h4>
+            <div className="card mb-4" style={{ borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}>
+              <div className="card-header py-4 px-4" style={{ backgroundColor: '#f8fbfb', borderBottom: '1px solid #e5e9ea' }}>
+                <h6 className="fw-bold mb-0" style={{ fontSize: '1.05rem', color: '#0d362d' }}>Your Past Mock Interviews</h6>
               </div>
-              <div className="card-body">
-                {history.length === 0 && <p className="text-muted mb-0">No completed mock interviews yet.</p>}
+              <div className="card-body p-5 bg-white text-center">
+                {history.length === 0 && (
+                  <div className="py-4">
+                    <div className="mx-auto mb-3" style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#eef2fa', color: '#5b6b7a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <i className="fa-solid fa-clock-rotate-left fs-5"></i>
+                    </div>
+                    <p className="text-muted mb-0" style={{ fontSize: '0.95rem' }}>No completed mock interviews yet.</p>
+                  </div>
+                )}
                 {history.length > 0 && (
-                  <div className="row">
+                  <div className="row text-start">
                     {history.map((h) => (
-                      <div className="col-md-4 mb-3" key={h.id}>
-                        <div className="card h-100">
-                          <div className="card-body">
-                            <h5 className="mb-1">{h.jobRole}</h5>
-                            <div className="text-warning mb-2">{ratingStars(h.overallRating)}</div>
-                            <div className="small text-muted">{new Date(h.completedAt).toLocaleDateString()}</div>
+                      <div className="col-md-6 mb-3" key={h.id}>
+                        <div 
+                          className="card h-100" 
+                          style={{ backgroundColor: '#f8fbfb', borderRadius: '0.5rem', border: '1px solid #e5e9ea', overflow: 'hidden' }}
+                        >
+                          <div className="card-body p-4 d-flex flex-column">
+                            <h6 className="mb-1 fw-bold" style={{ color: '#0d362d', fontSize: '1.05rem' }}>{h.jobRole}</h6>
+                            <div className="text-warning mb-3 mt-1" style={{ fontSize: '0.9rem' }}>{ratingStars(h.overallRating)}</div>
+                            <div className="d-flex align-items-center text-muted mt-auto" style={{ fontSize: '0.85rem' }}>
+                              <i className="fa-regular fa-calendar me-2"></i> {new Date(h.completedAt).toLocaleDateString()}
+                            </div>
                           </div>
                         </div>
                       </div>

@@ -4,7 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import AiChatWidget from "@/components/AiChatWidget";
-import BackButton from "@/components/BackButton";
+
 import NavigationInitializer from "@/components/NavigationInitializer";
 
 
@@ -44,7 +44,7 @@ export default function RootLayout({
             <div id="main-wrapper">
               {children}
               <AiChatWidget />
-              <BackButton />
+
               <NavigationInitializer />
             </div>
           </AuthProvider>

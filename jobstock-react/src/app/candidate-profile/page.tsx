@@ -166,6 +166,45 @@ export default function CandidateProfilePage() {
 
   return (
     <>
+      <style jsx global>{`
+        body {
+          background-color: #f6fbf9 !important; /* Very light mint/cyan */
+        }
+        .dashboard-wrap, .dashboard-content {
+          background-color: transparent !important;
+        }
+        .breadcrumb-item + .breadcrumb-item::before {
+          content: "›" !important;
+          font-size: 1.2rem;
+          line-height: 1;
+          vertical-align: top;
+          color: #a0a8a6;
+        }
+        .prof-card-bg {
+          position: relative;
+          background: #ffffff;
+          border: 1px solid #d0dad7;
+          border-radius: 1rem;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .prof-card-glow {
+          position: absolute;
+          top: -20%;
+          right: -5%;
+          width: 350px;
+          height: 350px;
+          border-radius: 50%;
+          filter: blur(80px);
+          background-color: #d8f5fa;
+          z-index: 0;
+          opacity: 0.9;
+        }
+        .prof-card-content {
+          position: relative;
+          z-index: 1;
+        }
+      `}</style>
       <Navbar7 />
       <Toaster 
         position="top-center" 
@@ -188,15 +227,15 @@ export default function CandidateProfilePage() {
         <CandidateSidebar active="profile" />
 
         <div className="dashboard-content">
-          <div className="dashboard-tlbar d-block mb-4">
+          <div className="dashboard-tlbar d-block mb-4 pt-3">
             <div className="row">
               <div className="col-xl-12 col-12 col-lg-12 col-md-12">
-                <h1 className="mb-1 fs-3 fw-medium">Candidate Profile</h1>
+                <h1 className="mb-2 fs-2 fw-bold" style={{ color: '#0d362d' }}>Candidate Profile</h1>
                 <nav aria-label="breadcrumb">
-                  <ol className="breadcrumb">
-                    <li className="breadcrumb-item text-muted"><a href="#">Candidate</a></li>
-                    <li className="breadcrumb-item text-muted"><a href="#">Dashboard</a></li>
-                    <li className="breadcrumb-item"><a href="#" className="text-main">Candidate Profile</a></li>
+                  <ol className="breadcrumb mb-0" style={{ fontSize: '0.9rem' }}>
+                    <li className="breadcrumb-item text-muted"><a href="#" className="text-decoration-none text-muted">Candidate</a></li>
+                    <li className="breadcrumb-item text-muted"><a href="#" className="text-decoration-none text-muted">Dashboard</a></li>
+                    <li className="breadcrumb-item"><a href="#" className="text-decoration-none fw-medium" style={{ color: '#44a388' }}>Candidate Profile</a></li>
                   </ol>
                 </nav>
               </div>
@@ -208,276 +247,267 @@ export default function CandidateProfilePage() {
             {/* Error and Success static alerts removed */}
             {dataLoading && <p className="text-muted">Loading profile...</p>}
 
-            <div className="dashboard-profle-wrapper mb-4">
-              <div className="dash-prf-start">
-                <div className="profile-avatar position-ralative mb-3">
-                  <svg>
-                    <circle className="bg" cx={70} cy={70} r={60}></circle>
-                    <circle className="progress" cx={70} cy={70} r={60} strokeDasharray="376.99" strokeDashoffset={strokeDashoffset}></circle>
-                  </svg>
-                  {profile?.profilePhotoUrl ? (
-                    <img className="avatar" src={assetUrl(profile.profilePhotoUrl!)} alt="Avatar" />
-                  ) : (
-                    <div className="avatar d-flex align-items-center justify-content-center bg-light text-muted fw-semibold">
-                      <span className="small text-center px-2">Upload Photo</span>
-                    </div>
-                  )}
-                  <div className="position-absolute bottom-0 start-50 translate-middle-x">
-                    <span className="badge badge-md bg-white text-main rounded-pill fw-medium shadow-sm px-3 py-2">{profile?.isVerified ? "Verified" : "Unverified"}</span>
-                  </div>
-                </div>
-                <div className="dash-prf-start-bottom">
-                  <div className="upload-btn-wrapper small">
-                    <button type="button" className="btn" disabled={uploadingPhoto} onClick={() => fileInputRef.current?.click()}>
-                      {uploadingPhoto ? "Uploading..." : "Change Profile"}
-                    </button>
-                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoChange} hidden />
-                  </div>
-                </div>
-              </div>
-              <div className="dash-prf-end">
-                <div className="row gx-xl-5 g-4">
-
-                  {/* Profile info */}
-                  <div className="col-xl-8 col-lg-8">
-                    <div className="dash-prfs-caption mb-4">
-                      <div className="dash-prfs-title d-flex align-items-center justify-content-between">
-                        <div className="avatar-title"><h4>{profile?.fullName || user.email}</h4></div>
-                      </div>
-                      <div className="dash-prfs-subtitle">
-                        <div className="jbs-job-mrch-lists mb-2">
-                          <div className="single-mrch-lists">
-                            <span>{profile?.headline || "No headline set"}</span>
-                          </div>
-                        </div>
-                        <div className="short-description">
-                          <p>{profile?.about || "No bio added yet."}</p>
-                        </div>
-                      </div>
-                      <div className="jbs-grid-job-edrs-group mt-1">
-                        {(profile?.skills || []).length === 0 && <span>No skills added</span>}
-                        {(profile?.skills || []).map((s) => (
-                          <span key={s}>{s}</span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Completion Profile */}
-                  <div className="col-xl-4 col-lg-4">
-                    <div className="card rpunded-3 p-4" style={{ background: "#fff5ee" }}>
-                      <div className="completion-group d-flex flex-column gap-3 mb-3">
-                        <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                          <div className="task-title"><span>Email</span></div>
-                          <div className="complete-status" style={{ minWidth: 0 }}>
-                            <span
-                              className="badge badge-md bg-white text-dark fw-medium rounded-pill text-truncate d-inline-block"
-                              style={{ maxWidth: "150px", verticalAlign: "bottom" }}
-                              title={user.email}
-                            >
-                              {user.email}
+            <form onSubmit={handleSave}>
+              <div className="row gx-4 gy-4 mb-4">
+                {/* Left Column */}
+                <div className="col-xl-8 col-lg-7 d-flex flex-column gap-4">
+                  {/* Top Profile Card */}
+                  <div className="prof-card-bg p-4 p-md-5 mb-0">
+                    <div className="prof-card-glow"></div>
+                    <div className="prof-card-content d-flex flex-column flex-md-row gap-5">
+                      {/* Left Column Avatar */}
+                      <div className="d-flex flex-column align-items-center" style={{ width: '160px', flexShrink: 0 }}>
+                        <div className="position-relative mb-3">
+                          {profile?.profilePhotoUrl ? (
+                            <img src={assetUrl(profile.profilePhotoUrl!)} alt="Avatar" className="rounded-circle border" style={{ width: '130px', height: '130px', objectFit: 'cover' }} />
+                          ) : (
+                            <div className="rounded-circle d-flex align-items-center justify-content-center bg-light text-muted border" style={{ width: '130px', height: '130px' }}>
+                              <span className="small text-center px-2">Upload Photo</span>
+                            </div>
+                          )}
+                          <div className="position-absolute start-50 translate-middle-x" style={{ bottom: '-15px' }}>
+                            <span className="badge bg-white text-muted border rounded-pill shadow-sm px-3 py-2 fw-medium d-flex align-items-center" style={{ fontSize: '0.75rem', color: '#6c757d' }}>
+                              <i className={`fa-solid ${profile?.isVerified ? "fa-circle-check text-success" : "fa-ban"} me-2`} style={{ fontSize: '1rem', color: profile?.isVerified ? undefined : '#a0a8a6' }}></i>
+                              {profile?.isVerified ? "Verified" : "Unverified"}
                             </span>
                           </div>
                         </div>
-                        <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                          <div className="task-title"><span>Phone</span></div>
-                          <div className="complete-status"><span className="badge badge-md bg-white text-dark fw-medium rounded-pill">{profile?.phone || "-"}</span></div>
+                        <div className="upload-btn-wrapper mt-4">
+                          <button type="button" className="btn btn-link text-decoration-none fw-bold p-0" style={{ color: '#16574f', fontSize: '0.95rem' }} disabled={uploadingPhoto} onClick={() => fileInputRef.current?.click()}>
+                            {uploadingPhoto ? "Uploading..." : "Change Profile"}
+                          </button>
+                          <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoChange} hidden />
                         </div>
-                        <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                          <div className="task-title"><span>Location</span></div>
-                          <div className="complete-status"><span className="badge badge-md bg-white text-dark fw-medium rounded-pill">{profile?.location || "-"}</span></div>
+                      </div>
+
+                      {/* Right Column Profile Info */}
+                      <div className="d-flex flex-column w-100">
+                        <div className="d-flex justify-content-between align-items-start mb-3">
+                          <div>
+                            <h2 className="fw-bold mb-1" style={{ color: '#161c1d', fontSize: '2rem' }}>{profile?.fullName || user.email}</h2>
+                            <div className="fw-medium" style={{ color: '#27685c', fontSize: '1.1rem' }}>{profile?.headline || "No headline set"}</div>
+                          </div>
+                          <div className="text-end">
+                            <div className="text-muted fw-bold mb-1" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>REFERRAL POINTS</div>
+                            <div className="fw-bold" style={{ color: '#ff6b57', fontSize: '1.8rem', lineHeight: '1' }}>{profile?.referralPoints ?? 0}</div>
+                          </div>
+                        </div>
+
+                        <div className="p-4 rounded-3 mb-4 mt-2" style={{ backgroundColor: '#f4f5f5', border: '1px solid #e1e5e5' }}>
+                          <p className="mb-0 text-dark" style={{ fontSize: '1rem' }}>{profile?.about || "No bio added yet."}</p>
+                        </div>
+
+                        <div>
+                          <div className="text-muted fw-bold mb-3" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>TOP SKILLS</div>
+                          <div className="d-flex flex-wrap gap-2">
+                            {(profile?.skills || []).length === 0 && <span className="text-muted small">No skills added</span>}
+                            {(profile?.skills || []).map((s) => (
+                              <span key={s} className="badge rounded-pill fw-medium px-4 py-2" style={{ backgroundColor: '#defaf8', color: '#185f52', fontSize: '0.9rem', border: '1px solid #caece8' }}>
+                                {s}
+                              </span>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
 
+                  {/* Basic Details Card */}
+                  <div className="card mb-0" style={{ border: '1px solid #e1e5e5', borderRadius: '1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.01)' }}>
+                    <div className="card-header bg-white border-bottom-0 pb-0 pt-4 px-4">
+                      <h4 className="mb-0 fw-bold d-flex align-items-center" style={{ color: '#2b3936' }}>
+                        <i className="fa-regular fa-file-lines me-2" style={{ color: '#1b5e54' }}></i>
+                        Basic Details
+                      </h4>
+                      <hr className="mt-4 mb-0" style={{ borderTop: '1px solid #e1e5e5', opacity: 1 }} />
+                    </div>
+                    <div className="card-body p-4">
+                      <div className="row gy-4">
+                        <div className="col-xl-6 col-lg-6 col-md-12">
+                          <div className="form-group mb-0">
+                            <label className="fw-bold mb-2" style={{ fontSize: '0.85rem', color: '#4a5b57' }}>Your Name</label>
+                            <input type="text" className="form-control" style={{ backgroundColor: '#fafbfb', borderColor: '#d0dad7' }} value={fullName} onChange={(e) => setFullName(e.target.value)} />
+                          </div>
+                        </div>
+
+                        <div className="col-xl-6 col-lg-6 col-md-12">
+                          <div className="form-group mb-0">
+                            <label className="fw-bold mb-2" style={{ fontSize: '0.85rem', color: '#4a5b57' }}>Job Title / Headline</label>
+                            <input type="text" className="form-control" style={{ backgroundColor: '#fafbfb', borderColor: '#d0dad7' }} value={headline} onChange={(e) => setHeadline(e.target.value)} />
+                          </div>
+                        </div>
+
+                        <div className="col-xl-6 col-lg-6 col-md-12">
+                          <div className="form-group mb-0">
+                            <label className="fw-bold mb-2" style={{ fontSize: '0.85rem', color: '#4a5b57' }}>Experience (years)</label>
+                            <input
+                              type="number"
+                              className="form-control"
+                              style={{ backgroundColor: '#fafbfb', borderColor: '#d0dad7' }}
+                              min="0"
+                              max="99"
+                              value={experienceYears}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === "") {
+                                  setExperienceYears("");
+                                  return;
+                                }
+                                const clean = val.replace(/\D/g, "");
+                                if (clean.length > 2) return;
+                                setExperienceYears(clean);
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="col-xl-6 col-lg-6 col-md-12">
+                          <div className="form-group mb-0">
+                            <label className="fw-bold mb-2" style={{ fontSize: '0.85rem', color: '#4a5b57' }}>Skills (comma separated)</label>
+                            <input type="text" className="form-control" style={{ backgroundColor: '#fafbfb', borderColor: '#d0dad7' }} value={skillsInput} onChange={(e) => setSkillsInput(e.target.value)} />
+                          </div>
+                        </div>
+
+                        <div className="col-xl-12 col-lg-12 col-md-12">
+                          <div className="form-group mb-0">
+                            <label className="d-flex justify-content-between w-100 fw-bold mb-2" style={{ fontSize: '0.85rem', color: '#4a5b57' }}>
+                              <span>About Info</span>
+                            </label>
+                            <textarea
+                              className="form-control"
+                              style={{ height: '120px', backgroundColor: '#fafbfb', borderColor: '#d0dad7' }}
+                              value={about}
+                              maxLength={300}
+                              onChange={(e) => setAbout(e.target.value)}
+                            ></textarea>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Save Button */}
+                  <div className="d-flex justify-content-end mt-2">
+                    <button type="submit" className="btn btn-main px-4 py-2" style={{ borderRadius: '0.5rem', fontWeight: '600' }} disabled={saving}>
+                      {saving ? "Saving..." : "Save Profile"}
+                    </button>
+                  </div>
+
                 </div>
-              </div>
 
-            </div>
+                {/* Right Column */}
+                <div className="col-xl-4 col-lg-5 d-flex flex-column" style={{ gap: '2.5rem' }}>
+                  
+                  {/* Contact Info Card */}
+                  <div className="card mb-0" style={{ border: '1px solid #e1e5e5', borderRadius: '1rem', boxShadow: '0 2px 8px rgba(0,0,0,0.01)' }}>
+                    <div className="card-header bg-white border-bottom-0 pb-0 pt-4 px-4">
+                      <h4 className="mb-0 fw-bold d-flex align-items-center" style={{ color: '#2b3936' }}>
+                        <i className="fa-regular fa-address-book me-2" style={{ color: '#1b5e54' }}></i>
+                        Contact Info
+                      </h4>
+                      <hr className="mt-4 mb-0" style={{ borderTop: '1px solid #e1e5e5', opacity: 1 }} />
+                    </div>
+                    <div className="card-body p-4">
+                      <div className="d-flex flex-column gap-4">
+                        
+                        <div className="d-flex align-items-center gap-3">
+                          <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '48px', height: '48px', backgroundColor: '#f0f4f4', color: '#1b5e54', fontSize: '1.2rem' }}>
+                            <i className="fa-regular fa-envelope"></i>
+                          </div>
+                          <div className="flex-grow-1">
+                            <div className="text-muted mb-1" style={{ fontSize: '0.75rem' }}>Email</div>
+                            <input type="text" className="form-control form-control-sm" value={user.email} disabled style={{ backgroundColor: '#ffffff', borderColor: '#e1e5e5', color: '#4a5b57' }} />
+                          </div>
+                        </div>
 
-            {/* Referral Link Card */}
-            <div className="card mb-4">
-              <div className="card-header d-flex justify-content-between align-items-center">
-                <h4 className="mb-0">
-                  <i className="fa-solid fa-gift text-main me-2"></i>
-                  Referral Link
-                </h4>
-                <span className="badge bg-main text-white px-3 py-2 rounded-pill font--bold">
-                  {profile?.referralPoints ?? 0} Referral Points
-                </span>
-              </div>
-              <div className="card-body">
-                <p className="text-muted text-sm mb-3">
-                  Share your unique referral link with friends and colleagues to earn 100 referral points when they sign up!
-                </p>
-                <div className="row align-items-center g-3">
-                  <div className="col-lg-8 col-md-7">
-                    <div className="form-group mb-0">
-                      <label className="fw-medium text-dark text-sm mb-1">Your Referral Link</label>
-                      <div className="input-group">
+                        <div className="d-flex align-items-center gap-3">
+                          <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '48px', height: '48px', backgroundColor: '#f0f4f4', color: '#1b5e54', fontSize: '1.2rem' }}>
+                            <i className="fa-solid fa-phone"></i>
+                          </div>
+                          <div className="flex-grow-1">
+                            <div className="text-muted mb-1" style={{ fontSize: '0.75rem' }}>Phone</div>
+                            <input
+                              type="tel"
+                              className="form-control form-control-sm"
+                              style={{ backgroundColor: '#ffffff', borderColor: '#e1e5e5', color: '#4a5b57' }}
+                              maxLength={10}
+                              value={phone}
+                              onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="d-flex align-items-center gap-3">
+                          <div className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '48px', height: '48px', backgroundColor: '#f0f4f4', color: '#1b5e54', fontSize: '1.2rem' }}>
+                            <i className="fa-solid fa-location-dot"></i>
+                          </div>
+                          <div className="flex-grow-1">
+                            <div className="text-muted mb-1" style={{ fontSize: '0.75rem' }}>Location</div>
+                            <CityLocationInput
+                              value={location}
+                              onChange={setLocation}
+                              placeholder=""
+                              className="form-control form-control-sm"
+                              openDirection="up"
+                            />
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Referral Link Card */}
+                  <div className="card mb-0 position-relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #37957b, #195245)', border: 'none', borderRadius: '1rem', boxShadow: '0 4px 15px rgba(25, 82, 69, 0.2)' }}>
+                    <div className="card-body p-4 position-relative z-1 text-white">
+                      <div className="d-flex justify-content-between align-items-start mb-3">
+                        <h4 className="mb-0 text-white fw-bold d-flex align-items-center">
+                          <i className="fa-solid fa-gift me-2" style={{ opacity: 0.9 }}></i>
+                          Referral<br/>Link
+                        </h4>
+                        <span className="badge rounded-pill px-3 py-2" style={{ backgroundColor: 'rgba(0, 0, 0, 0.25)', color: '#ffc8be', fontWeight: '500' }}>
+                          100 Pts /<br/>Sign-up
+                        </span>
+                      </div>
+                      
+                      <p className="mb-4" style={{ fontSize: '0.9rem', opacity: 0.9 }}>
+                        Share your unique link with friends to earn points.
+                      </p>
+                      
+                      <div className="form-group mb-3">
+                        <label className="text-white mb-1" style={{ fontSize: '0.8rem', opacity: 0.9 }}>Your Link</label>
+                        <div className="input-group">
+                          <input
+                            type="text"
+                            className="form-control border-0 text-white"
+                            style={{ backgroundColor: 'rgba(0, 0, 0, 0.15)', fontSize: '0.9rem' }}
+                            value={referralLink}
+                            readOnly
+                          />
+                          <button
+                            type="button"
+                            className="btn px-3"
+                            style={{ backgroundColor: '#ff7059', color: 'white' }}
+                            onClick={handleCopyReferral}
+                          >
+                            <i className={`fa-solid ${copied ? "fa-check" : "fa-copy"}`}></i>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="form-group mb-1">
+                        <label className="text-white mb-1" style={{ fontSize: '0.8rem', opacity: 0.9 }}>Referral Code</label>
                         <input
                           type="text"
-                          className="form-control"
-                          value={referralLink}
+                          className="form-control border-0 text-white"
+                          style={{ backgroundColor: 'rgba(0, 0, 0, 0.15)', fontSize: '0.9rem' }}
+                          value={user?.userId ?? ""}
                           readOnly
                         />
-                        <button
-                          type="button"
-                          className="btn btn-main px-4"
-                          onClick={handleCopyReferral}
-                        >
-                          <i className={`fa-solid ${copied ? "fa-check" : "fa-copy"} me-1`}></i>
-                          {copied ? "Copied!" : "Copy Link"}
-                        </button>
                       </div>
                     </div>
                   </div>
-                  <div className="col-lg-4 col-md-5">
-                    <div className="form-group mb-0">
-                      <label className="fw-medium text-dark text-sm mb-1">Your Referral Code</label>
-                      <input
-                        type="text"
-                        className="form-control bg-light"
-                        value={user?.userId ?? ""}
-                        readOnly
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            {/* Card Row */}
-            <form onSubmit={handleSave}>
-              <div className="card">
-                <div className="card-header">
-                  <h4>Basic Detail</h4>
-                </div>
-                <div className="card-body">
-                  <div className="row">
-
-                    <div className="col-xl-6 col-lg-6 col-md-12">
-                      <div className="form-group">
-                        <label>Your Name</label>
-                        <input type="text" className="form-control" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-                      </div>
-                    </div>
-
-                    <div className="col-xl-6 col-lg-6 col-md-12">
-                      <div className="form-group">
-                        <label>Job Title / Headline</label>
-                        <input type="text" className="form-control" value={headline} onChange={(e) => setHeadline(e.target.value)} />
-                      </div>
-                    </div>
-
-                    <div className="col-xl-6 col-lg-6 col-md-12">
-                      <div className="form-group">
-                        <label>Experience (years)</label>
-                        <input
-                          type="number"
-                          className="form-control"
-                          min="0"
-                          max="99"
-                          value={experienceYears}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            if (val === "") {
-                              setExperienceYears("");
-                              return;
-                            }
-                            const clean = val.replace(/\D/g, "");
-                            if (clean.length > 2) return;
-                            setExperienceYears(clean);
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="col-xl-6 col-lg-6 col-md-12">
-                      <div className="form-group">
-                        <label>Skills (comma separated)</label>
-                        <input type="text" className="form-control" value={skillsInput} onChange={(e) => setSkillsInput(e.target.value)} />
-                      </div>
-                    </div>
-
-                    <div className="col-xl-12 col-lg-12 col-md-12">
-                      <div className="form-group">
-                        <label className="d-flex justify-content-between w-100">
-                          <span>About Info</span>
-                          <span className="text-muted small">{about.length}/300</span>
-                        </label>
-                        <textarea
-                          className="form-control ht-80"
-                          value={about}
-                          maxLength={300}
-                          onChange={(e) => setAbout(e.target.value)}
-                        ></textarea>
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-              </div>
-              {/* Card Row End */}
-
-              {/* Card Row */}
-              <div className="card" style={{ overflow: "visible" }}>
-                <div className="card-header">
-                  <h4>Contact Detail</h4>
-                </div>
-                <div className="card-body" style={{ overflow: "visible" }}>
-                  <div className="row">
-
-                    <div className="col-xl-6 col-lg-6 col-md-12">
-                      <div className="form-group">
-                        <label>Your Email</label>
-                        <input type="text" className="form-control" value={user.email} disabled />
-                      </div>
-                    </div>
-
-                    <div className="col-xl-6 col-lg-6 col-md-12">
-                      <div className="form-group">
-                        <label>Phone no.</label>
-                        <input
-                          type="tel"
-                          className="form-control"
-                          placeholder="10-digit phone number"
-                          maxLength={10}
-                          inputMode="numeric"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                        />
-                        {phone.length > 0 && phone.length < 10 && (
-                          <small className="text-danger d-block mt-1">
-                            Phone number must be 10 digits ({phone.length}/10)
-                          </small>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="col-xl-6 col-lg-6 col-md-12">
-                      <div className="form-group">
-                        <label>Location</label>
-                        <CityLocationInput
-                          value={location}
-                          onChange={setLocation}
-                          placeholder="e.g. Bangalore, Mumbai, Remote"
-                          className="form-control"
-                          openDirection="up"
-                        />
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-              </div>
-              {/* Card Row End */}
-
-              {/* Submit Busston */}
-              <div className="row">
-                <div className="col-lg-12 col-md-12">
-                  <button type="submit" className="btn ft--medium btn-main" disabled={saving}>{saving ? "Saving..." : "Save Profile"}</button>
                 </div>
               </div>
             </form>
