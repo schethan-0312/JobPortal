@@ -50,7 +50,7 @@ export default function AdminSidebar({ active }: AdminSidebarProps) {
             width: 280px !important;
             height: 100vh !important;
             z-index: 1050 !important;
-            background: #ffffff !important;
+            background: #e6f7f4 !important;
             box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
             transition: left 0.3s ease !important;
             overflow-y: auto !important;
@@ -61,6 +61,47 @@ export default function AdminSidebar({ active }: AdminSidebarProps) {
             left: 0 !important;
             visibility: visible !important;
           }
+        }
+
+        /* Sidebar styling overrides */
+        .dashboard-nav {
+          background-color: #e6f7f4 !important;
+        }
+        .dashboard-inner {
+          margin-top: 1rem;
+        }
+        .dashboard-inner ul li {
+          margin: 0.25rem 1.5rem !important;
+          padding: 0 !important;
+          border: none !important;
+        }
+        .dashboard-inner ul li a {
+          color: #4a6862 !important;
+          font-weight: 500 !important;
+          border-radius: 0.5rem !important;
+          padding: 0.75rem 1rem !important;
+          display: flex !important;
+          align-items: center !important;
+          transition: all 0.2s ease !important;
+        }
+        .dashboard-inner ul li.active a,
+        .dashboard-inner ul li a:hover {
+          background-color: #429e85 !important;
+          color: #ffffff !important;
+        }
+        .dashboard-inner ul li.active a i,
+        .dashboard-inner ul li a:hover i {
+          color: #ffffff !important;
+        }
+        .jbs-tiosk-title {
+          color: #0d362d !important;
+          font-weight: 600 !important;
+        }
+        .jbs-kioyer .label.bg-main {
+          background-color: #429e85 !important;
+        }
+        .dash-user-blocks {
+          border-bottom: 1px solid #c7e8e0 !important;
         }
       `}</style>
 
