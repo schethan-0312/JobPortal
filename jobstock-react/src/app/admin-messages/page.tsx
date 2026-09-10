@@ -347,160 +347,310 @@ function AdminMessagesContent() {
       <AdminNavbar />
       <Toaster 
         position="top-center" 
-        containerStyle={{
-          top: '100px',
-        }}
+        containerStyle={{ top: '100px' }}
         toastOptions={{
           style: {
             padding: '16px 24px',
-            fontSize: '1.1rem',
-            fontWeight: '500',
-            maxWidth: '600px',
-            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+            fontSize: '1rem',
+            fontWeight: '600',
             borderRadius: '12px',
           },
         }}
       />
-      <div className="dashboard-wrap bg-light">
+
+      <style jsx global>{`
+        .dashboard-wrap {
+          background-color: #f4f9f8 !important;
+          min-height: 100vh;
+          overflow-x: hidden !important;
+        }
+        .dashboard-content.pkg-page {
+          background-color: #f4f9f8 !important;
+          padding: 30px 24px !important;
+          max-width: 100% !important;
+          overflow-x: hidden !important;
+        }
+        .pkg-header-title {
+          font-size: 24px;
+          font-weight: 800;
+          color: #0b2b22;
+          letter-spacing: -0.5px;
+        }
+        .pkg-header-subtitle {
+          color: #5c756d;
+          font-size: 13.5px;
+        }
+
+        .chat-container-card {
+          background: #ffffff;
+          border: 1px solid #d6e8e4;
+          border-radius: 16px;
+          box-shadow: 0 6px 24px rgba(13, 79, 60, 0.05);
+          overflow: hidden;
+          height: calc(100vh - 210px);
+          min-height: 560px;
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+
+        .chat-user-item {
+          padding: 14px 16px;
+          border-bottom: 1px solid #eef5f3;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          display: flex;
+          align-items: center;
+        }
+        .chat-user-item:hover {
+          background: #f2f9f6;
+        }
+        .chat-user-item.active {
+          background: #e8f5f1;
+          border-left: 4px solid #0d4f3c;
+        }
+
+        .btn-send-main {
+          background: #0d4f3c;
+          border: none;
+          color: #ffffff;
+          width: 46px;
+          height: 46px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s;
+        }
+        .btn-send-main:hover {
+          background: #08382b;
+        }
+      `}</style>
+
+      <div className="dashboard-wrap">
         <AdminSidebar active="messages" />
-        <div className="dashboard-content">
+        <div className="dashboard-content pkg-page">
+          {/* Header */}
           <div className="dashboard-tlbar d-block mb-4">
             <div className="row">
               <div className="col-xl-12 col-12 col-lg-12 col-md-12">
-                <h1 className="mb-1 fs-3 fw-medium">Message Inbox</h1>
-                <nav aria-label="breadcrumb">
-                  <ol className="breadcrumb">
-                    <li className="breadcrumb-item text-muted"><a href="#">Admin</a></li>
-                    <li className="breadcrumb-item text-muted"><a href="#">Dashboard</a></li>
-                    <li className="breadcrumb-item"><a href="#" className="text-main">Employee Messages</a></li>
-                  </ol>
-                </nav>
+                <h1 className="pkg-header-title mb-1">Live Messages &amp; Inquiries</h1>
+                <p className="pkg-header-subtitle mb-0">
+                  Direct communication hub with candidates and employers across the JobStock network.
+                </p>
               </div>
             </div>
           </div>
+
           <div className="dashboard-widg-bar d-block">
-            <div className="row justify-content-center">
-              <div className="col-xl-11 col-lg-12 col-md-12">
-                <div className="d-flex bg-white rounded-3 overflow-hidden shadow-sm border mx-auto" style={{ height: "calc(100vh - 200px)", minHeight: "550px", maxWidth: "1150px" }}>
-                  {/* Sidebar */}
-                  <div className={`border-end d-flex flex-column ${mobileShowChat ? "d-none d-md-flex" : "d-flex w-100"}`} style={{ width: mobileShowChat ? "320px" : "100%", flexShrink: 0 }}>
-                    <div className="p-3 border-bottom bg-light">
-                      <h6 className="m-0 fw-semibold">Recent Chats</h6>
+            <div className="chat-container-card d-flex">
+              {/* Sidebar */}
+              <div
+                className={`border-end d-flex flex-column ${mobileShowChat ? "d-none d-md-flex" : "d-flex w-100"}`}
+                style={{ width: mobileShowChat ? "320px" : "100%", flexShrink: 0, background: "#fbfdfc" }}
+              >
+                <div className="p-3 border-bottom d-flex align-items-center justify-content-between" style={{ background: "#f4f9f8" }}>
+                  <h6 className="m-0 fw-bold" style={{ color: "#0b2b22" }}>
+                    <i className="fa-regular fa-comments me-2" style={{ color: "#429e85" }}></i>
+                    Recent Conversations
+                  </h6>
+                  <span className="badge bg-light text-muted border">{conversations.length}</span>
+                </div>
+                <div className="overflow-auto" style={{ flex: 1 }}>
+                  {dataLoading ? (
+                    <div className="p-4 text-muted text-center small">
+                      <i className="fa-solid fa-circle-notch fa-spin me-1"></i> Loading conversations...
                     </div>
-                    <div className="overflow-auto" style={{ flex: 1 }}>
-                      {dataLoading ? (
-                        <div className="p-3 text-muted text-center">Loading...</div>
-                      ) : conversations.length === 0 ? (
-                        <div className="p-3 text-muted text-center small">No conversations yet.</div>
+                  ) : conversations.length === 0 ? (
+                    <div className="p-4 text-muted text-center small">No conversations yet.</div>
+                  ) : (
+                    conversations.map((c) => {
+                      const cp = c.senderId === user.userId ? c.receiver : c.sender;
+                      const cpName = getUserDisplayName(cp);
+                      const isSelected = selectedCounterpart?.id === cp?.id;
+                      const cpAvatar = getUserAvatar(cp, false, null, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=");
+                      return (
+                        <div
+                          key={c.id}
+                          className={`chat-user-item ${isSelected ? "active" : ""}`}
+                          onClick={() => cp && handleSelectConversation(cp)}
+                        >
+                          <img
+                            src={cpAvatar}
+                            alt=""
+                            style={{ width: "42px", height: "42px", borderRadius: "50%", objectFit: "cover", border: "1.5px solid #d6e8e4" }}
+                            className="me-3"
+                          />
+                          <div className="flex-grow-1 overflow-hidden">
+                            <h6 className="m-0 text-truncate fw-bold" style={{ color: "#0b2b22", fontSize: "14px" }}>
+                              {cpName}
+                            </h6>
+                            <p className="m-0 text-truncate small text-muted" style={{ fontSize: "12px" }}>
+                              {c.body || (c.mediaType ? `[${c.mediaType}]` : "")}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+
+              {/* Chat Area */}
+              <div className={`flex-column ${mobileShowChat ? "d-flex w-100" : "d-none d-md-flex"}`} style={{ flex: 1, minWidth: 0, background: "#fbfdfc" }}>
+                {selectedCounterpart ? (
+                  <>
+                    <div className="p-3 bg-white border-bottom d-flex align-items-center shadow-sm" style={{ flexShrink: 0, zIndex: 10 }}>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-light d-md-none me-2 px-2"
+                        onClick={() => setMobileShowChat(false)}
+                        style={{ border: "1px solid #dee2e6" }}
+                      >
+                        <i className="fa-solid fa-arrow-left"></i>
+                      </button>
+                      <img
+                        src={getUserAvatar(selectedCounterpart, false, null, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")}
+                        alt=""
+                        style={{ width: "40px", height: "40px", borderRadius: "50%", objectFit: "cover", border: "1.5px solid #bce2d8" }}
+                        className="me-3"
+                      />
+                      <div>
+                        <h5 className="m-0 fw-bold" style={{ color: "#0b2b22", fontSize: "15px" }}>
+                          {getUserDisplayName(selectedCounterpart)}
+                        </h5>
+                        <small className="text-muted" style={{ fontSize: "11.5px" }}>{selectedCounterpart.email}</small>
+                      </div>
+                    </div>
+
+                    <div className="p-4 overflow-auto d-flex flex-column gap-3" ref={threadContainerRef} onScroll={handleScroll} style={{ flex: 1, background: "#f8fbfa" }}>
+                      {threadLoading ? (
+                        <div className="text-center text-muted my-auto small">
+                          <i className="fa-solid fa-circle-notch fa-spin me-1"></i> Loading messages...
+                        </div>
+                      ) : thread.length === 0 ? (
+                        <div className="text-center text-muted my-auto small">No messages yet. Send a greeting!</div>
                       ) : (
-                        conversations.map((c) => {
-                          const cp = c.senderId === user.userId ? c.receiver : c.sender;
-                          const cpName = getUserDisplayName(cp);
-                          const isSelected = selectedCounterpart?.id === cp?.id;
-                          const cpAvatar = getUserAvatar(cp, false, null, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=");
+                        thread.map((m) => {
+                          const isMe = m.senderId === user.userId;
+                          const senderObj = isMe ? m.sender : (m.receiver?.id === user.userId ? m.sender : m.receiver);
+                          const avatarSrc = getUserAvatar(senderObj, isMe, myLogoUrl, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=");
+                          const mediaFullUrl = m.mediaUrl ? assetUrl(m.mediaUrl) : null;
                           return (
-                            <div key={c.id} className={`d-flex align-items-center p-3 border-bottom ${isSelected ? 'bg-primary bg-opacity-10' : ''}`} style={{ cursor: "pointer", transition: "background 0.2s" }} onClick={() => cp && handleSelectConversation(cp)}>
-                              <img src={cpAvatar} alt="" style={{ width: "45px", height: "45px", borderRadius: "50%", objectFit: "cover" }} className="me-3" />
-                              <div className="flex-grow-1 overflow-hidden">
-                                <h6 className="m-0 text-truncate fw-semibold">{cpName}</h6>
-                                <p className="m-0 text-truncate small text-muted">{c.body || (c.mediaType ? `[${c.mediaType}]` : "")}</p>
+                            <div className={`message-plunch${isMe ? " me" : ""}`} key={m.id} style={{ position: "relative" }}>
+                              <div className="dash-msg-avatar">
+                                <img src={avatarSrc} alt="" style={{ width: "38px", height: "38px", borderRadius: "50%", objectFit: "cover" }} />
+                              </div>
+                              <div className="dash-msg-text" style={{ position: "relative", overflow: "visible", minWidth: "120px", borderRadius: "14px" }}>
+                                <div className="d-flex justify-content-between align-items-start gap-3">
+                                  <div style={{ flex: 1, minWidth: 0, wordBreak: "break-word", paddingRight: "25px" }}>
+                                    {m.mediaType === "image" && mediaFullUrl && (
+                                      <a href={mediaFullUrl} target="_blank" rel="noreferrer">
+                                        <img src={mediaFullUrl} alt="image" style={{ maxWidth: "200px", borderRadius: "8px", marginBottom: "6px", display: "block" }} />
+                                      </a>
+                                    )}
+                                    {m.mediaType === "audio" && mediaFullUrl && (
+                                      <audio controls src={mediaFullUrl} style={{ width: "200px", height: "45px", marginBottom: "6px" }} />
+                                    )}
+                                    {m.mediaType === "file" && mediaFullUrl && (
+                                      <a href={mediaFullUrl} target="_blank" rel="noreferrer" className="d-flex align-items-center gap-2 mb-1" style={{ color: "inherit" }}>
+                                        <i className="fa-solid fa-file" style={{ fontSize: "1.2rem" }}></i>
+                                        <span className="small text-truncate" style={{ maxWidth: "180px" }}>{m.body || "File"}</span>
+                                      </a>
+                                    )}
+                                    {(!m.mediaType || m.mediaType === "file" ? false : !!m.body) && (
+                                      <p className="mb-1" style={{ fontStyle: m.deletedForEveryone ? "italic" : "normal", color: m.deletedForEveryone ? "#888" : "inherit" }}>
+                                        {m.body}
+                                      </p>
+                                    )}
+                                    {!m.mediaType && m.body && (
+                                      <p className="mb-1" style={{ fontStyle: m.deletedForEveryone ? "italic" : "normal", color: m.deletedForEveryone ? "#888" : "inherit" }}>
+                                        {m.body}
+                                      </p>
+                                    )}
+                                    <span className="small text-muted d-block opacity-75" style={{ fontSize: "0.7rem", textAlign: isMe ? "right" : "left" }}>
+                                      {formatMessageDateTime(m.createdAt)}
+                                    </span>
+                                  </div>
+                                  <div className="msg-options" style={{ position: "relative", flexShrink: 0 }}>
+                                    <button
+                                      type="button"
+                                      className="btn btn-sm btn-light rounded-circle p-0 d-flex align-items-center justify-content-center"
+                                      style={{ width: "24px", height: "24px" }}
+                                      onClick={() => setDeleteMenuOpenId(deleteMenuOpenId === m.id ? null : m.id)}
+                                    >
+                                      <i className="fa-solid fa-ellipsis-vertical" style={{ color: "#888", fontSize: "12px" }}></i>
+                                    </button>
+                                    {deleteMenuOpenId === m.id && (
+                                      <div className="dropdown-menu show p-1 shadow border text-start" style={{ position: "absolute", right: 0, top: "26px", zIndex: 10, minWidth: "160px", borderRadius: "8px" }}>
+                                        <button className="dropdown-item text-danger small py-1" onClick={() => deleteMessage(m.id, "me")}>
+                                          Delete for me
+                                        </button>
+                                        {isMe && !m.deletedForEveryone && (
+                                          <button className="dropdown-item text-danger small py-1" onClick={() => deleteMessage(m.id, "everyone")}>
+                                            Delete for everyone
+                                          </button>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           );
                         })
                       )}
+                      <div ref={messagesEndRef} />
                     </div>
-                  </div>
-                  {/* Chat Area */}
-                  <div className={`flex-column bg-light ${mobileShowChat ? "d-flex w-100" : "d-none d-md-flex"}`} style={{ flex: 1, minWidth: 0 }}>
-                    {selectedCounterpart ? (
-                      <>
-                        <div className="p-3 bg-white border-bottom d-flex align-items-center shadow-sm" style={{ flexShrink: 0, zIndex: 10 }}>
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-light d-md-none me-2 px-2"
-                            onClick={() => setMobileShowChat(false)}
-                            style={{ border: "1px solid #dee2e6" }}
-                          >
-                            <i className="fa-solid fa-arrow-left"></i>
-                          </button>
-                          <img src={getUserAvatar(selectedCounterpart, false, null, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=")} alt="" style={{ width: "42px", height: "42px", borderRadius: "50%", objectFit: "cover" }} className="me-3" />
-                          <h5 className="m-0 fw-semibold">{getUserDisplayName(selectedCounterpart)}</h5>
-                        </div>
-                        <div className="p-4 overflow-auto d-flex flex-column gap-3" ref={threadContainerRef} onScroll={handleScroll} style={{ flex: 1 }}>
-                          {threadLoading ? (
-                            <div className="text-center text-muted my-auto">Loading messages...</div>
-                          ) : thread.length === 0 ? (
-                            <div className="text-center text-muted my-auto">No messages yet. Say hi!</div>
-                          ) : (
-                            thread.map((m) => {
-                              const isMe = m.senderId === user.userId;
-                              const senderObj = isMe ? m.sender : (m.receiver?.id === user.userId ? m.sender : m.receiver);
-                              const avatarSrc = getUserAvatar(senderObj, isMe, myLogoUrl, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=");
-                              const mediaFullUrl = m.mediaUrl ? assetUrl(m.mediaUrl) : null;
-                              return (
-                                <div className={`message-plunch${isMe ? " me" : ""}`} key={m.id} style={{ position: 'relative' }}>
-                                  <div className="dash-msg-avatar">
-                                    <img src={avatarSrc} alt="" style={{ width: "40px", height: "40px", borderRadius: "50%", objectFit: "cover" }} />
-                                  </div>
-                                  <div className="dash-msg-text" style={{ position: 'relative', overflow: 'visible', minWidth: '120px' }}>
-                                    <div className="d-flex justify-content-between align-items-start gap-3">
-                                      <div style={{ flex: 1, minWidth: 0, wordBreak: 'break-word', paddingRight: '25px' }}>
-                                        {m.mediaType === "image" && mediaFullUrl && (
-                                          <a href={mediaFullUrl} target="_blank" rel="noreferrer"><img src={mediaFullUrl} alt="image" style={{ maxWidth: "200px", borderRadius: "8px", marginBottom: "6px", display: "block" }} /></a>
-                                        )}
-                                        {m.mediaType === "audio" && mediaFullUrl && (
-                                          <audio controls src={mediaFullUrl} style={{ width: "200px", height: "45px", marginBottom: "6px" }} />
-                                        )}
-                                        {m.mediaType === "file" && mediaFullUrl && (
-                                          <a href={mediaFullUrl} target="_blank" rel="noreferrer" className="d-flex align-items-center gap-2 mb-1" style={{ color: "inherit" }}><i className="fa-solid fa-file" style={{ fontSize: "1.2rem" }}></i><span className="small text-truncate" style={{ maxWidth: "180px" }}>{m.body || "File"}</span></a>
-                                        )}
-                                        {(!m.mediaType || m.mediaType === "file" ? false : !!m.body) && (<p className="mb-1" style={{ fontStyle: m.deletedForEveryone ? 'italic' : 'normal', color: m.deletedForEveryone ? '#888' : 'inherit' }}>{m.body}</p>)}
-                                        {!m.mediaType && m.body && <p className="mb-1" style={{ fontStyle: m.deletedForEveryone ? 'italic' : 'normal', color: m.deletedForEveryone ? '#888' : 'inherit' }}>{m.body}</p>}
-                                        <span className="small text-muted d-block opacity-75" style={{ fontSize: "0.7rem", textAlign: isMe ? "right" : "left" }}>{formatMessageDateTime(m.createdAt)}</span>
-                                      </div>
-                                      <div className="msg-options" style={{ position: 'relative', flexShrink: 0 }}>
-                                        <button type="button" className="btn btn-sm btn-light rounded-circle p-0 d-flex align-items-center justify-content-center" style={{ width: '24px', height: '24px' }} onClick={() => setDeleteMenuOpenId(deleteMenuOpenId === m.id ? null : m.id)}><i className="fa-solid fa-ellipsis-vertical" style={{ color: '#888', fontSize: '12px' }}></i></button>
-                                        {deleteMenuOpenId === m.id && (
-                                          <div className="dropdown-menu show p-1 shadow border text-start" style={{ position: 'absolute', right: 0, top: '26px', zIndex: 10, minWidth: '160px' }}>
-                                            <button className="dropdown-item text-danger small py-1" onClick={() => deleteMessage(m.id, 'me')}>Delete for me</button>
-                                            {isMe && !m.deletedForEveryone && (<button className="dropdown-item text-danger small py-1" onClick={() => deleteMessage(m.id, 'everyone')}>Delete for everyone</button>)}
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })
-                          )}
-                          <div ref={messagesEndRef} />
-                        </div>
-                        {isCounterpartTyping && (
-                          <div className="px-4 py-1 text-muted small" style={{ fontStyle: 'italic', flexShrink: 0, backgroundColor: '#f8f9fa' }}>
-                            {getUserDisplayName(selectedCounterpart)} is typing...
-                          </div>
-                        )}
-                        <input ref={fileInputRef} type="file" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAndSend(f); e.target.value = ""; }} />
-                        <div className="p-2 bg-white border-top d-flex align-items-center gap-2" style={{ flexShrink: 0 }}>
-                          <div className="d-flex gap-1" style={{ flexShrink: 0 }}>
-                            <button type="button" title="Take Photo" className="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center text-muted" style={{ width: "40px", height: "40px", padding: 0 }} onClick={openCamera} disabled={uploadingMedia}><i className="fa-solid fa-camera" style={{ fontSize: "16px" }}></i></button>
-                            <button type="button" title="Attach File" className="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center text-muted" style={{ width: "40px", height: "40px", padding: 0 }} onClick={() => fileInputRef.current?.click()} disabled={uploadingMedia}><i className="fa-solid fa-paperclip" style={{ fontSize: "16px" }}></i></button>
-                            <button type="button" title={isRecording ? "Stop Recording" : "Voice Note"} className={`btn btn-sm rounded-circle d-flex align-items-center justify-content-center ${isRecording ? "btn-danger text-white" : "btn-light text-muted"}`} style={{ width: "40px", height: "40px", padding: 0 }} onClick={handleVoiceToggle} disabled={uploadingMedia}><i className={`fa-solid ${isRecording ? "fa-stop" : "fa-microphone"}`} style={{ fontSize: "16px" }}></i></button>
-                          </div>
-                          <input type="text" className="form-control bg-light px-4 mx-1" placeholder={isRecording ? "🔴 Recording... tap stop to send" : uploadingMedia ? "Uploading..." : "Type a message..."} value={replyText} onChange={(e) => handleTyping(e.target.value)} disabled={isRecording || uploadingMedia} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSend(); } }} style={{ height: "48px", borderRadius: "24px", border: 'none', flex: 1, minWidth: 0, boxShadow: 'none' }} />
-                          <button type="button" className="btn btn-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{ flexShrink: 0, width: '48px', height: '48px' }} disabled={sending || uploadingMedia || isRecording || !replyText.trim()} onClick={handleSend}><i className="fa-solid fa-paper-plane" style={{ fontSize: "18px" }}></i></button>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="d-flex flex-column align-items-center justify-content-center h-100 text-muted">
-                        <i className="fa-regular fa-comments mb-3" style={{ fontSize: "3rem", opacity: 0.5 }}></i>
-                        <h5>Select a conversation</h5>
-                        <p className="small">Choose a chat from the sidebar to start messaging.</p>
+
+                    {isCounterpartTyping && (
+                      <div className="px-4 py-1 text-muted small" style={{ fontStyle: "italic", flexShrink: 0, backgroundColor: "#f4f9f8" }}>
+                        {getUserDisplayName(selectedCounterpart)} is typing...
                       </div>
                     )}
+
+                    <input ref={fileInputRef} type="file" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAndSend(f); e.target.value = ""; }} />
+
+                    <div className="p-2 bg-white border-top d-flex align-items-center gap-2" style={{ flexShrink: 0 }}>
+                      <div className="d-flex gap-1" style={{ flexShrink: 0 }}>
+                        <button type="button" title="Take Photo" className="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center text-muted" style={{ width: "38px", height: "38px", padding: 0 }} onClick={openCamera} disabled={uploadingMedia}>
+                          <i className="fa-solid fa-camera" style={{ fontSize: "15px" }}></i>
+                        </button>
+                        <button type="button" title="Attach File" className="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center text-muted" style={{ width: "38px", height: "38px", padding: 0 }} onClick={() => fileInputRef.current?.click()} disabled={uploadingMedia}>
+                          <i className="fa-solid fa-paperclip" style={{ fontSize: "15px" }}></i>
+                        </button>
+                        <button type="button" title={isRecording ? "Stop Recording" : "Voice Note"} className={`btn btn-sm rounded-circle d-flex align-items-center justify-content-center ${isRecording ? "btn-danger text-white" : "btn-light text-muted"}`} style={{ width: "38px", height: "38px", padding: 0 }} onClick={handleVoiceToggle} disabled={uploadingMedia}>
+                          <i className={`fa-solid ${isRecording ? "fa-stop" : "fa-microphone"}`} style={{ fontSize: "15px" }}></i>
+                        </button>
+                      </div>
+
+                      <input
+                        type="text"
+                        className="form-control bg-light px-3 mx-1"
+                        placeholder={isRecording ? "🔴 Recording... tap stop to send" : uploadingMedia ? "Uploading..." : "Type a message..."}
+                        value={replyText}
+                        onChange={(e) => handleTyping(e.target.value)}
+                        disabled={isRecording || uploadingMedia}
+                        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSend(); } }}
+                        style={{ height: "44px", borderRadius: "22px", border: "1px solid #d6e8e4", flex: 1, minWidth: 0 }}
+                      />
+
+                      <button
+                        type="button"
+                        className="btn-send-main"
+                        disabled={sending || uploadingMedia || isRecording || !replyText.trim()}
+                        onClick={handleSend}
+                      >
+                        <i className="fa-solid fa-paper-plane" style={{ fontSize: "16px" }}></i>
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="d-flex flex-column align-items-center justify-content-center h-100 text-muted">
+                    <i className="fa-regular fa-comments mb-3" style={{ fontSize: "3.5rem", color: "#bce2d8" }}></i>
+                    <h5 className="fw-bold" style={{ color: "#0b2b22" }}>Select a Conversation</h5>
+                    <p className="small">Choose a thread from the left to start messaging.</p>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -508,21 +658,23 @@ function AdminMessagesContent() {
       </div>
       <UploadResumeModal />
       {showCameraModal && (
-        <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 1050 }}>
+        <div className="modal fade show d-block" style={{ backgroundColor: "rgba(11, 43, 34, 0.45)", backdropFilter: "blur(4px)", zIndex: 1050 }}>
           <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header border-0">
-                <h5 className="modal-title">Take Photo</h5>
+            <div className="modal-content" style={{ borderRadius: "16px", border: "1px solid #d6e8e4", overflow: "hidden" }}>
+              <div className="modal-header border-0" style={{ background: "#fbfdfc" }}>
+                <h5 className="modal-title fw-bold" style={{ color: "#0b2b22", fontSize: "16px" }}>Take Photo</h5>
                 <button type="button" className="btn-close" onClick={closeCamera}></button>
               </div>
-              <div className="modal-body text-center">
-                <div className="bg-dark rounded overflow-hidden" style={{ width: "100%", aspectRatio: "4/3" }}>
+              <div className="modal-body text-center p-0">
+                <div className="bg-dark overflow-hidden" style={{ width: "100%", aspectRatio: "4/3" }}>
                   <video ref={videoRef} autoPlay playsInline style={{ width: "100%", height: "100%", objectFit: "cover" }}></video>
                 </div>
               </div>
-              <div className="modal-footer border-0 justify-content-center">
-                <button type="button" className="btn btn-secondary" onClick={closeCamera}>Cancel</button>
-                <button type="button" className="btn btn-primary" onClick={takePhoto}><i className="fa-solid fa-camera me-2"></i> Capture & Send</button>
+              <div className="modal-footer border-0 justify-content-center" style={{ background: "#fbfdfc", padding: "14px" }}>
+                <button type="button" className="btn btn-sm btn-outline-secondary" onClick={closeCamera}>Cancel</button>
+                <button type="button" className="btn btn-sm btn-primary" style={{ background: "#0d4f3c", borderColor: "#0d4f3c" }} onClick={takePhoto}>
+                  <i className="fa-solid fa-camera me-2"></i> Capture &amp; Send
+                </button>
               </div>
             </div>
           </div>
