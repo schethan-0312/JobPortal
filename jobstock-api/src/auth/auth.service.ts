@@ -163,6 +163,10 @@ export class AuthService {
       }
     }
 
+    if (user.isSuspended) {
+      throw new ForbiddenException(`Your account has been suspended${user.suspendedReason ? ': ' + user.suspendedReason : ''}. Please contact support.`);
+    }
+
     if (dto.isLogin && dto.role && user.role !== dto.role && user.role !== Role.ADMIN) {
       throw new UnauthorizedException(`You are registered as a ${user.role}, please select the correct login type.`);
     }
@@ -181,6 +185,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
     
+    if (user.isSuspended) {
+      throw new ForbiddenException(`Your account has been suspended${user.suspendedReason ? ': ' + user.suspendedReason : ''}. Please contact support.`);
+    }
+
     if (dto.role && user.role !== dto.role && user.role !== Role.ADMIN) {
       throw new UnauthorizedException(`You are registered as a ${user.role}, please select the correct login type.`);
     }

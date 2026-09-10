@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Navbar8 from "@/components/Navbar8";
 import EmployerSidebar from "@/components/employer-dashboard/EmployerSidebar";
 import { useAuth } from "@/lib/auth-context";
-import { api, ApiError } from "@/lib/api";
+import { api, ApiError, assetUrl } from "@/lib/api";
 import { Toaster, toast } from "react-hot-toast";
 
 interface EmployerJob {
@@ -26,6 +26,7 @@ interface Applicant {
       skills: string[];
       location: string | null;
       experienceYears: number | null;
+      profilePhotoUrl?: string | null;
     } | null;
   };
 }
@@ -40,7 +41,8 @@ export default function EmployerShortlistCandidatesPage() {
 
   const [rows, setRows] = useState<ShortlistedRow[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
-    const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [candidateToDelete, setCandidateToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "EMPLOYER")) {
@@ -163,7 +165,7 @@ export default function EmployerShortlistCandidatesPage() {
                               <div className="jbs-list-head-thunner">
                                 <div className="jbs-list-usrs-thumb jbs-verified">
                                   <figure>
-                                    <img src="/assets/img/team-5.jpg" className="img-fluid circle" alt="" />
+                                    <img src={item.candidate.candidateProfile?.profilePhotoUrl ? assetUrl(item.candidate.candidateProfile.profilePhotoUrl) : "/assets/img/avatar.jpg"} className="img-fluid circle" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                                   </figure>
                                 </div>
                                 <div className="jbs-list-job-caption">
@@ -201,7 +203,10 @@ export default function EmployerShortlistCandidatesPage() {
                                   type="button"
                                   className="rounded btn-md btn-green px-3 me-2"
                                   disabled={updatingId === item.id}
-                                  onClick={() => router.push(`/employer-messages?newChat=${item.candidate.id}`)}
+                                  onClick={() => {
+                                    const cId = (item.candidate as any).userId || item.candidate.id;
+                                    router.push(`/employer-messages?newChat=${cId}`);
+                                  }}
                                   title="Message Candidate"
                                 >
                                   <i className="fa-solid fa-envelope"></i>
@@ -210,7 +215,7 @@ export default function EmployerShortlistCandidatesPage() {
                                   type="button"
                                   className="rounded btn-md btn-red px-3"
                                   disabled={updatingId === item.id}
-                                  onClick={() => updateStatus(item.id, "REJECTED")}
+                                  onClick={() => setCandidateToDelete(item.id)}
                                   title="Reject"
                                 >
                                   <i className="fa-solid fa-trash-can"></i>
@@ -232,6 +237,34 @@ export default function EmployerShortlistCandidatesPage() {
           {/* footer removed */}
         </div>
       </div>
+
+      {candidateToDelete && (
+        <div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.6)", zIndex: 1060 }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content text-center p-4">
+              <div className="modal-header border-0 pb-0 justify-content-end">
+                <button type="button" className="btn-close" onClick={() => setCandidateToDelete(null)}></button>
+              </div>
+              <div className="modal-body py-2">
+                <div className="mb-3 text-danger">
+                  <i className="fa-solid fa-triangle-exclamation fa-3x"></i>
+                </div>
+                <h4 className="fw-bold mb-2">Remove Candidate</h4>
+                <p className="text-muted mb-4">
+                  Are you sure you want to remove this candidate from your shortlist? This action cannot be undone.
+                </p>
+                <div className="d-flex justify-content-center gap-3">
+                  <button type="button" className="btn btn-secondary px-4 rounded" onClick={() => setCandidateToDelete(null)}>Cancel</button>
+                  <button type="button" className="btn btn-danger px-4 rounded" onClick={() => {
+                    updateStatus(candidateToDelete, "REJECTED");
+                    setCandidateToDelete(null);
+                  }}>Remove</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

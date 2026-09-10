@@ -303,6 +303,7 @@ export default function AdminResumePackagesPage() {
                           placeholder="Example: Premium Package"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
+                          required
                         />
                       </div>
                     </div>
@@ -328,6 +329,7 @@ export default function AdminResumePackagesPage() {
                           placeholder="Example: 999"
                           value={priceInRupees}
                           onChange={(e) => setPriceInRupees(e.target.value)}
+                          required
                         />
                       </div>
                     </div>
@@ -357,6 +359,7 @@ export default function AdminResumePackagesPage() {
                           placeholder="Example: 30"
                           value={duration}
                           onChange={(e) => setDuration(e.target.value)}
+                          required
                         />
                       </div>
                     </div>
@@ -371,6 +374,7 @@ export default function AdminResumePackagesPage() {
                           placeholder="Add multiple features."
                           value={featuresInput}
                           onChange={(e) => setFeaturesInput(e.target.value)}
+                          required
                         />
                       </div>
                     </div>

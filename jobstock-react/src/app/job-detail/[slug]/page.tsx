@@ -302,6 +302,10 @@ export default async function JobDetailPage({
                           <div className="card-body">
                             <ul className="list-unstyled mb-0 d-flex flex-column gap-3 fs-6">
                               <li className="d-flex justify-content-between border-bottom pb-2">
+                                <span className="text-muted"><i className="fa-regular fa-calendar me-2 text-main"></i>Posted On</span>
+                                <span className="fw-medium text-dark text-end">{formatDate(job.publishDate || job.createdAt) || "N/A"}</span>
+                              </li>
+                              <li className="d-flex justify-content-between border-bottom pb-2">
                                 <span className="text-muted"><i className="fa-solid fa-briefcase me-2 text-main"></i>Job Role</span>
                                 <span className="fw-medium text-dark text-end">{job.jobRole || job.title}</span>
                               </li>

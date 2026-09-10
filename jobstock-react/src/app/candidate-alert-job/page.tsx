@@ -181,6 +181,7 @@ export default function CandidateAlertJobPage() {
                               <th scope="col">Category</th>
                               <th scope="col">Location</th>
                               <th scope="col">Created</th>
+                              <th scope="col">Matched Jobs</th>
                               <th scope="col">Action</th>
                             </tr>
                           </thead>
@@ -191,6 +192,14 @@ export default function CandidateAlertJobPage() {
                                 <td>{a.category || "-"}</td>
                                 <td>{a.location || "-"}</td>
                                 <td>{new Date(a.createdAt).toLocaleDateString()}</td>
+                                <td>
+                                  <a
+                                    href={`/jobs?search=${encodeURIComponent(a.keyword || "")}&category=${encodeURIComponent(a.category || "")}&location=${encodeURIComponent(a.location || "")}`}
+                                    className="btn btn-sm btn-light-success px-3"
+                                  >
+                                    View Matches
+                                  </a>
+                                </td>
                                 <td>
                                   <button
                                     type="button"

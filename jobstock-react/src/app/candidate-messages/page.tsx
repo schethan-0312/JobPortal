@@ -48,6 +48,7 @@ function getUserAvatar(
 ): string {
   if (isMe && myProfilePhoto) return assetUrl(myProfilePhoto) || defaultRoleFallback;
   if (!userObj) return defaultRoleFallback;
+  if (userObj.role === "ADMIN") return "/assets/img/l-1.png";
   if (userObj.candidateProfile?.profilePhotoUrl)
     return assetUrl(userObj.candidateProfile.profilePhotoUrl) || defaultRoleFallback;
   if (userObj.employer?.logoUrl) return assetUrl(userObj.employer.logoUrl) || defaultRoleFallback;
@@ -56,6 +57,7 @@ function getUserAvatar(
 
 function getUserDisplayName(userObj?: MessageUser | null): string {
   if (!userObj) return "User";
+  if (userObj.role === "ADMIN") return "Support Admin";
   if (userObj.employer?.companyName) return userObj.employer.companyName;
   if (userObj.candidateProfile?.fullName) return userObj.candidateProfile.fullName;
   return userObj.email || "User";
@@ -177,7 +179,8 @@ function CandidateMessagesContent() {
         const convs = await api.get<ConversationMessage[]>("/messages/conversations");
         setConversations(convs || []);
 
-        const newChatId = searchParams.get("newChat") || searchParams.get("userId") || searchParams.get("id");
+        const rawChatId = searchParams.get("newChat") || searchParams.get("userId") || searchParams.get("id");
+        const newChatId = rawChatId && rawChatId !== "undefined" && rawChatId !== "null" ? rawChatId : null;
         if (newChatId) {
           const newChatConv = convs.find(
             (c) =>
@@ -1011,6 +1014,7 @@ function CandidateMessagesContent() {
                                         }}
                                       >
                                         {formatMessageDateTime(m.createdAt)}
+                                        {isMe && <i className="fa-solid fa-check-double ms-1" style={{ color: "#e0e0e0" }}></i>}
                                       </span>
                                     </div>
                                     <div className="msg-options" style={{ position: "relative", flexShrink: 0 }}>

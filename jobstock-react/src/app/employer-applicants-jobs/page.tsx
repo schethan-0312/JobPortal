@@ -301,7 +301,7 @@ export default function EmployerApplicantsJobsPage() {
                                         <i className="fa-solid fa-location-dot me-1"></i>
                                         {item.candidate.candidateProfile?.location || "Unknown"}
                                       </span>
-                                      <span>Applied: {new Date(item.appliedAt).toLocaleDateString()}</span>
+                                      <span>Applied: {new Date(item.appliedAt).toLocaleDateString()} at {new Date(item.appliedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                     </div>
                                   </div>
                                   <div className="mt-1">

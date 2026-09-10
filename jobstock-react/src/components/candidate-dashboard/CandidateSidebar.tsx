@@ -56,8 +56,17 @@ export default function CandidateSidebar({ active }: CandidateSidebarProps) {
 
     api
       .get<unknown[]>("/candidates/job-alerts")
-      .then((data) => setAlertCount(data.length))
+      .then((data) => {
+        const lastCount = parseInt(localStorage.getItem('jobAlertsLastCount') || '0', 10);
+        if (active === "alert-job") {
+          localStorage.setItem('jobAlertsLastCount', data.length.toString());
+          setAlertCount(0);
+        } else {
+          setAlertCount(Math.max(0, data.length - lastCount));
+        }
+      })
       .catch(() => setAlertCount(0));
+
     api
       .get<number>("/messages/unread-count")
       .then(setUnreadMessages)
@@ -247,7 +256,7 @@ export default function CandidateSidebar({ active }: CandidateSidebarProps) {
               <li className={active === "alert-job" ? "active" : undefined}>
                 <Link href="/candidate-alert-job" onClick={() => setIsOpen(false)}>
                   <i className="fa-solid fa-bell me-2"></i>Alert Jobs
-                  {alertCount > 0 && <span className="count-tag bg-warning">{alertCount}</span>}
+                  {alertCount > 0 && active !== "alert-job" && <span className="count-tag bg-warning">{alertCount}</span>}
                 </Link>
               </li>
               <li className={active === "saved-jobs" ? "active" : undefined}>

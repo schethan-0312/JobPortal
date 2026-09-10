@@ -184,9 +184,37 @@ export default function EmployerCompetitionPage() {
       toast.error("Please select a job");
       return;
     }
+    if (!title.trim()) {
+      toast.error("Please enter a title for the assessment.");
+      return;
+    }
+    if (!skills.trim()) {
+      toast.error("Please enter required skills.");
+      return;
+    }
+    if (!timeLimitMinutes || parseInt(timeLimitMinutes, 10) <= 0) {
+      toast.error("Please enter a valid time limit in minutes.");
+      return;
+    }
     if (sections.length === 0) {
       toast.error("Please add at least one question section to the assessment.");
       return;
+    }
+
+    for (const section of sections) {
+      for (let i = 0; i < section.questions.length; i++) {
+        const q = section.questions[i];
+        if (!q.prompt.trim()) {
+          toast.error(`Please enter a prompt for question ${i + 1} in the ${section.type} section`);
+          return;
+        }
+        if (section.type === "mcq") {
+          if (!q.options || q.options.some((opt) => !opt.trim())) {
+            toast.error(`Please fill all options for question ${i + 1} in the MCQ section`);
+            return;
+          }
+        }
+      }
     }
 
     setSaving(true);

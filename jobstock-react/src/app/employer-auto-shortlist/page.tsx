@@ -75,7 +75,7 @@ export default function EmployerAutoShortlistPage() {
     setStatus("loading");
     try {
       const data = await api.get<RankedCandidate[]>(`/auto-shortlist/job/${selectedJobId}`);
-      setRanked(data);
+      setRanked(data.filter(r => r.status === "APPLIED" || r.status === "REVIEWED"));
       setStatus("idle");
     } catch (err) {
       setStatus("error");
@@ -138,7 +138,7 @@ export default function EmployerAutoShortlistPage() {
                     <div className="col-xl-6 col-md-12 mb-3">
                       <label className="form-label">Select Job</label>
                       <select
-                        className="form-control"
+                        className="form-select"
                         value={selectedJobId}
                         onChange={(e) => setSelectedJobId(e.target.value)}
                       >

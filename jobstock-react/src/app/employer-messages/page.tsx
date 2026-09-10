@@ -43,6 +43,7 @@ function formatMessageDateTime(dateStr: string) {
 function getUserAvatar(userObj: MessageUser | null | undefined, isMe: boolean, myLogoUrl: string | null | undefined, defaultRoleFallback: string): string {
   if (isMe && myLogoUrl) return assetUrl(myLogoUrl) || defaultRoleFallback;
   if (!userObj) return defaultRoleFallback;
+  if (userObj.role === "ADMIN") return "/assets/img/l-1.png";
   if (userObj.candidateProfile?.profilePhotoUrl) return assetUrl(userObj.candidateProfile.profilePhotoUrl) || defaultRoleFallback;
   if (userObj.employer?.logoUrl) return assetUrl(userObj.employer.logoUrl) || defaultRoleFallback;
   return defaultRoleFallback;
@@ -50,6 +51,7 @@ function getUserAvatar(userObj: MessageUser | null | undefined, isMe: boolean, m
 
 function getUserDisplayName(userObj?: MessageUser | null): string {
   if (!userObj) return "User";
+  if (userObj.role === "ADMIN") return "Support Admin";
   if (userObj.employer?.companyName) return userObj.employer.companyName;
   if (userObj.candidateProfile?.fullName) return userObj.candidateProfile.fullName;
   return userObj.email || "User";
@@ -126,7 +128,8 @@ function EmployerMessagesContent() {
             try {
         const convs = await api.get<ConversationMessage[]>("/messages/conversations");
         setConversations(convs);
-        const newChatId = searchParams.get("newChat");
+        const paramValue = searchParams.get("newChat");
+        const newChatId = paramValue && paramValue !== "undefined" && paramValue !== "null" ? paramValue : null;
         if (newChatId) {
           const newChatConv = convs.find(c => c.senderId === newChatId || c.receiverId === newChatId);
           if (newChatConv) {
@@ -469,7 +472,7 @@ function EmployerMessagesContent() {
                                         )}
                                         {(!m.mediaType || m.mediaType === "file" ? false : !!m.body) && (<p className="mb-1" style={{ fontStyle: m.deletedForEveryone ? 'italic' : 'normal', color: m.deletedForEveryone ? '#888' : 'inherit' }}>{m.body}</p>)}
                                         {!m.mediaType && m.body && <p className="mb-1" style={{ fontStyle: m.deletedForEveryone ? 'italic' : 'normal', color: m.deletedForEveryone ? '#888' : 'inherit' }}>{m.body}</p>}
-                                        <span className="small text-muted d-block opacity-75" style={{ fontSize: "0.7rem", textAlign: isMe ? "right" : "left" }}>{formatMessageDateTime(m.createdAt)}</span>
+                                        <span className="small text-muted d-block opacity-75" style={{ fontSize: "0.7rem", textAlign: isMe ? "right" : "left" }}>{formatMessageDateTime(m.createdAt)}{isMe && <i className="fa-solid fa-check-double ms-1" style={{ color: "#e0e0e0" }}></i>}</span>
                                       </div>
                                       <div className="msg-options" style={{ position: 'relative', flexShrink: 0 }}>
                                         <button type="button" className="btn btn-sm btn-light rounded-circle p-0 d-flex align-items-center justify-content-center" style={{ width: '24px', height: '24px' }} onClick={() => setDeleteMenuOpenId(deleteMenuOpenId === m.id ? null : m.id)}><i className="fa-solid fa-ellipsis-vertical" style={{ color: '#888', fontSize: '12px' }}></i></button>

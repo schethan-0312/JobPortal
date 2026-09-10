@@ -88,7 +88,12 @@ export class AdminAnalyticsService {
       this.prisma.application.groupBy({ by: ['status'], _count: { _all: true } }),
       this.prisma.candidateProfile.groupBy({
         by: ['location'],
-        where: { location: { not: null } },
+        where: { 
+          AND: [
+            { location: { not: null } },
+            { location: { not: '' } }
+          ]
+        },
         _count: { _all: true },
         orderBy: { _count: { location: 'desc' } },
         take: 10,

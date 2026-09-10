@@ -192,7 +192,9 @@ export default function EmployerDashboardPage() {
                               <span className="cursor-pointer">{n.title}</span>
                             )}
                           </h6>
-                          <span className="small">{timeAgo(n.createdAt)}</span>
+                          <span className="small">
+                            {new Date(n.createdAt).toLocaleDateString()} at {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ({timeAgo(n.createdAt)})
+                          </span>
                         </div>
                       </div>
                     ))}

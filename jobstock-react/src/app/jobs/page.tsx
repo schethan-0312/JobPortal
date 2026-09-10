@@ -35,6 +35,8 @@ interface Job {
   jobType?: string;
   status?: string;
   employer?: Employer;
+  createdAt: string;
+  publishDate?: string;
 }
 
 interface JobsResponse {
@@ -64,6 +66,23 @@ function formatSalary(job: Job) {
   }
 
   return "Not disclosed";
+}
+
+function timeAgo(dateStr?: string) {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) return "Just now";
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `${diffInMinutes} mins ago`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours} hours ago`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays === 1) return `1 day ago`;
+  if (diffInDays < 30) return `${diffInDays} days ago`;
+  return date.toLocaleDateString();
 }
 
 async function getJobs(params?: Record<string, string | undefined>): Promise<{ jobs: Job[]; total: number; pageSize: number; error: string | null }> {
@@ -219,7 +238,7 @@ export default async function JobsGridPage({
                           </h5>
                         </div>
                         <div className="jbs-grid-posted">
-                          <span>{item.status ?? ""}</span>
+                          <span>{timeAgo(item.publishDate || item.createdAt) || (item.status ?? "")}</span>
                         </div>
                       </div>
                       <div className="jbs-grid-job-apply-btns">

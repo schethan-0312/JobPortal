@@ -7,7 +7,6 @@ import Navbar7 from "@/components/Navbar7";
 import Navbar8 from "@/components/Navbar8";
 import Footer from "@/components/Footer";
 import LoginModal from "@/components/LoginModal";
-import FindJobCta from "@/components/jobs/FindJobCta";
 import { useAuth } from "@/lib/auth-context";
 import { api, ApiError, assetUrl } from "@/lib/api";
 import { Toaster, toast } from "react-hot-toast";
@@ -449,7 +448,6 @@ export default function EmployersPage() {
         </div>
       </section>
 
-      <FindJobCta />
       <LoginModal />
       <Footer />
     </>

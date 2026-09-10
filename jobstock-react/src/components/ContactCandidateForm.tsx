@@ -14,10 +14,6 @@ interface Props {
 export default function ContactCandidateForm({ candidateUserId, candidateName }: Props) {
   const router = useRouter();
   const { user } = useAuth();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
 
@@ -27,25 +23,21 @@ export default function ContactCandidateForm({ candidateUserId, candidateName }:
       toast.error("Please login to send a message.");
       return;
     }
+    if (!message.trim()) {
+      toast.error("Please enter a message to send.");
+      return;
+    }
     
     setSending(true);
     try {
-      const fullMessage = `Name: ${name}\nEmail: ${email}\nPhone: ${phone}\nSubject: ${subject}\n\n${message}`;
-      
       await api.post("/messages", {
         receiverId: candidateUserId,
-        body: fullMessage,
+        body: message.trim(),
       });
       
       toast.success("Message sent successfully!");
-      
-      setName("");
-      setEmail("");
-      setPhone("");
-      setSubject("");
       setMessage("");
       
-      router.push(`/employer-messages?newChat=${candidateUserId}`);
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Failed to send message");
     } finally {
@@ -55,27 +47,23 @@ export default function ContactCandidateForm({ candidateUserId, candidateName }:
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="form-group">
-        <input type="text" className="form-control" placeholder="Your Name" required value={name} onChange={(e) => setName(e.target.value)} />
-      </div>
-      <div className="form-group">
-        <input type="email" className="form-control" placeholder="Email Address" required value={email} onChange={(e) => setEmail(e.target.value)} />
-      </div>
-      <div className="form-group">
-        <input type="text" className="form-control" placeholder="Phone" required value={phone} onChange={(e) => setPhone(e.target.value)} />
-      </div>
-      <div className="form-group">
-        <input type="text" className="form-control" placeholder="Subject" required value={subject} onChange={(e) => setSubject(e.target.value)} />
-      </div>
-      <div className="form-group">
-        <textarea className="form-control" placeholder="Your Message" required minLength={10} value={message} onChange={(e) => setMessage(e.target.value)}></textarea>
+      <div className="form-group mb-3">
+        <textarea 
+          className="form-control" 
+          placeholder={`Type your message to ${candidateName}...`} 
+          required 
+          minLength={2} 
+          rows={5}
+          value={message} 
+          onChange={(e) => setMessage(e.target.value)}
+        ></textarea>
       </div>
       <div className="form-group m-0">
         <button type="submit" className="btn btn-main fw-medium full-width d-block text-center text-white" disabled={sending}>
           {sending ? (
             <><i className="fa-solid fa-spinner fa-spin me-2"></i> Sending...</>
           ) : (
-            <><i className="fa-regular fa-comment-dots me-2"></i> Message {candidateName}</>
+            <><i className="fa-regular fa-paper-plane me-2"></i> Send Message</>
           )}
         </button>
       </div>

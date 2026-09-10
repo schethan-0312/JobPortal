@@ -118,16 +118,15 @@ export default function FaqPage() {
                     {group.items.map((item, qIdx) => {
                       const collapseId = `${group.id}-collapse-${qIdx}`;
                       const headingId = `${group.id}-heading-${qIdx}`;
-                      const isFirst = qIdx === 0;
                       return (
                         <div className="accordion-item" key={qIdx}>
                           <h2 className="accordion-header" id={headingId}>
                             <button
-                              className={`accordion-button${isFirst ? "" : " collapsed"}`}
+                              className="accordion-button collapsed"
                               type="button"
                               data-bs-toggle="collapse"
                               data-bs-target={`#${collapseId}`}
-                              aria-expanded={isFirst}
+                              aria-expanded={false}
                               aria-controls={collapseId}
                             >
                               {item.q}
@@ -135,7 +134,7 @@ export default function FaqPage() {
                           </h2>
                           <div
                             id={collapseId}
-                            className={`accordion-collapse collapse${isFirst ? " show" : ""}`}
+                            className="accordion-collapse collapse"
                             aria-labelledby={headingId}
                             data-bs-parent={`#${group.id}`}
                           >

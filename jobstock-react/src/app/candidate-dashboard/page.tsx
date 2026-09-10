@@ -418,7 +418,9 @@ export default function CandidateDashboardPage() {
                           <div className="ground-content">
                             <h6 className="mb-1 text-dark fw-medium" style={{ fontSize: '0.95rem' }}>{n.title}</h6>
                             <div className="small text-muted mb-1" style={{ fontSize: '0.85rem' }}>{n.body || "Notification detail goes here..."}</div>
-                            <span className="small text-muted" style={{ fontSize: '0.75rem' }}>{timeAgo(n.createdAt)}</span>
+                            <span className="small text-muted" style={{ fontSize: '0.75rem' }}>
+                              {new Date(n.createdAt).toLocaleDateString()} at {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ({timeAgo(n.createdAt)})
+                            </span>
                           </div>
                         </a>
                       ))}
